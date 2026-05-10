@@ -1,0 +1,4 @@
+<?php ob_start(); use App\Core\View; ?>
+<h2>Recent exhibitions</h2><form method="post" class="panel grid2"><label>Title<input name="title" required></label><label>Venue<input name="venue"></label><label>City<input name="city"></label><label>Date<input name="event_date" type="date"></label><label>URL<input name="url"></label><label><input type="checkbox" name="is_recent" checked> Recent</label><label class="wide">Description<textarea name="description"></textarea></label><button>Add event</button></form><table><tr><th>Title</th><th>Venue</th><th>Date</th></tr><?php foreach ($events as $event): ?><tr><td><?= View::e($event['title']) ?></td><td><?= View::e($event['venue']) ?></td><td><?= View::e($event['event_date']) ?></td></tr><?php endforeach; ?></table>
+<?php $content = ob_get_clean(); require __DIR__ . '/_layout.php'; ?>
+<?php // End of file. ?>
