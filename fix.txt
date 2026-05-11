@@ -1,5 +1,7 @@
 ## Now
-
+- Allow editing of 'Recent exhibitions' text.
+- Allow display of exhibitions as text or table-based, slelected in admin section
+- allow deletion of contact messages
 
 
 
@@ -8,8 +10,6 @@
 
 ## Later
 - site creation
-- Allow editing of 'Recent exhibitions' text.
-- Allow display of exhibitions as text or table-based, slelected in admin section
 
 
 ## Done

@@ -42,75 +42,8 @@ $contactHref = $slugs['contact'] ?? '/contact';
   <?= $content ?>
 </main>
 <footer class="site-footer">© <?= View::e($settings['copyright_year'] ?? date('Y')) ?> <?= View::e($copyrightName) ?></footer>
-<div id="subscribe-modal" class="modal hidden" aria-hidden="true" data-recaptcha-site-key="<?= View::e($recaptchaSiteKey) ?>">
-  <div class="modal-card">
-    <button class="modal-close" type="button" aria-label="Close">×</button>
-    <h2>Stay in the loop</h2>
-    <p>Get occasional updates about new work, exhibitions, and studio news.</p>
-    <form id="subscribe-modal-form" method="post" action="/subscribe">
-      <label>Name <input name="name"></label>
-      <label>Email <input name="email" type="email" required></label>
-      <input type="hidden" name="source" value="modal">
-      <?php if ($recaptchaSiteKey !== ''): ?><div class="g-recaptcha" data-sitekey="<?= View::e($recaptchaSiteKey) ?>"></div><?php endif; ?>
-      <p class="form-error hidden" id="subscribe-modal-error"></p>
-      <button>Subscribe</button>
-    </form>
-  </div>
-</div>
-<script>
-(function () {
-  const subscribedKey = 'bxiie_subscribed';
-  const dismissedKey = 'bxiie_subscribe_dismissed';
-  const modal = document.getElementById('subscribe-modal');
-  const form = document.getElementById('subscribe-modal-form');
-  const close = modal ? modal.querySelector('.modal-close') : null;
-  const error = document.getElementById('subscribe-modal-error');
 
-  if (!modal || localStorage.getItem(subscribedKey) || localStorage.getItem(dismissedKey)) {
-    return;
-  }
 
-  window.setTimeout(function () {
-    if (!localStorage.getItem(subscribedKey) && !localStorage.getItem(dismissedKey)) {
-      modal.classList.remove('hidden');
-      modal.setAttribute('aria-hidden', 'false');
-    }
-  }, 60000);
-
-  if (close) {
-    close.addEventListener('click', function () {
-      localStorage.setItem(dismissedKey, '1');
-      modal.classList.add('hidden');
-    });
-  }
-
-  if (form) {
-    form.addEventListener('submit', function (event) {
-      event.preventDefault();
-      fetch('/subscribe', {
-        method: 'POST',
-        headers: {'X-Requested-With': 'fetch', 'Accept': 'application/json'},
-        body: new FormData(form)
-      }).then(function (response) {
-        return response.json();
-      }).then(function (result) {
-        if (!result.ok) {
-          if (error) {
-            error.textContent = result.error || 'Subscription failed. Please try again.';
-            error.classList.remove('hidden');
-          }
-          if (window.grecaptcha) {
-            window.grecaptcha.reset();
-          }
-          return;
-        }
-        localStorage.setItem(subscribedKey, '1');
-        modal.classList.add('hidden');
-      });
-    });
-  }
-}());
-</script>
 </body>
 </html>
 <?php // End of file. ?>

@@ -4,3 +4,8 @@
 .button{display:inline-block;text-decoration:none;font-weight:800;padding:11px 16px;border-radius:999px;background:#151515;color:white}.code-area{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;min-height:260px}.form-error,.error{background:#ffd8d8;padding:12px;border-radius:12px}
 
 /* End of file. */
+
+button.danger { background: #9b1c1c; color: #fff; border-color: #9b1c1c; }
+.inline-form { display: inline; }
+
+/* End of file. */

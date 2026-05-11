@@ -56,6 +56,8 @@ final class AdminController
                 'portfolio_slug',
                 'about_slug',
                 'contact_slug',
+                'exhibitions_heading',
+                'exhibitions_display_mode',
             ]);
             $this->flash('Site settings saved.');
             $this->redirect('/admin/site');
@@ -291,6 +293,26 @@ final class AdminController
         $stmt = $this->db->prepare('SELECT * FROM contact_messages WHERE tenant_id = :tenant_id ORDER BY created_at DESC');
         $stmt->execute(['tenant_id' => $this->tenant['id']]);
         View::render('admin/messages', ['tenant' => $this->tenant, 'messages' => $stmt->fetchAll()]);
+    }
+
+    public function deleteMessage(string $method): void
+    {
+        if ($method !== 'POST') {
+            $this->notFound();
+            return;
+        }
+
+        $id = (int) ($_POST['id'] ?? 0);
+        if ($id > 0) {
+            $stmt = $this->db->prepare('DELETE FROM contact_messages WHERE id = :id AND tenant_id = :tenant_id');
+            $stmt->execute([
+                'id' => $id,
+                'tenant_id' => $this->tenant['id'],
+            ]);
+            $this->flash('Contact message deleted.');
+        }
+
+        $this->redirect('/admin/messages');
     }
 
     public function subscribers(): void

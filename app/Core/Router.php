@@ -73,6 +73,7 @@ final class Router
             $path === '/admin/events/edit' => $controller->eventEdit($method),
             $path === '/admin/content' => $controller->content($method),
             $path === '/admin/messages' => $controller->messages(),
+            $path === '/admin/messages/delete' => $controller->deleteMessage($method),
             $path === '/admin/subscribers' => $controller->subscribers(),
             $path === '/admin/subscribers/export' => $controller->exportSubscribers(),
             $path === '/admin/users' => $controller->users($method),

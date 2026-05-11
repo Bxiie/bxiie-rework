@@ -4,3 +4,9 @@
 .form-error,.error{padding:12px 16px;background:#ffd8d8;border-radius:12px}.hidden{display:none}.page-image-thumb{max-width:420px}.page-image-medium{max-width:760px}.page-image-large{max-width:1100px}
 
 /* End of file. */
+
+.events-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.events-table th, .events-table td { border-bottom: 1px solid rgba(0,0,0,0.16); padding: 0.6rem; text-align: left; vertical-align: top; }
+.events-table th { font-weight: 700; }
+
+/* End of file. */

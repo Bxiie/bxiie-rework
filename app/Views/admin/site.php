@@ -22,6 +22,9 @@
 
   <label class="wide">Home intro text / HTML allowed<textarea name="home_intro"><?= View::e($settings['home_intro'] ?? 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.') ?></textarea></label>
 
+  <label>Recent exhibitions heading<input name="exhibitions_heading" value="<?= View::e($settings['exhibitions_heading'] ?? 'Recent exhibitions') ?>"></label>
+  <label>Exhibitions display<select name="exhibitions_display_mode"><option value="text" <?= ($settings['exhibitions_display_mode'] ?? 'text') === 'text' ? 'selected' : '' ?>>Text / stacked</option><option value="table" <?= ($settings['exhibitions_display_mode'] ?? '') === 'table' ? 'selected' : '' ?>>Table</option></select></label>
+
   <label>About page image<select name="about_image_id"><option value="">None</option><?php foreach ($images as $image): ?><option value="<?= (int) $image['id'] ?>" <?= (string)($settings['about_image_id'] ?? '') === (string)$image['id'] ? 'selected' : '' ?>><?= View::e($image['title']) ?><?= $image['year'] ? ' · ' . View::e($image['year']) : '' ?></option><?php endforeach; ?></select></label>
   <label>About image size<select name="about_image_size"><option value="thumb" <?= ($settings['about_image_size'] ?? '') === 'thumb' ? 'selected' : '' ?>>Thumbnail</option><option value="medium" <?= ($settings['about_image_size'] ?? 'medium') === 'medium' ? 'selected' : '' ?>>Medium</option><option value="large" <?= ($settings['about_image_size'] ?? '') === 'large' ? 'selected' : '' ?>>Large</option></select></label>
 

@@ -36,3 +36,15 @@ Changes are committed and pushed to GitHub with `GH_TOKEN`, then production pull
 - Admin-entered HTML is intentionally trusted. Do not give editor access to untrusted users without sanitization.
 
 # End of file.
+
+
+## Exhibitions/messages cleanup update
+
+- Removed the global newsletter modal/subscription block from public layout pages.
+- Contact-page email signup remains available.
+- Added editable `exhibitions_heading` and `exhibitions_display_mode` settings under `/admin/site`.
+- Public About page can display exhibitions as stacked text entries or a table.
+- Added `/admin/messages/delete` for tenant-scoped contact-message deletion.
+- Migration script: `scripts/migrate_exhibitions_messages_cleanup.php`.
+
+# End of file.
