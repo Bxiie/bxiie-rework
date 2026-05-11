@@ -18,6 +18,9 @@ $stmt->execute(['tenant_id' => $tenantId, 'domain' => $container['config']['defa
 
 $settings = [
     'site_title' => 'Bxiie',
+    'browser_title' => 'Bxiie',
+    'artist_name' => 'Bxiie',
+    'copyright_name' => 'Bxiie',
     'home_tab' => 'Home',
     'portfolio_tab' => 'Portfolio',
     'about_tab' => 'About',
@@ -27,6 +30,10 @@ $settings = [
     'background_color' => '#f7f2e8',
     'about_content' => 'Artist statement and biography go here.',
     'contact_details' => 'Contact details go here.',
+    'home_intro' => 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.',
+    'background_mode' => 'single',
+    'background_tile_size' => '360px',
+    'background_opacity' => '0.12',
     'copyright_year' => date('Y'),
 ];
 foreach ($settings as $key => $value) {

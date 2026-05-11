@@ -19,6 +19,13 @@ final class View
     {
         return htmlspecialchars($value ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
+
+    public static function html(?string $value): string
+    {
+        // Admin-entered site content is intentionally allowed to contain HTML.
+        // Only trusted admin users should be able to edit these fields.
+        return $value ?? '';
+    }
 }
 
 // End of file.

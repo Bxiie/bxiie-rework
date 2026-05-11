@@ -1,7 +1,10 @@
 <?php ob_start(); use App\Core\View; ?>
 <h1>Contact</h1>
 <?php if ($message): ?><p class="notice"><?= View::e($message) ?></p><?php endif; ?>
-<article class="prose"><?= nl2br(View::e($settings['contact_details'] ?? '')) ?></article>
+<?php if (!empty($contactImage['storage_key'])): ?>
+  <img class="page-image" src="/media/<?= View::e($contactImage['storage_key']) ?>-medium.jpg" alt="<?= View::e($contactImage['alt_text'] ?: $contactImage['title']) ?>">
+<?php endif; ?>
+<article class="prose"><?= View::html($settings['contact_details'] ?? '') ?></article>
 <form method="post" class="form">
   <label>Name <input name="name" required></label>
   <label>Email <input name="email" type="email" required></label>

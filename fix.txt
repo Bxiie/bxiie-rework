@@ -1,0 +1,23 @@
+## Now
+
+
+
+
+## Later
+
+
+## Done
+- Create separate viariables for name in copyright, Browser tab, and artist name.  These should be editable from site tab of admin section
+- Usage statistics: Show a thumbnail of the image in stats.  Allow search by name.  Include city, state, country - and populate those statistics.  Allow aggregation by location.
+- About and contact pages should include an image.  Selection of the image from images tab in admin section.
+- Allow editing of events from admin section.
+- After a minute on the site, if not already subscribed, show a modal dialog inviting user to sign up for email list.
+- When details are saved (for instance, contact info), display message indicating content has been saved.
+- Where do I go to see contact messages?
+- Allow adding background from admin section.  Allow image selection, tiled or osingle image, size of tile, opacity.
+- Allow use of HTML in user-entered content
+- Allow editing of images in admin section
+- Show year of work on image thumbnail displays.  Show year and medium on image detail pages
+- Allow editing of 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.' text on home page from admin section.
+
+## End of file.

@@ -122,5 +122,10 @@ CREATE TABLE IF NOT EXISTS page_views (
     user_agent TEXT,
     ip_hash TEXT,
     country_code TEXT,
+    city TEXT,
+    state TEXT,
+    country TEXT,
     created_at TEXT NOT NULL
 );
+
+-- End of file.
