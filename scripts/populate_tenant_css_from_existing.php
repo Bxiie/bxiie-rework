@@ -34,7 +34,7 @@ Usage:
 Options:
   --tenant=bxiie          Tenant slug. Default: bxiie.
   --css=/path/file.css    Explicit CSS file to import.
-  --setting=custom_css    Setting key to update. Default: custom_css.
+  --setting=tenant_css    Setting key to update. Default: tenant_css.
   --force                 Overwrite existing tenant CSS.
   --dry-run               Show what would happen without writing.
   --help                  Show this help.
@@ -254,13 +254,15 @@ if ($options === false || hasFlag($options, 'help')) {
 
 $databasePath = getenv('DATABASE_PATH') ?: dirname(__DIR__) . '/database/bxiie.sqlite';
 $tenantSlug = optionValue($options, 'tenant', 'bxiie') ?? 'bxiie';
-$settingKey = optionValue($options, 'setting', 'custom_css') ?? 'custom_css';
+$settingKey = optionValue($options, 'setting', 'tenant_css') ?? 'tenant_css';
 $explicitCssPath = optionValue($options, 'css');
 $force = hasFlag($options, 'force');
 $dryRun = hasFlag($options, 'dry-run');
 
 $cssPath = findCssFile($explicitCssPath);
 $css = file_get_contents($cssPath);
+$css = preg_replace('/\s*\/\*\s*End of file\.\s*\*\/\s*$/i', '', (string) $css) ?? (string) $css;
+$css = rtrim((string) $css) . PHP_EOL;
 
 if ($css === false || trim($css) === '') {
     fail("CSS file is empty or unreadable: {$cssPath}");

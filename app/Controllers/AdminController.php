@@ -153,13 +153,19 @@ final class AdminController
                 'featured_contact' => !empty($_POST['featured_contact']) ? 1 : 0,
                 'background_image' => !empty($_POST['background_image']) ? 1 : 0,
             ]));
+            $imageId = (int) $this->db->lastInsertId();
+            $this->replaceImageSections($imageId, $_POST['section_ids'] ?? []);
             $this->flash('Image uploaded and derivatives created.');
             $this->redirect('/admin/images');
         }
 
         $stmt = $this->db->prepare('SELECT * FROM images WHERE tenant_id = :tenant_id ORDER BY sort_order, created_at DESC');
         $stmt->execute(['tenant_id' => $this->tenant['id']]);
-        View::render('admin/images', ['tenant' => $this->tenant, 'images' => $stmt->fetchAll()]);
+        View::render('admin/images', [
+            'tenant' => $this->tenant,
+            'images' => $stmt->fetchAll(),
+            'sections' => $this->portfolioSections(),
+        ]);
     }
 
     public function imageEdit(string $method): void
@@ -218,34 +224,52 @@ final class AdminController
                 'background_image' => !empty($_POST['background_image']) ? 1 : 0,
                 'watermarked' => !empty($_POST['watermarked']) ? 1 : 0,
             ]);
+            $this->replaceImageSections($id, $_POST['section_ids'] ?? []);
             $this->flash('Image details saved.');
             $this->redirect('/admin/images/edit?id=' . $id);
         }
 
-        View::render('admin/image_edit', ['tenant' => $this->tenant, 'image' => $image]);
+        View::render('admin/image_edit', [
+            'tenant' => $this->tenant,
+            'image' => $image,
+            'sections' => $this->portfolioSections(),
+            'selectedSectionIds' => $this->imageSectionIds($id),
+        ]);
     }
 
     public function portfolio(string $method): void
     {
         if ($method === 'POST') {
-            $slug = strtolower(trim(preg_replace('/[^a-z0-9]+/', '-', $_POST['name'] ?? ''), '-'));
-            $stmt = $this->db->prepare(
-                'INSERT INTO portfolio_sections (tenant_id, name, slug, description, sort_order)
-                 VALUES (:tenant_id, :name, :slug, :description, :sort_order)'
-            );
-            $stmt->execute([
-                'tenant_id' => $this->tenant['id'],
-                'name' => $_POST['name'] ?? '',
-                'slug' => $slug,
-                'description' => $_POST['description'] ?? '',
-                'sort_order' => (int) ($_POST['sort_order'] ?? 100),
-            ]);
-            $this->flash('Portfolio section saved.');
+            $this->savePortfolioSection(null);
+            $this->flash('Portfolio section created.');
             $this->redirect('/admin/portfolio');
         }
-        $stmt = $this->db->prepare('SELECT * FROM portfolio_sections WHERE tenant_id = :tenant_id ORDER BY sort_order, name');
-        $stmt->execute(['tenant_id' => $this->tenant['id']]);
-        View::render('admin/portfolio', ['tenant' => $this->tenant, 'sections' => $stmt->fetchAll()]);
+
+        View::render('admin/portfolio', [
+            'tenant' => $this->tenant,
+            'sections' => $this->portfolioSections(),
+        ]);
+    }
+
+    public function portfolioEdit(string $method): void
+    {
+        $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
+        $section = $this->findTenantSection($id);
+        if (!$section) {
+            $this->notFound();
+            return;
+        }
+
+        if ($method === 'POST') {
+            $this->savePortfolioSection($id);
+            $this->flash('Portfolio section saved.');
+            $this->redirect('/admin/portfolio/edit?id=' . $id);
+        }
+
+        View::render('admin/portfolio_edit', [
+            'tenant' => $this->tenant,
+            'section' => $section,
+        ]);
     }
 
     public function events(string $method): void
@@ -551,6 +575,134 @@ final class AdminController
                 'value' => $_POST[$field] ?? '',
             ]);
         }
+    }
+
+    private function savePortfolioSection(?int $id): void
+    {
+        $name = trim((string) ($_POST['name'] ?? ''));
+        $slug = $this->safeSlug((string) ($_POST['slug'] ?? ''), $name);
+
+        if ($name === '') {
+            $this->flash('Portfolio section name is required.');
+            $this->redirect('/admin/portfolio');
+        }
+
+        if ($id === null) {
+            $stmt = $this->db->prepare(
+                'INSERT INTO portfolio_sections (tenant_id, name, slug, description, sort_order)
+                 VALUES (:tenant_id, :name, :slug, :description, :sort_order)
+                 ON CONFLICT(tenant_id, slug) DO UPDATE SET
+                    name = excluded.name,
+                    description = excluded.description,
+                    sort_order = excluded.sort_order'
+            );
+            $stmt->execute([
+                'tenant_id' => $this->tenant['id'],
+                'name' => $name,
+                'slug' => $slug,
+                'description' => $_POST['description'] ?? '',
+                'sort_order' => (int) ($_POST['sort_order'] ?? 100),
+            ]);
+            return;
+        }
+
+        $stmt = $this->db->prepare(
+            'UPDATE portfolio_sections SET
+                name = :name,
+                slug = :slug,
+                description = :description,
+                sort_order = :sort_order
+             WHERE id = :id AND tenant_id = :tenant_id'
+        );
+        $stmt->execute([
+            'id' => $id,
+            'tenant_id' => $this->tenant['id'],
+            'name' => $name,
+            'slug' => $slug,
+            'description' => $_POST['description'] ?? '',
+            'sort_order' => (int) ($_POST['sort_order'] ?? 100),
+        ]);
+    }
+
+    private function portfolioSections(): array
+    {
+        $stmt = $this->db->prepare('SELECT * FROM portfolio_sections WHERE tenant_id = :tenant_id ORDER BY sort_order, name');
+        $stmt->execute(['tenant_id' => $this->tenant['id']]);
+        return $stmt->fetchAll();
+    }
+
+    private function findTenantSection(int $id): ?array
+    {
+        if ($id <= 0) {
+            return null;
+        }
+
+        $stmt = $this->db->prepare('SELECT * FROM portfolio_sections WHERE id = :id AND tenant_id = :tenant_id');
+        $stmt->execute(['id' => $id, 'tenant_id' => $this->tenant['id']]);
+        $row = $stmt->fetch();
+
+        return $row ?: null;
+    }
+
+    private function imageSectionIds(int $imageId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT ps.id
+             FROM portfolio_sections ps
+             INNER JOIN image_sections ims ON ims.section_id = ps.id
+             WHERE ps.tenant_id = :tenant_id AND ims.image_id = :image_id'
+        );
+        $stmt->execute([
+            'tenant_id' => $this->tenant['id'],
+            'image_id' => $imageId,
+        ]);
+
+        return array_map('intval', array_column($stmt->fetchAll(), 'id'));
+    }
+
+    private function replaceImageSections(int $imageId, array|string $sectionIds): void
+    {
+        if ($imageId <= 0) {
+            return;
+        }
+
+        $ids = is_array($sectionIds) ? $sectionIds : [$sectionIds];
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids), static fn(int $id): bool => $id > 0)));
+
+        $stmt = $this->db->prepare(
+            'DELETE FROM image_sections
+             WHERE image_id = :image_id
+             AND section_id IN (SELECT id FROM portfolio_sections WHERE tenant_id = :tenant_id)'
+        );
+        $stmt->execute([
+            'image_id' => $imageId,
+            'tenant_id' => $this->tenant['id'],
+        ]);
+
+        if (!$ids) {
+            return;
+        }
+
+        $validate = $this->db->prepare('SELECT id FROM portfolio_sections WHERE id = :id AND tenant_id = :tenant_id');
+        $insert = $this->db->prepare('INSERT OR IGNORE INTO image_sections (image_id, section_id) VALUES (:image_id, :section_id)');
+
+        foreach ($ids as $sectionId) {
+            $validate->execute(['id' => $sectionId, 'tenant_id' => $this->tenant['id']]);
+            if (!$validate->fetch()) {
+                continue;
+            }
+            $insert->execute(['image_id' => $imageId, 'section_id' => $sectionId]);
+        }
+    }
+
+    private function safeSlug(string $value, string $fallback): string
+    {
+        $source = trim($value) !== '' ? $value : $fallback;
+        $slug = strtolower(trim($source));
+        $slug = preg_replace('/[^a-z0-9]+/', '-', $slug) ?? '';
+        $slug = trim($slug, '-');
+
+        return $slug !== '' ? $slug : 'section';
     }
 
     private function imageOptions(): array

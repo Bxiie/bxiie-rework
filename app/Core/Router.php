@@ -69,6 +69,7 @@ final class Router
             $path === '/admin/images' => $controller->images($method),
             $path === '/admin/images/edit' => $controller->imageEdit($method),
             $path === '/admin/portfolio' => $controller->portfolio($method),
+            $path === '/admin/portfolio/edit' => $controller->portfolioEdit($method),
             $path === '/admin/events' => $controller->events($method),
             $path === '/admin/events/edit' => $controller->eventEdit($method),
             $path === '/admin/content' => $controller->content($method),

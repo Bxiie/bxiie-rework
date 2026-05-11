@@ -12,6 +12,14 @@
   <label>Location<input name="location" value="<?= View::e($image['location'] ?? '') ?>"></label>
   <label>Tags<input name="tags" value="<?= View::e($image['tags'] ?? '') ?>"></label>
   <label>Sort order<input name="sort_order" type="number" value="<?= (int) $image['sort_order'] ?>"></label>
+  <label class="wide">Portfolio sections
+    <select name="section_ids[]" multiple size="8">
+      <?php foreach ($sections as $section): ?>
+        <option value="<?= (int) $section['id'] ?>" <?= in_array((int) $section['id'], $selectedSectionIds, true) ? 'selected' : '' ?>><?= View::e($section['name']) ?></option>
+      <?php endforeach; ?>
+    </select>
+    <small class="muted">Hold Command/Ctrl to select more than one section.</small>
+  </label>
   <label class="wide">Description / HTML allowed<textarea name="description"><?= View::e($image['description'] ?? '') ?></textarea></label>
   <label class="wide">Alt text<input name="alt_text" value="<?= View::e($image['alt_text'] ?? '') ?>"></label>
   <label><input type="checkbox" name="is_draft" <?= $image['is_draft'] ? 'checked' : '' ?>> Draft/private</label>
@@ -25,4 +33,3 @@
 </form>
 <?php if ($image['storage_key']): ?><img class="preview" src="/media/<?= View::e($image['storage_key']) ?>-medium.jpg" alt=""><?php endif; ?>
 <?php $content = ob_get_clean(); require __DIR__ . '/_layout.php'; ?>
-<?php // End of file. ?>

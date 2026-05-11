@@ -9,6 +9,14 @@
   <label>Sale status<input name="sale_status"></label>
   <label>Location<input name="location"></label>
   <label>Tags<input name="tags"></label>
+  <label class="wide">Portfolio sections
+    <select name="section_ids[]" multiple size="8">
+      <?php foreach ($sections as $section): ?>
+        <option value="<?= (int) $section['id'] ?>"><?= View::e($section['name']) ?></option>
+      <?php endforeach; ?>
+    </select>
+    <small class="muted">Hold Command/Ctrl to select more than one section.</small>
+  </label>
   <label class="wide">Description / HTML allowed<textarea name="description"></textarea></label>
   <label class="wide">Alt text<input name="alt_text"></label>
   <label>Sort order<input name="sort_order" type="number" value="100"></label>
@@ -37,4 +45,3 @@
   <?php endforeach; ?>
 </table>
 <?php $content = ob_get_clean(); require __DIR__ . '/_layout.php'; ?>
-<?php // End of file. ?>

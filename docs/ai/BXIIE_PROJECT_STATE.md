@@ -57,3 +57,15 @@ Changes are committed and pushed to GitHub with `GH_TOKEN`, then production pull
 - Stats page now displays the start time for the current reporting window.
 
 # End of file.
+
+## 2026-05-11 Portfolio section editing and tenant CSS seed update
+
+- Deployment remains workstation → GitHub → production pull.
+- Portfolio sections are now creatable and editable in admin.
+- Image creation and image editing now support assigning multiple portfolio sections.
+- Tenant CSS uses the `settings.setting_key = tenant_css` row.
+- The CSS seeding helper now defaults to `tenant_css` instead of `custom_css`.
+- Default public CSS is formatted for human editing and seeded into tenant CSS with `scripts/migrate_portfolio_sections_and_tenant_css.php --force`.
+- Runtime DB remains `/var/lib/bxiie-cms/database/bxiie.sqlite`.
+
+# End of file.
