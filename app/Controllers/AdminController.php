@@ -80,12 +80,26 @@ final class AdminController
     public function events(string $method): void
     {
         if ($method === 'POST') {
-            $stmt = $this->db->prepare('INSERT INTO exhibitions (tenant_id, title, venue, city, event_date, url, description, is_recent) VALUES (:tenant_id, :title, :venue, :city, :event_date, :url, :description, :is_recent)');
-            $stmt->execute(['tenant_id' => $this->tenant['id'], 'title' => $_POST['title'] ?? '', 'venue' => $_POST['venue'] ?? '', 'city' => $_POST['city'] ?? '', 'event_date' => $_POST['event_date'] ?? '', 'url' => $_POST['url'] ?? '', 'description' => $_POST['description'] ?? '', 'is_recent' => !empty($_POST['is_recent']) ? 1 : 0]);
+            $stmt = $this->db->prepare('INSERT INTO exhibitions (tenant_id, title, venue, city, state, event_date, display_date, url, description, event_type, work_name, additional_info, is_recent) VALUES (:tenant_id, :title, :venue, :city, :state, :event_date, :display_date, :url, :description, :event_type, :work_name, :additional_info, :is_recent)');
+            $stmt->execute([
+                'tenant_id' => $this->tenant['id'],
+                'title' => $_POST['title'] ?? '',
+                'venue' => $_POST['venue'] ?? '',
+                'city' => $_POST['city'] ?? '',
+                'state' => $_POST['state'] ?? '',
+                'event_date' => $_POST['event_date'] ?? '',
+                'display_date' => $_POST['display_date'] ?? ($_POST['event_date'] ?? ''),
+                'url' => $_POST['url'] ?? '',
+                'description' => $_POST['event_type'] ?? '',
+                'event_type' => $_POST['event_type'] ?? '',
+                'work_name' => $_POST['work_name'] ?? '',
+                'additional_info' => $_POST['additional_info'] ?? '',
+                'is_recent' => !empty($_POST['is_recent']) ? 1 : 0,
+            ]);
             header('Location: /admin/events');
             return;
         }
-        $stmt = $this->db->prepare('SELECT * FROM exhibitions WHERE tenant_id = :tenant_id ORDER BY event_date DESC');
+        $stmt = $this->db->prepare('SELECT * FROM exhibitions WHERE tenant_id = :tenant_id ORDER BY event_date DESC, id DESC');
         $stmt->execute(['tenant_id' => $this->tenant['id']]);
         View::render('admin/events', ['tenant' => $this->tenant, 'events' => $stmt->fetchAll()]);
     }

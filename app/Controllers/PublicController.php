@@ -44,7 +44,7 @@ final class PublicController
     public function about(): void
     {
         $this->stats->hit((int) $this->tenant['id'], 'page');
-        View::render('public/about', $this->base());
+        View::render('public/about', $this->base(['events' => $this->events()]));
     }
 
     public function contact(string $method): void
@@ -82,7 +82,6 @@ final class PublicController
         $this->stats->hit((int) $this->tenant['id'], 'image_view', $id);
         View::render('public/image', $this->base(['image' => $image]));
     }
-
 
     public function media(string $path): void
     {
@@ -131,6 +130,13 @@ final class PublicController
         $params['tenant_id'] = $this->tenant['id'];
         $stmt = $this->db->prepare('SELECT * FROM images WHERE tenant_id = :tenant_id AND ' . $where . ' ORDER BY sort_order, created_at DESC');
         $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    private function events(): array
+    {
+        $stmt = $this->db->prepare('SELECT * FROM exhibitions WHERE tenant_id = :tenant_id ORDER BY event_date DESC, id DESC');
+        $stmt->execute(['tenant_id' => $this->tenant['id']]);
         return $stmt->fetchAll();
     }
 }

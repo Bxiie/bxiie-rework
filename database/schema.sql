@@ -82,9 +82,14 @@ CREATE TABLE IF NOT EXISTS exhibitions (
     title TEXT NOT NULL,
     venue TEXT,
     city TEXT,
+    state TEXT,
     event_date TEXT,
+    display_date TEXT,
     url TEXT,
     description TEXT,
+    event_type TEXT,
+    work_name TEXT,
+    additional_info TEXT,
     is_recent INTEGER NOT NULL DEFAULT 1
 );
 
