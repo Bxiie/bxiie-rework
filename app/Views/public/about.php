@@ -1,7 +1,7 @@
 <?php ob_start(); use App\Core\View; ?>
 <h1>About</h1>
 <?php if (!empty($aboutImage['storage_key'])): ?>
-  <img class="page-image" src="/media/<?= View::e($aboutImage['storage_key']) ?>-medium.jpg" alt="<?= View::e($aboutImage['alt_text'] ?: $aboutImage['title']) ?>">
+  <img class="page-image page-image-<?= View::e($aboutImageSize ?? 'medium') ?>" src="/media/<?= View::e($aboutImage['storage_key']) ?>-<?= View::e($aboutImageSize ?? 'medium') ?>.jpg" alt="<?= View::e($aboutImage['alt_text'] ?: $aboutImage['title']) ?>">
 <?php endif; ?>
 <article class="prose"><?= View::html($settings['about_content'] ?? '') ?></article>
 <?php if (!empty($events)): ?>

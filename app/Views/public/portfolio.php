@@ -1,7 +1,7 @@
 <?php ob_start(); use App\Core\View; ?>
 <h1>Portfolio</h1>
 <div class="chips">
-  <?php foreach ($sections as $section): ?><a href="/portfolio/<?= View::e($section['slug']) ?>"><?= View::e($section['name']) ?></a><?php endforeach; ?>
+  <?php foreach ($sections as $section): ?><a href="<?= View::e($slugs['portfolio'] ?? '/portfolio') ?>/<?= View::e($section['slug']) ?>"><?= View::e($section['name']) ?></a><?php endforeach; ?>
 </div>
 <section class="grid">
   <?php foreach ($images as $image): ?>

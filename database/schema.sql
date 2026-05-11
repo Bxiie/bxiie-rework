@@ -128,4 +128,19 @@ CREATE TABLE IF NOT EXISTS page_views (
     created_at TEXT NOT NULL
 );
 
+
+CREATE TABLE IF NOT EXISTS ip_geolocations (
+    ip_hash TEXT PRIMARY KEY,
+    country_code TEXT,
+    city TEXT,
+    state TEXT,
+    country TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_page_views_location ON page_views(tenant_id, country, state, city, created_at);
+CREATE INDEX IF NOT EXISTS idx_page_views_image ON page_views(tenant_id, image_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_subscribers_tenant_email ON subscribers(tenant_id, email);
+
 -- End of file.

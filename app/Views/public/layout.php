@@ -12,6 +12,10 @@ if (!empty($backgroundImage['storage_key'])) {
     $opacity = $settings['background_opacity'] ?? '0.12';
     $bgStyle = '--site-bg-image:url(' . $bgUrl . ');--site-bg-repeat:' . ($mode === 'tile' ? 'repeat' : 'no-repeat') . ';--site-bg-size:' . ($mode === 'tile' ? View::e($tileSize) : 'cover') . ';--site-bg-opacity:' . View::e($opacity) . ';';
 }
+$recaptchaSiteKey = trim((string) ($settings['recaptcha_site_key'] ?? ''));
+$portfolioHref = $slugs['portfolio'] ?? '/portfolio';
+$aboutHref = $slugs['about'] ?? '/about';
+$contactHref = $slugs['contact'] ?? '/contact';
 ?>
 <!doctype html>
 <html lang="en">
@@ -21,22 +25,24 @@ if (!empty($backgroundImage['storage_key'])) {
   <title><?= View::e($browserTitle) ?></title>
   <meta name="description" content="<?= View::e($settings['seo_description'] ?? 'Artist portfolio') ?>">
   <link rel="stylesheet" href="/assets/site.css">
+  <link rel="stylesheet" href="/tenant.css">
+  <?php if ($recaptchaSiteKey !== ''): ?><script src="https://www.google.com/recaptcha/api.js" async defer></script><?php endif; ?>
 </head>
 <body style="--primary: <?= View::e($settings['primary_color'] ?? '#111') ?>; --accent: <?= View::e($settings['accent_color'] ?? '#c9a85f') ?>; --bg: <?= View::e($settings['background_color'] ?? '#f7f2e8') ?>; <?= $bgStyle ?>">
 <header class="site-header">
   <a class="brand" href="/"><?= View::e($brandTitle) ?></a>
   <nav>
     <a href="/"><?= View::e($settings['home_tab'] ?? 'Home') ?></a>
-    <a href="/portfolio"><?= View::e($settings['portfolio_tab'] ?? 'Portfolio') ?></a>
-    <a href="/about"><?= View::e($settings['about_tab'] ?? 'About') ?></a>
-    <a href="/contact"><?= View::e($settings['contact_tab'] ?? 'Contact') ?></a>
+    <a href="<?= View::e($portfolioHref) ?>"><?= View::e($settings['portfolio_tab'] ?? 'Portfolio') ?></a>
+    <a href="<?= View::e($aboutHref) ?>"><?= View::e($settings['about_tab'] ?? 'About') ?></a>
+    <a href="<?= View::e($contactHref) ?>"><?= View::e($settings['contact_tab'] ?? 'Contact') ?></a>
   </nav>
 </header>
 <main class="site-main">
   <?= $content ?>
 </main>
 <footer class="site-footer">© <?= View::e($settings['copyright_year'] ?? date('Y')) ?> <?= View::e($copyrightName) ?></footer>
-<div id="subscribe-modal" class="modal hidden" aria-hidden="true">
+<div id="subscribe-modal" class="modal hidden" aria-hidden="true" data-recaptcha-site-key="<?= View::e($recaptchaSiteKey) ?>">
   <div class="modal-card">
     <button class="modal-close" type="button" aria-label="Close">×</button>
     <h2>Stay in the loop</h2>
@@ -45,6 +51,8 @@ if (!empty($backgroundImage['storage_key'])) {
       <label>Name <input name="name"></label>
       <label>Email <input name="email" type="email" required></label>
       <input type="hidden" name="source" value="modal">
+      <?php if ($recaptchaSiteKey !== ''): ?><div class="g-recaptcha" data-sitekey="<?= View::e($recaptchaSiteKey) ?>"></div><?php endif; ?>
+      <p class="form-error hidden" id="subscribe-modal-error"></p>
       <button>Subscribe</button>
     </form>
   </div>
@@ -56,6 +64,7 @@ if (!empty($backgroundImage['storage_key'])) {
   const modal = document.getElementById('subscribe-modal');
   const form = document.getElementById('subscribe-modal-form');
   const close = modal ? modal.querySelector('.modal-close') : null;
+  const error = document.getElementById('subscribe-modal-error');
 
   if (!modal || localStorage.getItem(subscribedKey) || localStorage.getItem(dismissedKey)) {
     return;
@@ -82,7 +91,19 @@ if (!empty($backgroundImage['storage_key'])) {
         method: 'POST',
         headers: {'X-Requested-With': 'fetch', 'Accept': 'application/json'},
         body: new FormData(form)
-      }).then(function () {
+      }).then(function (response) {
+        return response.json();
+      }).then(function (result) {
+        if (!result.ok) {
+          if (error) {
+            error.textContent = result.error || 'Subscription failed. Please try again.';
+            error.classList.remove('hidden');
+          }
+          if (window.grecaptcha) {
+            window.grecaptcha.reset();
+          }
+          return;
+        }
         localStorage.setItem(subscribedKey, '1');
         modal.classList.add('hidden');
       });

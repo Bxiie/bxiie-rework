@@ -17,6 +17,7 @@
   <a href="/admin/events">Exhibitions</a>
   <a href="/admin/content">Content</a>
   <a href="/admin/messages">Messages</a>
+  <a href="/admin/subscribers">Email List</a>
   <a href="/admin/users">Users</a>
   <a href="/admin/stats">Stats</a>
   <a href="/admin/logout">Logout</a>

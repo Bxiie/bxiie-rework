@@ -48,6 +48,14 @@ final class AdminController
                 'background_mode',
                 'background_tile_size',
                 'background_opacity',
+                'about_image_size',
+                'contact_image_size',
+                'recaptcha_site_key',
+                'recaptcha_secret_key',
+                'tenant_css',
+                'portfolio_slug',
+                'about_slug',
+                'contact_slug',
             ]);
             $this->flash('Site settings saved.');
             $this->redirect('/admin/site');
@@ -283,6 +291,30 @@ final class AdminController
         $stmt = $this->db->prepare('SELECT * FROM contact_messages WHERE tenant_id = :tenant_id ORDER BY created_at DESC');
         $stmt->execute(['tenant_id' => $this->tenant['id']]);
         View::render('admin/messages', ['tenant' => $this->tenant, 'messages' => $stmt->fetchAll()]);
+    }
+
+    public function subscribers(): void
+    {
+        $stmt = $this->db->prepare('SELECT * FROM subscribers WHERE tenant_id = :tenant_id ORDER BY created_at DESC, email');
+        $stmt->execute(['tenant_id' => $this->tenant['id']]);
+        View::render('admin/subscribers', ['tenant' => $this->tenant, 'subscribers' => $stmt->fetchAll()]);
+    }
+
+    public function exportSubscribers(): void
+    {
+        $stmt = $this->db->prepare('SELECT email, name, source, created_at FROM subscribers WHERE tenant_id = :tenant_id ORDER BY email');
+        $stmt->execute(['tenant_id' => $this->tenant['id']]);
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="bxiie-subscribers.csv"');
+
+        $out = fopen('php://output', 'wb');
+        fputcsv($out, ['email', 'name', 'source', 'created_at']);
+        foreach ($stmt->fetchAll() as $row) {
+            fputcsv($out, [$row['email'], $row['name'], $row['source'], $row['created_at']]);
+        }
+        fclose($out);
+        exit;
     }
 
     public function users(string $method): void

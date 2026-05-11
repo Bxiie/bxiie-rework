@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\View;
+use App\Services\RecaptchaVerifier;
 use App\Services\StatsTracker;
 use PDO;
 
@@ -33,7 +34,9 @@ final class PublicController
     {
         $this->stats->hit((int) $this->tenant['id'], 'page');
         $sectionSlug = null;
-        if (preg_match('#^/portfolio/([^/]+)#', $path, $m)) {
+        $settings = $this->settings();
+        $portfolioSlug = $this->slugSetting($settings, 'portfolio_slug', 'portfolio');
+        if (preg_match('#^/' . preg_quote($portfolioSlug, '#') . '/([^/]+)#', $path, $m)) {
             $sectionSlug = $m[1];
         }
         $sections = $this->sections();
@@ -46,54 +49,73 @@ final class PublicController
     public function about(): void
     {
         $this->stats->hit((int) $this->tenant['id'], 'page');
+        $settings = $this->settings();
         View::render('public/about', $this->base([
             'events' => $this->events(),
             'aboutImage' => $this->imageFromSetting('about_image_id'),
+            'aboutImageSize' => $this->imageSizeSetting($settings['about_image_size'] ?? 'medium'),
         ]));
     }
 
     public function contact(string $method): void
     {
+        $settings = $this->settings();
         $message = null;
+        $error = null;
         if ($method === 'POST') {
-            $stmt = $this->db->prepare('INSERT INTO contact_messages (tenant_id, name, email, message, created_at) VALUES (:tenant_id, :name, :email, :message, datetime("now"))');
-            $stmt->execute([
-                'tenant_id' => $this->tenant['id'],
-                'name' => $_POST['name'] ?? '',
-                'email' => $_POST['email'] ?? '',
-                'message' => $_POST['message'] ?? '',
-            ]);
-            $message = 'Thanks. Your note has been saved.';
+            if (!RecaptchaVerifier::verify($settings['recaptcha_secret_key'] ?? '', $_POST['g-recaptcha-response'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '')) {
+                $error = 'reCAPTCHA verification failed. Please try again.';
+            } else {
+                $stmt = $this->db->prepare('INSERT INTO contact_messages (tenant_id, name, email, message, created_at) VALUES (:tenant_id, :name, :email, :message, datetime("now"))');
+                $stmt->execute([
+                    'tenant_id' => $this->tenant['id'],
+                    'name' => $_POST['name'] ?? '',
+                    'email' => $_POST['email'] ?? '',
+                    'message' => $_POST['message'] ?? '',
+                ]);
+                $message = 'Thanks. Your note has been saved.';
+            }
         }
         $this->stats->hit((int) $this->tenant['id'], 'page');
         View::render('public/contact', $this->base([
             'message' => $message,
+            'error' => $error,
             'contactImage' => $this->imageFromSetting('contact_image_id'),
+            'contactImageSize' => $this->imageSizeSetting($settings['contact_image_size'] ?? 'medium'),
         ]));
     }
 
     public function subscribe(string $method): void
     {
+        $settings = $this->settings();
+        $ok = true;
+        $error = null;
+
         if ($method === 'POST') {
-            $email = trim((string) ($_POST['email'] ?? ''));
-            if ($email !== '') {
-                $stmt = $this->db->prepare('INSERT OR IGNORE INTO subscribers (tenant_id, email, name, source, created_at) VALUES (:tenant_id, :email, :name, :source, datetime("now"))');
-                $stmt->execute([
-                    'tenant_id' => $this->tenant['id'],
-                    'email' => $email,
-                    'name' => $_POST['name'] ?? '',
-                    'source' => $_POST['source'] ?? 'site',
-                ]);
+            if (!RecaptchaVerifier::verify($settings['recaptcha_secret_key'] ?? '', $_POST['g-recaptcha-response'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '')) {
+                $ok = false;
+                $error = 'reCAPTCHA verification failed.';
+            } else {
+                $email = trim((string) ($_POST['email'] ?? ''));
+                if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $stmt = $this->db->prepare('INSERT OR IGNORE INTO subscribers (tenant_id, email, name, source, created_at) VALUES (:tenant_id, :email, :name, :source, datetime("now"))');
+                    $stmt->execute([
+                        'tenant_id' => $this->tenant['id'],
+                        'email' => $email,
+                        'name' => $_POST['name'] ?? '',
+                        'source' => $_POST['source'] ?? 'site',
+                    ]);
+                }
             }
         }
 
         if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') || strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'fetch') {
             header('Content-Type: application/json');
-            echo json_encode(['ok' => true]);
+            echo json_encode(['ok' => $ok, 'error' => $error]);
             return;
         }
 
-        header('Location: /contact');
+        header('Location: /contact' . ($ok ? '?subscribed=1' : '?subscribe_error=1'));
     }
 
     public function image(string $path): void
@@ -128,6 +150,14 @@ final class PublicController
         readfile($full);
     }
 
+    public function tenantCss(): void
+    {
+        $settings = $this->settings();
+        header('Content-Type: text/css; charset=utf-8');
+        header('Cache-Control: no-cache, must-revalidate');
+        echo $settings['tenant_css'] ?? '';
+    }
+
     public function notFound(): void
     {
         http_response_code(404);
@@ -142,6 +172,7 @@ final class PublicController
             'settings' => $settings,
             'sections' => $this->sections(),
             'backgroundImage' => $this->imageById((int) ($settings['background_image_id'] ?? 0)),
+            'slugs' => $this->publicSlugs($settings),
         ], $extra);
     }
 
@@ -190,6 +221,30 @@ final class PublicController
         $stmt = $this->db->prepare('SELECT * FROM exhibitions WHERE tenant_id = :tenant_id AND is_recent = 1 ORDER BY event_date DESC, id DESC');
         $stmt->execute(['tenant_id' => $this->tenant['id']]);
         return $stmt->fetchAll();
+    }
+
+    private function publicSlugs(array $settings): array
+    {
+        return [
+            'home' => '/',
+            'portfolio' => '/' . $this->slugSetting($settings, 'portfolio_slug', 'portfolio'),
+            'about' => '/' . $this->slugSetting($settings, 'about_slug', 'about'),
+            'contact' => '/' . $this->slugSetting($settings, 'contact_slug', 'contact'),
+        ];
+    }
+
+    private function slugSetting(array $settings, string $key, string $default): string
+    {
+        $value = strtolower(trim((string) ($settings[$key] ?? $default)));
+        $value = preg_replace('/[^a-z0-9-]+/', '-', $value) ?? $default;
+        $value = trim($value, '-');
+
+        return $value !== '' ? $value : $default;
+    }
+
+    private function imageSizeSetting(string $size): string
+    {
+        return in_array($size, ['thumb', 'medium', 'large'], true) ? $size : 'medium';
     }
 }
 
