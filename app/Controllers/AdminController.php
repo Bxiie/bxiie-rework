@@ -364,6 +364,7 @@ final class AdminController
         $to = $_GET['to'] ?? date('Y-m-d');
         $q = trim((string) ($_GET['q'] ?? ''));
         $group = $_GET['group'] ?? 'path';
+        $statsStartedAt = $this->statsStartedAt();
 
         if ($group === 'location') {
             $sql = 'SELECT city, state, country, country_code, COUNT(*) AS hits
@@ -374,7 +375,15 @@ final class AdminController
                     LIMIT 250';
             $stmt = $this->db->prepare($sql);
             $stmt->execute(['tenant_id' => $this->tenant['id'], 'from' => $from, 'to' => $to]);
-            View::render('admin/stats', ['tenant' => $this->tenant, 'rows' => $stmt->fetchAll(), 'from' => $from, 'to' => $to, 'q' => $q, 'group' => $group]);
+            View::render('admin/stats', [
+                'tenant' => $this->tenant,
+                'rows' => $stmt->fetchAll(),
+                'from' => $from,
+                'to' => $to,
+                'q' => $q,
+                'group' => $group,
+                'stats_started_at' => $statsStartedAt,
+            ]);
             return;
         }
 
@@ -405,7 +414,46 @@ final class AdminController
              LIMIT 250'
         );
         $stmt->execute($params);
-        View::render('admin/stats', ['tenant' => $this->tenant, 'rows' => $stmt->fetchAll(), 'from' => $from, 'to' => $to, 'q' => $q, 'group' => $group]);
+        View::render('admin/stats', [
+            'tenant' => $this->tenant,
+            'rows' => $stmt->fetchAll(),
+            'from' => $from,
+            'to' => $to,
+            'q' => $q,
+            'group' => $group,
+            'stats_started_at' => $statsStartedAt,
+        ]);
+    }
+
+    public function resetStats(string $method): void
+    {
+        if ($method !== 'POST') {
+            $this->notFound();
+            return;
+        }
+
+        $confirm = trim((string) ($_POST['confirm'] ?? ''));
+        if ($confirm !== 'RESET') {
+            $this->flash('Stats were not reset. Type RESET to confirm.');
+            $this->redirect('/admin/stats');
+        }
+
+        $stmt = $this->db->prepare('DELETE FROM page_views WHERE tenant_id = :tenant_id');
+        $stmt->execute(['tenant_id' => $this->tenant['id']]);
+
+        $startedAt = date('Y-m-d H:i:s');
+        $stmt = $this->db->prepare(
+            'INSERT INTO settings (tenant_id, setting_key, setting_value)
+             VALUES (:tenant_id, "stats_started_at", :started_at)
+             ON CONFLICT(tenant_id, setting_key) DO UPDATE SET setting_value = excluded.setting_value'
+        );
+        $stmt->execute([
+            'tenant_id' => $this->tenant['id'],
+            'started_at' => $startedAt,
+        ]);
+
+        $this->flash('Usage statistics reset. New stats start: ' . $startedAt . '.');
+        $this->redirect('/admin/stats');
     }
 
     public function notFound(): void
@@ -459,6 +507,27 @@ final class AdminController
              WHERE id = :id AND tenant_id = :tenant_id'
         );
         $stmt->execute($params);
+    }
+
+    private function statsStartedAt(): string
+    {
+        $stmt = $this->db->prepare('SELECT setting_value FROM settings WHERE tenant_id = :tenant_id AND setting_key = "stats_started_at"');
+        $stmt->execute(['tenant_id' => $this->tenant['id']]);
+        $row = $stmt->fetch();
+
+        if ($row && trim((string) $row['setting_value']) !== '') {
+            return (string) $row['setting_value'];
+        }
+
+        $stmt = $this->db->prepare('SELECT MIN(created_at) AS started_at FROM page_views WHERE tenant_id = :tenant_id');
+        $stmt->execute(['tenant_id' => $this->tenant['id']]);
+        $row = $stmt->fetch();
+
+        if ($row && trim((string) ($row['started_at'] ?? '')) !== '') {
+            return (string) $row['started_at'];
+        }
+
+        return 'No hits recorded yet';
     }
 
     private function settings(): array

@@ -1,5 +1,15 @@
 <?php ob_start(); use App\Core\View; ?>
 <h2>Usage statistics</h2>
+
+<section class="panel">
+  <p><strong>Stats start:</strong> <?= View::e($stats_started_at ?? 'Unknown') ?></p>
+  <p class="muted">Resetting stats deletes tenant page-view/image-hit rows and starts a new reporting window. It does not delete images, subscribers, contact messages, or the IP location cache.</p>
+  <form method="post" action="/admin/stats/reset" onsubmit="return confirm('Reset all usage statistics for this tenant? This cannot be undone.');" class="row">
+    <label>Type RESET to confirm <input name="confirm" autocomplete="off"></label>
+    <button class="danger">Reset stats to zero</button>
+  </form>
+</section>
+
 <form method="get" class="panel row">
   <label>From <input name="from" type="date" value="<?= View::e($from) ?>"></label>
   <label>To <input name="to" type="date" value="<?= View::e($to) ?>"></label>

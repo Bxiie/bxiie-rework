@@ -48,3 +48,12 @@ Changes are committed and pushed to GitHub with `GH_TOKEN`, then production pull
 - Migration script: `scripts/migrate_exhibitions_messages_cleanup.php`.
 
 # End of file.
+
+## 2026-05-11 Stats reset update
+
+- Added `/admin/stats/reset` POST route.
+- Added tenant-scoped stats reset control on `/admin/stats`.
+- Reset deletes `page_views` for the current tenant and stores a new `stats_started_at` setting.
+- Stats page now displays the start time for the current reporting window.
+
+# End of file.

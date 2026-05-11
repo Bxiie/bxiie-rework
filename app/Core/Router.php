@@ -78,6 +78,7 @@ final class Router
             $path === '/admin/subscribers/export' => $controller->exportSubscribers(),
             $path === '/admin/users' => $controller->users($method),
             $path === '/admin/stats' => $controller->stats(),
+            $path === '/admin/stats/reset' => $controller->resetStats($method),
             default => $controller->notFound(),
         };
     }
