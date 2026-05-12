@@ -1,6 +1,11 @@
 ## Now
-- Email on contact message or email signup
-
+- The site does not load on a phone.  The site needs to work flawlessly on phones and tablets
+- The site should email site admin on contact message or email signup
+- Show aggregated hit graphs for days of the week and hours of the day for selected range on stats page
+- Allow showing portfolio sections as tabs at the top
+- Allow ordering of tabs
+- Add small as option for size of about and contact images
+- Allow background image and color for top bar
 
 
 
