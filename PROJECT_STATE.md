@@ -71,3 +71,9 @@
 - Added DomainArtifactRepository.
 - Updated render-vhost job handler to store rendered Apache vhost text before any future file writes.
 - Domain automation remains non-destructive: no Apache config writes, no Apache reloads, no Certbot calls.
+
+## 2026-05-15 17:10 Europe/Bucharest
+
+- Added approval transition for rendered domain artifacts.
+- Added manual script to approve the latest rendered artifact for a hostname.
+- Domain automation still does not write Apache configs, reload Apache, or invoke Certbot.

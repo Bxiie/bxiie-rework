@@ -50,6 +50,23 @@ final class DomainArtifactRepository
         return (int) $this->pdo->lastInsertId();
     }
 
+    public function approve(int $artifactId): void
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE domain_artifacts
+             SET status = 'approved',
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = :id
+               AND status = 'rendered'"
+        );
+
+        $stmt->execute(['id' => $artifactId]);
+
+        if ($stmt->rowCount() !== 1) {
+            throw new \RuntimeException("Artifact {$artifactId} was not approved. It may not exist or may not be in rendered status.");
+        }
+    }
+
     public function latestForHostname(string $hostname): ?array
     {
         $stmt = $this->pdo->prepare(
