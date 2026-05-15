@@ -33,3 +33,10 @@
 
 - Added TenantDomainRepository for platform subdomain and custom-domain persistence.
 - Added manual verification script for tenant domain creation, status updates, and listing.
+
+## 2026-05-15 14:30 Europe/Bucharest
+
+- Added BackgroundJobRepository for queued platform jobs.
+- Added background_jobs schema if missing from earlier migrations.
+- Added manual verification script for enqueue, claim, and complete behavior.
+- Background jobs will support later custom-domain DNS validation, Apache vhost automation, Certbot automation, image processing, email, and analytics rollups.
