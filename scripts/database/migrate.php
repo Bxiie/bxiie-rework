@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 /**
  * Runs unapplied SQL migrations against the configured MariaDB database.
+ * MariaDB DDL performs implicit commits, so migrations are not wrapped in a transaction.
  */
 
 $root = dirname(__DIR__, 2);
+
+require $root . '/bootstrap/app.php';
+
 $configFile = $root . '/config/database.php';
 
 if (!file_exists($configFile)) {
@@ -42,6 +46,7 @@ $pdo->exec("
 
 $applied = [];
 $stmt = $pdo->query('SELECT migration FROM schema_migrations');
+
 foreach ($stmt->fetchAll() as $row) {
     $applied[$row['migration']] = true;
 }
@@ -59,16 +64,13 @@ foreach ($files as $file) {
     $sql = file_get_contents($file);
 
     try {
-        $pdo->beginTransaction();
         $pdo->exec($sql);
 
         $insert = $pdo->prepare('INSERT INTO schema_migrations (migration) VALUES (:migration)');
         $insert->execute(['migration' => $name]);
 
-        $pdo->commit();
         echo "Applied: {$name}\n";
     } catch (Throwable $e) {
-        $pdo->rollBack();
         fwrite(STDERR, "Failed migration {$name}: {$e->getMessage()}\n");
         exit(1);
     }

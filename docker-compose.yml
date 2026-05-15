@@ -1,0 +1,17 @@
+services:
+  artsfolio-mariadb:
+    image: mariadb:11.4
+    container_name: artsfolio-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: artsfolio_root_dev
+      MARIADB_DATABASE: artsfolio
+      MARIADB_USER: artsfolio
+      MARIADB_PASSWORD: artsfolio_dev
+    ports:
+      - "3307:3306"
+    volumes:
+      - artsfolio_mariadb_data:/var/lib/mysql
+
+volumes:
+  artsfolio_mariadb_data:
