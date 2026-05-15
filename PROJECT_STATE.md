@@ -52,3 +52,9 @@
 - Added DomainAutomationService for non-destructive custom-domain automation queueing.
 - Added manual verification script for custom-domain DNS verification and vhost render job creation.
 - Domain automation still does not write Apache configs, reload Apache, or invoke Certbot.
+
+## 2026-05-15 16:00 Europe/Bucharest
+
+- Added read-only DNS verifier for tenant custom-domain A-record checks.
+- Updated DNS verification job handler to return actual and expected IPv4 address details.
+- Added ARTSFOLIO_EXPECTED_IPV4 environment variable placeholder.

@@ -9,6 +9,7 @@ declare(strict_types=1);
  */
 
 use App\Platform\Domains\ApacheVhostRenderer;
+use App\Platform\Domains\DnsVerifier;
 use App\Platform\Jobs\BackgroundJobRepository;
 use App\Platform\Jobs\Handlers\RenderVhostJobHandler;
 use App\Platform\Jobs\Handlers\VerifyDnsJobHandler;
@@ -31,7 +32,8 @@ if (!$job) {
 try {
     switch ($job['job_type']) {
         case 'custom_domain.verify_dns':
-            $handler = new VerifyDnsJobHandler();
+            $expectedIps = array_filter(array_map("trim", explode(",", getenv("ARTSFOLIO_EXPECTED_IPV4") ?: "127.0.0.1")));
+            $handler = new VerifyDnsJobHandler(new DnsVerifier($expectedIps));
             echo $handler->handle($job['payload']) . "\n";
             $jobs->markComplete((int) $job['id']);
             break;
