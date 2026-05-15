@@ -9,6 +9,7 @@ declare(strict_types=1);
  */
 
 use App\Platform\Domains\ApacheVhostRenderer;
+use App\Platform\Domains\DomainArtifactRepository;
 use App\Platform\Domains\DnsVerifier;
 use App\Platform\Jobs\BackgroundJobRepository;
 use App\Platform\Jobs\Handlers\RenderVhostJobHandler;
@@ -40,8 +41,8 @@ try {
             break;
 
         case 'custom_domain.render_vhost':
-            $handler = new RenderVhostJobHandler(new ApacheVhostRenderer());
-            echo $handler->handle($job['payload']) . "\n";
+            $handler = new RenderVhostJobHandler(new ApacheVhostRenderer(), new DomainArtifactRepository($pdo), new TenantDomainRepository($pdo));
+            echo $handler->handle($job['payload'], isset($job['tenant_id']) ? (int) $job['tenant_id'] : null) . "\n";
             $jobs->markComplete((int) $job['id']);
             break;
 

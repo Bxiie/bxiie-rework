@@ -64,3 +64,10 @@
 - Verified custom-domain automation ordering fix.
 - Non-verifying domains remain pending_dns after DNS check.
 - Non-verifying domains do not queue custom_domain.render_vhost jobs.
+
+## 2026-05-15 16:55 Europe/Bucharest
+
+- Added domain_artifacts table for inspectable generated domain automation artifacts.
+- Added DomainArtifactRepository.
+- Updated render-vhost job handler to store rendered Apache vhost text before any future file writes.
+- Domain automation remains non-destructive: no Apache config writes, no Apache reloads, no Certbot calls.
