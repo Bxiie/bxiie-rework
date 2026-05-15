@@ -46,3 +46,9 @@
 - Added ApacheVhostRenderer for dry-run tenant custom-domain vhost rendering.
 - Vhost rendering currently outputs HTTP-only redirect vhost text and does not write files, reload Apache, or request certificates.
 - Custom-domain automation remains intentionally non-destructive at this stage.
+
+## 2026-05-15 15:00 Europe/Bucharest
+
+- Added DomainAutomationService for non-destructive custom-domain automation queueing.
+- Added manual verification script for custom-domain DNS verification and vhost render job creation.
+- Domain automation still does not write Apache configs, reload Apache, or invoke Certbot.
