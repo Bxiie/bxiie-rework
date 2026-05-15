@@ -26,3 +26,7 @@
 
 - Added TenantSettingsRepository for tenant-scoped client settings.
 - Added manual verification script for tenant setting reads and upserts.
+
+- Added PlatformSettingsRepository for parent/platform settings.
+- Added manual verification script for platform setting reads and upserts.
+- Platform settings and tenant/client settings now have separate repository boundaries.
