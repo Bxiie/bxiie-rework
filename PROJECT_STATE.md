@@ -58,3 +58,9 @@
 - Added read-only DNS verifier for tenant custom-domain A-record checks.
 - Updated DNS verification job handler to return actual and expected IPv4 address details.
 - Added ARTSFOLIO_EXPECTED_IPV4 environment variable placeholder.
+
+## 2026-05-15 16:40 Europe/Bucharest
+
+- Verified custom-domain automation ordering fix.
+- Non-verifying domains remain pending_dns after DNS check.
+- Non-verifying domains do not queue custom_domain.render_vhost jobs.

@@ -32,6 +32,11 @@ final class DomainAutomationService
             isPrimary: false,
         );
 
+        return $this->queueDnsVerification($tenant, $hostname);
+    }
+
+    public function queueDnsVerification(TenantContext $tenant, string $hostname): int
+    {
         return $this->jobs->enqueue(
             jobType: 'custom_domain.verify_dns',
             payload: [

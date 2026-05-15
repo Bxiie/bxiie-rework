@@ -34,13 +34,11 @@ $service = new DomainAutomationService(
 );
 
 $verifyJobId = $service->requestCustomDomain($tenant, $customDomain);
-$renderJobId = $service->queueVhostRender($tenant, $customDomain);
 
 echo json_encode([
     'tenant' => $tenant->slug,
     'custom_domain' => $customDomain,
     'verify_dns_job_id' => $verifyJobId,
-    'render_vhost_job_id' => $renderJobId,
 ], JSON_PRETTY_PRINT) . PHP_EOL;
 
 // End of file.

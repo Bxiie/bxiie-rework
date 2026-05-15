@@ -13,6 +13,7 @@ use App\Platform\Domains\DnsVerifier;
 use App\Platform\Jobs\BackgroundJobRepository;
 use App\Platform\Jobs\Handlers\RenderVhostJobHandler;
 use App\Platform\Jobs\Handlers\VerifyDnsJobHandler;
+use App\Platform\Tenancy\TenantDomainRepository;
 use App\Support\Database;
 
 $root = dirname(__DIR__, 2);
@@ -33,8 +34,8 @@ try {
     switch ($job['job_type']) {
         case 'custom_domain.verify_dns':
             $expectedIps = array_filter(array_map("trim", explode(",", getenv("ARTSFOLIO_EXPECTED_IPV4") ?: "127.0.0.1")));
-            $handler = new VerifyDnsJobHandler(new DnsVerifier($expectedIps));
-            echo $handler->handle($job['payload']) . "\n";
+            $handler = new VerifyDnsJobHandler(new DnsVerifier($expectedIps), new TenantDomainRepository($pdo), $jobs);
+            echo $handler->handle($job['payload'], isset($job['tenant_id']) ? (int) $job['tenant_id'] : null) . "\n";
             $jobs->markComplete((int) $job['id']);
             break;
 
