@@ -40,3 +40,9 @@
 - Added background_jobs schema if missing from earlier migrations.
 - Added manual verification script for enqueue, claim, and complete behavior.
 - Background jobs will support later custom-domain DNS validation, Apache vhost automation, Certbot automation, image processing, email, and analytics rollups.
+
+## 2026-05-15 14:45 Europe/Bucharest
+
+- Added ApacheVhostRenderer for dry-run tenant custom-domain vhost rendering.
+- Vhost rendering currently outputs HTTP-only redirect vhost text and does not write files, reload Apache, or request certificates.
+- Custom-domain automation remains intentionally non-destructive at this stage.
