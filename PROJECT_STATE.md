@@ -30,3 +30,6 @@
 - Added PlatformSettingsRepository for parent/platform settings.
 - Added manual verification script for platform setting reads and upserts.
 - Platform settings and tenant/client settings now have separate repository boundaries.
+
+- Added TenantDomainRepository for platform subdomain and custom-domain persistence.
+- Added manual verification script for tenant domain creation, status updates, and listing.
