@@ -77,3 +77,10 @@
 - Added approval transition for rendered domain artifacts.
 - Added manual script to approve the latest rendered artifact for a hostname.
 - Domain automation still does not write Apache configs, reload Apache, or invoke Certbot.
+
+## 2026-05-15 17:25 Europe/Bucharest
+
+- Added ApacheVhostWritePlanner for dry-run approved vhost write planning.
+- Added WriteApprovedVhostJobHandler for non-destructive write planning.
+- Added queue script for custom_domain.write_approved_vhost jobs.
+- Vhost write flow still does not write files, enable Apache sites, reload Apache, or invoke Certbot.

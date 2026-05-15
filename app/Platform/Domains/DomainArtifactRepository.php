@@ -67,6 +67,41 @@ final class DomainArtifactRepository
         }
     }
 
+    public function latestApprovedForHostname(string $hostname): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT *
+             FROM domain_artifacts
+             WHERE hostname = :hostname
+               AND status = 'approved'
+             ORDER BY id DESC
+             LIMIT 1"
+        );
+
+        $stmt->execute(['hostname' => strtolower(trim($hostname))]);
+
+        $row = $stmt->fetch();
+
+        return $row ?: null;
+    }
+
+    public function markWritten(int $artifactId): void
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE domain_artifacts
+             SET status = 'written',
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = :id
+               AND status = 'approved'"
+        );
+
+        $stmt->execute(['id' => $artifactId]);
+
+        if ($stmt->rowCount() !== 1) {
+            throw new \RuntimeException("Artifact {$artifactId} was not marked written. It may not exist or may not be approved.");
+        }
+    }
+
     public function latestForHostname(string $hostname): ?array
     {
         $stmt = $this->pdo->prepare(
