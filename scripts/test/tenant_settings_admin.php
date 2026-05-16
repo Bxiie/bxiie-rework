@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Manual verification script for tenant settings repository behavior used by tenant admin.
+ */
+
+use App\Platform\Tenancy\TenantResolver;
+use App\Support\Database;
+use App\Tenant\Settings\TenantSettingsRepository;
+
+$root = dirname(__DIR__, 2);
+require $root . '/bootstrap/app.php';
+
+$pdo = Database::connect($root);
+$resolver = new TenantResolver($pdo);
+$tenant = $resolver->resolveFromHost('bxiie.com');
+
+if (!$tenant) {
+    fwrite(STDERR, "Missing bxiie tenant.\n");
+    exit(1);
+}
+
+$settings = new TenantSettingsRepository($pdo);
+
+$settings->set($tenant, 'site_title', 'Bxiie Test Title');
+$settings->set($tenant, 'site_admin_email', 'tenant-admin@example.test');
+
+echo json_encode([
+    'tenant_id' => $tenant->tenantId,
+    'site_title' => $settings->get($tenant, 'site_title'),
+    'site_admin_email' => $settings->get($tenant, 'site_admin_email'),
+], JSON_PRETTY_PRINT) . PHP_EOL;
+
+// End of file.

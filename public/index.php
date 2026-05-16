@@ -14,6 +14,7 @@ use App\Http\Controllers\Platform\HomeController as PlatformHomeController;
 use App\Http\Controllers\Tenant\HomeController as TenantHomeController;
 use App\Http\Controllers\Tenant\SignupController;
 use App\Http\Controllers\Tenant\Admin\DashboardController as TenantAdminDashboardController;
+use App\Http\Controllers\Tenant\Admin\SettingsController as TenantAdminSettingsController;
 use App\Http\Controllers\Tenant\ContactController;
 use App\Http\Middleware\BearerTokenAuth;
 use App\Http\Middleware\CurrentUser;
@@ -120,6 +121,8 @@ try {
         $router->get('/artwork/{slug}', fn (Request $request, array $params): Response => $tenantController->artwork($request, $tenant, (string) $params['slug']));
         $router->get('/about', fn (Request $request): Response => $tenantController->about($request, $tenant));
         $router->get('/admin', fn (Request $request): Response => (new TenantAdminDashboardController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
+        $router->get('/admin/settings', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf))->edit($request, $tenant, $currentUser));
+        $router->post('/admin/settings', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf))->update($request, $tenant, $currentUser));
         $router->get('/contact', fn (Request $request): Response => $tenantController->contact($request, $tenant));
         $router->post('/contact', fn (Request $request): Response => $contactController->submit($request, $tenant));
         $router->post('/signup', fn (Request $request): Response => $signupController->submit($request, $tenant));

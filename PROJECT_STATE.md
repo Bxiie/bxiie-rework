@@ -330,3 +330,12 @@
 - Added manual tenant role verification script.
 - Added dev/admin documentation for tenant admin routes.
 - Tenant admin remains separate from platform admin.
+
+## 2026-05-16 20:45 Europe/Bucharest
+
+- Added tenant admin settings controller.
+- Added tenant GET/POST /admin/settings routes.
+- Added editable tenant site_title and site_admin_email settings.
+- Tenant settings route requires tenant owner or tenant admin role.
+- Added manual tenant settings verification script.
+- Added dev/admin/user documentation for tenant admin settings.
