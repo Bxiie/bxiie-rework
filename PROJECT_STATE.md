@@ -187,3 +187,9 @@
 - Wired tenant API route to enforce owner, admin, editor, or viewer membership.
 - Added manual tenant role API access verification script.
 - Added dev/admin documentation for tenant role API access.
+
+## 2026-05-16 15:25 Europe/Bucharest
+
+- Added AuditLogRepository for structured audit log writes.
+- Added manual audit log verification script.
+- Added dev/admin documentation for API audit logging.
