@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
+use App\Platform\Security\RateLimiter;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Contact\ContactMessageService;
 
@@ -18,6 +19,7 @@ final class ContactController
     public function __construct(
         private readonly ContactMessageService $messages,
         private readonly CsrfTokenService $csrf,
+        private readonly ?RateLimiter $rateLimiter = null,
     ) {
     }
 
@@ -25,6 +27,10 @@ final class ContactController
     {
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
             return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+        if ($this->rateLimiter && !$this->rateLimiter->allow($this->rateKey($request, $tenant), 5, 300)) {
+            return Response::html('<h1>Too many submissions</h1><p>Please wait a few minutes and try again.</p>', 429);
         }
 
         $senderName = trim((string) ($_POST['name'] ?? ''));
@@ -65,6 +71,12 @@ final class ContactController
 </body>
 </html>
 HTML);
+    }
+    private function rateKey(Request $request, TenantContext $tenant): string
+    {
+        $ip = $request->server('REMOTE_ADDR', 'unknown');
+
+        return 'contact:' . $tenant->tenantId . ':' . $ip;
     }
 }
 

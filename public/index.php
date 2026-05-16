@@ -31,6 +31,7 @@ use App\Platform\Identity\PasswordHasher;
 use App\Platform\Identity\UserIdentityRepository;
 use App\Platform\Identity\UserRepository;
 use App\Platform\Membership\MembershipRepository;
+use App\Platform\Security\RateLimiter;
 use App\Platform\Tenancy\TenantResolver;
 use App\Support\Database;
 use App\Support\Security\CsrfTokenService;
@@ -88,6 +89,7 @@ try {
             new TenantSettingsRepository($pdo),
             new ArtworkReadRepository($pdo),
             $csrf,
+            new RateLimiter($pdo),
         );
 
         $contactController = new ContactController(
@@ -96,6 +98,7 @@ try {
                 new ContactNotificationService($emailOutbox, $tenantSettings),
             ),
             $csrf,
+            new RateLimiter($pdo),
         );
 
         $signupController = new SignupController(
@@ -104,6 +107,7 @@ try {
                 new SignupNotificationService($emailOutbox, $tenantSettings),
             ),
             $csrf,
+            new RateLimiter($pdo),
         );
 
         $router = new Router();

@@ -277,3 +277,11 @@
 - Public contact submissions now persist contact messages and queue notifications.
 - Public signup submissions now persist email signups and queue notifications.
 - Added dev/admin/user documentation for public contact and signup routes.
+
+## 2026-05-16 18:40 Europe/Bucharest
+
+- Added rate_limits table.
+- Added database-backed fixed-window RateLimiter.
+- Added rate limiting to tenant public contact and signup POST routes.
+- Added manual rate limiter verification script.
+- Added dev/admin documentation for rate limiting.
