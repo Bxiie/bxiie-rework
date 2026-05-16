@@ -193,3 +193,10 @@
 - Added AuditLogRepository for structured audit log writes.
 - Added manual audit log verification script.
 - Added dev/admin documentation for API audit logging.
+
+## 2026-05-16 15:40 Europe/Bucharest
+
+- Wired AuditLogRepository into tenant GET /api/me controller path.
+- Tenant API denied-access paths now record audit_log rows when missing token, missing scope, wrong tenant token, or missing tenant membership role occurs.
+- Added manual script to inspect recent tenant API denial audit records.
+- Added development documentation for API denial audit flow.

@@ -18,6 +18,7 @@ use App\Http\Middleware\RequireTenantRole;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\Router;
+use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Auth\OAuth\BearerTokenRepository;
 use App\Platform\Auth\OAuth\BearerTokenService;
 use App\Platform\Auth\Password\PasswordAuthService;
@@ -80,7 +81,7 @@ try {
         $router->get('/artwork/{slug}', fn (Request $request, array $params): Response => $tenantController->artwork($request, $tenant, (string) $params['slug']));
         $router->get('/about', fn (Request $request): Response => $tenantController->about($request, $tenant));
         $router->get('/contact', fn (Request $request): Response => $tenantController->contact($request, $tenant));
-        $router->get('/api/me', fn (Request $request): Response => (new TenantMeController(tenantRoles: new RequireTenantRole(new MembershipRepository($pdo))))->show($request, $bearerToken, $tenant));
+        $router->get('/api/me', fn (Request $request): Response => (new TenantMeController(tenantRoles: new RequireTenantRole(new MembershipRepository($pdo)), auditLog: new AuditLogRepository($pdo)))->show($request, $bearerToken, $tenant));
 
         $router->dispatch($request)->send();
         exit;
