@@ -7,7 +7,7 @@ namespace App\Platform\Settings;
 use PDO;
 
 /**
- * Handles platform-scoped settings persistence.
+ * Stores platform-level settings that are not tenant/client-owned.
  */
 final class PlatformSettingsRepository
 {
@@ -32,7 +32,7 @@ final class PlatformSettingsRepository
         return $row ? (string) $row['setting_value'] : $default;
     }
 
-    public function set(string $key, ?string $value): void
+    public function set(string $key, string $value): void
     {
         $stmt = $this->pdo->prepare(
             "INSERT INTO platform_settings (
@@ -63,13 +63,7 @@ final class PlatformSettingsRepository
              ORDER BY setting_key"
         );
 
-        $settings = [];
-
-        foreach ($stmt->fetchAll() as $row) {
-            $settings[(string) $row['setting_key']] = $row['setting_value'];
-        }
-
-        return $settings;
+        return $stmt->fetchAll();
     }
 }
 
