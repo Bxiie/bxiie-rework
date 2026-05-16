@@ -260,3 +260,11 @@
 - Notifications queue email_outbox rows for tenant site_admin_email.
 - Added manual tenant notification verification script.
 - Added tenant notification templates and dev/admin/user documentation.
+
+## 2026-05-16 18:00 Europe/Bucharest
+
+- Added contact_messages and email_signups tables.
+- Added ContactMessageRepository and EmailSignupRepository.
+- Added ContactMessageService and EmailSignupService to persist records before queueing notifications.
+- Added manual persistence verification script.
+- Added dev/admin/user documentation for contact messages and email signups.
