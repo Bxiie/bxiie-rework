@@ -117,3 +117,11 @@
 - Added user, identity, password hashing, membership repository, and membership service classes.
 - Added manual verification scripts for auth architecture and identity/membership behavior.
 - Added dev, admin, user, and auth template documentation for identity and membership.
+
+## 2026-05-16 10:25 Europe/Bucharest
+
+- Added local email/password authentication service foundation.
+- Added session token generation and hashed session persistence.
+- Added manual verification script for password registration, login, and active session lookup.
+- Documented local password authentication for dev, admin, and user audiences.
+- Authentication posture remains: OAuth/OIDC and local email/password are both supported; APIs use OAuth2 bearer tokens.
