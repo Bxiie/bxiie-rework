@@ -285,3 +285,8 @@
 - Added rate limiting to tenant public contact and signup POST routes.
 - Added manual rate limiter verification script.
 - Added dev/admin documentation for rate limiting.
+
+## 2026-05-16 18:50 Europe/Bucharest
+
+- Repaired local migration bookkeeping after 0009_contact_signup_records.sql had created tables without being recorded in schema_migrations.
+- Applied 0010_rate_limits.sql successfully after marking 0009 as applied.
