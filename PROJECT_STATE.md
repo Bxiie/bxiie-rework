@@ -84,3 +84,9 @@
 - Added WriteApprovedVhostJobHandler for non-destructive write planning.
 - Added queue script for custom_domain.write_approved_vhost jobs.
 - Vhost write flow still does not write files, enable Apache sites, reload Apache, or invoke Certbot.
+
+## 2026-05-15 17:40 Europe/Bucharest
+
+- Added AppEnvironment helper for runtime environment safety checks.
+- Future infrastructure-mutating workflows can require APP_ENV=production before writing Apache configs, reloading services, or invoking Certbot.
+- Current development remains local on /Users/bxiie/Dropbox/tcdev/artsfolio.
