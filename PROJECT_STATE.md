@@ -378,3 +378,16 @@
 ## 2026-05-16 22:15 Europe/Bucharest
 
 - Updated ContactMessageRepository to populate required contact_messages.uuid during inserts.
+
+## 2026-05-16 22:25 Europe/Bucharest
+
+- Added CSV response helper.
+- Added tenant admin contact messages CSV export.
+- Added tenant admin email signups CSV export.
+- Added export links to tenant admin list screens.
+- Added dev/admin/user documentation for tenant CSV exports.
+
+## 2026-05-16 22:35 Europe/Bucharest
+
+- Fixed CSV helper for PHP 8.5 fputcsv escape argument.
+- Fixed CSV smoke test to capture Response::send output instead of calling nonexistent Response::body().
