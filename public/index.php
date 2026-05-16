@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\PasswordAuthController;
 use App\Http\Controllers\Platform\Admin\DashboardController as PlatformAdminDashboardController;
 use App\Http\Controllers\Platform\Admin\SettingsController as PlatformAdminSettingsController;
 use App\Http\Controllers\Platform\Admin\EmailOutboxController as PlatformAdminEmailOutboxController;
+use App\Http\Controllers\Platform\Admin\AuditLogController as PlatformAdminAuditLogController;
 use App\Http\Controllers\Platform\Admin\TenantsController as PlatformAdminTenantsController;
 use App\Http\Controllers\Platform\HomeController as PlatformHomeController;
 use App\Http\Controllers\Tenant\HomeController as TenantHomeController;
@@ -146,6 +147,7 @@ try {
     $router->get('/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
     $router->get('/admin/tenants', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo)))->index($request, $currentUser));
     $router->get('/admin/email-outbox', fn (Request $request): Response => (new PlatformAdminEmailOutboxController(new RequirePlatformRole(new MembershipRepository($pdo)), new EmailOutboxRepository($pdo)))->index($request, $currentUser));
+    $router->get('/admin/audit-log', fn (Request $request): Response => (new PlatformAdminAuditLogController(new RequirePlatformRole(new MembershipRepository($pdo)), new AuditLogRepository($pdo)))->index($request, $currentUser));
     $router->get('/admin/platform-settings', fn (Request $request): Response => (new PlatformAdminSettingsController(new RequirePlatformRole(new MembershipRepository($pdo)), new PlatformSettingsRepository($pdo), new CsrfTokenService()))->edit($request, $currentUser));
     $router->post('/admin/platform-settings', fn (Request $request): Response => (new PlatformAdminSettingsController(new RequirePlatformRole(new MembershipRepository($pdo)), new PlatformSettingsRepository($pdo), new CsrfTokenService()))->update($request, $currentUser));
     $router->get('/login', fn (Request $request): Response => $passwordAuthController->loginForm($request));

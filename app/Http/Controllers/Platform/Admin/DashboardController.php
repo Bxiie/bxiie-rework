@@ -43,7 +43,7 @@ final class DashboardController
     <li><a href="/admin/tenants">Tenants</a></li>
     <li>Custom domains: coming soon</li>
     <li><a href="/admin/email-outbox">Email outbox</a></li>
-    <li>Audit log: coming soon</li>
+    <li><a href="/admin/audit-log">Audit log</a></li>
 </ul>
 </body>
 </html>

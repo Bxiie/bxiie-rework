@@ -358,3 +358,11 @@
 - Added dashboard links for tenants and email outbox.
 - Added manual platform admin list verification script.
 - Added dev/admin documentation for platform admin lists.
+
+## 2026-05-16 21:45 Europe/Bucharest
+
+- Added platform admin audit log list screen.
+- Added GET /admin/audit-log route.
+- Added dashboard link for audit log.
+- Added manual audit log list verification script.
+- Added dev/admin documentation for platform audit log screen.
