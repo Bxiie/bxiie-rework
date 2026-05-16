@@ -96,3 +96,13 @@
 - Added explicit dry_run payload handling to approved vhost write jobs.
 - custom_domain.write_approved_vhost refuses real Apache writes because production writer is not implemented yet.
 - Local development remains non-destructive on the dev workstation.
+
+## 2026-05-16 09:00 Europe/Bucharest
+
+- Added first HTTP front controller at public/index.php.
+- Added minimal Request, Response, and Router classes.
+- Added tenant resolution middleware for Host-header based routing.
+- Added placeholder platform marketing routes.
+- Added placeholder tenant public routes.
+- Added development, admin, and user documentation for HTTP routing.
+- HTTP routing remains local-development safe and does not mutate infrastructure.
