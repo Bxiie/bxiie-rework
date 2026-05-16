@@ -321,3 +321,12 @@
 ## 2026-05-16 20:15 Europe/Bucharest
 
 - Added missing MembershipRepository::platformRolesForUser required by platform admin role middleware.
+
+## 2026-05-16 20:25 Europe/Bucharest
+
+- Added tenant admin browser role middleware.
+- Added protected placeholder tenant GET /admin route.
+- Added tenant admin dashboard placeholder controller.
+- Added manual tenant role verification script.
+- Added dev/admin documentation for tenant admin routes.
+- Tenant admin remains separate from platform admin.
