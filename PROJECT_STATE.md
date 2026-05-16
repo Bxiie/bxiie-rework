@@ -166,3 +166,10 @@
 - Added missing OAuth token schema required by API bearer authentication.
 - Added oauth_clients, oauth_access_tokens, and oauth_refresh_tokens tables.
 - Verified API bearer token development script depends on this schema.
+
+## 2026-05-16 14:05 Europe/Bucharest
+
+- Added RequireScope middleware for OAuth2 bearer-token scope checks.
+- Updated GET /api/me to require api:read.
+- Added manual scope verification script.
+- Added API scope documentation for dev and admin audiences.
