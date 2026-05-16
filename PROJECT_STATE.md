@@ -252,3 +252,11 @@
 - Updated email worker to use configured sender.
 - Added sender factory verification script.
 - Added dev/admin documentation for email sender selection.
+
+## 2026-05-16 17:40 Europe/Bucharest
+
+- Added tenant contact notification service.
+- Added tenant email signup notification service.
+- Notifications queue email_outbox rows for tenant site_admin_email.
+- Added manual tenant notification verification script.
+- Added tenant notification templates and dev/admin/user documentation.
