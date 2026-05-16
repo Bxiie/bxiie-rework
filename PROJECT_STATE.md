@@ -125,3 +125,8 @@
 - Added manual verification script for password registration, login, and active session lookup.
 - Documented local password authentication for dev, admin, and user audiences.
 - Authentication posture remains: OAuth/OIDC and local email/password are both supported; APIs use OAuth2 bearer tokens.
+
+## 2026-05-16 10:40 Europe/Bucharest
+
+- Added missing user_sessions migration required by local password authentication.
+- Verified password auth depends on identity/membership schema plus user_sessions.
