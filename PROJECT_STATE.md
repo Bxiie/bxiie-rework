@@ -223,3 +223,13 @@
 - Added manual email verification script.
 - Added dev/admin/user documentation and verification email template.
 - Email delivery and browser verification routes are not wired yet.
+
+## 2026-05-16 16:45 Europe/Bucharest
+
+- Added email_outbox table for queued outbound email.
+- Added EmailOutboxRepository, TemplateRenderer, and LifecycleEmailService.
+- Added queued password reset, email verification, and welcome email support.
+- Added welcome lifecycle template.
+- Added manual email outbox verification script.
+- Added dev/admin/user email outbox documentation.
+- Email delivery provider and worker are not wired yet.
