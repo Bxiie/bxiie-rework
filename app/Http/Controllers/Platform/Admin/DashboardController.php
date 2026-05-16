@@ -40,9 +40,9 @@ final class DashboardController
 <p>Signed in as {$email}</p>
 
 <ul>
-    <li>Tenants: coming soon</li>
+    <li><a href="/admin/tenants">Tenants</a></li>
     <li>Custom domains: coming soon</li>
-    <li>Email outbox: coming soon</li>
+    <li><a href="/admin/email-outbox">Email outbox</a></li>
     <li>Audit log: coming soon</li>
 </ul>
 </body>

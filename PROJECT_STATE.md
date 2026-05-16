@@ -339,3 +339,22 @@
 - Tenant settings route requires tenant owner or tenant admin role.
 - Added manual tenant settings verification script.
 - Added dev/admin/user documentation for tenant admin settings.
+
+## 2026-05-16 21:05 Europe/Bucharest
+
+- Added platform_settings table.
+- Added PlatformSettingsRepository.
+- Added platform admin settings controller.
+- Added platform GET/POST /admin/platform-settings routes.
+- Added editable platform_name, support_email, and expected_ipv4 settings.
+- Platform settings require platform owner/admin role.
+- Added dev/admin/user documentation for platform settings.
+
+## 2026-05-16 21:25 Europe/Bucharest
+
+- Added TenantAdminRepository for platform tenant list reads.
+- Added platform admin tenant list screen.
+- Added platform admin email outbox list screen.
+- Added dashboard links for tenants and email outbox.
+- Added manual platform admin list verification script.
+- Added dev/admin documentation for platform admin lists.
