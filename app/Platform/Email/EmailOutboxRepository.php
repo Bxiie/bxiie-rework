@@ -66,6 +66,46 @@ final class EmailOutboxRepository
         return (int) $this->pdo->lastInsertId();
     }
 
+    public function claimNext(): ?array
+    {
+        $this->pdo->beginTransaction();
+
+        try {
+            $stmt = $this->pdo->query(
+                "SELECT *
+                 FROM email_outbox
+                 WHERE status = 'queued'
+                   AND available_at <= CURRENT_TIMESTAMP
+                 ORDER BY available_at ASC, id ASC
+                 LIMIT 1
+                 FOR UPDATE"
+            );
+
+            $email = $stmt->fetch();
+
+            if (!$email) {
+                $this->pdo->commit();
+                return null;
+            }
+
+            $update = $this->pdo->prepare(
+                "UPDATE email_outbox
+                 SET status = 'sending',
+                     attempts = attempts + 1,
+                     updated_at = CURRENT_TIMESTAMP
+                 WHERE id = :id"
+            );
+
+            $update->execute(['id' => $email['id']]);
+            $this->pdo->commit();
+
+            return $email;
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
     public function latest(int $limit = 20): array
     {
         $stmt = $this->pdo->prepare(
@@ -109,6 +149,21 @@ final class EmailOutboxRepository
             'id' => $emailId,
             'last_error' => $error,
         ]);
+    }
+
+    public function requeueSendingOlderThanMinutes(int $minutes): int
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE email_outbox
+             SET status = 'queued',
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE status = 'sending'
+               AND updated_at < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL :minutes MINUTE)"
+        );
+
+        $stmt->execute(['minutes' => $minutes]);
+
+        return $stmt->rowCount();
     }
 }
 

@@ -233,3 +233,12 @@
 - Added manual email outbox verification script.
 - Added dev/admin/user email outbox documentation.
 - Email delivery provider and worker are not wired yet.
+
+## 2026-05-16 17:00 Europe/Bucharest
+
+- Added dry-run email worker for email_outbox.
+- Added claimNext support for queued email rows.
+- Added DryRunEmailSender.
+- Added email outbox status inspection script.
+- Added dev/admin documentation for email worker behavior.
+- Email delivery remains non-destructive and does not contact SMTP or external providers.
