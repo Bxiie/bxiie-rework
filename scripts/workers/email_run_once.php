@@ -3,18 +3,18 @@
 declare(strict_types=1);
 
 /**
- * Claims and dry-runs one queued email outbox row.
+ * Claims and sends one queued email outbox row using the configured email sender.
  */
 
-use App\Platform\Email\DryRunEmailSender;
 use App\Platform\Email\EmailOutboxRepository;
+use App\Platform\Email\EmailSenderFactory;
 use App\Support\Database;
 
 $root = dirname(__DIR__, 2);
 require $root . '/bootstrap/app.php';
 
 $outbox = new EmailOutboxRepository(Database::connect($root));
-$sender = new DryRunEmailSender();
+$sender = EmailSenderFactory::fromEnvironment();
 
 $email = $outbox->claimNext();
 

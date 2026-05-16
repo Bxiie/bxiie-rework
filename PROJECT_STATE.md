@@ -242,3 +242,13 @@
 - Added email outbox status inspection script.
 - Added dev/admin documentation for email worker behavior.
 - Email delivery remains non-destructive and does not contact SMTP or external providers.
+
+## 2026-05-16 17:20 Europe/Bucharest
+
+- Added EmailSenderInterface.
+- Updated DryRunEmailSender to implement sender contract.
+- Added basic SmtpEmailSender for Mailhog-style local SMTP testing.
+- Added EmailSenderFactory using EMAIL_DRIVER.
+- Updated email worker to use configured sender.
+- Added sender factory verification script.
+- Added dev/admin documentation for email sender selection.

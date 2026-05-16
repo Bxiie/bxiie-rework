@@ -9,7 +9,7 @@ namespace App\Platform\Email;
  *
  * This sender does not contact SMTP or external email providers.
  */
-final class DryRunEmailSender
+final class DryRunEmailSender implements EmailSenderInterface
 {
     public function send(array $email): string
     {
