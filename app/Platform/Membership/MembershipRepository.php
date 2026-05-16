@@ -65,6 +65,24 @@ final class MembershipRepository
         return array_map(static fn (array $row): string => (string) $row['slug'], $stmt->fetchAll());
     }
 
+
+    public function platformRolesForUser(int $userId): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT r.slug
+             FROM role_assignments ra
+             JOIN roles r ON r.id = ra.role_id
+             WHERE ra.user_id = :user_id
+               AND ra.tenant_id IS NULL
+               AND r.scope = 'platform'
+             ORDER BY r.slug"
+        );
+
+        $stmt->execute(['user_id' => $userId]);
+
+        return array_map(static fn (array $row): string => (string) $row['slug'], $stmt->fetchAll());
+    }
+
     private function findRole(string $scope, string $slug): ?array
     {
         $stmt = $this->pdo->prepare("SELECT * FROM roles WHERE scope = :scope AND slug = :slug LIMIT 1");

@@ -309,3 +309,15 @@
 - Smoke test starts local PHP dev server, checks platform routes, tenant routes, and unauthorized API behavior.
 - Added HTTP smoke test to preflight when available.
 - Added dev/admin documentation for HTTP smoke tests.
+
+## 2026-05-16 20:05 Europe/Bucharest
+
+- Added platform admin role middleware.
+- Added protected placeholder GET /admin platform route.
+- Added platform admin dashboard placeholder controller.
+- Added manual platform role verification script.
+- Added dev/admin documentation for platform admin routes.
+
+## 2026-05-16 20:15 Europe/Bucharest
+
+- Added missing MembershipRepository::platformRolesForUser required by platform admin role middleware.
