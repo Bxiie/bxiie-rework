@@ -10,7 +10,7 @@ use App\Platform\Domains\DomainArtifactRepository;
 /**
  * Handles dry-run planning for writing an approved Apache vhost artifact.
  *
- * This handler does not write files, enable sites, reload Apache, or invoke Certbot.
+ * Real Apache writes are intentionally not implemented yet.
  */
 final class WriteApprovedVhostJobHandler
 {
@@ -23,9 +23,14 @@ final class WriteApprovedVhostJobHandler
     public function handle(array $payload): string
     {
         $hostname = (string) ($payload['hostname'] ?? '');
+        $dryRun = (bool) ($payload['dry_run'] ?? true);
 
         if ($hostname === '') {
             throw new \InvalidArgumentException('Missing hostname in write approved vhost payload.');
+        }
+
+        if (!$dryRun) {
+            throw new \RuntimeException('Real Apache vhost writes are not implemented. Requeue with dry_run=true.');
         }
 
         $artifact = $this->artifacts->latestApprovedForHostname($hostname);

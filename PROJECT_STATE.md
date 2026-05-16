@@ -90,3 +90,9 @@
 - Added AppEnvironment helper for runtime environment safety checks.
 - Future infrastructure-mutating workflows can require APP_ENV=production before writing Apache configs, reloading services, or invoking Certbot.
 - Current development remains local on /Users/bxiie/Dropbox/tcdev/artsfolio.
+
+## 2026-05-15 17:50 Europe/Bucharest
+
+- Added explicit dry_run payload handling to approved vhost write jobs.
+- custom_domain.write_approved_vhost refuses real Apache writes because production writer is not implemented yet.
+- Local development remains non-destructive on the dev workstation.

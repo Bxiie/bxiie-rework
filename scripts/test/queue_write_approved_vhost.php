@@ -16,9 +16,10 @@ require $root . '/bootstrap/app.php';
 
 $tenantHost = $argv[1] ?? 'bxiie.com';
 $customDomain = $argv[2] ?? null;
+$dryRun = ($argv[3] ?? 'true') !== 'false';
 
 if (!$customDomain) {
-    fwrite(STDERR, "Usage: php scripts/test/queue_write_approved_vhost.php bxiie.com artifact-test.example\n");
+    fwrite(STDERR, "Usage: php scripts/test/queue_write_approved_vhost.php bxiie.com artifact-test.example [true|false]\n");
     exit(1);
 }
 
@@ -37,10 +38,11 @@ $jobId = $jobs->enqueue(
     jobType: 'custom_domain.write_approved_vhost',
     payload: [
         'hostname' => $customDomain,
+        'dry_run' => $dryRun,
     ],
     tenantId: $tenant->tenantId,
 );
 
-echo "Queued write approved vhost dry-run job {$jobId} for {$customDomain}\n";
+echo "Queued write approved vhost job {$jobId} for {$customDomain} with dry_run=" . ($dryRun ? 'true' : 'false') . "\n";
 
 // End of file.
