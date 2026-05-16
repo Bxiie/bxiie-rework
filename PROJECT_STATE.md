@@ -215,3 +215,11 @@
 - Added manual password reset verification script.
 - Added dev/admin/user documentation and password reset email template.
 - Password reset UI and email delivery are not wired yet.
+
+## 2026-05-16 16:25 Europe/Bucharest
+
+- Added local account email verification backend foundation.
+- Added hashed email verification token repository and verification service.
+- Added manual email verification script.
+- Added dev/admin/user documentation and verification email template.
+- Email delivery and browser verification routes are not wired yet.
