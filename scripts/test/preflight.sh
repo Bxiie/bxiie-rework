@@ -48,6 +48,12 @@ run_if_exists scripts/test/email_outbox_status.php
 
 run_if_exists scripts/test/audit_log.php
 
+if [ -x scripts/test/http_smoke.sh ]; then
+  ./scripts/test/http_smoke.sh >/dev/null
+else
+  echo "Skipping missing optional test: scripts/test/http_smoke.sh"
+fi
+
 echo "Core smoke tests passed."
 
 echo

@@ -302,3 +302,10 @@
 - Added scripts/test/preflight.sh.
 - Preflight runs PHP syntax checks, migration integrity checks, and core smoke tests.
 - Added dev/admin documentation for local preflight workflow.
+
+## 2026-05-16 19:50 Europe/Bucharest
+
+- Added HTTP smoke test runner.
+- Smoke test starts local PHP dev server, checks platform routes, tenant routes, and unauthorized API behavior.
+- Added HTTP smoke test to preflight when available.
+- Added dev/admin documentation for HTTP smoke tests.

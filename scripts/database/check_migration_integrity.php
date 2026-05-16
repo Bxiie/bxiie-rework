@@ -18,7 +18,7 @@ $expected = [
         'schema_migrations',
         'tenants',
         'tenant_domains',
-        'settings',
+        'tenant_settings',
         'plans',
         'users',
         'audit_log',
@@ -55,10 +55,12 @@ $expected = [
     ],
     '0009_contact_signup_records.sql' => [
         'contact_messages',
-        'email_signups',
     ],
     '0010_rate_limits.sql' => [
         'rate_limits',
+    ],
+    '0011_repair_email_signups.sql' => [
+        'email_signups',
     ],
 ];
 
