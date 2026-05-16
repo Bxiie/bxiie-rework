@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tenant\Contact;
 
 use App\Platform\Tenancy\TenantContext;
+use App\Support\Uuid;
 use PDO;
 
 /**
@@ -28,6 +29,7 @@ final class ContactMessageRepository
     ): int {
         $stmt = $this->pdo->prepare(
             "INSERT INTO contact_messages (
+                uuid,
                 tenant_id,
                 sender_name,
                 sender_email,
@@ -36,6 +38,7 @@ final class ContactMessageRepository
                 ip_address,
                 user_agent
             ) VALUES (
+                :uuid,
                 :tenant_id,
                 :sender_name,
                 :sender_email,
@@ -47,6 +50,7 @@ final class ContactMessageRepository
         );
 
         $stmt->execute([
+            'uuid' => Uuid::v4(),
             'tenant_id' => $tenant->tenantId,
             'sender_name' => trim($senderName),
             'sender_email' => strtolower(trim($senderEmail)),

@@ -366,3 +366,15 @@
 - Added dashboard link for audit log.
 - Added manual audit log list verification script.
 - Added dev/admin documentation for platform audit log screen.
+
+## 2026-05-16 22:00 Europe/Bucharest
+
+- Added tenant admin contact messages list screen.
+- Added tenant admin email signups list screen.
+- Added tenant admin dashboard links for contact messages and email signups.
+- Added manual tenant admin list verification script.
+- Added dev/admin/user documentation for tenant admin lists.
+
+## 2026-05-16 22:15 Europe/Bucharest
+
+- Updated ContactMessageRepository to populate required contact_messages.uuid during inserts.
