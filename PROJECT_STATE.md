@@ -296,3 +296,9 @@
 - Added migration integrity checker.
 - Checker compares schema_migrations records against expected tables introduced by known migrations.
 - Added dev/admin documentation for migration integrity checks and repair pattern.
+
+## 2026-05-16 19:20 Europe/Bucharest
+
+- Added scripts/test/preflight.sh.
+- Preflight runs PHP syntax checks, migration integrity checks, and core smoke tests.
+- Added dev/admin documentation for local preflight workflow.
