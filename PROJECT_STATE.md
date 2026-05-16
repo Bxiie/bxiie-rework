@@ -130,3 +130,24 @@
 
 - Added missing user_sessions migration required by local password authentication.
 - Verified password auth depends on identity/membership schema plus user_sessions.
+
+## 2026-05-16 10:55 Europe/Bucharest
+
+- Added browser session cookie support for local email/password authentication.
+- Added CurrentUser middleware for resolving artsfolio_session cookies.
+- Added PasswordAuthController with login form, password login, current-user page, and logout.
+- Added simple PHP-session-backed CSRF token service.
+- Added POST route support to the router.
+- Added browser session auth documentation for dev and admin audiences.
+- OAuth/OIDC and local email/password remain supported authentication models; APIs use OAuth2 bearer tokens.
+
+## 2026-05-16 11:10 Europe/Bucharest
+
+- Repaired Router.php after it was accidentally overwritten with front-controller/bootstrap logic.
+- Restored public/index.php as the only HTTP front controller requiring bootstrap/app.php.
+- Verified router/front-controller separation.
+
+## 2026-05-16 11:20 Europe/Bucharest
+
+- Added missing App\Http\RouteMatch value object required by parameterized router.
+- Refreshed Composer autoload after adding RouteMatch.
