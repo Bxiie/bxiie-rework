@@ -207,3 +207,11 @@
 - Added audit records for invalid CSRF, failed login, successful login, invalid logout CSRF, and successful logout.
 - Added auth audit inspection script.
 - Added dev/admin documentation for auth audit logging.
+
+## 2026-05-16 16:10 Europe/Bucharest
+
+- Added local password reset backend foundation.
+- Added hashed password reset token repository and reset service.
+- Added manual password reset verification script.
+- Added dev/admin/user documentation and password reset email template.
+- Password reset UI and email delivery are not wired yet.
