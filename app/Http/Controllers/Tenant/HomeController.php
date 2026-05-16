@@ -7,6 +7,8 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
+use App\Support\Security\CsrfTokenService;
+use App\Tenant\Artwork\ArtworkReadRepository;
 use App\Tenant\Settings\TenantSettingsRepository;
 
 /**
@@ -16,52 +18,131 @@ final class HomeController
 {
     public function __construct(
         private readonly TenantSettingsRepository $settings,
+        private readonly ArtworkReadRepository $artworks,
+        private readonly ?CsrfTokenService $csrf = null,
     ) {
     }
 
     public function home(Request $request, TenantContext $tenant): Response
     {
-        $siteTitle = $this->settings->get($tenant, 'site_title', $tenant->name);
+        $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
+        $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
 
         return Response::html($this->layout(
             title: $siteTitle,
             body: <<<HTML
 <h1>{$siteTitle}</h1>
-<p>Tenant public site resolved for <strong>{$tenant->slug}</strong>.</p>
-<p>Host: {$tenant->hostname}</p>
+<p>Tenant public site resolved for <strong>{$this->escape($tenant->slug)}</strong>.</p>
+<p>Host: {$this->escape($tenant->hostname)}</p>
+
+<h2>Stay in the loop</h2>
+<form method="post" action="/signup">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <p>
+        <label>Name<br>
+            <input type="text" name="name" autocomplete="name">
+        </label>
+    </p>
+    <p>
+        <label>Email<br>
+            <input type="email" name="email" autocomplete="email" required>
+        </label>
+    </p>
+    <button type="submit">Sign up</button>
+</form>
 HTML
         ));
     }
 
     public function portfolio(Request $request, TenantContext $tenant): Response
     {
+        $items = $this->artworks->latestPublished($tenant);
+        $body = "<h1>Portfolio</h1>\n";
+
+        if (!$items) {
+            $body .= "<p>No published artwork yet.</p>\n";
+        } else {
+            $body .= "<ul>\n";
+            foreach ($items as $item) {
+                $title = $this->escape((string) $item['title']);
+                $slug = rawurlencode((string) $item['slug']);
+                $body .= "    <li><a href=\"/artwork/{$slug}\">{$title}</a></li>\n";
+            }
+            $body .= "</ul>\n";
+        }
+
         return Response::html($this->layout(
-            title: "{$tenant->name} | Portfolio",
-            body: <<<HTML
-<h1>Portfolio</h1>
-<p>Portfolio route resolved for tenant <strong>{$tenant->slug}</strong>.</p>
-HTML
+            title: "{$this->escape($tenant->name)} | Portfolio",
+            body: $body,
+        ));
+    }
+
+    public function artwork(Request $request, TenantContext $tenant, string $slug): Response
+    {
+        $artwork = $this->artworks->findPublishedBySlug($tenant, $slug);
+
+        if (!$artwork) {
+            return Response::notFound("Artwork not found: {$slug}");
+        }
+
+        $title = $this->escape((string) $artwork['title']);
+        $description = nl2br($this->escape((string) ($artwork['description'] ?? '')));
+        $medium = $this->escape((string) ($artwork['medium'] ?? ''));
+        $dimensions = $this->escape((string) ($artwork['dimensions'] ?? ''));
+        $year = $this->escape((string) ($artwork['year_created'] ?? ''));
+
+        $body = "<h1>{$title}</h1>\n";
+        $body .= "<p><strong>Medium:</strong> {$medium}</p>\n";
+        $body .= "<p><strong>Dimensions:</strong> {$dimensions}</p>\n";
+        $body .= "<p><strong>Year:</strong> {$year}</p>\n";
+        $body .= "<div>{$description}</div>\n";
+
+        return Response::html($this->layout(
+            title: "{$title} | {$this->escape($tenant->name)}",
+            body: $body,
         ));
     }
 
     public function about(Request $request, TenantContext $tenant): Response
     {
         return Response::html($this->layout(
-            title: "{$tenant->name} | About",
-            body: <<<HTML
-<h1>About</h1>
-<p>About route resolved for tenant <strong>{$tenant->slug}</strong>.</p>
-HTML
+            title: "{$this->escape($tenant->name)} | About",
+            body: "<h1>About</h1>\n<p>About route resolved for tenant <strong>{$this->escape($tenant->slug)}</strong>.</p>\n"
         ));
     }
 
     public function contact(Request $request, TenantContext $tenant): Response
     {
+        $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
+
         return Response::html($this->layout(
-            title: "{$tenant->name} | Contact",
+            title: "{$this->escape($tenant->name)} | Contact",
             body: <<<HTML
 <h1>Contact</h1>
-<p>Contact route resolved for tenant <strong>{$tenant->slug}</strong>.</p>
+<form method="post" action="/contact">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <p>
+        <label>Name<br>
+            <input type="text" name="name" autocomplete="name" required>
+        </label>
+    </p>
+    <p>
+        <label>Email<br>
+            <input type="email" name="email" autocomplete="email" required>
+        </label>
+    </p>
+    <p>
+        <label>Subject<br>
+            <input type="text" name="subject">
+        </label>
+    </p>
+    <p>
+        <label>Message<br>
+            <textarea name="message" rows="8" required></textarea>
+        </label>
+    </p>
+    <button type="submit">Send message</button>
+</form>
 HTML
         ));
     }
@@ -81,6 +162,11 @@ HTML
 </body>
 </html>
 HTML;
+    }
+
+    private function escape(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
 }
 

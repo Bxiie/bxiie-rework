@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\TenantMeController;
 use App\Http\Controllers\Auth\PasswordAuthController;
 use App\Http\Controllers\Platform\HomeController as PlatformHomeController;
 use App\Http\Controllers\Tenant\HomeController as TenantHomeController;
+use App\Http\Controllers\Tenant\SignupController;
+use App\Http\Controllers\Tenant\ContactController;
 use App\Http\Middleware\BearerTokenAuth;
 use App\Http\Middleware\CurrentUser;
 use App\Http\Middleware\ResolveTenant;
@@ -19,6 +21,7 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Http\Router;
 use App\Platform\Audit\AuditLogRepository;
+use App\Platform\Email\EmailOutboxRepository;
 use App\Platform\Auth\OAuth\BearerTokenRepository;
 use App\Platform\Auth\OAuth\BearerTokenService;
 use App\Platform\Auth\Password\PasswordAuthService;
@@ -32,6 +35,12 @@ use App\Platform\Tenancy\TenantResolver;
 use App\Support\Database;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Artwork\ArtworkReadRepository;
+use App\Tenant\Signup\SignupNotificationService;
+use App\Tenant\Signup\EmailSignupService;
+use App\Tenant\Signup\EmailSignupRepository;
+use App\Tenant\Contact\ContactNotificationService;
+use App\Tenant\Contact\ContactMessageService;
+use App\Tenant\Contact\ContactMessageRepository;
 use App\Tenant\Settings\TenantSettingsRepository;
 
 $root = dirname(__DIR__);
@@ -71,9 +80,30 @@ try {
     ))->resolve($request);
 
     if ($tenant) {
+        $tenantSettings = new TenantSettingsRepository($pdo);
+        $emailOutbox = new EmailOutboxRepository($pdo);
+        $csrf = new CsrfTokenService();
+
         $tenantController = new TenantHomeController(
             new TenantSettingsRepository($pdo),
             new ArtworkReadRepository($pdo),
+            $csrf,
+        );
+
+        $contactController = new ContactController(
+            new ContactMessageService(
+                new ContactMessageRepository($pdo),
+                new ContactNotificationService($emailOutbox, $tenantSettings),
+            ),
+            $csrf,
+        );
+
+        $signupController = new SignupController(
+            new EmailSignupService(
+                new EmailSignupRepository($pdo),
+                new SignupNotificationService($emailOutbox, $tenantSettings),
+            ),
+            $csrf,
         );
 
         $router = new Router();
@@ -82,6 +112,8 @@ try {
         $router->get('/artwork/{slug}', fn (Request $request, array $params): Response => $tenantController->artwork($request, $tenant, (string) $params['slug']));
         $router->get('/about', fn (Request $request): Response => $tenantController->about($request, $tenant));
         $router->get('/contact', fn (Request $request): Response => $tenantController->contact($request, $tenant));
+        $router->post('/contact', fn (Request $request): Response => $contactController->submit($request, $tenant));
+        $router->post('/signup', fn (Request $request): Response => $signupController->submit($request, $tenant));
         $router->get('/api/me', fn (Request $request): Response => (new TenantMeController(tenantRoles: new RequireTenantRole(new MembershipRepository($pdo)), auditLog: new AuditLogRepository($pdo)))->show($request, $bearerToken, $tenant));
 
         $router->dispatch($request)->send();

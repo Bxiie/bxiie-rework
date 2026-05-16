@@ -268,3 +268,12 @@
 - Added ContactMessageService and EmailSignupService to persist records before queueing notifications.
 - Added manual persistence verification script.
 - Added dev/admin/user documentation for contact messages and email signups.
+
+## 2026-05-16 18:20 Europe/Bucharest
+
+- Added tenant public ContactController and SignupController.
+- Added POST /contact and POST /signup tenant routes.
+- Updated tenant placeholder home/contact pages to render CSRF-protected forms.
+- Public contact submissions now persist contact messages and queue notifications.
+- Public signup submissions now persist email signups and queue notifications.
+- Added dev/admin/user documentation for public contact and signup routes.
