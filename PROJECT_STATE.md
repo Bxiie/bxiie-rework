@@ -151,3 +151,18 @@
 
 - Added missing App\Http\RouteMatch value object required by parameterized router.
 - Refreshed Composer autoload after adding RouteMatch.
+
+## 2026-05-16 11:35 Europe/Bucharest
+
+- Added OAuth2 bearer token repository and service.
+- Added API bearer token middleware.
+- Added GET /api/me endpoint using bearer-token authentication.
+- Added development script for creating a temporary OAuth access token.
+- Documented API bearer authentication for dev and admin audiences.
+- UI authentication remains OAuth/OIDC and local email/password; API authentication uses OAuth2 bearer tokens.
+
+## 2026-05-16 13:50 Europe/Bucharest
+
+- Added missing OAuth token schema required by API bearer authentication.
+- Added oauth_clients, oauth_access_tokens, and oauth_refresh_tokens tables.
+- Verified API bearer token development script depends on this schema.
