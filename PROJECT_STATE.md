@@ -290,3 +290,9 @@
 
 - Repaired local migration bookkeeping after 0009_contact_signup_records.sql had created tables without being recorded in schema_migrations.
 - Applied 0010_rate_limits.sql successfully after marking 0009 as applied.
+
+## 2026-05-16 19:05 Europe/Bucharest
+
+- Added migration integrity checker.
+- Checker compares schema_migrations records against expected tables introduced by known migrations.
+- Added dev/admin documentation for migration integrity checks and repair pattern.
