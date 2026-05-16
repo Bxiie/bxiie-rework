@@ -62,6 +62,7 @@ try {
         $sessionRepository,
         $sessionTokens,
         new CsrfTokenService(),
+        new AuditLogRepository($pdo),
     );
 
     $bearerToken = (new BearerTokenAuth(

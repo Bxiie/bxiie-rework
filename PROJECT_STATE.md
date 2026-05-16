@@ -200,3 +200,10 @@
 - Tenant API denied-access paths now record audit_log rows when missing token, missing scope, wrong tenant token, or missing tenant membership role occurs.
 - Added manual script to inspect recent tenant API denial audit records.
 - Added development documentation for API denial audit flow.
+
+## 2026-05-16 15:55 Europe/Bucharest
+
+- Added audit logging to local password login and logout controller paths.
+- Added audit records for invalid CSRF, failed login, successful login, invalid logout CSRF, and successful logout.
+- Added auth audit inspection script.
+- Added dev/admin documentation for auth audit logging.
