@@ -173,3 +173,9 @@
 - Updated GET /api/me to require api:read.
 - Added manual scope verification script.
 - Added API scope documentation for dev and admin audiences.
+
+## 2026-05-16 14:55 Europe/Bucharest
+
+- Added missing TenantMeController for tenant-scoped GET /api/me.
+- Added missing RequireTenantAccess middleware.
+- Refreshed Composer autoload after adding API tenant classes.
