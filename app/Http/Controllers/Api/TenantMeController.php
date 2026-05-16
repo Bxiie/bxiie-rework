@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Middleware\RequireScope;
 use App\Http\Middleware\RequireTenantAccess;
+use App\Http\Middleware\RequireTenantRole;
 use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
@@ -18,6 +19,7 @@ final class TenantMeController
     public function __construct(
         private readonly RequireScope $scopes = new RequireScope(),
         private readonly RequireTenantAccess $tenantAccess = new RequireTenantAccess(),
+        private readonly ?RequireTenantRole $tenantRoles = null,
     ) {
     }
 
@@ -41,6 +43,13 @@ final class TenantMeController
             return Response::json([
                 'error' => 'forbidden',
                 'message' => 'Bearer token is not valid for this tenant.',
+            ], 403);
+        }
+
+        if ($this->tenantRoles && !$this->tenantRoles->allows($accessToken, $tenant, ['owner', 'admin', 'editor', 'viewer'])) {
+            return Response::json([
+                'error' => 'forbidden',
+                'message' => 'User does not have tenant membership access.',
             ], 403);
         }
 

@@ -6,19 +6,38 @@ declare(strict_types=1);
  * Main HTTP front controller for local and production web requests.
  */
 
+use App\Http\Controllers\Api\MeController;
+use App\Http\Controllers\Api\TenantMeController;
+use App\Http\Controllers\Auth\PasswordAuthController;
 use App\Http\Controllers\Platform\HomeController as PlatformHomeController;
 use App\Http\Controllers\Tenant\HomeController as TenantHomeController;
+use App\Http\Middleware\BearerTokenAuth;
+use App\Http\Middleware\CurrentUser;
 use App\Http\Middleware\ResolveTenant;
+use App\Http\Middleware\RequireTenantRole;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\Router;
+use App\Platform\Auth\OAuth\BearerTokenRepository;
+use App\Platform\Auth\OAuth\BearerTokenService;
+use App\Platform\Auth\Password\PasswordAuthService;
+use App\Platform\Auth\Session\SessionRepository;
+use App\Platform\Auth\Session\SessionTokenService;
+use App\Platform\Identity\PasswordHasher;
+use App\Platform\Identity\UserIdentityRepository;
+use App\Platform\Identity\UserRepository;
+use App\Platform\Membership\MembershipRepository;
 use App\Platform\Tenancy\TenantResolver;
 use App\Support\Database;
+use App\Support\Security\CsrfTokenService;
+use App\Tenant\Artwork\ArtworkReadRepository;
 use App\Tenant\Settings\TenantSettingsRepository;
 
 $root = dirname(__DIR__);
 
 require $root . '/bootstrap/app.php';
+
+session_start();
 
 $request = Request::fromGlobals();
 
@@ -27,14 +46,41 @@ try {
     $tenantResolver = new TenantResolver($pdo);
     $tenant = (new ResolveTenant($tenantResolver))->handle($request);
 
+    $sessionRepository = new SessionRepository($pdo);
+    $sessionTokens = new SessionTokenService();
+    $currentUser = (new CurrentUser($sessionRepository, $sessionTokens))->resolve($request);
+
+    $passwordAuthController = new PasswordAuthController(
+        new PasswordAuthService(
+            new UserRepository($pdo),
+            new UserIdentityRepository($pdo),
+            new PasswordHasher(),
+            $sessionRepository,
+            $sessionTokens,
+        ),
+        $sessionRepository,
+        $sessionTokens,
+        new CsrfTokenService(),
+    );
+
+    $bearerToken = (new BearerTokenAuth(
+        new BearerTokenRepository($pdo),
+        new BearerTokenService(),
+    ))->resolve($request);
+
     if ($tenant) {
-        $tenantController = new TenantHomeController(new TenantSettingsRepository($pdo));
+        $tenantController = new TenantHomeController(
+            new TenantSettingsRepository($pdo),
+            new ArtworkReadRepository($pdo),
+        );
 
         $router = new Router();
         $router->get('/', fn (Request $request): Response => $tenantController->home($request, $tenant));
         $router->get('/portfolio', fn (Request $request): Response => $tenantController->portfolio($request, $tenant));
+        $router->get('/artwork/{slug}', fn (Request $request, array $params): Response => $tenantController->artwork($request, $tenant, (string) $params['slug']));
         $router->get('/about', fn (Request $request): Response => $tenantController->about($request, $tenant));
         $router->get('/contact', fn (Request $request): Response => $tenantController->contact($request, $tenant));
+        $router->get('/api/me', fn (Request $request): Response => (new TenantMeController(tenantRoles: new RequireTenantRole(new MembershipRepository($pdo))))->show($request, $bearerToken, $tenant));
 
         $router->dispatch($request)->send();
         exit;
@@ -46,7 +92,11 @@ try {
     $router->get('/', fn (Request $request): Response => $platformController->home($request));
     $router->get('/pricing', fn (Request $request): Response => $platformController->pricing($request));
     $router->get('/signup', fn (Request $request): Response => $platformController->signup($request));
-    $router->get('/login', fn (Request $request): Response => $platformController->login($request));
+    $router->get('/login', fn (Request $request): Response => $passwordAuthController->loginForm($request));
+    $router->post('/login/password', fn (Request $request): Response => $passwordAuthController->loginPassword($request));
+    $router->get('/me', fn (Request $request): Response => $passwordAuthController->me($request, $currentUser));
+    $router->post('/logout', fn (Request $request): Response => $passwordAuthController->logout($request));
+    $router->get('/api/me', fn (Request $request): Response => (new MeController())->show($request, $bearerToken));
 
     $router->dispatch($request)->send();
 } catch (Throwable $e) {

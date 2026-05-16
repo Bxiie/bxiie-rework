@@ -179,3 +179,11 @@
 - Added missing TenantMeController for tenant-scoped GET /api/me.
 - Added missing RequireTenantAccess middleware.
 - Refreshed Composer autoload after adding API tenant classes.
+
+## 2026-05-16 15:10 Europe/Bucharest
+
+- Added RequireTenantRole middleware for tenant membership/role enforcement.
+- Updated tenant GET /api/me to optionally enforce tenant roles when middleware is provided.
+- Wired tenant API route to enforce owner, admin, editor, or viewer membership.
+- Added manual tenant role API access verification script.
+- Added dev/admin documentation for tenant role API access.
