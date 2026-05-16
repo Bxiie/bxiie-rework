@@ -106,3 +106,14 @@
 - Added placeholder tenant public routes.
 - Added development, admin, and user documentation for HTTP routing.
 - HTTP routing remains local-development safe and does not mutate infrastructure.
+
+## 2026-05-16 10:05 Europe/Bucharest
+
+- Added identity and membership foundation.
+- Confirmed authentication posture: OAuth/OIDC and local email/password are both supported.
+- Confirmed API authentication posture: OAuth2 bearer tokens.
+- Added user_identities, tenant_memberships, roles, role_assignments, password_reset_tokens, and email_verification_tokens schema.
+- Added role seed data for platform and tenant scopes.
+- Added user, identity, password hashing, membership repository, and membership service classes.
+- Added manual verification scripts for auth architecture and identity/membership behavior.
+- Added dev, admin, user, and auth template documentation for identity and membership.
