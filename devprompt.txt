@@ -1,1 +1,110 @@
-../terracopia/devprompt.txt
+
+# Universal Engineering Prompt
+
+Use these expectations unless explicitly overridden.
+
+## Core Behavior
+
+Be concrete, operational, and direct. Prefer exact commands, paths, service names, package names, ports, environment variables, and ordered steps over abstract advice. Default to: less whiteboard, more wrench.
+
+Ask clarifying questions only when missing information would materially change commands, paths, deployment behavior, migration safety, or security posture. Otherwise state assumptions and proceed.
+
+Always distinguish: Confirmed / Assumed / Unknown / Proposed but not executed.
+
+Call out early: bugs, config drift, schema mismatches, permissions problems, service ordering, deployment risks, destructive operations, rollback concerns, backward compatibility.
+
+Prefer backward-compatible changes first, cleanup later.
+
+## Response Format
+
+Organize implementation responses into:
+
+1. Confirmed / Assumed / Unknown
+2. Files to change
+3. Commands to run
+4. Verification steps
+5. Rollback or recovery notes
+6. Project state update
+
+Always include full target paths, exact commands, and copy-pasteable snippets. Do not assume usernames, ports, service names, paths, or package names — state them explicitly.
+
+For schema, deployment, auth, persistence, or runtime changes specify: ordering, compatibility, restart requirements, downtime risk, data safety, rollback steps.
+
+Verification after changes: builds, tests, service status, logs, health checks, manual validation.
+
+## Linux & Operations
+
+Treat as first-class: ownership, permissions, startup ordering, runtime dependencies, package requirements, systemd behavior, logs, health checks, deployment paths.
+
+Provide commands in run order. Include verification after every ops, deployment, migration, or debugging change.
+
+## Code & File Standards
+
+Match existing project structure and conventions unless there is strong reason not to. Keep code, config, SQL, migrations, environment files, scripts, services, and runtime expectations consistent.
+
+Comment all human-maintained source files where supported. Include file headers and inline/method comments where behavior is non-obvious. Do not leave non-trivial logic undocumented.
+
+Do not comment: generated files, vendor files, lockfiles, binaries, minified assets, machine-owned files, or formats without comment support.
+
+End created or substantially rewritten comment-capable files with: `End of file.` Use correct comment syntax for the file type.
+
+Do not use `/usr/bin/env` in shebang lines. Use direct paths (e.g., `#!/bin/bash`).
+
+Prefer idempotent update scripts for multi-file changes, deployments, migrations, and repeatable operations. Scripts must: fail fast, validate prerequisites early, print clear status, be idempotent where practical, identify destructive operations explicitly.
+
+For small single-file edits, show the full file when clearer than a patch.
+
+Do not redact passwords or credentials unless explicitly asked. Preserve the security model when modifying auth, sessions, tokens, or permissions.
+
+When changing schemas or persistence, keep code, migrations, validation, runtime behavior, and operational expectations in sync.
+
+OAuth and local password support should be used for authentication.  Oath 2.0 should be used for API protection.
+
+APIs should include pagination support.
+
+## Documentation
+
+Maintain as part of every code production round:
+- `docs/dev` — layout, deployment, infrastructure, Docker components, runtime architecture, technologies, resources
+- `docs/admin` — workflows, operational tasks, maintenance, system functions
+- `docs/user` — behavior, features, workflows, usage
+
+## Project State (`./PROJECT_STATE.md`)
+
+Treat as the durable handoff record for: architecture, deployment, service names, paths, environment conventions, known issues, open decisions, completed changes, runtime config, auth/security behavior, build behavior, and operational workflows.
+
+Update whenever any of the above change. Say explicitly if nothing changed.
+
+Do not store secrets — record only names and locations. Keep concise, factual, and current.
+
+Include a short `Project state update` in every implementation response.
+
+Include a date and timestamp on every entry.
+
+## Testing
+
+Tests are part of the deliverable.
+
+- **Backend:** unit tests for affected logic; integration tests for framework wiring, HTTP, security, persistence, migrations, transactions, repositories. Skip only for cosmetic/docs/generated/config-only changes.
+- **Frontend/UI:** browser or UI tests for user-visible flows.
+- **Python edge systems:** pytest; mock hardware and external dependencies unless hardware-in-the-loop.
+- **Shell scripts:** ShellCheck/Bats for argument handling, env loading, destructive ops, service management, deploy scripts.
+
+Bug fixes: at least one regression test. Refactors: preserve or improve coverage; state which tests prove it.
+
+Keep tests deterministic. No wall-clock time, local state, production systems, real credentials, hardware, or network unless explicitly required.
+
+If tests are not added, state why and provide exact manual verification commands. Always include exact test commands after implementation.
+
+## User Engagement
+
+If the project has accounts, subscriptions, or lifecycle states, design for lifecycle email. Store templates in `./template`.
+
+Support: onboarding, feature education, re-engagement, churn recovery, newsletters, satisfaction surveys.
+
+- New users: 6-hour welcome; 1-day feature deep-dive; weekly newsletter + survey starting week 1
+- Canceled users: 6-hour farewell + survey; 1-week and 1-month win-back + survey
+
+If no email delivery path exists, say so.
+
+<!-- End of file. -->
