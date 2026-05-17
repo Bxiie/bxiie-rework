@@ -592,3 +592,9 @@
 - Added platform GET /admin/workers screen.
 - Added Workers links to platform dashboard and route map.
 - Added manual worker heartbeat verification script and documentation.
+
+## 2026-05-17 05:35 Europe/Bucharest
+
+- Added shared worker heartbeat helper at scripts/workers/heartbeat.php.
+- Patched existing worker entrypoints when present to emit heartbeat records.
+- Added manual worker entrypoint heartbeat verification script and documentation.

@@ -11,7 +11,9 @@ use App\Platform\Email\EmailSenderFactory;
 use App\Support\Database;
 
 $root = dirname(__DIR__, 2);
+require_once $root . '/scripts/workers/heartbeat.php';
 require $root . '/bootstrap/app.php';
+artsfolio_worker_heartbeat('email-run-once', 'alive', ['entrypoint' => 'scripts/workers/email_run_once.php']);
 
 $outbox = new EmailOutboxRepository(Database::connect($root));
 $sender = EmailSenderFactory::fromEnvironment();

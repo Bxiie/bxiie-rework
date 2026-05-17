@@ -20,8 +20,10 @@ use App\Platform\Tenancy\TenantDomainRepository;
 use App\Support\Database;
 
 $root = dirname(__DIR__, 2);
+require_once $root . '/scripts/workers/heartbeat.php';
 
 require $root . '/bootstrap/app.php';
+artsfolio_worker_heartbeat('background-run-once', 'alive', ['entrypoint' => 'scripts/workers/run_once.php']);
 
 $pdo = Database::connect($root);
 $jobs = new BackgroundJobRepository($pdo);
