@@ -422,3 +422,10 @@
 - Tenant admin POST /admin/settings can now write tenant.settings.updated audit rows.
 - Wired AuditLogRepository into tenant settings controller route construction.
 - Added manual tenant settings audit inspection script and documentation.
+
+## 2026-05-16 23:50 Europe/Bucharest
+
+- Added platform settings audit logging hook.
+- Platform admin POST /admin/platform-settings can now write platform.settings.updated audit rows.
+- Wired AuditLogRepository into platform settings controller route construction.
+- Added manual platform settings audit inspection script and documentation.

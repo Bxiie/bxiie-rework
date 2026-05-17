@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Platform\Admin;
 use App\Http\Middleware\RequirePlatformRole;
 use App\Http\Request;
 use App\Http\Response;
+use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
 use App\Platform\Settings\PlatformSettingsRepository;
 use App\Support\Security\CsrfTokenService;
@@ -20,6 +21,7 @@ final class SettingsController
         private readonly RequirePlatformRole $roles,
         private readonly PlatformSettingsRepository $settings,
         private readonly CsrfTokenService $csrf,
+        private readonly ?AuditLogRepository $auditLog = null,
     ) {
     }
 
@@ -97,9 +99,28 @@ HTML);
             return Response::html('<h1>Invalid expected IPv4</h1>', 422);
         }
 
+        $before = [
+            'platform_name' => $this->settings->get('platform_name', 'ArtsFolio'),
+            'support_email' => $this->settings->get('support_email', ''),
+            'expected_ipv4' => $this->settings->get('expected_ipv4', getenv('ARTSFOLIO_EXPECTED_IPV4') ?: ''),
+        ];
+
         $this->settings->set('platform_name', $platformName);
         $this->settings->set('support_email', $supportEmail);
         $this->settings->set('expected_ipv4', $expectedIpv4);
+
+        $this->auditAction(
+            request: $request,
+            currentUser: $currentUser,
+            details: [
+                'before' => $before,
+                'after' => [
+                    'platform_name' => $platformName,
+                    'support_email' => $supportEmail,
+                    'expected_ipv4' => $expectedIpv4,
+                ],
+            ],
+        );
 
         return Response::html(<<<HTML
 <!doctype html>
@@ -116,6 +137,25 @@ HTML);
 </body>
 </html>
 HTML);
+    }
+
+    private function auditAction(
+        Request $request,
+        ?array $currentUser,
+        array $details = [],
+    ): void {
+        if (!$this->auditLog) {
+            return;
+        }
+
+        $this->auditLog->record(
+            action: 'platform.settings.updated',
+            userId: isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
+            entityType: 'platform_settings',
+            entityId: 'global',
+            details: $details,
+            ipAddress: $request->server('REMOTE_ADDR'),
+        );
     }
 
     private function canManageSettings(?array $currentUser): bool
