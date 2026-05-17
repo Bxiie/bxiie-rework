@@ -429,3 +429,10 @@
 - Platform admin POST /admin/platform-settings can now write platform.settings.updated audit rows.
 - Wired AuditLogRepository into platform settings controller route construction.
 - Added manual platform settings audit inspection script and documentation.
+
+## 2026-05-17 00:05 Europe/Bucharest
+
+- Added AuditLogRepository::search.
+- Added platform audit log filters for action, tenant ID, and user ID.
+- Updated platform audit log screen with filter form.
+- Added manual audit log search verification script and documentation.

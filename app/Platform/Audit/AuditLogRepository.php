@@ -7,7 +7,7 @@ namespace App\Platform\Audit;
 use PDO;
 
 /**
- * Writes platform and tenant audit log events.
+ * Writes and reads platform and tenant audit log events.
  */
 final class AuditLogRepository
 {
@@ -27,9 +27,21 @@ final class AuditLogRepository
     ): int {
         $stmt = $this->pdo->prepare(
             "INSERT INTO audit_log (
-                tenant_id, user_id, action, entity_type, entity_id, details, ip_address
+                tenant_id,
+                user_id,
+                action,
+                entity_type,
+                entity_id,
+                details,
+                ip_address
             ) VALUES (
-                :tenant_id, :user_id, :action, :entity_type, :entity_id, :details, :ip_address
+                :tenant_id,
+                :user_id,
+                :action,
+                :entity_type,
+                :entity_id,
+                :details,
+                :ip_address
             )"
         );
 
@@ -48,9 +60,46 @@ final class AuditLogRepository
 
     public function latest(int $limit = 20): array
     {
-        $stmt = $this->pdo->prepare(
-            "SELECT * FROM audit_log ORDER BY id DESC LIMIT :limit_count"
-        );
+        return $this->search(limit: $limit);
+    }
+
+    public function search(
+        ?string $action = null,
+        ?int $tenantId = null,
+        ?int $userId = null,
+        int $limit = 100,
+    ): array {
+        $where = [];
+        $params = [];
+
+        if ($action !== null && $action !== '') {
+            $where[] = 'action = :action';
+            $params['action'] = $action;
+        }
+
+        if ($tenantId !== null) {
+            $where[] = 'tenant_id = :tenant_id';
+            $params['tenant_id'] = $tenantId;
+        }
+
+        if ($userId !== null) {
+            $where[] = 'user_id = :user_id';
+            $params['user_id'] = $userId;
+        }
+
+        $sql = "SELECT * FROM audit_log";
+
+        if ($where) {
+            $sql .= " WHERE " . implode(" AND ", $where);
+        }
+
+        $sql .= " ORDER BY id DESC LIMIT :limit_count";
+
+        $stmt = $this->pdo->prepare($sql);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
 
         $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
         $stmt->execute();

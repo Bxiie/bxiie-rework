@@ -27,9 +27,20 @@ final class AuditLogController
             return Response::html('<h1>Forbidden</h1><p>Platform admin access required.</p>', 403);
         }
 
+        $action = trim((string) ($_GET['action'] ?? ''));
+        $tenantId = $this->positiveIntOrNull($_GET['tenant_id'] ?? null);
+        $userId = $this->positiveIntOrNull($_GET['user_id'] ?? null);
+
+        $events = $this->auditLog->search(
+            action: $action !== '' ? $action : null,
+            tenantId: $tenantId,
+            userId: $userId,
+            limit: 100,
+        );
+
         $rows = '';
 
-        foreach ($this->auditLog->latest(100) as $event) {
+        foreach ($events as $event) {
             $rows .= '<tr>'
                 . '<td>' . $this->escape((string) $event['id']) . '</td>'
                 . '<td>' . $this->escape((string) ($event['tenant_id'] ?? '')) . '</td>'
@@ -46,6 +57,10 @@ final class AuditLogController
             $rows = '<tr><td colspan="8">No audit log rows found.</td></tr>';
         }
 
+        $actionValue = $this->escape($action);
+        $tenantValue = $tenantId !== null ? $this->escape((string) $tenantId) : '';
+        $userValue = $userId !== null ? $this->escape((string) $userId) : '';
+
         return Response::html(<<<HTML
 <!doctype html>
 <html lang="en">
@@ -56,6 +71,26 @@ final class AuditLogController
 </head>
 <body>
 <h1>Audit Log</h1>
+
+<form method="get" action="/admin/audit-log">
+    <p>
+        <label>Action<br>
+            <input type="text" name="action" value="{$actionValue}">
+        </label>
+    </p>
+    <p>
+        <label>Tenant ID<br>
+            <input type="number" name="tenant_id" value="{$tenantValue}">
+        </label>
+    </p>
+    <p>
+        <label>User ID<br>
+            <input type="number" name="user_id" value="{$userValue}">
+        </label>
+    </p>
+    <button type="submit">Filter</button>
+    <a href="/admin/audit-log">Clear</a>
+</form>
 
 <table border="1" cellpadding="6" cellspacing="0">
     <thead>
@@ -79,6 +114,17 @@ final class AuditLogController
 </body>
 </html>
 HTML);
+    }
+
+    private function positiveIntOrNull(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $int = (int) $value;
+
+        return $int > 0 ? $int : null;
     }
 
     private function escape(string $value): string
