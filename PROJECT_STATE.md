@@ -442,3 +442,11 @@
 - Added platform audit log CSV export route.
 - Export supports the same action, tenant_id, and user_id filters as the audit log screen.
 - Added dev/admin documentation for platform audit log CSV export.
+
+## 2026-05-17 00:40 Europe/Bucharest
+
+- Added tenant admin audit log screen.
+- Added tenant admin audit log CSV export.
+- Tenant audit log is forced to the current tenant ID.
+- Added tenant admin dashboard link for audit log.
+- Added manual tenant audit log verification script and documentation.

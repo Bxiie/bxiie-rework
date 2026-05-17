@@ -49,6 +49,7 @@ final class DashboardController
     <li>Portfolio sections: coming soon</li>
     <li><a href="/admin/contact-messages">Contact messages</a></li>
     <li><a href="/admin/email-signups">Email signups</a></li>
+    <li><a href="/admin/audit-log">Audit log</a></li>
     <li>Account and billing details: coming later</li>
 </ul>
 </body>
