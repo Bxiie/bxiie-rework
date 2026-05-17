@@ -526,3 +526,12 @@
 - Added platform GET /admin/domains screen.
 - Added Domains nav link to platform admin dashboard and route map.
 - Added manual platform domain list verification script and documentation.
+
+## 2026-05-17 03:30 Europe/Bucharest
+
+- Added DomainAdminService for platform custom domain maintenance actions.
+- Added platform POST /admin/domains/action route.
+- Added Verify DNS and Render vhost actions to platform custom domain list.
+- Domain actions queue existing background job types.
+- Added audit logging and flash messages for queued domain actions.
+- Added manual platform domain action verification script and documentation.
