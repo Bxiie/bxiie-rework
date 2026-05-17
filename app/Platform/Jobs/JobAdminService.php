@@ -13,6 +13,7 @@ final class JobAdminService
 {
     public function __construct(
         private readonly PDO $pdo,
+        private readonly ?JobAttemptRepository $attempts = null,
     ) {
     }
 
@@ -28,6 +29,13 @@ final class JobAdminService
         );
 
         $stmt->execute(['id' => $jobId]);
+
+        $this->attempts?->record(
+            backgroundJobId: $jobId,
+            status: 'admin_requeued',
+            message: 'Job requeued by platform admin.',
+            finishedAt: date('Y-m-d H:i:s'),
+        );
     }
 
     public function cancel(int $jobId): void
@@ -41,6 +49,13 @@ final class JobAdminService
         );
 
         $stmt->execute(['id' => $jobId]);
+
+        $this->attempts?->record(
+            backgroundJobId: $jobId,
+            status: 'admin_cancelled',
+            message: 'Queued job cancelled by platform admin.',
+            finishedAt: date('Y-m-d H:i:s'),
+        );
     }
 }
 

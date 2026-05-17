@@ -576,3 +576,11 @@
 - Added attempt history display to platform background job detail.
 - Added attempt history count to platform job list/detail reads.
 - Added manual background job attempt history verification script and documentation.
+
+## 2026-05-17 05:05 Europe/Bucharest
+
+- Updated JobAdminService to accept JobAttemptRepository.
+- Requeue action now records admin_requeued attempt-history rows.
+- Cancel action now records admin_cancelled attempt-history rows.
+- Wired JobAttemptRepository into JobAdminService construction in public routes.
+- Added manual job action attempt-history verification script and documentation.
