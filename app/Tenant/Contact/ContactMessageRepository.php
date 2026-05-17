@@ -63,6 +63,30 @@ final class ContactMessageRepository
         return (int) $this->pdo->lastInsertId();
     }
 
+
+    public function updateStatus(TenantContext $tenant, int $messageId, string $status): void
+    {
+        $allowed = ['new', 'read', 'archived', 'spam'];
+
+        if (!in_array($status, $allowed, true)) {
+            throw new \InvalidArgumentException("Invalid contact message status: {$status}");
+        }
+
+        $stmt = $this->pdo->prepare(
+            "UPDATE contact_messages
+             SET status = :status,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE tenant_id = :tenant_id
+               AND id = :id"
+        );
+
+        $stmt->execute([
+            'status' => $status,
+            'tenant_id' => $tenant->tenantId,
+            'id' => $messageId,
+        ]);
+    }
+
     public function latestForTenant(TenantContext $tenant, int $limit = 20): array
     {
         $stmt = $this->pdo->prepare(

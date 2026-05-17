@@ -47,8 +47,8 @@ final class DashboardController
     <li>Client settings: coming soon</li>
     <li>Artwork: coming soon</li>
     <li>Portfolio sections: coming soon</li>
-    <li>Contact messages: coming soon</li>
-    <li>Email signups: coming soon</li>
+    <li><a href="/admin/contact-messages">Contact messages</a></li>
+    <li><a href="/admin/email-signups">Email signups</a></li>
     <li>Account and billing details: coming later</li>
 </ul>
 </body>

@@ -391,3 +391,11 @@
 
 - Fixed CSV helper for PHP 8.5 fputcsv escape argument.
 - Fixed CSV smoke test to capture Response::send output instead of calling nonexistent Response::body().
+
+## 2026-05-16 22:45 Europe/Bucharest
+
+- Added contact message status update repository method.
+- Added tenant admin POST /admin/contact-messages/status route.
+- Added read/archive/spam actions to contact message admin list.
+- Added manual contact message status verification script.
+- Added dev/admin/user documentation for contact message status.
