@@ -29,10 +29,13 @@ final class JobAdminRepository
                 bj.payload,
                 bj.last_error,
                 bj.created_at,
-                bj.updated_at
+                bj.updated_at,
+                COUNT(bja.id) AS attempt_history_count
              FROM background_jobs bj
+             LEFT JOIN background_job_attempts bja ON bja.background_job_id = bj.id
              LEFT JOIN tenants t ON t.id = bj.tenant_id
              WHERE bj.id = :id
+             GROUP BY bj.id, bj.tenant_id, t.slug, bj.job_type, bj.status, bj.attempts, bj.payload, bj.last_error, bj.created_at, bj.updated_at
              LIMIT 1"
         );
 
@@ -67,15 +70,17 @@ final class JobAdminRepository
                 bj.payload,
                 bj.last_error,
                 bj.created_at,
-                bj.updated_at
+                bj.updated_at,
+                COUNT(bja.id) AS attempt_history_count
              FROM background_jobs bj
-             LEFT JOIN tenants t ON t.id = bj.tenant_id";
+             LEFT JOIN tenants t ON t.id = bj.tenant_id
+             LEFT JOIN background_job_attempts bja ON bja.background_job_id = bj.id";
 
         if ($where) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
 
-        $sql .= ' ORDER BY bj.id DESC LIMIT :limit_count OFFSET :offset_count';
+        $sql .= ($where ? '' : '') . ' GROUP BY bj.id, bj.tenant_id, t.slug, bj.job_type, bj.status, bj.attempts, bj.payload, bj.last_error, bj.created_at, bj.updated_at ORDER BY bj.id DESC LIMIT :limit_count OFFSET :offset_count';
 
         $stmt = $this->pdo->prepare($sql);
 

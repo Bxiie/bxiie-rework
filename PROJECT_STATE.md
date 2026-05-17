@@ -568,3 +568,11 @@
 - Added platform background job detail route GET /admin/jobs/{id}.
 - Linked job IDs from the job list to job detail.
 - Added manual job detail verification script and documentation.
+
+## 2026-05-17 04:50 Europe/Bucharest
+
+- Added background_job_attempts table.
+- Added JobAttemptRepository.
+- Added attempt history display to platform background job detail.
+- Added attempt history count to platform job list/detail reads.
+- Added manual background job attempt history verification script and documentation.

@@ -10,6 +10,7 @@ use App\Http\Response;
 use App\Http\View\AdminLayout;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Jobs\JobAdminRepository;
+use App\Platform\Jobs\JobAttemptRepository;
 use App\Platform\Jobs\JobAdminService;
 use App\Platform\Membership\Roles;
 use App\Support\Flash\FlashMessages;
@@ -27,6 +28,7 @@ final class JobsController
         private readonly ?JobAdminService $service = null,
         private readonly ?CsrfTokenService $csrf = null,
         private readonly ?AuditLogRepository $auditLog = null,
+        private readonly ?JobAttemptRepository $attempts = null,
     ) {
     }
 
@@ -47,6 +49,23 @@ final class JobsController
             ? (string) ($job['payload'] ?? '')
             : json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
+        $attemptRows = '';
+
+        foreach (($this->attempts?->forJob($jobId) ?? []) as $attempt) {
+            $attemptRows .= '<tr>'
+                . '<td>' . AdminLayout::escape((string) $attempt['id']) . '</td>'
+                . '<td>' . AdminLayout::escape((string) $attempt['status']) . '</td>'
+                . '<td>' . AdminLayout::escape((string) ($attempt['message'] ?? '')) . '</td>'
+                . '<td>' . AdminLayout::escape((string) ($attempt['started_at'] ?? '')) . '</td>'
+                . '<td>' . AdminLayout::escape((string) ($attempt['finished_at'] ?? '')) . '</td>'
+                . '<td>' . AdminLayout::escape((string) $attempt['created_at']) . '</td>'
+                . '</tr>';
+        }
+
+        if ($attemptRows === '') {
+            $attemptRows = '<tr><td colspan="6">No attempt history found.</td></tr>';
+        }
+
         $body = '<dl>'
             . '<dt>ID</dt><dd>' . AdminLayout::escape((string) $job['id']) . '</dd>'
             . '<dt>Tenant</dt><dd>' . AdminLayout::escape((string) ($job['tenant_slug'] ?? $job['tenant_id'] ?? '')) . '</dd>'
@@ -58,6 +77,8 @@ final class JobsController
             . '</dl>'
             . '<h2>Payload</h2><pre>' . AdminLayout::escape((string) $payloadPretty) . '</pre>'
             . '<h2>Last Error</h2><pre>' . AdminLayout::escape((string) ($job['last_error'] ?? '')) . '</pre>'
+            . '<h2>Attempt History</h2>'
+            . '<table class="admin-table"><thead><tr><th>ID</th><th>Status</th><th>Message</th><th>Started</th><th>Finished</th><th>Created</th></tr></thead><tbody>' . $attemptRows . '</tbody></table>'
             . '<p><a class="admin-button" href="/admin/jobs">Back to jobs</a></p>';
 
         return Response::html(AdminLayout::render(
@@ -153,7 +174,7 @@ HTML;
                 . '<td>' . AdminLayout::escape((string) ($job['tenant_slug'] ?? $job['tenant_id'] ?? '')) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $job['job_type']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $job['status']) . '</td>'
-                . '<td>' . AdminLayout::escape((string) ($job['attempts'] ?? '')) . '</td>'
+                . '<td>' . AdminLayout::escape((string) ($job['attempts'] ?? '')) . ' / ' . AdminLayout::escape((string) ($job['attempt_history_count'] ?? 0)) . '</td>'
                 . '<td><code>' . AdminLayout::escape($payloadPreview) . '</code></td>'
                 . '<td>' . AdminLayout::escape($errorPreview) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $job['created_at']) . '</td>'
