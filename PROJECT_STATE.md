@@ -535,3 +535,11 @@
 - Domain actions queue existing background job types.
 - Added audit logging and flash messages for queued domain actions.
 - Added manual platform domain action verification script and documentation.
+
+## 2026-05-17 03:45 Europe/Bucharest
+
+- Added JobAdminRepository for platform background job reads.
+- Added platform GET /admin/jobs screen.
+- Added status and job_type filters for background jobs.
+- Added Jobs links to platform dashboard and route map.
+- Added manual background job list verification script and documentation.

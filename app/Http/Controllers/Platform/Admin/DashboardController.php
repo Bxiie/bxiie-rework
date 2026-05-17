@@ -34,6 +34,7 @@ final class DashboardController
 <ul>
     <li><a href="/admin/tenants">Tenants</a></li>
     <li><a href="/admin/domains">Custom domains</a></li>
+    <li><a href="/admin/jobs">Background jobs</a></li>
     <li><a href="/admin/email-outbox">Email outbox</a></li>
     <li><a href="/admin/audit-log">Audit log</a></li>
     <li><a href="/admin/platform-settings">Platform settings</a></li>
@@ -47,6 +48,7 @@ HTML;
                 '/admin' => 'Dashboard',
                 '/admin/tenants' => 'Tenants',
                 '/admin/domains' => 'Domains',
+                '/admin/jobs' => 'Jobs',
                 '/admin/email-outbox' => 'Email Outbox',
                 '/admin/audit-log' => 'Audit Log',
                 '/admin/platform-settings' => 'Settings',
