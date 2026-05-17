@@ -2,7 +2,7 @@
 
 ## Scope
 
-The preflight script runs syntax checks, migration integrity checks, and core smoke tests before commits.
+The preflight script runs syntax checks, migration integrity checks, and local smoke tests before commits.
 
 ## Command
 
@@ -14,8 +14,9 @@ cd /Users/bxiie/Dropbox/tcdev/artsfolio
 ## Current coverage
 
 ```text
-PHP syntax checks under app, public, scripts
-migration integrity checker
+PHP syntax checks
+shell syntax checks
+migration integrity
 tenant resolution
 rate limiter
 API scope checks
@@ -27,16 +28,22 @@ email verification
 email sender factory
 email outbox queueing
 dry-run email worker
-audit log write
+audit log write/search
+platform admin role/list/settings/audit checks
+tenant admin role/list/settings/audit checks
+contact/signup persistence
+contact status actions
+email signup consent actions
+CSV response generation
+HTTP smoke tests when available
+public contact/signup route smoke tests when available
 ```
 
-## When to run
+## Behavior
 
-Run before each commit during platform refactor work.
+Missing optional smoke test scripts are skipped instead of failing preflight.
 
-## Notes
-
-The script assumes:
+## Assumptions
 
 ```text
 local MariaDB Docker container is running

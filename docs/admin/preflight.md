@@ -8,9 +8,9 @@
 
 ## Purpose
 
-Preflight provides a basic local confidence check before pushing platform refactor changes.
+Preflight provides a basic local confidence check before committing platform refactor changes.
 
-## Production deployment note
+## Deployment note
 
 This is not a replacement for CI/CD.
 
@@ -20,8 +20,8 @@ Before production deployment, add:
 CI runner
 database reset test
 migration up/down strategy
-HTTP route smoke tests
-browser tests for auth
+HTTP route smoke tests against deployed hostnames
+browser tests for auth/admin flows
 API tests
 security checks
 static analysis

@@ -450,3 +450,10 @@
 - Tenant audit log is forced to the current tenant ID.
 - Added tenant admin dashboard link for audit log.
 - Added manual tenant audit log verification script and documentation.
+
+## 2026-05-17 00:55 Europe/Bucharest
+
+- Expanded local preflight runner to include recent platform/tenant admin, audit, CSV, contact/signup, and consent smoke tests.
+- Added shell syntax checks for scripts.
+- Kept missing optional tests as skips rather than hard failures.
+- Refreshed preflight documentation.
