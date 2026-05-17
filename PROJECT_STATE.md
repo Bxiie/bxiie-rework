@@ -415,3 +415,10 @@
 - Email signup consent changes can write tenant.email_signup.consent_changed.
 - Wired AuditLogRepository into tenant admin status/consent controllers.
 - Added manual tenant admin action audit inspection script and documentation.
+
+## 2026-05-16 23:35 Europe/Bucharest
+
+- Added tenant settings audit logging hook.
+- Tenant admin POST /admin/settings can now write tenant.settings.updated audit rows.
+- Wired AuditLogRepository into tenant settings controller route construction.
+- Added manual tenant settings audit inspection script and documentation.

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Tenant\Admin;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
+use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Security\CsrfTokenService;
@@ -21,6 +22,7 @@ final class SettingsController
         private readonly RequireTenantRoleBrowser $roles,
         private readonly TenantSettingsRepository $settings,
         private readonly CsrfTokenService $csrf,
+        private readonly ?AuditLogRepository $auditLog = null,
     ) {
     }
 
@@ -87,8 +89,26 @@ HTML);
             return Response::html('<h1>Invalid site admin email</h1>', 422);
         }
 
+        $before = [
+            'site_title' => $this->settings->get($tenant, 'site_title', $tenant->name),
+            'site_admin_email' => $this->settings->get($tenant, 'site_admin_email', ''),
+        ];
+
         $this->settings->set($tenant, 'site_title', $siteTitle);
         $this->settings->set($tenant, 'site_admin_email', $siteAdminEmail);
+
+        $this->auditAction(
+            request: $request,
+            tenant: $tenant,
+            currentUser: $currentUser,
+            details: [
+                'before' => $before,
+                'after' => [
+                    'site_title' => $siteTitle,
+                    'site_admin_email' => $siteAdminEmail,
+                ],
+            ],
+        );
 
         return Response::html(<<<HTML
 <!doctype html>
@@ -105,6 +125,27 @@ HTML);
 </body>
 </html>
 HTML);
+    }
+
+    private function auditAction(
+        Request $request,
+        TenantContext $tenant,
+        ?array $currentUser,
+        array $details = [],
+    ): void {
+        if (!$this->auditLog) {
+            return;
+        }
+
+        $this->auditLog->record(
+            action: 'tenant.settings.updated',
+            tenantId: $tenant->tenantId,
+            userId: isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
+            entityType: 'tenant_settings',
+            entityId: (string) $tenant->tenantId,
+            details: $details,
+            ipAddress: $request->server('REMOTE_ADDR'),
+        );
     }
 
     private function canManageSettings(?array $currentUser, TenantContext $tenant): bool
