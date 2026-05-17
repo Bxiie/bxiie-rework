@@ -457,3 +457,10 @@
 - Added shell syntax checks for scripts.
 - Kept missing optional tests as skips rather than hard failures.
 - Refreshed preflight documentation.
+
+## 2026-05-17 01:10 Europe/Bucharest
+
+- Added shared admin CSS at public/assets/css/admin.css.
+- Added AdminLayout helper for future admin screen rendering.
+- Added manual admin layout verification script.
+- Added dev/admin/user documentation for admin layout foundation.
