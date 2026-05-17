@@ -9,9 +9,10 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
+use App\Support\Csv\CsvResponse;
 
 /**
- * Handles platform-admin audit log list screen.
+ * Handles platform-admin audit log list and export screens.
  */
 final class AuditLogController
 {
@@ -23,7 +24,7 @@ final class AuditLogController
 
     public function index(Request $request, ?array $currentUser): Response
     {
-        if (!$this->roles->allows($currentUser, [Roles::PLATFORM_OWNER, Roles::PLATFORM_ADMIN, Roles::PLATFORM_SUPPORT])) {
+        if (!$this->canView($currentUser)) {
             return Response::html('<h1>Forbidden</h1><p>Platform admin access required.</p>', 403);
         }
 
@@ -31,16 +32,14 @@ final class AuditLogController
         $tenantId = $this->positiveIntOrNull($_GET['tenant_id'] ?? null);
         $userId = $this->positiveIntOrNull($_GET['user_id'] ?? null);
 
-        $events = $this->auditLog->search(
+        $rows = '';
+
+        foreach ($this->auditLog->search(
             action: $action !== '' ? $action : null,
             tenantId: $tenantId,
             userId: $userId,
             limit: 100,
-        );
-
-        $rows = '';
-
-        foreach ($events as $event) {
+        ) as $event) {
             $rows .= '<tr>'
                 . '<td>' . $this->escape((string) $event['id']) . '</td>'
                 . '<td>' . $this->escape((string) ($event['tenant_id'] ?? '')) . '</td>'
@@ -60,6 +59,9 @@ final class AuditLogController
         $actionValue = $this->escape($action);
         $tenantValue = $tenantId !== null ? $this->escape((string) $tenantId) : '';
         $userValue = $userId !== null ? $this->escape((string) $userId) : '';
+        $exportUrl = '/admin/audit-log.csv?action=' . rawurlencode($action)
+            . '&tenant_id=' . rawurlencode($tenantValue)
+            . '&user_id=' . rawurlencode($userValue);
 
         return Response::html(<<<HTML
 <!doctype html>
@@ -71,6 +73,7 @@ final class AuditLogController
 </head>
 <body>
 <h1>Audit Log</h1>
+<p><a href="{$exportUrl}">Export CSV</a></p>
 
 <form method="get" action="/admin/audit-log">
     <p>
@@ -114,6 +117,52 @@ final class AuditLogController
 </body>
 </html>
 HTML);
+    }
+
+    public function export(Request $request, ?array $currentUser): Response
+    {
+        if (!$this->canView($currentUser)) {
+            return Response::html('<h1>Forbidden</h1><p>Platform admin access required.</p>', 403);
+        }
+
+        $action = trim((string) ($_GET['action'] ?? ''));
+        $tenantId = $this->positiveIntOrNull($_GET['tenant_id'] ?? null);
+        $userId = $this->positiveIntOrNull($_GET['user_id'] ?? null);
+
+        $rows = [];
+
+        foreach ($this->auditLog->search(
+            action: $action !== '' ? $action : null,
+            tenantId: $tenantId,
+            userId: $userId,
+            limit: 5000,
+        ) as $event) {
+            $rows[] = [
+                'id' => (string) $event['id'],
+                'tenant_id' => (string) ($event['tenant_id'] ?? ''),
+                'user_id' => (string) ($event['user_id'] ?? ''),
+                'action' => (string) $event['action'],
+                'entity_type' => (string) ($event['entity_type'] ?? ''),
+                'entity_id' => (string) ($event['entity_id'] ?? ''),
+                'details' => (string) ($event['details'] ?? ''),
+                'ip_address' => (string) ($event['ip_address'] ?? ''),
+                'created_at' => (string) $event['created_at'],
+            ];
+        }
+
+        return CsvResponse::download(
+            filename: 'platform-audit-log.csv',
+            headers: ['id', 'tenant_id', 'user_id', 'action', 'entity_type', 'entity_id', 'details', 'ip_address', 'created_at'],
+            rows: $rows,
+        );
+    }
+
+    private function canView(?array $currentUser): bool
+    {
+        return $this->roles->allows(
+            currentUser: $currentUser,
+            allowedRoles: [Roles::PLATFORM_OWNER, Roles::PLATFORM_ADMIN, Roles::PLATFORM_SUPPORT],
+        );
     }
 
     private function positiveIntOrNull(mixed $value): ?int

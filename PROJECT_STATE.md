@@ -436,3 +436,9 @@
 - Added platform audit log filters for action, tenant ID, and user ID.
 - Updated platform audit log screen with filter form.
 - Added manual audit log search verification script and documentation.
+
+## 2026-05-17 00:20 Europe/Bucharest
+
+- Added platform audit log CSV export route.
+- Export supports the same action, tenant_id, and user_id filters as the audit log screen.
+- Added dev/admin documentation for platform audit log CSV export.
