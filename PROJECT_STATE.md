@@ -584,3 +584,11 @@
 - Cancel action now records admin_cancelled attempt-history rows.
 - Wired JobAttemptRepository into JobAdminService construction in public routes.
 - Added manual job action attempt-history verification script and documentation.
+
+## 2026-05-17 05:20 Europe/Bucharest
+
+- Added worker_heartbeats table.
+- Added WorkerHeartbeatRepository.
+- Added platform GET /admin/workers screen.
+- Added Workers links to platform dashboard and route map.
+- Added manual worker heartbeat verification script and documentation.

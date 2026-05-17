@@ -15,6 +15,7 @@ use App\Http\Controllers\Platform\Admin\RoutesController as PlatformAdminRoutesC
 use App\Http\Controllers\Platform\Admin\EmailOutboxController as PlatformAdminEmailOutboxController;
 use App\Http\Controllers\Platform\Admin\DomainsController as PlatformAdminDomainsController;
 use App\Http\Controllers\Platform\Admin\JobsController as PlatformAdminJobsController;
+use App\Http\Controllers\Platform\Admin\WorkersController as PlatformAdminWorkersController;
 use App\Http\Controllers\Platform\Admin\AuditLogController as PlatformAdminAuditLogController;
 use App\Http\Controllers\Platform\Admin\TenantsController as PlatformAdminTenantsController;
 use App\Http\Controllers\Platform\HomeController as PlatformHomeController;
@@ -43,6 +44,7 @@ use App\Platform\Domains\DomainAdminService;
 use App\Platform\Jobs\JobAdminRepository;
 use App\Platform\Jobs\JobAdminService;
 use App\Platform\Jobs\JobAttemptRepository;
+use App\Platform\Workers\WorkerHeartbeatRepository;
 use App\Platform\Auth\OAuth\BearerTokenRepository;
 use App\Platform\Auth\OAuth\BearerTokenService;
 use App\Platform\Auth\Password\PasswordAuthService;
@@ -170,6 +172,7 @@ try {
     $router->get('/admin/tenants', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo)))->index($request, $currentUser));
     $router->get('/admin/domains', fn (Request $request): Response => (new PlatformAdminDomainsController(new RequirePlatformRole(new MembershipRepository($pdo)), new DomainAdminRepository($pdo), new DomainAdminService($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
     $router->get('/admin/jobs', fn (Request $request): Response => (new PlatformAdminJobsController(new RequirePlatformRole(new MembershipRepository($pdo)), new JobAdminRepository($pdo), new JobAdminService($pdo, new JobAttemptRepository($pdo)), new CsrfTokenService(), new AuditLogRepository($pdo), new JobAttemptRepository($pdo)))->index($request, $currentUser));
+    $router->get('/admin/workers', fn (Request $request): Response => (new PlatformAdminWorkersController(new RequirePlatformRole(new MembershipRepository($pdo)), new WorkerHeartbeatRepository($pdo)))->index($request, $currentUser));
     $router->get('/admin/jobs/{id}', fn (Request $request, string $id): Response => (new PlatformAdminJobsController(new RequirePlatformRole(new MembershipRepository($pdo)), new JobAdminRepository($pdo), new JobAdminService($pdo, new JobAttemptRepository($pdo)), new CsrfTokenService(), new AuditLogRepository($pdo), new JobAttemptRepository($pdo)))->show($request, $currentUser, (int) $id));
     $router->post('/admin/jobs/action', fn (Request $request): Response => (new PlatformAdminJobsController(new RequirePlatformRole(new MembershipRepository($pdo)), new JobAdminRepository($pdo), new JobAdminService($pdo, new JobAttemptRepository($pdo)), new CsrfTokenService(), new AuditLogRepository($pdo), new JobAttemptRepository($pdo)))->action($request, $currentUser));
     $router->post('/admin/domains/action', fn (Request $request): Response => (new PlatformAdminDomainsController(new RequirePlatformRole(new MembershipRepository($pdo)), new DomainAdminRepository($pdo), new DomainAdminService($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->action($request, $currentUser));

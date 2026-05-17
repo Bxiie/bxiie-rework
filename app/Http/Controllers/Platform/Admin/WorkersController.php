@@ -9,14 +9,16 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Http\View\AdminLayout;
 use App\Platform\Membership\Roles;
+use App\Platform\Workers\WorkerHeartbeatRepository;
 
 /**
- * Shows the current platform-admin route map.
+ * Handles platform-admin worker heartbeat screen.
  */
-final class RoutesController
+final class WorkersController
 {
     public function __construct(
         private readonly RequirePlatformRole $roles,
+        private readonly WorkerHeartbeatRepository $heartbeats,
     ) {
     }
 
@@ -26,39 +28,37 @@ final class RoutesController
             return Response::html('<h1>Forbidden</h1><p>Platform admin access required.</p>', 403);
         }
 
-        $routes = [
-            ['GET', '/admin', 'Platform dashboard'],
-            ['GET', '/admin/tenants', 'Tenant list'],
-            ['GET', '/admin/domains', 'Custom domain list'],
-            ['GET', '/admin/jobs', 'Background job list'],
-            ['GET', '/admin/workers', 'Worker heartbeat list'],
-            ['GET', '/admin/email-outbox', 'Email outbox'],
-            ['GET', '/admin/audit-log', 'Audit log'],
-            ['GET', '/admin/audit-log.csv', 'Audit log CSV export'],
-            ['GET', '/admin/platform-settings', 'Platform settings form'],
-            ['POST', '/admin/platform-settings', 'Save platform settings'],
-            ['GET', '/admin/routes', 'Platform route map'],
-        ];
-
         $rows = '';
 
-        foreach ($routes as [$method, $path, $description]) {
+        foreach ($this->heartbeats->latest(100) as $worker) {
+            $detailsPreview = mb_substr((string) ($worker['details'] ?? ''), 0, 180);
+
             $rows .= '<tr>'
-                . '<td>' . AdminLayout::escape($method) . '</td>'
-                . '<td><code>' . AdminLayout::escape($path) . '</code></td>'
-                . '<td>' . AdminLayout::escape($description) . '</td>'
+                . '<td>' . AdminLayout::escape((string) $worker['worker_name']) . '</td>'
+                . '<td>' . AdminLayout::escape((string) ($worker['host_name'] ?? '')) . '</td>'
+                . '<td>' . AdminLayout::escape((string) ($worker['process_id'] ?? '')) . '</td>'
+                . '<td>' . AdminLayout::escape((string) $worker['status']) . '</td>'
+                . '<td>' . AdminLayout::escape((string) $worker['last_seen_at']) . '</td>'
+                . '<td><code>' . AdminLayout::escape($detailsPreview) . '</code></td>'
                 . '</tr>';
         }
 
+        if ($rows === '') {
+            $rows = '<tr><td colspan="6">No worker heartbeats found.</td></tr>';
+        }
+
         return Response::html(AdminLayout::render(
-            title: 'Platform Admin Routes',
+            title: 'Workers | Platform Admin',
             body: <<<HTML
 <table class="admin-table">
     <thead>
         <tr>
-            <th>Method</th>
-            <th>Route</th>
-            <th>Description</th>
+            <th>Worker</th>
+            <th>Host</th>
+            <th>PID</th>
+            <th>Status</th>
+            <th>Last Seen</th>
+            <th>Details</th>
         </tr>
     </thead>
     <tbody>
