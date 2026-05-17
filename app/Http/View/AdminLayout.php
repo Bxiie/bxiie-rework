@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\View;
 
+use App\Support\Flash\FlashMessages;
+
 /**
  * Renders simple shared admin HTML layout.
  */
@@ -16,6 +18,7 @@ final class AdminLayout
     {
         $safeTitle = self::escape($title);
         $navHtml = '';
+        $flashes = FlashMessages::consumeHtml();
 
         foreach ($nav as $href => $label) {
             $navHtml .= '<a href="' . self::escape($href) . '">' . self::escape($label) . '</a>';
@@ -40,6 +43,7 @@ final class AdminLayout
             <h1>{$safeTitle}</h1>
         </header>
         {$navHtml}
+        {$flashes}
         <section class="admin-card">
 {$body}
         </section>

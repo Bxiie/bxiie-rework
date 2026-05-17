@@ -13,6 +13,7 @@ use App\Platform\Membership\Roles;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Csv\CsvResponse;
 use App\Support\Pagination\Pagination;
+use App\Support\Flash\FlashMessages;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Contact\ContactMessageRepository;
 
@@ -136,6 +137,7 @@ HTML,
 
         try {
             $this->messages->updateStatus($tenant, $messageId, $status);
+            FlashMessages::success('Contact message status updated.');
             $this->auditAction(
                 request: $request,
                 tenant: $tenant,

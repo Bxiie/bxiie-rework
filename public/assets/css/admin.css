@@ -150,3 +150,28 @@ button:hover {
 }
 
 /* End of file. */
+
+
+.admin-flashes {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 16px;
+}
+
+.admin-flash {
+    margin: 0;
+    border: 1px solid var(--admin-border);
+    border-radius: 14px;
+    background: var(--admin-panel);
+    padding: 10px 12px;
+}
+
+.admin-flash-success {
+    border-color: var(--admin-accent);
+    color: var(--admin-accent-strong);
+}
+
+.admin-flash-error {
+    border-color: var(--admin-danger);
+    color: var(--admin-danger);
+}

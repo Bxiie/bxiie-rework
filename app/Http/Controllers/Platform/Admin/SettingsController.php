@@ -11,6 +11,7 @@ use App\Http\View\AdminLayout;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
 use App\Platform\Settings\PlatformSettingsRepository;
+use App\Support\Flash\FlashMessages;
 use App\Support\Security\CsrfTokenService;
 
 /**
@@ -105,6 +106,7 @@ HTML,
         $this->settings->set('platform_name', $platformName);
         $this->settings->set('support_email', $supportEmail);
         $this->settings->set('expected_ipv4', $expectedIpv4);
+        FlashMessages::success('Platform settings saved.');
 
         $this->auditAction(
             request: $request,

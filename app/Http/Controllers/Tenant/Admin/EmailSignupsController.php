@@ -13,6 +13,7 @@ use App\Platform\Membership\Roles;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Csv\CsvResponse;
 use App\Support\Pagination\Pagination;
+use App\Support\Flash\FlashMessages;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Signup\EmailSignupRepository;
 
@@ -127,6 +128,7 @@ HTML,
 
         try {
             $this->signups->updateConsentStatus($tenant, $signupId, $status);
+            FlashMessages::success('Email signup consent updated.');
             $this->auditAction(
                 request: $request,
                 tenant: $tenant,

@@ -11,6 +11,7 @@ use App\Http\View\AdminLayout;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
 use App\Platform\Tenancy\TenantContext;
+use App\Support\Flash\FlashMessages;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Settings\TenantSettingsRepository;
 
@@ -93,6 +94,7 @@ HTML,
 
         $this->settings->set($tenant, 'site_title', $siteTitle);
         $this->settings->set($tenant, 'site_admin_email', $siteAdminEmail);
+        FlashMessages::success('Tenant settings saved.');
 
         $this->auditAction(
             request: $request,

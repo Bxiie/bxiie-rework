@@ -497,3 +497,11 @@
 - Added offset support to audit log, contact message, and email signup repository reads.
 - Added basic pagination to platform audit log, tenant audit log, tenant contact messages, and tenant email signups.
 - Added pagination smoke test and documentation.
+
+## 2026-05-17 02:40 Europe/Bucharest
+
+- Added session-backed FlashMessages helper.
+- Updated AdminLayout to render flash messages.
+- Added admin CSS for success/error flash messages.
+- Added success flashes for contact message status, email signup consent, tenant settings, and platform settings actions.
+- Added flash message smoke test and documentation.
