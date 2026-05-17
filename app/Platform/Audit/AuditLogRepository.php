@@ -68,6 +68,7 @@ final class AuditLogRepository
         ?int $tenantId = null,
         ?int $userId = null,
         int $limit = 100,
+        int $offset = 0,
     ): array {
         $where = [];
         $params = [];
@@ -93,7 +94,7 @@ final class AuditLogRepository
             $sql .= " WHERE " . implode(" AND ", $where);
         }
 
-        $sql .= " ORDER BY id DESC LIMIT :limit_count";
+        $sql .= " ORDER BY id DESC LIMIT :limit_count OFFSET :offset_count";
 
         $stmt = $this->pdo->prepare($sql);
 
@@ -102,6 +103,7 @@ final class AuditLogRepository
         }
 
         $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
+        $stmt->bindValue('offset_count', $offset, PDO::PARAM_INT);
         $stmt->execute();
 
         return $stmt->fetchAll();

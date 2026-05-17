@@ -12,6 +12,7 @@ use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Csv\CsvResponse;
+use App\Support\Pagination\Pagination;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Signup\EmailSignupRepository;
 
@@ -36,8 +37,11 @@ final class EmailSignupsController
 
         $rows = '';
         $csrf = $this->escape($this->csrf?->getOrCreate() ?? '');
+        $page = Pagination::pageFromQuery($_GET['page'] ?? 1);
+        $limit = Pagination::limitFromQuery($_GET['limit'] ?? 50);
+        $offset = Pagination::offset($page, $limit);
 
-        foreach ($this->signups->latestForTenant($tenant, 50) as $signup) {
+        foreach ($this->signups->latestForTenant($tenant, $limit, $offset) as $signup) {
             $id = (int) $signup['id'];
 
             $actions = <<<HTML

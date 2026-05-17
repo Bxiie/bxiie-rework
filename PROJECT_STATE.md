@@ -490,3 +490,10 @@
 - Migrated platform settings form to shared AdminLayout.
 - Migrated tenant settings form to shared AdminLayout.
 - Added settings layout smoke test and documentation.
+
+## 2026-05-17 02:25 Europe/Bucharest
+
+- Added Pagination helper.
+- Added offset support to audit log, contact message, and email signup repository reads.
+- Added basic pagination to platform audit log, tenant audit log, tenant contact messages, and tenant email signups.
+- Added pagination smoke test and documentation.

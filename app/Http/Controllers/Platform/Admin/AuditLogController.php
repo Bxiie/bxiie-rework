@@ -11,6 +11,7 @@ use App\Http\View\AdminLayout;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
 use App\Support\Csv\CsvResponse;
+use App\Support\Pagination\Pagination;
 
 /**
  * Handles platform-admin audit log list and export screens.
@@ -32,6 +33,9 @@ final class AuditLogController
         $action = trim((string) ($_GET['action'] ?? ''));
         $tenantId = $this->positiveIntOrNull($_GET['tenant_id'] ?? null);
         $userId = $this->positiveIntOrNull($_GET['user_id'] ?? null);
+        $page = Pagination::pageFromQuery($_GET['page'] ?? 1);
+        $limit = Pagination::limitFromQuery($_GET['limit'] ?? 50);
+        $offset = Pagination::offset($page, $limit);
 
         $rows = '';
 
@@ -39,7 +43,8 @@ final class AuditLogController
             action: $action !== '' ? $action : null,
             tenantId: $tenantId,
             userId: $userId,
-            limit: 100,
+            limit: $limit,
+            offset: $offset,
         ) as $event) {
             $rows .= '<tr>'
                 . '<td>' . $this->escape((string) $event['id']) . '</td>'
@@ -60,9 +65,15 @@ final class AuditLogController
         $actionValue = $this->escape($action);
         $tenantValue = $tenantId !== null ? $this->escape((string) $tenantId) : '';
         $userValue = $userId !== null ? $this->escape((string) $userId) : '';
-        $exportUrl = '/admin/audit-log.csv?action=' . rawurlencode($action)
-            . '&tenant_id=' . rawurlencode($tenantValue)
-            . '&user_id=' . rawurlencode($userValue);
+        $query = ['action' => $action, 'tenant_id' => $tenantValue, 'user_id' => $userValue, 'limit' => $limit];
+        $exportUrl = '/admin/audit-log.csv?' . http_build_query($query);
+        $prevUrl = Pagination::previousPageUrl('/admin/audit-log', $query, $page);
+        $nextUrl = Pagination::nextPageUrl('/admin/audit-log', $query, $page);
+        $pager = '<p>'
+            . ($prevUrl ? '<a class="admin-button" href="' . $this->escape($prevUrl) . '">Previous</a> ' : '')
+            . '<span class="admin-muted">Page ' . $page . '</span> '
+            . '<a class="admin-button" href="' . $this->escape($nextUrl) . '">Next</a>'
+            . '</p>';
 
         return Response::html(AdminLayout::render(
             title: 'Audit Log | Platform Admin',
@@ -134,6 +145,7 @@ HTML,
             tenantId: $tenantId,
             userId: $userId,
             limit: 5000,
+            offset: 0,
         ) as $event) {
             $rows[] = [
                 'id' => (string) $event['id'],

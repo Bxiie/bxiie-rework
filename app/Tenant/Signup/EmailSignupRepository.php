@@ -96,18 +96,19 @@ final class EmailSignupRepository
         ]);
     }
 
-    public function latestForTenant(TenantContext $tenant, int $limit = 20): array
+    public function latestForTenant(TenantContext $tenant, int $limit = 20, int $offset = 0): array
     {
         $stmt = $this->pdo->prepare(
             "SELECT *
              FROM email_signups
              WHERE tenant_id = :tenant_id
              ORDER BY id DESC
-             LIMIT :limit_count"
+             LIMIT :limit_count OFFSET :offset_count"
         );
 
         $stmt->bindValue('tenant_id', $tenant->tenantId, PDO::PARAM_INT);
         $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
+        $stmt->bindValue('offset_count', $offset, PDO::PARAM_INT);
         $stmt->execute();
 
         return $stmt->fetchAll();
