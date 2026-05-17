@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Platform\Admin;
 use App\Http\Middleware\RequirePlatformRole;
 use App\Http\Request;
 use App\Http\Response;
+use App\Http\View\AdminLayout;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
 use App\Platform\Settings\PlatformSettingsRepository;
@@ -36,18 +37,10 @@ final class SettingsController
         $supportEmail = $this->escape($this->settings->get('support_email', ''));
         $expectedIpv4 = $this->escape($this->settings->get('expected_ipv4', getenv('ARTSFOLIO_EXPECTED_IPV4') ?: ''));
 
-        return Response::html(<<<HTML
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Platform Settings | ArtsFolio</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-<h1>Platform Settings</h1>
-
-<form method="post" action="/admin/platform-settings">
+        return Response::html(AdminLayout::render(
+            title: 'Platform Settings | ArtsFolio',
+            body: <<<HTML
+<form class="admin-form" method="post" action="/admin/platform-settings">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <p>
         <label>Platform name<br>
@@ -66,11 +59,15 @@ final class SettingsController
     </p>
     <button type="submit">Save platform settings</button>
 </form>
-
-<p><a href="/admin">Back to platform admin</a></p>
-</body>
-</html>
-HTML);
+HTML,
+            nav: [
+                '/admin' => 'Dashboard',
+                '/admin/tenants' => 'Tenants',
+                '/admin/email-outbox' => 'Email Outbox',
+                '/admin/audit-log' => 'Audit Log',
+                '/admin/platform-settings' => 'Settings',
+            ],
+        ));
     }
 
     public function update(Request $request, ?array $currentUser): Response
@@ -122,21 +119,17 @@ HTML);
             ],
         );
 
-        return Response::html(<<<HTML
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Platform settings saved</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-<h1>Platform settings saved</h1>
-<p>Platform settings have been updated.</p>
-<p><a href="/admin/platform-settings">Back to platform settings</a></p>
-</body>
-</html>
-HTML);
+        return Response::html(AdminLayout::render(
+            title: 'Platform settings saved',
+            body: '<p>Platform settings have been updated.</p><p><a class="admin-button" href="/admin/platform-settings">Back to platform settings</a></p>',
+            nav: [
+                '/admin' => 'Dashboard',
+                '/admin/tenants' => 'Tenants',
+                '/admin/email-outbox' => 'Email Outbox',
+                '/admin/audit-log' => 'Audit Log',
+                '/admin/platform-settings' => 'Settings',
+            ],
+        ));
     }
 
     private function auditAction(
@@ -168,7 +161,7 @@ HTML);
 
     private function escape(string $value): string
     {
-        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        return AdminLayout::escape($value);
     }
 }
 

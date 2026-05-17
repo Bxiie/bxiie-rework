@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Tenant\Admin;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
+use App\Http\View\AdminLayout;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
 use App\Platform\Tenancy\TenantContext;
@@ -36,18 +37,10 @@ final class SettingsController
         $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
         $siteAdminEmail = $this->escape($this->settings->get($tenant, 'site_admin_email', ''));
 
-        return Response::html(<<<HTML
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Tenant Settings</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-<h1>Tenant Settings</h1>
-
-<form method="post" action="/admin/settings">
+        return Response::html(AdminLayout::render(
+            title: 'Tenant Settings',
+            body: <<<HTML
+<form class="admin-form" method="post" action="/admin/settings">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <p>
         <label>Site title<br>
@@ -61,11 +54,15 @@ final class SettingsController
     </p>
     <button type="submit">Save settings</button>
 </form>
-
-<p><a href="/admin">Back to tenant admin</a></p>
-</body>
-</html>
-HTML);
+HTML,
+            nav: [
+                '/admin' => 'Dashboard',
+                '/admin/settings' => 'Settings',
+                '/admin/contact-messages' => 'Contact Messages',
+                '/admin/email-signups' => 'Email Signups',
+                '/admin/audit-log' => 'Audit Log',
+            ],
+        ));
     }
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -110,21 +107,17 @@ HTML);
             ],
         );
 
-        return Response::html(<<<HTML
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Settings saved</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-<h1>Settings saved</h1>
-<p>Tenant settings have been updated.</p>
-<p><a href="/admin/settings">Back to settings</a></p>
-</body>
-</html>
-HTML);
+        return Response::html(AdminLayout::render(
+            title: 'Settings saved',
+            body: '<p>Tenant settings have been updated.</p><p><a class="admin-button" href="/admin/settings">Back to settings</a></p>',
+            nav: [
+                '/admin' => 'Dashboard',
+                '/admin/settings' => 'Settings',
+                '/admin/contact-messages' => 'Contact Messages',
+                '/admin/email-signups' => 'Email Signups',
+                '/admin/audit-log' => 'Audit Log',
+            ],
+        ));
     }
 
     private function auditAction(
@@ -159,7 +152,7 @@ HTML);
 
     private function escape(string $value): string
     {
-        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        return AdminLayout::escape($value);
     }
 }
 

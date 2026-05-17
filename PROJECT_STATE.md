@@ -484,3 +484,9 @@
 - Migrated tenant email signups screen to shared AdminLayout.
 - Migrated tenant audit log screen to shared AdminLayout.
 - Added tenant admin layout smoke test and documentation.
+
+## 2026-05-17 02:10 Europe/Bucharest
+
+- Migrated platform settings form to shared AdminLayout.
+- Migrated tenant settings form to shared AdminLayout.
+- Added settings layout smoke test and documentation.
