@@ -561,3 +561,10 @@
 - Added cancelled as a first-class background_jobs.status value.
 - Updated JobAdminService cancel action to mark queued jobs cancelled.
 - Added manual cancelled-status verification script and documentation.
+
+## 2026-05-17 04:35 Europe/Bucharest
+
+- Added JobAdminRepository::find.
+- Added platform background job detail route GET /admin/jobs/{id}.
+- Linked job IDs from the job list to job detail.
+- Added manual job detail verification script and documentation.

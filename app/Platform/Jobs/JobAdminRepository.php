@@ -16,6 +16,32 @@ final class JobAdminRepository
     ) {
     }
 
+    public function find(int $jobId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT
+                bj.id,
+                bj.tenant_id,
+                t.slug AS tenant_slug,
+                bj.job_type,
+                bj.status,
+                bj.attempts,
+                bj.payload,
+                bj.last_error,
+                bj.created_at,
+                bj.updated_at
+             FROM background_jobs bj
+             LEFT JOIN tenants t ON t.id = bj.tenant_id
+             WHERE bj.id = :id
+             LIMIT 1"
+        );
+
+        $stmt->execute(['id' => $jobId]);
+        $row = $stmt->fetch();
+
+        return $row ?: null;
+    }
+
     public function latest(?string $status = null, ?string $jobType = null, int $limit = 100, int $offset = 0): array
     {
         $where = [];

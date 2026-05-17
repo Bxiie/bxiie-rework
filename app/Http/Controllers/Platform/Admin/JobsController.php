@@ -17,7 +17,7 @@ use App\Support\Pagination\Pagination;
 use App\Support\Security\CsrfTokenService;
 
 /**
- * Handles platform-admin background job list and maintenance actions.
+ * Handles platform-admin background job list, detail, and maintenance actions.
  */
 final class JobsController
 {
@@ -28,6 +28,48 @@ final class JobsController
         private readonly ?CsrfTokenService $csrf = null,
         private readonly ?AuditLogRepository $auditLog = null,
     ) {
+    }
+
+    public function show(Request $request, ?array $currentUser, int $jobId): Response
+    {
+        if (!$this->roles->allows($currentUser, [Roles::PLATFORM_OWNER, Roles::PLATFORM_ADMIN, Roles::PLATFORM_SUPPORT])) {
+            return Response::html('<h1>Forbidden</h1><p>Platform admin access required.</p>', 403);
+        }
+
+        $job = $this->jobs->find($jobId);
+
+        if (!$job) {
+            return Response::html('<h1>Job not found</h1>', 404);
+        }
+
+        $payload = json_decode((string) ($job['payload'] ?? ''), true);
+        $payloadPretty = $payload === null
+            ? (string) ($job['payload'] ?? '')
+            : json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        $body = '<dl>'
+            . '<dt>ID</dt><dd>' . AdminLayout::escape((string) $job['id']) . '</dd>'
+            . '<dt>Tenant</dt><dd>' . AdminLayout::escape((string) ($job['tenant_slug'] ?? $job['tenant_id'] ?? '')) . '</dd>'
+            . '<dt>Type</dt><dd>' . AdminLayout::escape((string) $job['job_type']) . '</dd>'
+            . '<dt>Status</dt><dd>' . AdminLayout::escape((string) $job['status']) . '</dd>'
+            . '<dt>Attempts</dt><dd>' . AdminLayout::escape((string) ($job['attempts'] ?? '')) . '</dd>'
+            . '<dt>Created</dt><dd>' . AdminLayout::escape((string) $job['created_at']) . '</dd>'
+            . '<dt>Updated</dt><dd>' . AdminLayout::escape((string) ($job['updated_at'] ?? '')) . '</dd>'
+            . '</dl>'
+            . '<h2>Payload</h2><pre>' . AdminLayout::escape((string) $payloadPretty) . '</pre>'
+            . '<h2>Last Error</h2><pre>' . AdminLayout::escape((string) ($job['last_error'] ?? '')) . '</pre>'
+            . '<p><a class="admin-button" href="/admin/jobs">Back to jobs</a></p>';
+
+        return Response::html(AdminLayout::render(
+            title: 'Background Job #' . $jobId,
+            body: $body,
+            nav: [
+                '/admin' => 'Dashboard',
+                '/admin/jobs' => 'Jobs',
+                '/admin/audit-log' => 'Audit Log',
+                '/admin/routes' => 'Routes',
+            ],
+        ));
     }
 
     public function action(Request $request, ?array $currentUser): Response
@@ -107,7 +149,7 @@ final class JobsController
 HTML;
 
             $rows .= '<tr>'
-                . '<td>' . AdminLayout::escape((string) $job['id']) . '</td>'
+                . '<td><a href="/admin/jobs/' . $jobId . '">' . AdminLayout::escape((string) $job['id']) . '</a></td>'
                 . '<td>' . AdminLayout::escape((string) ($job['tenant_slug'] ?? $job['tenant_id'] ?? '')) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $job['job_type']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $job['status']) . '</td>'
