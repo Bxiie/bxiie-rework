@@ -647,3 +647,25 @@
 
 - Reverted tenant-context browser login change because PasswordAuthService::login does not accept a tenant argument.
 - Tenant and platform browser login now both call PasswordAuthService::login without tenant context.
+
+## 2026-05-17 22:00 Europe/Bucharest
+
+- Added production email worker loop at scripts/workers/email_loop.sh.
+- Added systemd service artsfolio-email-worker.service.
+- Email worker runs scripts/workers/email_run_once.php repeatedly with a 10-second sleep.
+- Service uses ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env.
+
+## 2026-05-17 Production backup verification
+
+- Verified artsfolio-db-backup.timer.
+- Verified manual database backup service execution.
+- Confirmed backup files are written to /var/backups/artsfolio.
+
+## 2026-05-17 Production hardening
+
+- Enabled UFW firewall.
+- Enabled fail2ban for SSH protection.
+- Restricted exposed ports to 22/80/443.
+- Verified MariaDB remains localhost-only.
+- Verified backup permissions.
+- Verified production services enabled at boot.
