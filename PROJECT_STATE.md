@@ -605,3 +605,45 @@
 - Workers older than 300 seconds display as stale.
 - Added age_seconds column to worker list.
 - Added manual stale worker verification script and documentation.
+
+## 2026-05-17 13:50 Europe/Bucharest
+
+- Added minimal browser login/logout controller for local email/password auth.
+- Added GET /login, POST /login, and GET /logout routes.
+- Login sets artsfolio_session cookie.
+- Added browser login route smoke test and documentation.
+
+## 2026-05-17 14:05 Europe/Bucharest
+
+- Added /login, POST /login, and /logout routes inside the tenant route block.
+- Fixed tenant-host browser login route availability for bxiie.com.
+
+## 2026-05-17 14:15 Europe/Bucharest
+
+- Fixed browser login route construction to pass UserRepository into PasswordAuthService instead of raw PDO.
+
+## 2026-05-17 14:25 Europe/Bucharest
+
+- Fixed browser login route construction to pass UserIdentityRepository into PasswordAuthService.
+
+## 2026-05-17 14:35 Europe/Bucharest
+
+- Fixed browser login route construction to pass PasswordHasher into PasswordAuthService.
+
+## 2026-05-17 14:45 Europe/Bucharest
+
+- Added local diagnostic/repair script for bxiie tenant membership for the password auth test user.
+
+## 2026-05-17 15:00 Europe/Bucharest
+
+- Updated browser login controller to accept optional TenantContext.
+- Tenant-host POST /login now passes current tenant context into PasswordAuthService.
+
+## 2026-05-17 15:10 Europe/Bucharest
+
+- Added diagnostic script for bxiie browser login behavior.
+
+## 2026-05-17 15:20 Europe/Bucharest
+
+- Reverted tenant-context browser login change because PasswordAuthService::login does not accept a tenant argument.
+- Tenant and platform browser login now both call PasswordAuthService::login without tenant context.

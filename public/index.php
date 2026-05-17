@@ -7,6 +7,7 @@ declare(strict_types=1);
  */
 
 use App\Http\Controllers\Api\MeController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Api\TenantMeController;
 use App\Http\Controllers\Auth\PasswordAuthController;
 use App\Http\Controllers\Platform\Admin\DashboardController as PlatformAdminDashboardController;
@@ -140,6 +141,9 @@ try {
         $router->get('/portfolio', fn (Request $request): Response => $tenantController->portfolio($request, $tenant));
         $router->get('/artwork/{slug}', fn (Request $request, array $params): Response => $tenantController->artwork($request, $tenant, (string) $params['slug']));
         $router->get('/about', fn (Request $request): Response => $tenantController->about($request, $tenant));
+        $router->get('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->show($request));
+        $router->post('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->login($request));
+        $router->get('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->logout($request));
         $router->get('/admin', fn (Request $request): Response => (new TenantAdminDashboardController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
         $router->get('/admin/routes', fn (Request $request): Response => (new TenantAdminRoutesController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
         $router->get('/admin/audit-log', fn (Request $request): Response => (new TenantAdminAuditLogController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new AuditLogRepository($pdo)))->index($request, $tenant, $currentUser));
