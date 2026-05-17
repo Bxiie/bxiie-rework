@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Platform\Admin;
 use App\Http\Middleware\RequirePlatformRole;
 use App\Http\Request;
 use App\Http\Response;
+use App\Http\View\AdminLayout;
 use App\Platform\Membership\Roles;
 
 /**
@@ -25,29 +26,31 @@ final class DashboardController
             return Response::html('<h1>Forbidden</h1><p>Platform admin access required.</p>', 403);
         }
 
-        $email = htmlspecialchars((string) ($currentUser['email'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $email = AdminLayout::escape((string) ($currentUser['email'] ?? ''));
 
-        return Response::html(<<<HTML
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Platform Admin | ArtsFolio</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-<h1>Platform Admin</h1>
-<p>Signed in as {$email}</p>
+        $body = <<<HTML
+<p class="admin-muted">Signed in as {$email}</p>
 
 <ul>
     <li><a href="/admin/tenants">Tenants</a></li>
     <li>Custom domains: coming soon</li>
     <li><a href="/admin/email-outbox">Email outbox</a></li>
     <li><a href="/admin/audit-log">Audit log</a></li>
+    <li><a href="/admin/platform-settings">Platform settings</a></li>
 </ul>
-</body>
-</html>
-HTML);
+HTML;
+
+        return Response::html(AdminLayout::render(
+            title: 'Platform Admin',
+            body: $body,
+            nav: [
+                '/admin' => 'Dashboard',
+                '/admin/tenants' => 'Tenants',
+                '/admin/email-outbox' => 'Email Outbox',
+                '/admin/audit-log' => 'Audit Log',
+                '/admin/platform-settings' => 'Settings',
+            ],
+        ));
     }
 }
 

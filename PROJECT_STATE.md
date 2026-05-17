@@ -464,3 +464,9 @@
 - Added AdminLayout helper for future admin screen rendering.
 - Added manual admin layout verification script.
 - Added dev/admin/user documentation for admin layout foundation.
+
+## 2026-05-17 01:25 Europe/Bucharest
+
+- Migrated platform admin dashboard to shared AdminLayout.
+- Migrated tenant admin dashboard to shared AdminLayout.
+- Added dashboard layout smoke test and documentation.
