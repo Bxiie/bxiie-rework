@@ -669,3 +669,15 @@
 - Verified MariaDB remains localhost-only.
 - Verified backup permissions.
 - Verified production services enabled at boot.
+
+## 2026-05-17 Production deployment automation
+
+- Added scripts/deploy/deploy_production.sh.
+- Added scripts/deploy/healthcheck.sh.
+- Deploy flow now supports:
+  - git pull
+  - migrations
+  - integrity checks
+  - preflight
+  - service restarts
+  - production health validation
