@@ -10,16 +10,18 @@ use App\Http\Response;
 use App\Platform\Membership\Roles;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Csv\CsvResponse;
+use App\Support\Security\CsrfTokenService;
 use App\Tenant\Signup\EmailSignupRepository;
 
 /**
- * Handles tenant-admin email signup list and export screens.
+ * Handles tenant-admin email signup list, export, and consent actions.
  */
 final class EmailSignupsController
 {
     public function __construct(
         private readonly RequireTenantRoleBrowser $roles,
         private readonly EmailSignupRepository $signups,
+        private readonly ?CsrfTokenService $csrf = null,
     ) {
     }
 
@@ -30,8 +32,26 @@ final class EmailSignupsController
         }
 
         $rows = '';
+        $csrf = $this->escape($this->csrf?->getOrCreate() ?? '');
 
         foreach ($this->signups->latestForTenant($tenant, 50) as $signup) {
+            $id = (int) $signup['id'];
+
+            $actions = <<<HTML
+<form method="post" action="/admin/email-signups/consent" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <input type="hidden" name="signup_id" value="{$id}">
+    <input type="hidden" name="status" value="confirmed">
+    <button type="submit">Confirm</button>
+</form>
+<form method="post" action="/admin/email-signups/consent" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <input type="hidden" name="signup_id" value="{$id}">
+    <input type="hidden" name="status" value="unsubscribed">
+    <button type="submit">Unsubscribe</button>
+</form>
+HTML;
+
             $rows .= '<tr>'
                 . '<td>' . $this->escape((string) $signup['id']) . '</td>'
                 . '<td>' . $this->escape((string) $signup['email']) . '</td>'
@@ -39,11 +59,12 @@ final class EmailSignupsController
                 . '<td>' . $this->escape((string) ($signup['source'] ?? '')) . '</td>'
                 . '<td>' . $this->escape((string) $signup['consent_status']) . '</td>'
                 . '<td>' . $this->escape((string) $signup['created_at']) . '</td>'
+                . '<td>' . $actions . '</td>'
                 . '</tr>';
         }
 
         if ($rows === '') {
-            $rows = '<tr><td colspan="6">No email signups found.</td></tr>';
+            $rows = '<tr><td colspan="7">No email signups found.</td></tr>';
         }
 
         $tenantName = $this->escape($tenant->name);
@@ -69,6 +90,7 @@ final class EmailSignupsController
             <th>Source</th>
             <th>Consent</th>
             <th>Created</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -80,6 +102,32 @@ final class EmailSignupsController
 </body>
 </html>
 HTML);
+    }
+
+    public function updateConsent(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->canView($currentUser, $tenant)) {
+            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+        }
+
+        if (!$this->csrf || !$this->csrf->validate($_POST['csrf_token'] ?? null)) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+        $signupId = (int) ($_POST['signup_id'] ?? 0);
+        $status = (string) ($_POST['status'] ?? '');
+
+        if ($signupId <= 0) {
+            return Response::html('<h1>Invalid signup id</h1>', 422);
+        }
+
+        try {
+            $this->signups->updateConsentStatus($tenant, $signupId, $status);
+        } catch (\Throwable $e) {
+            return Response::html('<h1>Invalid consent update</h1>', 422);
+        }
+
+        return new Response('', 302, ['Location' => '/admin/email-signups']);
     }
 
     public function export(Request $request, TenantContext $tenant, ?array $currentUser): Response

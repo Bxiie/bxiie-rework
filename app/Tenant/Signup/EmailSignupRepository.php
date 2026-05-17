@@ -68,6 +68,34 @@ final class EmailSignupRepository
         return (int) $this->pdo->lastInsertId();
     }
 
+    public function updateConsentStatus(TenantContext $tenant, int $signupId, string $status): void
+    {
+        $allowed = ['pending', 'confirmed', 'unsubscribed'];
+
+        if (!in_array($status, $allowed, true)) {
+            throw new \InvalidArgumentException("Invalid email signup consent status: {$status}");
+        }
+
+        $confirmedAt = $status === 'confirmed' ? 'CURRENT_TIMESTAMP' : 'confirmed_at';
+        $unsubscribedAt = $status === 'unsubscribed' ? 'CURRENT_TIMESTAMP' : 'unsubscribed_at';
+
+        $stmt = $this->pdo->prepare(
+            "UPDATE email_signups
+             SET consent_status = :status,
+                 confirmed_at = {$confirmedAt},
+                 unsubscribed_at = {$unsubscribedAt},
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE tenant_id = :tenant_id
+               AND id = :id"
+        );
+
+        $stmt->execute([
+            'status' => $status,
+            'tenant_id' => $tenant->tenantId,
+            'id' => $signupId,
+        ]);
+    }
+
     public function latestForTenant(TenantContext $tenant, int $limit = 20): array
     {
         $stmt = $this->pdo->prepare(

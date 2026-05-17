@@ -399,3 +399,11 @@
 - Added read/archive/spam actions to contact message admin list.
 - Added manual contact message status verification script.
 - Added dev/admin/user documentation for contact message status.
+
+## 2026-05-16 23:05 Europe/Bucharest
+
+- Added email signup consent status update repository method.
+- Added tenant admin POST /admin/email-signups/consent route.
+- Added confirm/unsubscribe actions to email signup admin list.
+- Added manual email signup consent verification script.
+- Added dev/admin/user documentation for email signup consent.
