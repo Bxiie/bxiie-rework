@@ -20,6 +20,7 @@ use App\Http\Controllers\Platform\Admin\WorkersController as PlatformAdminWorker
 use App\Http\Controllers\Platform\Admin\AuditLogController as PlatformAdminAuditLogController;
 use App\Http\Controllers\Platform\Admin\TenantsController as PlatformAdminTenantsController;
 use App\Http\Controllers\Platform\HomeController as PlatformHomeController;
+use App\Http\Controllers\Platform\SignupController as PlatformSignupController;
 use App\Http\Controllers\Tenant\HomeController as TenantHomeController;
 use App\Http\Controllers\Tenant\SignupController;
 use App\Http\Controllers\Tenant\Admin\DashboardController as TenantAdminDashboardController;
@@ -57,6 +58,7 @@ use App\Platform\Identity\UserRepository;
 use App\Platform\Membership\MembershipRepository;
 use App\Platform\Security\RateLimiter;
 use App\Platform\Settings\PlatformSettingsRepository;
+use App\Platform\Signup\TenantSignupService;
 use App\Platform\Tenants\TenantAdminRepository;
 use App\Platform\Tenancy\TenantResolver;
 use App\Support\Database;
@@ -171,7 +173,8 @@ try {
     $router = new Router();
     $router->get('/', fn (Request $request): Response => $platformController->home($request));
     $router->get('/pricing', fn (Request $request): Response => $platformController->pricing($request));
-    $router->get('/signup', fn (Request $request): Response => $platformController->signup($request));
+    $router->get('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo), new PasswordHasher(), new CsrfTokenService()))->show($request));
+    $router->post('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo), new PasswordHasher(), new CsrfTokenService()))->submit($request));
     $router->get('/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
     $router->get('/admin/routes', fn (Request $request): Response => (new PlatformAdminRoutesController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
     $router->get('/admin/tenants', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo)))->index($request, $currentUser));
