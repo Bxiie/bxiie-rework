@@ -470,3 +470,10 @@
 - Migrated platform admin dashboard to shared AdminLayout.
 - Migrated tenant admin dashboard to shared AdminLayout.
 - Added dashboard layout smoke test and documentation.
+
+## 2026-05-17 01:40 Europe/Bucharest
+
+- Migrated platform tenant list screen to shared AdminLayout.
+- Migrated platform email outbox list screen to shared AdminLayout.
+- Migrated platform audit log screen to shared AdminLayout.
+- Added platform admin layout smoke test and documentation.

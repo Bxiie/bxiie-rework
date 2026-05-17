@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Platform\Admin;
 use App\Http\Middleware\RequirePlatformRole;
 use App\Http\Request;
 use App\Http\Response;
+use App\Http\View\AdminLayout;
 use App\Platform\Email\EmailOutboxRepository;
 use App\Platform\Membership\Roles;
 
@@ -45,18 +46,10 @@ final class EmailOutboxController
             $rows = '<tr><td colspan="7">No email outbox rows found.</td></tr>';
         }
 
-        return Response::html(<<<HTML
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Email Outbox | Platform Admin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-<h1>Email Outbox</h1>
-
-<table border="1" cellpadding="6" cellspacing="0">
+        return Response::html(AdminLayout::render(
+            title: 'Email Outbox | Platform Admin',
+            body: <<<HTML
+<table class="admin-table">
     <thead>
         <tr>
             <th>ID</th>
@@ -72,16 +65,20 @@ final class EmailOutboxController
         {$rows}
     </tbody>
 </table>
-
-<p><a href="/admin">Back to platform admin</a></p>
-</body>
-</html>
-HTML);
+HTML,
+            nav: [
+                '/admin' => 'Dashboard',
+                '/admin/tenants' => 'Tenants',
+                '/admin/email-outbox' => 'Email Outbox',
+                '/admin/audit-log' => 'Audit Log',
+                '/admin/platform-settings' => 'Settings',
+            ],
+        ));
     }
 
     private function escape(string $value): string
     {
-        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        return AdminLayout::escape($value);
     }
 }
 
