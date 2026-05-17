@@ -512,3 +512,17 @@
 - Added tenant admin route map page.
 - Added /admin/routes routes for platform and tenant admin contexts.
 - Added route map smoke test and documentation.
+
+## 2026-05-17 03:15 Europe/Bucharest
+
+- Added platform custom domain admin repository.
+- Added platform GET /admin/domains screen.
+- Added Domains nav link to platform admin dashboard and route map.
+- Added manual platform domain list verification script and documentation.
+
+## 2026-05-17 03:15 Europe/Bucharest
+
+- Added platform custom domain admin repository.
+- Added platform GET /admin/domains screen.
+- Added Domains nav link to platform admin dashboard and route map.
+- Added manual platform domain list verification script and documentation.

@@ -29,6 +29,7 @@ final class RoutesController
         $routes = [
             ['GET', '/admin', 'Platform dashboard'],
             ['GET', '/admin/tenants', 'Tenant list'],
+            ['GET', '/admin/domains', 'Custom domain list'],
             ['GET', '/admin/email-outbox', 'Email outbox'],
             ['GET', '/admin/audit-log', 'Audit log'],
             ['GET', '/admin/audit-log.csv', 'Audit log CSV export'],
@@ -66,6 +67,7 @@ HTML,
             nav: [
                 '/admin' => 'Dashboard',
                 '/admin/tenants' => 'Tenants',
+                '/admin/domains' => 'Domains',
                 '/admin/email-outbox' => 'Email Outbox',
                 '/admin/audit-log' => 'Audit Log',
                 '/admin/platform-settings' => 'Settings',

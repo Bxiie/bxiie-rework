@@ -13,6 +13,7 @@ use App\Http\Controllers\Platform\Admin\DashboardController as PlatformAdminDash
 use App\Http\Controllers\Platform\Admin\SettingsController as PlatformAdminSettingsController;
 use App\Http\Controllers\Platform\Admin\RoutesController as PlatformAdminRoutesController;
 use App\Http\Controllers\Platform\Admin\EmailOutboxController as PlatformAdminEmailOutboxController;
+use App\Http\Controllers\Platform\Admin\DomainsController as PlatformAdminDomainsController;
 use App\Http\Controllers\Platform\Admin\AuditLogController as PlatformAdminAuditLogController;
 use App\Http\Controllers\Platform\Admin\TenantsController as PlatformAdminTenantsController;
 use App\Http\Controllers\Platform\HomeController as PlatformHomeController;
@@ -36,6 +37,7 @@ use App\Http\Response;
 use App\Http\Router;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Email\EmailOutboxRepository;
+use App\Platform\Domains\DomainAdminRepository;
 use App\Platform\Auth\OAuth\BearerTokenRepository;
 use App\Platform\Auth\OAuth\BearerTokenService;
 use App\Platform\Auth\Password\PasswordAuthService;
@@ -161,6 +163,7 @@ try {
     $router->get('/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
     $router->get('/admin/routes', fn (Request $request): Response => (new PlatformAdminRoutesController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
     $router->get('/admin/tenants', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo)))->index($request, $currentUser));
+    $router->get('/admin/domains', fn (Request $request): Response => (new PlatformAdminDomainsController(new RequirePlatformRole(new MembershipRepository($pdo)), new DomainAdminRepository($pdo)))->index($request, $currentUser));
     $router->get('/admin/email-outbox', fn (Request $request): Response => (new PlatformAdminEmailOutboxController(new RequirePlatformRole(new MembershipRepository($pdo)), new EmailOutboxRepository($pdo)))->index($request, $currentUser));
     $router->get('/admin/audit-log', fn (Request $request): Response => (new PlatformAdminAuditLogController(new RequirePlatformRole(new MembershipRepository($pdo)), new AuditLogRepository($pdo)))->index($request, $currentUser));
     $router->get('/admin/audit-log.csv', fn (Request $request): Response => (new PlatformAdminAuditLogController(new RequirePlatformRole(new MembershipRepository($pdo)), new AuditLogRepository($pdo)))->export($request, $currentUser));
