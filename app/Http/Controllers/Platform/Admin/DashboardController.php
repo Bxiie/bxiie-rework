@@ -49,6 +49,7 @@ HTML;
                 '/admin/email-outbox' => 'Email Outbox',
                 '/admin/audit-log' => 'Audit Log',
                 '/admin/platform-settings' => 'Settings',
+                '/admin/routes' => 'Routes',
             ],
         ));
     }

@@ -505,3 +505,10 @@
 - Added admin CSS for success/error flash messages.
 - Added success flashes for contact message status, email signup consent, tenant settings, and platform settings actions.
 - Added flash message smoke test and documentation.
+
+## 2026-05-17 03:00 Europe/Bucharest
+
+- Added platform admin route map page.
+- Added tenant admin route map page.
+- Added /admin/routes routes for platform and tenant admin contexts.
+- Added route map smoke test and documentation.

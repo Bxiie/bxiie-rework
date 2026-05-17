@@ -55,6 +55,7 @@ HTML;
                 '/admin/contact-messages' => 'Contact Messages',
                 '/admin/email-signups' => 'Email Signups',
                 '/admin/audit-log' => 'Audit Log',
+                '/admin/routes' => 'Routes',
             ],
         ));
     }
