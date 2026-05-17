@@ -697,3 +697,12 @@
 - Route inventory verifies tenant root remains public content.
 - Route inventory verifies platform job, worker, and settings routes are not mounted inside the tenant route block.
 - Added route inventory documentation under docs/dev, docs/admin, and docs/user.
+
+## 2026-05-17 Lifecycle email queue foundation
+
+- Added scripts/email/queue_lifecycle_emails.php.
+- Added lifecycle queue support for tenant admin onboarding and cancellation schedules.
+- Tenant bootstrap now queues onboarding lifecycle emails through the lifecycle queue script.
+- Added cancellation lifecycle email template scaffolding.
+- Added lifecycle email documentation under docs/dev, docs/admin, and docs/user.
+- Added lifecycle email queue smoke test.

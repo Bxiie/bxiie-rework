@@ -221,37 +221,25 @@ try {
         }
     }
 
+    $pdo->commit();
+
     if ($sendWelcome && tableExists($pdo, 'email_outbox')) {
-        $outboxColumns = tableColumns($pdo, 'email_outbox');
-        $payload = [
-            'template' => 'tenant_admin_welcome_6h',
-            'tenant_slug' => $slug,
-            'admin_email' => $adminEmail,
-        ];
+        $command = sprintf(
+            'ARTSFOLIO_ENV_FILE=%s php %s --tenant-slug=%s --email=%s --name=%s --user-id=%d --lifecycle=tenant_admin_onboarding',
+            escapeshellarg((string) (getenv('ARTSFOLIO_ENV_FILE') ?: '.env.local')),
+            escapeshellarg($root . '/scripts/email/queue_lifecycle_emails.php'),
+            escapeshellarg($slug),
+            escapeshellarg($adminEmail),
+            escapeshellarg($adminName),
+            $userId,
+        );
 
-        $values = [
-            'uuid' => $pdo->query('SELECT UUID()')->fetchColumn(),
-            'tenant_id' => $tenantId,
-            'recipient_email' => $adminEmail,
-            'to_email' => $adminEmail,
-            'subject' => "Welcome to ArtsFolio, {$name}",
-            'body_text' => "Welcome to ArtsFolio. Your tenant {$name} has been created.",
-            'body_html' => "<p>Welcome to ArtsFolio. Your tenant <strong>" . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . "</strong> has been created.</p>",
-            'template_key' => 'tenant_admin_welcome_6h',
-            'payload' => json_encode($payload, JSON_THROW_ON_ERROR),
-            'status' => 'queued',
-            'available_at' => date('Y-m-d H:i:s', time() + 21600),
-            'send_after' => date('Y-m-d H:i:s', time() + 21600),
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
+        passthru($command, $exitCode);
 
-        if (isset($outboxColumns['recipient_email']) || isset($outboxColumns['to_email'])) {
-            insertWithKnownColumns($pdo, 'email_outbox', $values, []);
+        if ($exitCode !== 0) {
+            fwrite(STDERR, "Warning: lifecycle email queue command exited with {$exitCode}.\n");
         }
     }
-
-    $pdo->commit();
 
     echo json_encode([
         'ok' => true,
