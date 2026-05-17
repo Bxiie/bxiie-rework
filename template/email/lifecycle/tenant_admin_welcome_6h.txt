@@ -1,0 +1,16 @@
+Subject: Welcome to ArtsFolio
+
+Welcome to ArtsFolio.
+
+Your tenant has been created and is ready for setup.
+
+Next steps:
+1. Sign in at your domain/login URL.
+2. Review site settings.
+3. Add portfolio sections.
+4. Upload artwork and metadata.
+5. Test contact and signup forms.
+
+Need help? Reply to this message or contact platform support.
+
+# End of file.

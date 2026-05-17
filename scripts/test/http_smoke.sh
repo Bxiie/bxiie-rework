@@ -5,6 +5,7 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "${PROJECT_ROOT}"
 
 PORT="${ARTSFOLIO_HTTP_SMOKE_PORT:-18080}"
+ENV_FILE="${ARTSFOLIO_ENV_FILE:-.env.local}"
 BASE_URL="http://127.0.0.1:${PORT}"
 LOG_FILE="/tmp/artsfolio-http-smoke-${PORT}.log"
 
@@ -17,7 +18,7 @@ cleanup() {
 
 trap cleanup EXIT
 
-php -S "127.0.0.1:${PORT}" -t public >"${LOG_FILE}" 2>&1 &
+ARTSFOLIO_ENV_FILE="${ENV_FILE}" php -S "127.0.0.1:${PORT}" -t public public/index.php >"${LOG_FILE}" 2>&1 &
 SERVER_PID=$!
 
 for _ in {1..40}; do

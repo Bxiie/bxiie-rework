@@ -56,7 +56,7 @@ return [
     'port' => (int) (getenv('DB_PORT') ?: 3306),
     'database' => getenv('DB_DATABASE') ?: 'artsfolio',
     'username' => getenv('DB_USERNAME') ?: 'artsfolio',
-    'password' => getenv('DB_PASSWORD') ?: '',
+    'password' => getenv('DB_PASSWORD') ?: 'artsfolio_dev',
 ];
 
 // End of file.

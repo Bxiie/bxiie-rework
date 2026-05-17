@@ -1,0 +1,12 @@
+Subject: ArtsFolio setup deep dive
+
+Your ArtsFolio site is live. Today is a good time to configure the core portfolio workflow.
+
+Suggested setup:
+1. Review public homepage copy.
+2. Add portfolio sections.
+3. Upload first artwork records.
+4. Confirm contact form delivery.
+5. Export email signup records from tenant admin.
+
+# End of file.

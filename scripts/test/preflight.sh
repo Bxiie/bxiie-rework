@@ -89,6 +89,10 @@ run_if_exists scripts/test/csv_response.php
 run_shell_if_exists scripts/test/http_smoke.sh
 run_shell_if_exists scripts/test/public_contact_signup_routes.sh
 
+if [ -f scripts/test/route_inventory.php ]; then
+  php scripts/test/route_inventory.php > /tmp/artsfolio-route-inventory.json
+fi
+
 echo "Core smoke tests passed."
 
 echo

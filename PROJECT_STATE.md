@@ -681,3 +681,19 @@
   - preflight
   - service restarts
   - production health validation
+
+## 2026-05-17 Tenant bootstrap and login routing
+
+- Added tenant bootstrap CLI at scripts/tenant/bootstrap_tenant.php.
+- Tenant bootstrap creates/updates tenants, domains, admin user/membership, starter sections when supported, and welcome email outbox rows when supported.
+- Added lifecycle email template scaffolding under template/email/lifecycle.
+- Documented tenant login convention: tenant admins sign in at https://tenant-domain/login, while the tenant domain root remains public portfolio content.
+- Added tenant bootstrap smoke test.
+
+## 2026-05-17 Route inventory regression coverage
+
+- Added scripts/test/route_inventory.php.
+- Route inventory verifies tenant login remains at /login on tenant domains.
+- Route inventory verifies tenant root remains public content.
+- Route inventory verifies platform job, worker, and settings routes are not mounted inside the tenant route block.
+- Added route inventory documentation under docs/dev, docs/admin, and docs/user.
