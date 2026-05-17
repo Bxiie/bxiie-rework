@@ -407,3 +407,11 @@
 - Added confirm/unsubscribe actions to email signup admin list.
 - Added manual email signup consent verification script.
 - Added dev/admin/user documentation for email signup consent.
+
+## 2026-05-16 23:20 Europe/Bucharest
+
+- Added tenant admin action audit logging hooks.
+- Contact message status changes can write tenant.contact_message.status_changed.
+- Email signup consent changes can write tenant.email_signup.consent_changed.
+- Wired AuditLogRepository into tenant admin status/consent controllers.
+- Added manual tenant admin action audit inspection script and documentation.

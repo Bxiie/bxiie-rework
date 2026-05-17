@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Tenant\Admin;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
+use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Csv\CsvResponse;
@@ -22,6 +23,7 @@ final class ContactMessagesController
         private readonly RequireTenantRoleBrowser $roles,
         private readonly ContactMessageRepository $messages,
         private readonly ?CsrfTokenService $csrf = null,
+        private readonly ?AuditLogRepository $auditLog = null,
     ) {
     }
 
@@ -132,6 +134,14 @@ HTML);
 
         try {
             $this->messages->updateStatus($tenant, $messageId, $status);
+            $this->auditAction(
+                request: $request,
+                tenant: $tenant,
+                currentUser: $currentUser,
+                action: 'tenant.contact_message.status_changed',
+                entityId: (string) $messageId,
+                details: ['status' => $status],
+            );
         } catch (\Throwable $e) {
             return Response::html('<h1>Invalid status update</h1>', 422);
         }
@@ -164,6 +174,29 @@ HTML);
             filename: 'contact-messages-' . $tenant->slug . '.csv',
             headers: ['id', 'status', 'sender_name', 'sender_email', 'subject', 'message', 'ip_address', 'created_at'],
             rows: $rows,
+        );
+    }
+
+    private function auditAction(
+        Request $request,
+        TenantContext $tenant,
+        ?array $currentUser,
+        string $action,
+        string $entityId,
+        array $details = [],
+    ): void {
+        if (!$this->auditLog) {
+            return;
+        }
+
+        $this->auditLog->record(
+            action: $action,
+            tenantId: $tenant->tenantId,
+            userId: isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
+            entityType: 'contact_message',
+            entityId: $entityId,
+            details: $details,
+            ipAddress: $request->server('REMOTE_ADDR'),
         );
     }
 

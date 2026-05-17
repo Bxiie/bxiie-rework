@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Tenant\Admin;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
+use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Csv\CsvResponse;
@@ -22,6 +23,7 @@ final class EmailSignupsController
         private readonly RequireTenantRoleBrowser $roles,
         private readonly EmailSignupRepository $signups,
         private readonly ?CsrfTokenService $csrf = null,
+        private readonly ?AuditLogRepository $auditLog = null,
     ) {
     }
 
@@ -123,6 +125,14 @@ HTML);
 
         try {
             $this->signups->updateConsentStatus($tenant, $signupId, $status);
+            $this->auditAction(
+                request: $request,
+                tenant: $tenant,
+                currentUser: $currentUser,
+                action: 'tenant.email_signup.consent_changed',
+                entityId: (string) $signupId,
+                details: ['status' => $status],
+            );
         } catch (\Throwable $e) {
             return Response::html('<h1>Invalid consent update</h1>', 422);
         }
@@ -155,6 +165,29 @@ HTML);
             filename: 'email-signups-' . $tenant->slug . '.csv',
             headers: ['id', 'email', 'name', 'source', 'consent_status', 'confirmed_at', 'unsubscribed_at', 'created_at'],
             rows: $rows,
+        );
+    }
+
+    private function auditAction(
+        Request $request,
+        TenantContext $tenant,
+        ?array $currentUser,
+        string $action,
+        string $entityId,
+        array $details = [],
+    ): void {
+        if (!$this->auditLog) {
+            return;
+        }
+
+        $this->auditLog->record(
+            action: $action,
+            tenantId: $tenant->tenantId,
+            userId: isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
+            entityType: 'email_signup',
+            entityId: $entityId,
+            details: $details,
+            ipAddress: $request->server('REMOTE_ADDR'),
         );
     }
 
