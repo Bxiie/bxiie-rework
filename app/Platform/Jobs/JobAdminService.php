@@ -23,7 +23,6 @@ final class JobAdminService
              SET status = 'queued',
                  attempts = 0,
                  last_error = NULL,
-                 last_error = 'Cancelled by platform admin',
                  updated_at = CURRENT_TIMESTAMP
              WHERE id = :id"
         );
@@ -35,8 +34,7 @@ final class JobAdminService
     {
         $stmt = $this->pdo->prepare(
             "UPDATE background_jobs
-             SET status = 'failed',
-                 last_error = 'Cancelled by platform admin',
+             SET status = 'cancelled',
                  updated_at = CURRENT_TIMESTAMP
              WHERE id = :id
                AND status = 'queued'"

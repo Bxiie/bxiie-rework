@@ -555,3 +555,9 @@
 ## 2026-05-17 04:10 Europe/Bucharest
 
 - Adjusted platform background job cancel action to mark queued jobs failed with a cancellation message because background_jobs.status does not currently support cancelled.
+
+## 2026-05-17 04:20 Europe/Bucharest
+
+- Added cancelled as a first-class background_jobs.status value.
+- Updated JobAdminService cancel action to mark queued jobs cancelled.
+- Added manual cancelled-status verification script and documentation.
