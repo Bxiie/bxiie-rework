@@ -8,19 +8,62 @@ use App\Http\Middleware\RequirePlatformRole;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\View\AdminLayout;
+use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Jobs\JobAdminRepository;
+use App\Platform\Jobs\JobAdminService;
 use App\Platform\Membership\Roles;
+use App\Support\Flash\FlashMessages;
 use App\Support\Pagination\Pagination;
+use App\Support\Security\CsrfTokenService;
 
 /**
- * Handles platform-admin background job list screen.
+ * Handles platform-admin background job list and maintenance actions.
  */
 final class JobsController
 {
     public function __construct(
         private readonly RequirePlatformRole $roles,
         private readonly JobAdminRepository $jobs,
+        private readonly ?JobAdminService $service = null,
+        private readonly ?CsrfTokenService $csrf = null,
+        private readonly ?AuditLogRepository $auditLog = null,
     ) {
+    }
+
+    public function action(Request $request, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, [Roles::PLATFORM_OWNER, Roles::PLATFORM_ADMIN])) {
+            return Response::html('<h1>Forbidden</h1><p>Platform admin access required.</p>', 403);
+        }
+
+        if (!$this->csrf || !$this->csrf->validate($_POST['csrf_token'] ?? null)) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+        if (!$this->service) {
+            return Response::html('<h1>Job service unavailable</h1>', 500);
+        }
+
+        $jobId = (int) ($_POST['job_id'] ?? 0);
+        $action = (string) ($_POST['job_admin_action'] ?? '');
+
+        if ($jobId <= 0) {
+            return Response::html('<h1>Invalid job id</h1>', 422);
+        }
+
+        if ($action === 'requeue') {
+            $this->service->requeue($jobId);
+            FlashMessages::success("Requeued job {$jobId}.");
+            $this->auditAction($request, $currentUser, 'platform.background_job.requeued', (string) $jobId);
+        } elseif ($action === 'cancel') {
+            $this->service->cancel($jobId);
+            FlashMessages::success("Cancelled queued job {$jobId}.");
+            $this->auditAction($request, $currentUser, 'platform.background_job.cancelled', (string) $jobId);
+        } else {
+            return Response::html('<h1>Invalid job action</h1>', 422);
+        }
+
+        return new Response('', 302, ['Location' => '/admin/jobs']);
     }
 
     public function index(Request $request, ?array $currentUser): Response
@@ -34,6 +77,7 @@ final class JobsController
         $page = Pagination::pageFromQuery($_GET['page'] ?? 1);
         $limit = Pagination::limitFromQuery($_GET['limit'] ?? 50);
         $offset = Pagination::offset($page, $limit);
+        $csrf = AdminLayout::escape($this->csrf?->getOrCreate() ?? '');
 
         $rows = '';
 
@@ -43,8 +87,24 @@ final class JobsController
             limit: $limit,
             offset: $offset,
         ) as $job) {
+            $jobId = (int) $job['id'];
             $payloadPreview = mb_substr((string) ($job['payload'] ?? ''), 0, 180);
             $errorPreview = mb_substr((string) ($job['last_error'] ?? ''), 0, 180);
+
+            $actions = <<<HTML
+<form class="admin-inline-form" method="post" action="/admin/jobs/action">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <input type="hidden" name="job_id" value="{$jobId}">
+    <input type="hidden" name="job_admin_action" value="requeue">
+    <button type="submit">Requeue</button>
+</form>
+<form class="admin-inline-form" method="post" action="/admin/jobs/action">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <input type="hidden" name="job_id" value="{$jobId}">
+    <input type="hidden" name="job_admin_action" value="cancel">
+    <button type="submit">Cancel</button>
+</form>
+HTML;
 
             $rows .= '<tr>'
                 . '<td>' . AdminLayout::escape((string) $job['id']) . '</td>'
@@ -56,21 +116,17 @@ final class JobsController
                 . '<td>' . AdminLayout::escape($errorPreview) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $job['created_at']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) ($job['updated_at'] ?? '')) . '</td>'
+                . '<td>' . $actions . '</td>'
                 . '</tr>';
         }
 
         if ($rows === '') {
-            $rows = '<tr><td colspan="9">No background jobs found.</td></tr>';
+            $rows = '<tr><td colspan="10">No background jobs found.</td></tr>';
         }
 
         $statusValue = AdminLayout::escape($status);
         $jobTypeValue = AdminLayout::escape($jobType);
-
-        $query = [
-            'status' => $status,
-            'job_type' => $jobType,
-            'limit' => $limit,
-        ];
+        $query = ['status' => $status, 'job_type' => $jobType, 'limit' => $limit];
 
         $prevUrl = Pagination::previousPageUrl('/admin/jobs', $query, $page);
         $nextUrl = Pagination::nextPageUrl('/admin/jobs', $query, $page);
@@ -110,6 +166,7 @@ final class JobsController
             <th>Last Error</th>
             <th>Created</th>
             <th>Updated</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -129,6 +186,22 @@ HTML,
                 '/admin/routes' => 'Routes',
             ],
         ));
+    }
+
+    private function auditAction(Request $request, ?array $currentUser, string $action, string $entityId): void
+    {
+        if (!$this->auditLog) {
+            return;
+        }
+
+        $this->auditLog->record(
+            action: $action,
+            userId: isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
+            entityType: 'background_job',
+            entityId: $entityId,
+            details: [],
+            ipAddress: $request->server('REMOTE_ADDR'),
+        );
     }
 }
 

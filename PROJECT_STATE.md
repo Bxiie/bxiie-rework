@@ -543,3 +543,15 @@
 - Added status and job_type filters for background jobs.
 - Added Jobs links to platform dashboard and route map.
 - Added manual background job list verification script and documentation.
+
+## 2026-05-17 04:00 Europe/Bucharest
+
+- Added JobAdminService for platform background job actions.
+- Added POST /admin/jobs/action route.
+- Added Requeue and Cancel buttons to platform background job list.
+- Added flash messages and audit events for job actions.
+- Added manual platform job action verification script and documentation.
+
+## 2026-05-17 04:10 Europe/Bucharest
+
+- Adjusted platform background job cancel action to mark queued jobs failed with a cancellation message because background_jobs.status does not currently support cancelled.
