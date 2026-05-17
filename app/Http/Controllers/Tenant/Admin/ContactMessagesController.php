@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Tenant\Admin;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
+use App\Http\View\AdminLayout;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
 use App\Platform\Tenancy\TenantContext;
@@ -41,19 +42,19 @@ final class ContactMessagesController
             $id = (int) $message['id'];
 
             $actions = <<<HTML
-<form method="post" action="/admin/contact-messages/status" style="display:inline">
+<form method="post" action="/admin/contact-messages/status" class="admin-inline-form">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <input type="hidden" name="message_id" value="{$id}">
     <input type="hidden" name="status" value="read">
     <button type="submit">Read</button>
 </form>
-<form method="post" action="/admin/contact-messages/status" style="display:inline">
+<form method="post" action="/admin/contact-messages/status" class="admin-inline-form">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <input type="hidden" name="message_id" value="{$id}">
     <input type="hidden" name="status" value="archived">
     <button type="submit">Archive</button>
 </form>
-<form method="post" action="/admin/contact-messages/status" style="display:inline">
+<form method="post" action="/admin/contact-messages/status" class="admin-inline-form">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <input type="hidden" name="message_id" value="{$id}">
     <input type="hidden" name="status" value="spam">
@@ -79,19 +80,12 @@ HTML;
 
         $tenantName = $this->escape($tenant->name);
 
-        return Response::html(<<<HTML
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Contact Messages | {$tenantName}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-<h1>Contact Messages</h1>
-<p><a href="/admin/contact-messages.csv">Export CSV</a></p>
+        return Response::html(AdminLayout::render(
+            title: 'Contact Messages | ' . $tenantName,
+            body: <<<HTML
+<p><a class="admin-button" href="/admin/contact-messages.csv">Export CSV</a></p>
 
-<table border="1" cellpadding="6" cellspacing="0">
+<table class="admin-table">
     <thead>
         <tr>
             <th>ID</th>
@@ -108,11 +102,15 @@ HTML;
         {$rows}
     </tbody>
 </table>
-
-<p><a href="/admin">Back to tenant admin</a></p>
-</body>
-</html>
-HTML);
+HTML,
+            nav: [
+                '/admin' => 'Dashboard',
+                '/admin/settings' => 'Settings',
+                '/admin/contact-messages' => 'Contact Messages',
+                '/admin/email-signups' => 'Email Signups',
+                '/admin/audit-log' => 'Audit Log',
+            ],
+        ));
     }
 
     public function updateStatus(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -216,7 +214,7 @@ HTML);
 
     private function escape(string $value): string
     {
-        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        return AdminLayout::escape($value);
     }
 }
 

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Tenant\Admin;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
+use App\Http\View\AdminLayout;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
 use App\Platform\Tenancy\TenantContext;
@@ -40,13 +41,13 @@ final class EmailSignupsController
             $id = (int) $signup['id'];
 
             $actions = <<<HTML
-<form method="post" action="/admin/email-signups/consent" style="display:inline">
+<form method="post" action="/admin/email-signups/consent" class="admin-inline-form">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <input type="hidden" name="signup_id" value="{$id}">
     <input type="hidden" name="status" value="confirmed">
     <button type="submit">Confirm</button>
 </form>
-<form method="post" action="/admin/email-signups/consent" style="display:inline">
+<form method="post" action="/admin/email-signups/consent" class="admin-inline-form">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <input type="hidden" name="signup_id" value="{$id}">
     <input type="hidden" name="status" value="unsubscribed">
@@ -71,19 +72,12 @@ HTML;
 
         $tenantName = $this->escape($tenant->name);
 
-        return Response::html(<<<HTML
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Email Signups | {$tenantName}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-<h1>Email Signups</h1>
-<p><a href="/admin/email-signups.csv">Export CSV</a></p>
+        return Response::html(AdminLayout::render(
+            title: 'Email Signups | ' . $tenantName,
+            body: <<<HTML
+<p><a class="admin-button" href="/admin/email-signups.csv">Export CSV</a></p>
 
-<table border="1" cellpadding="6" cellspacing="0">
+<table class="admin-table">
     <thead>
         <tr>
             <th>ID</th>
@@ -99,11 +93,15 @@ HTML;
         {$rows}
     </tbody>
 </table>
-
-<p><a href="/admin">Back to tenant admin</a></p>
-</body>
-</html>
-HTML);
+HTML,
+            nav: [
+                '/admin' => 'Dashboard',
+                '/admin/settings' => 'Settings',
+                '/admin/contact-messages' => 'Contact Messages',
+                '/admin/email-signups' => 'Email Signups',
+                '/admin/audit-log' => 'Audit Log',
+            ],
+        ));
     }
 
     public function updateConsent(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -202,7 +200,7 @@ HTML);
 
     private function escape(string $value): string
     {
-        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        return AdminLayout::escape($value);
     }
 }
 

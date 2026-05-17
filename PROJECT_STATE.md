@@ -477,3 +477,10 @@
 - Migrated platform email outbox list screen to shared AdminLayout.
 - Migrated platform audit log screen to shared AdminLayout.
 - Added platform admin layout smoke test and documentation.
+
+## 2026-05-17 01:55 Europe/Bucharest
+
+- Migrated tenant contact messages screen to shared AdminLayout.
+- Migrated tenant email signups screen to shared AdminLayout.
+- Migrated tenant audit log screen to shared AdminLayout.
+- Added tenant admin layout smoke test and documentation.
