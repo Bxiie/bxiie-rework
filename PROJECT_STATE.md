@@ -706,3 +706,19 @@
 - Added cancellation lifecycle email template scaffolding.
 - Added lifecycle email documentation under docs/dev, docs/admin, and docs/user.
 - Added lifecycle email queue smoke test.
+
+## 2026-05-17 Platform signup foundation
+
+- Added TenantSignupService for platform tenant creation.
+- Added platform SignupController.
+- Platform GET /signup shows tenant signup form.
+- Platform POST /signup creates tenant, admin user, tenant membership, platform subdomain, provisioning jobs, and lifecycle email rows where supported by current schema.
+- Successful signup redirects to https://<slug>.artsfol.io/login.
+- Added platform signup smoke test and docs under docs/dev, docs/admin, and docs/user.
+
+## 2026-05-17 Platform signup redirect behavior
+
+- Platform signup redirects are now environment-aware.
+- Production redirects to https://<slug>.artsfol.io/login.
+- Local development can set APP_ENV=local and ARTSFOLIO_LOCAL_DEV_PORT=8080 to redirect to http://<slug>.artsfol.io:8080/login.
+- Added signup redirect regression test and documentation under docs/dev, docs/admin, and docs/user.
