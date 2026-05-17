@@ -598,3 +598,10 @@
 - Added shared worker heartbeat helper at scripts/workers/heartbeat.php.
 - Patched existing worker entrypoints when present to emit heartbeat records.
 - Added manual worker entrypoint heartbeat verification script and documentation.
+
+## 2026-05-17 05:50 Europe/Bucharest
+
+- Added effective stale detection to platform Workers screen.
+- Workers older than 300 seconds display as stale.
+- Added age_seconds column to worker list.
+- Added manual stale worker verification script and documentation.

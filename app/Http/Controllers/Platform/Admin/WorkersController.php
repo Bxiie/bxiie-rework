@@ -32,19 +32,22 @@ final class WorkersController
 
         foreach ($this->heartbeats->latest(100) as $worker) {
             $detailsPreview = mb_substr((string) ($worker['details'] ?? ''), 0, 180);
+            $effectiveStatus = $this->effectiveStatus((string) $worker['status'], (string) $worker['last_seen_at']);
+            $ageSeconds = $this->ageSeconds((string) $worker['last_seen_at']);
 
             $rows .= '<tr>'
                 . '<td>' . AdminLayout::escape((string) $worker['worker_name']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) ($worker['host_name'] ?? '')) . '</td>'
                 . '<td>' . AdminLayout::escape((string) ($worker['process_id'] ?? '')) . '</td>'
-                . '<td>' . AdminLayout::escape((string) $worker['status']) . '</td>'
+                . '<td>' . AdminLayout::escape($effectiveStatus) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $worker['last_seen_at']) . '</td>'
+                . '<td>' . AdminLayout::escape((string) $ageSeconds) . '</td>'
                 . '<td><code>' . AdminLayout::escape($detailsPreview) . '</code></td>'
                 . '</tr>';
         }
 
         if ($rows === '') {
-            $rows = '<tr><td colspan="6">No worker heartbeats found.</td></tr>';
+            $rows = '<tr><td colspan="7">No worker heartbeats found.</td></tr>';
         }
 
         return Response::html(AdminLayout::render(
@@ -58,6 +61,7 @@ final class WorkersController
             <th>PID</th>
             <th>Status</th>
             <th>Last Seen</th>
+            <th>Age Seconds</th>
             <th>Details</th>
         </tr>
     </thead>
@@ -78,6 +82,28 @@ HTML,
                 '/admin/routes' => 'Routes',
             ],
         ));
+    }
+
+    private function effectiveStatus(string $storedStatus, string $lastSeenAt): string
+    {
+        $ageSeconds = $this->ageSeconds($lastSeenAt);
+
+        if ($ageSeconds > 300) {
+            return 'stale';
+        }
+
+        return $storedStatus;
+    }
+
+    private function ageSeconds(string $lastSeenAt): int
+    {
+        $timestamp = strtotime($lastSeenAt);
+
+        if ($timestamp === false) {
+            return 999999;
+        }
+
+        return max(0, time() - $timestamp);
     }
 }
 
