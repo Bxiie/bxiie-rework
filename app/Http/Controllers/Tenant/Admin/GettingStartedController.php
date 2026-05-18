@@ -21,7 +21,7 @@ final class GettingStartedController
 
     public function index(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
-        if (!$this->roles->allows($tenant, $currentUser, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
             return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
         }
 
