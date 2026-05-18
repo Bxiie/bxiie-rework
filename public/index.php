@@ -24,6 +24,7 @@ use App\Http\Controllers\Platform\SignupController as PlatformSignupController;
 use App\Http\Controllers\Tenant\HomeController as TenantHomeController;
 use App\Http\Controllers\Tenant\SignupController;
 use App\Http\Controllers\Tenant\Admin\DashboardController as TenantAdminDashboardController;
+use App\Http\Controllers\Tenant\Admin\GettingStartedController as TenantAdminGettingStartedController;
 use App\Http\Controllers\Tenant\Admin\SettingsController as TenantAdminSettingsController;
 use App\Http\Controllers\Tenant\Admin\RoutesController as TenantAdminRoutesController;
 use App\Http\Controllers\Tenant\Admin\EmailSignupsController as TenantAdminEmailSignupsController;
@@ -147,6 +148,7 @@ try {
         $router->get('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->show($request));
         $router->post('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->login($request));
         $router->get('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->logout($request));
+        $router->get('/admin/getting-started', fn (Request $request): Response => (new TenantAdminGettingStartedController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
         $router->get('/admin', fn (Request $request): Response => (new TenantAdminDashboardController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
         $router->get('/admin/routes', fn (Request $request): Response => (new TenantAdminRoutesController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
         $router->get('/admin/audit-log', fn (Request $request): Response => (new TenantAdminAuditLogController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new AuditLogRepository($pdo)))->index($request, $tenant, $currentUser));
@@ -173,8 +175,8 @@ try {
     $router = new Router();
     $router->get('/', fn (Request $request): Response => $platformController->home($request));
     $router->get('/pricing', fn (Request $request): Response => $platformController->pricing($request));
-    $router->get('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo), new PasswordHasher(), new CsrfTokenService()))->show($request));
-    $router->post('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo), new PasswordHasher(), new CsrfTokenService()))->submit($request));
+    $router->get('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService()))->show($request));
+    $router->post('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService()))->submit($request));
     $router->get('/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
     $router->get('/admin/routes', fn (Request $request): Response => (new PlatformAdminRoutesController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
     $router->get('/admin/tenants', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo)))->index($request, $currentUser));

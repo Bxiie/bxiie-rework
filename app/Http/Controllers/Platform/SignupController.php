@@ -7,6 +7,9 @@ namespace App\Http\Controllers\Platform;
 use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Identity\PasswordHasher;
+use App\Platform\Auth\Session\SessionRepository;
+use App\Platform\Auth\Session\SessionTokenService;
+use App\Http\Controllers\Auth\LoginController;
 use App\Platform\Signup\TenantSignupService;
 use App\Support\Security\CsrfTokenService;
 
@@ -19,6 +22,8 @@ final class SignupController
         private readonly TenantSignupService $signups,
         private readonly PasswordHasher $passwords,
         private readonly CsrfTokenService $csrf,
+        private readonly ?SessionRepository $sessions = null,
+        private readonly ?SessionTokenService $sessionTokens = null,
     ) {
     }
 
@@ -99,7 +104,49 @@ HTML);
             );
         }
 
-        return new Response('', 302, ['Location' => $this->loginUrl((string) $result['domain'])]);
+        $sessionToken = $this->createBrowserSession((int) $result['user_id']);
+
+        if ($sessionToken !== '') {
+            setcookie(LoginController::COOKIE_NAME, $sessionToken, [
+                'expires' => time() + 86400 * 14,
+                'path' => '/',
+                'secure' => $this->isSecureCookie(),
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+        }
+
+        return new Response('', 302, ['Location' => $this->gettingStartedUrl((string) $result['domain'])]);
+    }
+
+    private function createBrowserSession(int $userId): string
+    {
+        if ($this->sessions === null || $this->sessionTokens === null) {
+            return '';
+        }
+
+        $token = $this->sessionTokens->generate();
+        $hash = $this->sessionTokens->hash($token);
+
+        $this->sessions->create(
+            userId: $userId,
+            tokenHash: $hash,
+            ipAddress: $_SERVER['REMOTE_ADDR'] ?? null,
+            userAgent: $_SERVER['HTTP_USER_AGENT'] ?? null,
+        );
+
+        return $token;
+    }
+
+    private function isSecureCookie(): bool
+    {
+        $appEnv = strtolower((string) (getenv('APP_ENV') ?: 'production'));
+
+        if (in_array($appEnv, ['local', 'development', 'dev'], true)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -111,7 +158,7 @@ HTML);
      *   APP_ENV=local
      *   ARTSFOLIO_LOCAL_DEV_PORT=8080
      */
-    private function loginUrl(string $domain): string
+    private function gettingStartedUrl(string $domain): string
     {
         $appEnv = strtolower((string) (getenv('APP_ENV') ?: 'production'));
         $localPort = trim((string) (getenv('ARTSFOLIO_LOCAL_DEV_PORT') ?: ''));
@@ -119,10 +166,10 @@ HTML);
         if (in_array($appEnv, ['local', 'development', 'dev'], true)) {
             $port = $localPort !== '' ? ':' . $localPort : '';
 
-            return 'http://' . $domain . $port . '/login';
+            return 'http://' . $domain . $port . '/admin/getting-started';
         }
 
-        return 'https://' . $domain . '/login';
+        return 'https://' . $domain . '/admin/getting-started';
     }
 }
 

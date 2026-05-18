@@ -722,3 +722,11 @@
 - Production redirects to https://<slug>.artsfol.io/login.
 - Local development can set APP_ENV=local and ARTSFOLIO_LOCAL_DEV_PORT=8080 to redirect to http://<slug>.artsfol.io:8080/login.
 - Added signup redirect regression test and documentation under docs/dev, docs/admin, and docs/user.
+
+## 2026-05-17 Tenant onboarding completion flow
+
+- Added tenant admin getting-started page at /admin/getting-started.
+- Platform signup now attempts to create a browser session for the new admin.
+- Successful platform signup redirects to /admin/getting-started on the new tenant domain.
+- Added docs for tenant getting-started flow under docs/dev, docs/admin, and docs/user.
+- Added tenant getting-started smoke test.
