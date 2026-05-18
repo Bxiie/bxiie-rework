@@ -75,6 +75,8 @@ use App\Tenant\Contact\ContactMessageService;
 use App\Tenant\Contact\ContactMessageRepository;
 use App\Tenant\Settings\TenantSettingsRepository;
 
+use App\Tenant\Artwork\ArtworkUploadService;
+
 $root = dirname(__DIR__);
 
 require $root . '/bootstrap/app.php';
