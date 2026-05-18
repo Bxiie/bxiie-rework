@@ -82,7 +82,7 @@ final class ArtworkUploadService
 
         try {
             $mediaId = $this->createMediaAsset(
-                tenantId: (int) $tenant->id,
+                tenantId: (int) $tenant->tenantId,
                 originalFilename: (string) ($file['name'] ?? $filename),
                 storagePath: $relativePath,
                 mimeType: $mime,
@@ -95,7 +95,7 @@ final class ArtworkUploadService
             );
 
             $artworkId = $this->createArtwork(
-                tenantId: (int) $tenant->id,
+                tenantId: (int) $tenant->tenantId,
                 mediaId: $mediaId,
                 title: $title,
                 artworkDate: $artworkDate,
@@ -115,7 +115,7 @@ final class ArtworkUploadService
         return [
             'artwork_id' => $artworkId,
             'media_id' => $mediaId,
-            'tenant_id' => (int) $tenant->id,
+            'tenant_id' => (int) $tenant->tenantId,
             'tenant_slug' => $tenant->slug,
             'title' => $title,
             'artwork_date' => $artworkDate,
