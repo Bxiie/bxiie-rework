@@ -747,3 +747,11 @@
 - Added legacy image staging script.
 - Added docs for artwork upload and legacy Bxiie migration.
 - Added artwork upload pipeline smoke test.
+
+## 2026-05-18 Database-backed artwork uploads
+
+- Added migration 0010_artwork_sales_fields.sql for artworks.sale_status and artworks.price.
+- Artwork upload now writes media_assets and artworks rows.
+- Upload metadata maps date/year to artworks.year_created, notes to artworks.description, medium to artworks.medium, sale status to artworks.sale_status, and price to artworks.price.
+- New uploaded artworks are created as draft.
+- Added artwork DB upload pipeline smoke test.

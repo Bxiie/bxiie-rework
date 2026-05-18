@@ -39,3 +39,32 @@ php scripts/migration/stage_legacy_bxiie_images.php --inventory=storage/imports/
 Stage first, review mappings second, publish third. Do not guess final artwork metadata from filenames.
 
 <!-- End of file. -->
+
+## Database-backed upload behavior
+
+Artwork uploads now write:
+
+```text
+media_assets
+artworks
+```
+
+Field mapping:
+
+```text
+title          -> artworks.title, media_assets.title, media_assets.alt_text
+date/year      -> artworks.year_created
+medium         -> artworks.medium
+notes          -> artworks.description, media_assets.caption
+sale status    -> artworks.sale_status
+price          -> artworks.price
+image file     -> media_assets.storage_path, artworks.primary_media_id
+```
+
+New uploads default to:
+
+```text
+artworks.status = draft
+```
+
+<!-- End of file. -->
