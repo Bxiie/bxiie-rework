@@ -20,6 +20,7 @@ use App\Http\Controllers\Platform\Admin\WorkersController as PlatformAdminWorker
 use App\Http\Controllers\Platform\Admin\AuditLogController as PlatformAdminAuditLogController;
 use App\Http\Controllers\Platform\Admin\TenantsController as PlatformAdminTenantsController;
 use App\Http\Controllers\Platform\HomeController as PlatformHomeController;
+use App\Http\Controllers\Platform\CaddyAskController;
 use App\Http\Controllers\Platform\SignupController as PlatformSignupController;
 use App\Http\Controllers\Tenant\HomeController as TenantHomeController;
 use App\Http\Controllers\Tenant\SignupController;
@@ -145,7 +146,8 @@ try {
         $router->get('/portfolio', fn (Request $request): Response => $tenantController->portfolio($request, $tenant));
         $router->get('/artwork/{slug}', fn (Request $request, array $params): Response => $tenantController->artwork($request, $tenant, (string) $params['slug']));
         $router->get('/about', fn (Request $request): Response => $tenantController->about($request, $tenant));
-        $router->get('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->show($request));
+        $router->get('/caddy/ask', fn (Request $request): Response => (new CaddyAskController($pdo))->ask($request));
+    $router->get('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->show($request));
         $router->post('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->login($request));
         $router->get('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->logout($request));
         $router->get('/admin/getting-started', fn (Request $request): Response => (new TenantAdminGettingStartedController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));

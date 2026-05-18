@@ -730,3 +730,11 @@
 - Successful platform signup redirects to /admin/getting-started on the new tenant domain.
 - Added docs for tenant getting-started flow under docs/dev, docs/admin, and docs/user.
 - Added tenant getting-started smoke test.
+
+## 2026-05-17 App-backed Caddy on-demand TLS ask endpoint
+
+- Added GET /caddy/ask.
+- Caddy ask endpoint approves platform domains and active tenant_domains.hostname rows.
+- Unknown domains return 403 and should not receive on-demand TLS certificates.
+- Documented that wildcard TLS for *.artsfol.io requires DNS-01 and is not used with the current plain Caddy challenge setup.
+- Temporary permissive ask services on port 8088 should not be used in production.
