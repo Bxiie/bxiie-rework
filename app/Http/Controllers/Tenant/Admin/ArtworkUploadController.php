@@ -37,7 +37,36 @@ final class ArtworkUploadController
 <head><meta charset="utf-8"><title>Upload artwork</title><meta name="viewport" content="width=device-width, initial-scale=1"></head>
 <body>
 <h1>Upload artwork</h1>
-<form method="post" action="/admin/artwork/upload" enctype="multipart/form-data">
+<style>
+    .upload-status {
+        display: none;
+        margin-top: 1rem;
+        font-weight: 600;
+    }
+
+    .spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        margin-right: .5rem;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 999px;
+        vertical-align: -0.15em;
+        animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    button[disabled] {
+        opacity: .65;
+        cursor: wait;
+    }
+</style>
+
+<form id="artwork-upload-form" method="post" action="/admin/artwork/upload" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <p><label>Title<br><input type="text" name="title" required></label></p>
     <p><label>Date / year<br><input type="text" name="artwork_date" placeholder="2026, 2021-2024, or exact date"></label></p>
@@ -54,8 +83,24 @@ final class ArtworkUploadController
     </p>
     <p><label>Price<br><input type="text" name="price" placeholder="1200, 1200 USD, contact for price"></label></p>
     <p><label>Image<br><input type="file" name="artwork" accept="image/jpeg,image/png,image/webp,image/gif" required></label></p>
-    <button type="submit">Upload artwork</button>
+    <button id="artwork-upload-button" type="submit">Upload artwork</button>
+    <p id="artwork-upload-status" class="upload-status" role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        Uploading artwork…
+    </p>
 </form>
+
+<script>
+    const form = document.getElementById('artwork-upload-form');
+    const button = document.getElementById('artwork-upload-button');
+    const status = document.getElementById('artwork-upload-status');
+
+    form?.addEventListener('submit', () => {
+        button.disabled = true;
+        button.textContent = 'Uploading…';
+        status.style.display = 'block';
+    });
+</script>
 </body>
 </html>
 HTML);
