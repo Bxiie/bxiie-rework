@@ -738,3 +738,12 @@
 - Unknown domains return 403 and should not receive on-demand TLS certificates.
 - Documented that wildcard TLS for *.artsfol.io requires DNS-01 and is not used with the current plain Caddy challenge setup.
 - Temporary permissive ask services on port 8088 should not be used in production.
+
+## 2026-05-18 Artwork upload and legacy Bxiie migration scaffold
+
+- Added tenant artwork upload staging service.
+- Added tenant admin artwork upload route at /admin/artwork/upload.
+- Added legacy bxiie.com inventory script.
+- Added legacy image staging script.
+- Added docs for artwork upload and legacy Bxiie migration.
+- Added artwork upload pipeline smoke test.
