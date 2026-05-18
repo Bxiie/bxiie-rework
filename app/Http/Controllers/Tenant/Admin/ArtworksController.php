@@ -65,7 +65,7 @@ final class ArtworksController
             $image = '';
 
             if (!empty($row['storage_path'])) {
-                $src = '/media/' . (int) $row['media_id'];
+                $src = '/media?id=' . (int) $row['media_id'];
                 $src = htmlspecialchars($src, ENT_QUOTES, 'UTF-8');
                 $image = "<img src=\"{$src}\" alt=\"{$title}\" style=\"max-width:180px;max-height:140px;object-fit:contain;border:1px solid #ddd;background:#fff;\">";
             }
@@ -83,12 +83,13 @@ final class ArtworksController
     <td>{$saleStatus}</td>
     <td>{$price}</td>
     <td>{$notes}</td>
+    <td><a href="/admin/artworks/edit?id={$row['id']}">Edit</a></td>
 </tr>
 HTML;
         }
 
         if ($items === '') {
-            $items = '<tr><td colspan="8">No artwork uploaded yet.</td></tr>';
+            $items = '<tr><td colspan="9">No artwork uploaded yet.</td></tr>';
         }
 
         return Response::html(<<<HTML
@@ -115,6 +116,7 @@ HTML;
                 <th>Sale</th>
                 <th>Price</th>
                 <th>Notes</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -126,6 +128,150 @@ HTML;
 </html>
 HTML);
     }
+
+    public function edit(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+        }
+
+        $id = (int) ($_GET['id'] ?? 0);
+        $artwork = $this->findArtwork($tenant, $id);
+
+        if (!$artwork) {
+            return Response::html('<h1>404</h1><p>Artwork not found.</p>', 404);
+        }
+
+        $title = htmlspecialchars((string) $artwork['title'], ENT_QUOTES, 'UTF-8');
+        $year = htmlspecialchars((string) ($artwork['year_created'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $medium = htmlspecialchars((string) ($artwork['medium'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $notes = htmlspecialchars((string) ($artwork['description'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $price = htmlspecialchars((string) ($artwork['price'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $status = (string) $artwork['status'];
+        $saleStatus = (string) $artwork['sale_status'];
+
+        $selected = fn (string $a, string $b): string => $a === $b ? ' selected' : '';
+
+        return Response::html(<<<HTML
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Edit artwork</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<main>
+    <p><a href="/admin/artworks">&larr; Artworks</a></p>
+    <h1>Edit artwork</h1>
+    <form method="post" action="/admin/artworks/edit">
+        <input type="hidden" name="id" value="{$id}">
+        <p><label>Title<br><input type="text" name="title" value="{$title}" required></label></p>
+        <p><label>Date / year<br><input type="text" name="year_created" value="{$year}"></label></p>
+        <p><label>Medium<br><input type="text" name="medium" value="{$medium}"></label></p>
+        <p><label>Notes<br><textarea name="description" rows="6">{$notes}</textarea></label></p>
+        <p>
+            <label>Status<br>
+                <select name="status">
+                    <option value="draft"{$selected($status, 'draft')}>Draft</option>
+                    <option value="published"{$selected($status, 'published')}>Published</option>
+                    <option value="archived"{$selected($status, 'archived')}>Archived</option>
+                </select>
+            </label>
+        </p>
+        <p>
+            <label>Sale status<br>
+                <select name="sale_status">
+                    <option value="nfs"{$selected($saleStatus, 'nfs')}>NFS</option>
+                    <option value="for_sale"{$selected($saleStatus, 'for_sale')}>For sale</option>
+                    <option value="sold"{$selected($saleStatus, 'sold')}>Sold</option>
+                </select>
+            </label>
+        </p>
+        <p><label>Price<br><input type="text" name="price" value="{$price}"></label></p>
+        <button type="submit">Save artwork</button>
+    </form>
+</main>
+</body>
+</html>
+HTML);
+    }
+
+    public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+        }
+
+        $id = (int) ($_POST['id'] ?? 0);
+        $artwork = $this->findArtwork($tenant, $id);
+
+        if (!$artwork) {
+            return Response::html('<h1>404</h1><p>Artwork not found.</p>', 404);
+        }
+
+        $title = trim((string) ($_POST['title'] ?? ''));
+        if ($title === '') {
+            return Response::html('<h1>Invalid artwork</h1><p>Title is required.</p>', 422);
+        }
+
+        $status = in_array(($_POST['status'] ?? 'draft'), ['draft', 'published', 'archived'], true) ? (string) $_POST['status'] : 'draft';
+        $saleStatus = in_array(($_POST['sale_status'] ?? 'nfs'), ['nfs', 'for_sale', 'sold'], true) ? (string) $_POST['sale_status'] : 'nfs';
+        $price = $saleStatus === 'nfs' ? null : trim((string) ($_POST['price'] ?? ''));
+
+        $stmt = $this->pdo->prepare(
+            "UPDATE artworks
+             SET title = :title,
+                 year_created = :year_created,
+                 medium = :medium,
+                 description = :description,
+                 status = :status,
+                 sale_status = :sale_status,
+                 price = :price,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = :id
+               AND tenant_id = :tenant_id"
+        );
+
+        $stmt->execute([
+            'title' => $title,
+            'year_created' => trim((string) ($_POST['year_created'] ?? '')) ?: null,
+            'medium' => trim((string) ($_POST['medium'] ?? '')) ?: null,
+            'description' => trim((string) ($_POST['description'] ?? '')) ?: null,
+            'status' => $status,
+            'sale_status' => $saleStatus,
+            'price' => $price !== '' ? $price : null,
+            'id' => $id,
+            'tenant_id' => $tenant->tenantId,
+        ]);
+
+        return Response::html('<h1>Artwork saved</h1><p><a href="/admin/artworks">Back to artworks</a></p>');
+    }
+
+    private function findArtwork(TenantContext $tenant, int $id): ?array
+    {
+        if ($id <= 0) {
+            return null;
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT *
+             FROM artworks
+             WHERE id = :id
+               AND tenant_id = :tenant_id
+             LIMIT 1"
+        );
+
+        $stmt->execute([
+            'id' => $id,
+            'tenant_id' => $tenant->tenantId,
+        ]);
+
+        $row = $stmt->fetch();
+
+        return $row ?: null;
+    }
+
 }
 
 // End of file.

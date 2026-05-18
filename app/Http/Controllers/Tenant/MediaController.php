@@ -16,9 +16,9 @@ final class MediaController
     ) {
     }
 
-    public function show(Request $request, TenantContext $tenant, string $id): Response
+    public function show(Request $request, TenantContext $tenant): Response
     {
-        $mediaId = (int) $id;
+        $mediaId = (int) ($_GET['id'] ?? 0);
 
         if ($mediaId <= 0) {
             return Response::html('<h1>404</h1><p>Media not found.</p>', 404);
