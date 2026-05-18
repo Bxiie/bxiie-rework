@@ -36,6 +36,7 @@ final class ArtworksController
                 a.sale_status,
                 a.price,
                 a.created_at,
+                m.id AS media_id,
                 m.storage_path,
                 m.mime_type,
                 m.width,
@@ -64,7 +65,7 @@ final class ArtworksController
             $image = '';
 
             if (!empty($row['storage_path'])) {
-                $src = '/media/' . ltrim((string) $row['storage_path'], '/');
+                $src = '/media/' . (int) $row['media_id'];
                 $src = htmlspecialchars($src, ENT_QUOTES, 'UTF-8');
                 $image = "<img src=\"{$src}\" alt=\"{$title}\" style=\"max-width:180px;max-height:140px;object-fit:contain;border:1px solid #ddd;background:#fff;\">";
             }

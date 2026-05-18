@@ -16,22 +16,17 @@ final class MediaController
     ) {
     }
 
-    public function show(Request $request, TenantContext $tenant, string $path): Response
+    public function show(Request $request, TenantContext $tenant, string $id): Response
     {
-        $path = 'storage/uploads/artwork/' . ltrim($path, '/');
+        $mediaId = (int) $id;
 
-        $stmt = $this->pdo->prepare(
-            "SELECT *
-             FROM media_assets
-             WHERE tenant_id = :tenant_id
-               AND storage_path = :storage_path
-               AND is_private = 0
-             LIMIT 1"
-        );
+        if ($mediaId <= 0) {
+            return Response::html('<h1>404</h1><p>Media not found.</p>', 404);
+        }
 
         $stmt->execute([
             'tenant_id' => $tenant->tenantId,
-            'storage_path' => $path,
+            'media_id' => $mediaId,
         ]);
 
         $media = $stmt->fetch();
@@ -40,7 +35,7 @@ final class MediaController
             return Response::html('<h1>404</h1><p>Media not found.</p>', 404);
         }
 
-        $absolute = dirname(__DIR__, 3) . '/' . $path;
+        $absolute = dirname(__DIR__, 3) . '/' . ltrim((string) $media['storage_path'], '/');
 
         if (!is_file($absolute)) {
             return Response::html('<h1>404</h1><p>Media file missing.</p>', 404);

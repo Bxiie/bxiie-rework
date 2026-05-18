@@ -43,6 +43,7 @@ final class DashboardController
     <li><a href="/admin/email-signups">Email signups</a></li>
     <li><a href="/admin/audit-log">Audit log</a></li>
     <li>Account and billing details: coming later</li>
+    <li><a href="/admin/artworks">Artworks</a></li>
 </ul>
 HTML;
 
