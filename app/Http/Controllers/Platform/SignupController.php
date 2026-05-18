@@ -125,12 +125,13 @@ HTML);
             return '';
         }
 
-        $token = $this->sessionTokens->generate();
-        $hash = $this->sessionTokens->hash($token);
+        $token = $this->sessionTokens->generateToken();
+        $hash = $this->sessionTokens->hashToken($token);
 
         $this->sessions->create(
+            sessionHash: $hash,
             userId: $userId,
-            tokenHash: $hash,
+            tenantId: null,
             ipAddress: $_SERVER['REMOTE_ADDR'] ?? null,
             userAgent: $_SERVER['HTTP_USER_AGENT'] ?? null,
         );
