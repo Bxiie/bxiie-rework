@@ -8,6 +8,7 @@ use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
+use App\Platform\Audit\AuditLogRepository;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Artwork\ArtworkUploadService;
 
@@ -20,6 +21,7 @@ final class ArtworkUploadController
         private readonly RequireTenantRoleBrowser $roles,
         private readonly CsrfTokenService $csrf,
         private readonly ArtworkUploadService $uploads,
+        private readonly ?AuditLogRepository $auditLog = null,
     ) {
     }
 
@@ -129,9 +131,21 @@ HTML);
             return Response::html('<h1>Upload failed</h1><p>' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>', 422);
         }
 
+        if ($this->auditLog !== null) {
+            $this->auditLog->record(
+                action: 'tenant.artwork.uploaded',
+                tenantId: $tenant->tenantId,
+                userId: isset($currentUser['id']) ? (int) $currentUser['id'] : null,
+                entityType: 'artwork',
+                entityId: (string) ($record['artwork_id'] ?? ''),
+                details: $record,
+                ipAddress: $_SERVER['REMOTE_ADDR'] ?? null,
+            );
+        }
+
         $title = htmlspecialchars((string) $record['title'], ENT_QUOTES, 'UTF-8');
 
-        return Response::html("<h1>Artwork uploaded</h1><p>{$title} has been staged.</p>");
+        return Response::html("<h1>Artwork uploaded</h1><p>{$title} has been saved as a draft.</p><p><a href=\"/admin/artworks\">Review artworks</a></p>");
     }
 }
 
