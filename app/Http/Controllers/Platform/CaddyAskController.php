@@ -26,14 +26,14 @@ final class CaddyAskController
         $domain = strtolower(trim((string) ($_GET['domain'] ?? '')));
 
         if ($domain === '' || !$this->looksLikeHostname($domain)) {
-            return Response::text('forbidden', 403);
+            return Response::html('forbidden', 403);
         }
 
         if ($this->isApprovedPlatformDomain($domain) || $this->isApprovedTenantDomain($domain)) {
-            return Response::text('ok');
+            return Response::html('ok');
         }
 
-        return Response::text('forbidden', 403);
+        return Response::html('forbidden', 403);
     }
 
     private function looksLikeHostname(string $domain): bool

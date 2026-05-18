@@ -110,7 +110,12 @@ try {
         new BearerTokenService(),
     ))->resolve($request);
 
-    if ($tenant) {
+    if ($request->path() === '/caddy/ask') {
+    echo (new CaddyAskController($pdo))->ask($request)->send();
+    exit;
+}
+
+if ($tenant) {
 // Tenant login is intentionally mounted at /login on each tenant domain; the tenant root remains public content.
         $tenantSettings = new TenantSettingsRepository($pdo);
         $emailOutbox = new EmailOutboxRepository($pdo);
