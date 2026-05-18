@@ -40,6 +40,19 @@ final class ArtworkUploadController
 <form method="post" action="/admin/artwork/upload" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <p><label>Title<br><input type="text" name="title" required></label></p>
+    <p><label>Date / year<br><input type="text" name="artwork_date" placeholder="2026, 2021-2024, or exact date"></label></p>
+    <p><label>Medium<br><input type="text" name="medium" placeholder="3D printed plastic, steel, wood, digital media"></label></p>
+    <p><label>Notes<br><textarea name="notes" rows="5"></textarea></label></p>
+    <p>
+        <label>Sale status<br>
+            <select name="sale_status">
+                <option value="nfs">NFS</option>
+                <option value="for_sale">For sale</option>
+                <option value="sold">Sold</option>
+            </select>
+        </label>
+    </p>
+    <p><label>Price<br><input type="text" name="price" placeholder="1200, 1200 USD, contact for price"></label></p>
     <p><label>Image<br><input type="file" name="artwork" accept="image/jpeg,image/png,image/webp,image/gif" required></label></p>
     <button type="submit">Upload artwork</button>
 </form>
@@ -59,7 +72,14 @@ HTML);
         }
 
         try {
-            $record = $this->uploads->store($tenant, $_FILES['artwork'] ?? [], (string) ($_POST['title'] ?? ''));
+            $record = $this->uploads->store($tenant, $_FILES['artwork'] ?? [], [
+                'title' => (string) ($_POST['title'] ?? ''),
+                'artwork_date' => (string) ($_POST['artwork_date'] ?? ''),
+                'medium' => (string) ($_POST['medium'] ?? ''),
+                'notes' => (string) ($_POST['notes'] ?? ''),
+                'sale_status' => (string) ($_POST['sale_status'] ?? 'nfs'),
+                'price' => (string) ($_POST['price'] ?? ''),
+            ]);
         } catch (\Throwable $e) {
             return Response::html('<h1>Upload failed</h1><p>' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>', 422);
         }

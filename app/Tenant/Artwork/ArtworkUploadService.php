@@ -12,7 +12,7 @@ use RuntimeException;
  */
 final class ArtworkUploadService
 {
-    public function store(TenantContext $tenant, array $file, string $title): array
+    public function store(TenantContext $tenant, array $file, array $metadata): array
     {
         if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
             throw new RuntimeException('Artwork upload failed.');
@@ -46,7 +46,12 @@ final class ArtworkUploadService
         $record = [
             'tenant_id' => $tenant->id,
             'tenant_slug' => $tenant->slug,
-            'title' => trim($title) !== '' ? trim($title) : 'Untitled artwork',
+            'title' => trim((string) ($metadata['title'] ?? '')) !== '' ? trim((string) $metadata['title']) : 'Untitled artwork',
+            'artwork_date' => trim((string) ($metadata['artwork_date'] ?? '')),
+            'medium' => trim((string) ($metadata['medium'] ?? '')),
+            'notes' => trim((string) ($metadata['notes'] ?? '')),
+            'sale_status' => in_array(($metadata['sale_status'] ?? 'nfs'), ['nfs', 'for_sale', 'sold'], true) ? $metadata['sale_status'] : 'nfs',
+            'price' => trim((string) ($metadata['price'] ?? '')),
             'stored_path' => $target,
             'sha256' => $sha256,
             'mime_type' => $mime,
