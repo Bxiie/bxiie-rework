@@ -37,6 +37,7 @@ final class ArtworksController
                 a.price,
                 a.created_at,
                 m.id AS media_id,
+                m.uuid AS media_uuid,
                 m.storage_path,
                 m.mime_type,
                 m.width,
@@ -65,7 +66,7 @@ final class ArtworksController
             $image = '';
 
             if (!empty($row['storage_path'])) {
-                $src = '/media?id=' . (int) $row['media_id'];
+                $src = '/media?uuid=' . rawurlencode((string) $row['media_uuid']);
                 $src = htmlspecialchars($src, ENT_QUOTES, 'UTF-8');
                 $image = "<img src=\"{$src}\" alt=\"{$title}\" style=\"max-width:180px;max-height:140px;object-fit:contain;border:1px solid #ddd;background:#fff;\">";
             }

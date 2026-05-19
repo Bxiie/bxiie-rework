@@ -18,9 +18,9 @@ final class MediaController
 
     public function show(Request $request, TenantContext $tenant): Response
     {
-        $mediaId = (int) ($_GET['id'] ?? 0);
+        $mediaUuid = strtolower(trim((string) ($_GET['uuid'] ?? '')));
 
-        if ($mediaId <= 0) {
+        if (!preg_match('/^[a-f0-9-]{36}$/', $mediaUuid)) {
             return Response::html('<h1>404</h1><p>Media not found.</p>', 404);
         }
 
@@ -28,14 +28,14 @@ final class MediaController
             "SELECT *
              FROM media_assets
              WHERE tenant_id = :tenant_id
-               AND id = :media_id
+               AND uuid = :media_uuid
                AND is_private = 0
              LIMIT 1"
         );
 
         $stmt->execute([
             'tenant_id' => $tenant->tenantId,
-            'media_id' => $mediaId,
+            'media_uuid' => $mediaUuid,
         ]);
 
         $media = $stmt->fetch();
