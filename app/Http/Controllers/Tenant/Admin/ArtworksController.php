@@ -96,6 +96,10 @@ final class ArtworksController
             <input type="hidden" name="status" value="draft">
             <button type="submit">Unpublish</button>
         </form>
+        <form method="post" action="/admin/artworks/delete" style="display:inline" onsubmit="return confirm('Archive this artwork? It will disappear from normal review and public pages, but the file will not be deleted yet.');">
+            <input type="hidden" name="id" value="{$row['id']}">
+            <button type="submit">Delete</button>
+        </form>
     </td>
 </tr>
 HTML;
@@ -290,6 +294,35 @@ HTML);
         ]);
 
         return Response::html('<h1>Status updated</h1><p><a href="/admin/artworks">Back to artworks</a></p>');
+    }
+
+
+    public function delete(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+        }
+
+        $id = (int) ($_POST['id'] ?? 0);
+
+        if ($id <= 0) {
+            return Response::html('<h1>Invalid artwork</h1>', 422);
+        }
+
+        $stmt = $this->pdo->prepare(
+            "UPDATE artworks
+             SET status = 'archived',
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = :id
+               AND tenant_id = :tenant_id"
+        );
+
+        $stmt->execute([
+            'id' => $id,
+            'tenant_id' => $tenant->tenantId,
+        ]);
+
+        return Response::html('<h1>Artwork archived</h1><p><a href="/admin/artworks">Back to artworks</a></p>');
     }
 
     private function findArtwork(TenantContext $tenant, int $id): ?array
