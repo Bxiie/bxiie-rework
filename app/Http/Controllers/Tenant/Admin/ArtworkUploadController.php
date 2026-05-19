@@ -132,21 +132,37 @@ HTML);
         }
 
         if ($this->auditLog !== null) {
-            $this->auditLog->record(
-                action: 'tenant.artwork.uploaded',
-                tenantId: $tenant->tenantId,
-                userId: isset($currentUser['id']) ? (int) $currentUser['id'] : null,
-                entityType: 'artwork',
-                entityId: (string) ($record['artwork_id'] ?? ''),
-                details: $record,
-                ipAddress: $_SERVER['REMOTE_ADDR'] ?? null,
-            );
+            try {
+                $this->auditLog->record(
+                    action: 'tenant.artwork.uploaded',
+                    tenantId: $tenant->tenantId,
+                    userId: $this->validAuditUserId($currentUser),
+                    entityType: 'artwork',
+                    entityId: (string) ($record['artwork_id'] ?? ''),
+                    details: $record,
+                    ipAddress: $_SERVER['REMOTE_ADDR'] ?? null,
+                );
+            } catch (\Throwable) {
+                // Upload success must not be rolled back by non-critical audit logging.
+            }
         }
 
         $title = htmlspecialchars((string) $record['title'], ENT_QUOTES, 'UTF-8');
 
         return Response::html("<h1>Artwork uploaded</h1><p>{$title} has been saved as a draft.</p><p><a href=\"/admin/artworks\">Review artworks</a></p>");
     }
+
+    private function validAuditUserId(?array $currentUser): ?int
+    {
+        if (!isset($currentUser['id'])) {
+            return null;
+        }
+
+        $id = (int) $currentUser['id'];
+
+        return $id > 0 ? $id : null;
+    }
+
 }
 
 // End of file.
