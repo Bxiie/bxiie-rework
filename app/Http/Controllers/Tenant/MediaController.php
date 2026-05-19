@@ -45,9 +45,24 @@ final class MediaController
         }
 
         $relativePath = ltrim((string) $media['storage_path'], '/');
-        $absolute = dirname(__DIR__, 3) . '/' . $relativePath;
+        $root = dirname(__DIR__, 3);
 
-        if (!is_file($absolute)) {
+        $candidates = [
+            $root . '/' . $relativePath,
+            $root . '/public/' . $relativePath,
+            $root . '/storage/uploads/artwork/' . $tenant->slug . '/' . basename($relativePath),
+        ];
+
+        $absolute = null;
+
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate)) {
+                $absolute = $candidate;
+                break;
+            }
+        }
+
+        if ($absolute === null) {
             return Response::html('<h1>404</h1><p>Media file missing.</p>', 404);
         }
 
