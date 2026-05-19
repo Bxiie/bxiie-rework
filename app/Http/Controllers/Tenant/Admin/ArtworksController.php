@@ -66,7 +66,7 @@ final class ArtworksController
             $image = '';
 
             if (!empty($row['storage_path'])) {
-                $src = '/media?uuid=' . rawurlencode((string) $row['media_uuid']);
+                $src = '/admin/media?uuid=' . rawurlencode((string) $row['media_uuid']);
                 $src = htmlspecialchars($src, ENT_QUOTES, 'UTF-8');
                 $image = "<img src=\"{$src}\" alt=\"{$title}\" style=\"max-width:180px;max-height:140px;object-fit:contain;border:1px solid #ddd;background:#fff;\">";
             }
