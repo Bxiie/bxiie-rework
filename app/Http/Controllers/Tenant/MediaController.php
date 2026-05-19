@@ -24,6 +24,15 @@ final class MediaController
             return Response::html('<h1>404</h1><p>Media not found.</p>', 404);
         }
 
+        $stmt = $this->pdo->prepare(
+            "SELECT *
+             FROM media_assets
+             WHERE tenant_id = :tenant_id
+               AND id = :media_id
+               AND is_private = 0
+             LIMIT 1"
+        );
+
         $stmt->execute([
             'tenant_id' => $tenant->tenantId,
             'media_id' => $mediaId,
@@ -35,7 +44,8 @@ final class MediaController
             return Response::html('<h1>404</h1><p>Media not found.</p>', 404);
         }
 
-        $absolute = dirname(__DIR__, 3) . '/' . ltrim((string) $media['storage_path'], '/');
+        $relativePath = ltrim((string) $media['storage_path'], '/');
+        $absolute = dirname(__DIR__, 3) . '/' . $relativePath;
 
         if (!is_file($absolute)) {
             return Response::html('<h1>404</h1><p>Media file missing.</p>', 404);
