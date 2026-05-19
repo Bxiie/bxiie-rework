@@ -84,7 +84,19 @@ final class ArtworksController
     <td>{$saleStatus}</td>
     <td>{$price}</td>
     <td>{$notes}</td>
-    <td><a href="/admin/artworks/edit?id={$row['id']}">Edit</a></td>
+    <td>
+        <a href="/admin/artworks/edit?id={$row['id']}">Edit</a>
+        <form method="post" action="/admin/artworks/status" style="display:inline">
+            <input type="hidden" name="id" value="{$row['id']}">
+            <input type="hidden" name="status" value="published">
+            <button type="submit">Publish</button>
+        </form>
+        <form method="post" action="/admin/artworks/status" style="display:inline">
+            <input type="hidden" name="id" value="{$row['id']}">
+            <input type="hidden" name="status" value="draft">
+            <button type="submit">Unpublish</button>
+        </form>
+    </td>
 </tr>
 HTML;
         }
@@ -247,6 +259,37 @@ HTML);
         ]);
 
         return Response::html('<h1>Artwork saved</h1><p><a href="/admin/artworks">Back to artworks</a></p>');
+    }
+
+
+    public function updateStatus(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+        }
+
+        $id = (int) ($_POST['id'] ?? 0);
+        $status = (string) ($_POST['status'] ?? 'draft');
+
+        if (!in_array($status, ['draft', 'published', 'archived'], true)) {
+            return Response::html('<h1>Invalid status</h1>', 422);
+        }
+
+        $stmt = $this->pdo->prepare(
+            "UPDATE artworks
+             SET status = :status,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = :id
+               AND tenant_id = :tenant_id"
+        );
+
+        $stmt->execute([
+            'status' => $status,
+            'id' => $id,
+            'tenant_id' => $tenant->tenantId,
+        ]);
+
+        return Response::html('<h1>Status updated</h1><p><a href="/admin/artworks">Back to artworks</a></p>');
     }
 
     private function findArtwork(TenantContext $tenant, int $id): ?array
