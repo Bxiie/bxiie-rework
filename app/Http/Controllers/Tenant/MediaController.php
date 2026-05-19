@@ -45,7 +45,7 @@ final class MediaController
         }
 
         $relativePath = ltrim((string) $media['storage_path'], '/');
-        $root = dirname(__DIR__, 3);
+        $root = dirname(__DIR__, 4);
 
         $candidates = [
             $root . '/' . $relativePath,
