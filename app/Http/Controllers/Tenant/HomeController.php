@@ -66,7 +66,15 @@ HTML
             foreach ($items as $item) {
                 $title = $this->escape((string) $item['title']);
                 $slug = rawurlencode((string) $item['slug']);
-                $body .= "    <li><a href=\"/artwork/{$slug}\">{$title}</a></li>\n";
+                $image = '';
+
+                if (!empty($item['media_uuid'])) {
+                    $src = '/media?uuid=' . rawurlencode((string) $item['media_uuid']);
+                    $alt = $this->escape((string) ($item['media_alt_text'] ?? $item['title']));
+                    $image = "<br><img src=\"{$src}\" alt=\"{$alt}\" style=\"max-width:260px;max-height:220px;object-fit:contain;\">";
+                }
+
+                $body .= "    <li><a href=\"/artwork/{$slug}\">{$title}</a>{$image}</li>\n";
             }
             $body .= "</ul>\n";
         }
@@ -92,6 +100,13 @@ HTML
         $year = $this->escape((string) ($artwork['year_created'] ?? ''));
 
         $body = "<h1>{$title}</h1>\n";
+
+        if (!empty($artwork['media_uuid'])) {
+            $src = '/media?uuid=' . rawurlencode((string) $artwork['media_uuid']);
+            $alt = $this->escape((string) ($artwork['media_alt_text'] ?? $artwork['title']));
+            $body .= "<p><img src=\"{$src}\" alt=\"{$alt}\" style=\"max-width:720px;width:100%;height:auto;object-fit:contain;\"></p>\n";
+        }
+
         $body .= "<p><strong>Medium:</strong> {$medium}</p>\n";
         $body .= "<p><strong>Dimensions:</strong> {$dimensions}</p>\n";
         $body .= "<p><strong>Year:</strong> {$year}</p>\n";

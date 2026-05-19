@@ -20,9 +20,11 @@ final class ArtworkReadRepository
     public function findPublishedBySlug(TenantContext $tenant, string $slug): ?array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT id, uuid, title, slug, description, medium, dimensions, year_created, status
-             FROM artworks
-             WHERE tenant_id = :tenant_id
+            "SELECT a.id, a.uuid, a.title, a.slug, a.description, a.medium, a.dimensions, a.year_created, a.status,
+                    m.uuid AS media_uuid, m.alt_text AS media_alt_text
+             FROM artworks a
+             LEFT JOIN media_assets m ON m.id = a.primary_media_id
+             WHERE a.tenant_id = :tenant_id
                AND slug = :slug
                AND status = 'published'
              LIMIT 1"
@@ -41,9 +43,11 @@ final class ArtworkReadRepository
     public function latestPublished(TenantContext $tenant, int $limit = 12): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT id, uuid, title, slug, medium, dimensions, year_created, status
-             FROM artworks
-             WHERE tenant_id = :tenant_id
+            "SELECT a.id, a.uuid, a.title, a.slug, a.medium, a.dimensions, a.year_created, a.status,
+                    m.uuid AS media_uuid, m.alt_text AS media_alt_text
+             FROM artworks a
+             LEFT JOIN media_assets m ON m.id = a.primary_media_id
+             WHERE a.tenant_id = :tenant_id
                AND status = 'published'
              ORDER BY sort_order ASC, id DESC
              LIMIT :limit_count"

@@ -8,6 +8,7 @@ use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
+use App\Platform\Audit\AuditLogRepository;
 use PDO;
 
 final class ArtworksController
@@ -15,6 +16,7 @@ final class ArtworksController
     public function __construct(
         private readonly RequireTenantRoleBrowser $roles,
         private readonly PDO $pdo,
+        private readonly AuditLogRepository $auditLog,
     ) {
     }
 
@@ -45,6 +47,7 @@ final class ArtworksController
              FROM artworks a
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
              WHERE a.tenant_id = :tenant_id
+               AND a.status <> 'archived'
              ORDER BY a.id DESC
              LIMIT 200"
         );
