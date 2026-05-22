@@ -275,3 +275,114 @@ table.admin-table {
   border-radius: 10px;
   background: #eef8ee;
 }
+
+/* Settings/content admin refinements. */
+.admin-page-actions {
+  display: flex;
+  gap: .75rem;
+  flex-wrap: wrap;
+  margin: 0 0 1.25rem;
+}
+
+.admin-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .45rem .75rem;
+  border: 1px solid rgba(0,0,0,.14);
+  border-radius: 999px;
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+  font-size: .92rem;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.admin-panel {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 18px;
+  padding: 1.25rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,.05);
+}
+
+.admin-panel h2,
+.admin-panel h3 {
+  margin-top: 0;
+}
+
+.admin-field {
+  display: grid;
+  gap: .35rem;
+  margin: 0 0 1rem;
+}
+
+.admin-field label,
+.admin-field .label {
+  font-weight: 700;
+}
+
+.admin-field input,
+.admin-field select,
+.admin-field textarea,
+.admin-panel input,
+.admin-panel select,
+.admin-panel textarea {
+  width: 100%;
+  max-width: 100%;
+  padding: .7rem .8rem;
+  border: 1px solid rgba(0,0,0,.22);
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+}
+
+.admin-field textarea,
+.admin-panel textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.admin-field-help {
+  color: #666;
+  font-size: .9rem;
+  line-height: 1.35;
+}
+
+.admin-submit-bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: .75rem;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding: 1rem 0 0;
+  background: linear-gradient(to top, #f5f2ec 70%, rgba(245,242,236,0));
+}
+
+.admin-submit-bar button,
+.admin-primary-button {
+  border: 0;
+  border-radius: 999px;
+  padding: .75rem 1.1rem;
+  background: #161616;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-submit-bar {
+    position: static;
+  }
+}

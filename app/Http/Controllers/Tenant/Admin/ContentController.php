@@ -30,6 +30,7 @@ final class ContentController
         $token = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
         $about = htmlspecialchars($this->settings->get($tenant, 'about_content', ''), ENT_QUOTES, 'UTF-8');
         $contact = htmlspecialchars($this->settings->get($tenant, 'contact_details', ''), ENT_QUOTES, 'UTF-8');
+        $homeIntro = htmlspecialchars($this->settings->get($tenant, 'home_intro', ''), ENT_QUOTES, 'UTF-8');
         $instagram = htmlspecialchars($this->settings->get($tenant, 'instagram_url', ''), ENT_QUOTES, 'UTF-8');
         $facebook = htmlspecialchars($this->settings->get($tenant, 'facebook_url', ''), ENT_QUOTES, 'UTF-8');
         $linkedin = htmlspecialchars($this->settings->get($tenant, 'linkedin_url', ''), ENT_QUOTES, 'UTF-8');
@@ -45,14 +46,17 @@ final class ContentController
         };
 
         return Response::html(AdminLayout::render($tenant, 'Content', <<<HTML
-<form method="post" action="/admin/content">
+<form method="post" action="/admin/content" class="admin-form">
 <input type="hidden" name="csrf_token" value="{$token}">
-<p><label>About content<br><textarea name="about_content" rows="14" style="width:100%">{$about}</textarea></label></p>
-<p><label>Contact details<br><textarea name="contact_details" rows="10" style="width:100%">{$contact}</textarea></label></p>
+<div class="admin-form-grid">
+<div class="admin-panel"><h2>Home</h2><p><label>Home page text<br><textarea name="home_intro" rows="6">{$homeIntro}</textarea></label></p></div>
+<div class="admin-panel"><h2>About</h2><p><label>About content<br><textarea name="about_content" rows="14">{$about}</textarea></label></p></div>
+<div class="admin-panel"><h2>Contact</h2><p><label>Contact details<br><textarea name="contact_details" rows="10">{$contact}</textarea></label></p></div>
 <p><label>Instagram URL<br><input name="instagram_url" value="{$instagram}" style="width:100%"></label></p>
 <p><label>Facebook URL<br><input name="facebook_url" value="{$facebook}" style="width:100%"></label></p>
 <p><label>LinkedIn URL<br><input name="linkedin_url" value="{$linkedin}" style="width:100%"></label></p>
-<button>Save content</button>
+</div>
+<div class="admin-submit-bar"><button>Save content</button></div>
 </form>
 HTML, ['active' => 'content']));
     }
@@ -67,7 +71,7 @@ HTML, ['active' => 'content']));
             return new Response('', 303, ['Location' => '/admin/content?error=csrf']);
         }
 
-        foreach (['about_content', 'contact_details', 'instagram_url', 'facebook_url', 'linkedin_url'] as $key) {
+        foreach (['home_intro', 'about_content', 'contact_details', 'instagram_url', 'facebook_url', 'linkedin_url'] as $key) {
             $this->settings->set($tenant, $key, trim((string) ($_POST[$key] ?? '')));
         }
 
