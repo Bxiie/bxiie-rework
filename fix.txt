@@ -1,5 +1,10 @@
 ## Now
 
+- Allow ordering a filtering of events on the admin events page.
+
+
+
+##
 - Show aggregated hit graphs for days of the week and hours of the day for selected range on stats page in tenant admin
 - Allow showing portfolio sections as tabs at the top
 - Allow ordering of tabs

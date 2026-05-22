@@ -207,6 +207,17 @@ HTML
         $browserTitle = $this->escape($title);
         $copyrightName = $this->escape($this->settings->get($tenant, 'copyright_name', $siteTitle));
         $year = date('Y');
+        $primaryColor = $this->escape($this->settings->get($tenant, 'primary_color', '#111111'));
+        $accentColor = $this->escape($this->settings->get($tenant, 'accent_color', '#c9a85f'));
+        $backgroundColor = $this->escape($this->settings->get($tenant, 'background_color', '#f7f2e8'));
+        $topbarBackgroundColor = $this->escape($this->settings->get($tenant, 'topbar_background_color', 'color-mix(in srgb, var(--bg), white 50%)'));
+        $homeTab = $this->escape($this->settings->get($tenant, 'home_tab', 'Home'));
+        $portfolioTab = $this->escape($this->settings->get($tenant, 'portfolio_tab', 'Portfolio'));
+        $aboutTab = $this->escape($this->settings->get($tenant, 'about_tab', 'About'));
+        $contactTab = $this->escape($this->settings->get($tenant, 'contact_tab', 'Contact'));
+        $portfolioSlug = $this->escape($this->settings->get($tenant, 'portfolio_slug', 'portfolio'));
+        $aboutSlug = $this->escape($this->settings->get($tenant, 'about_slug', 'about'));
+        $contactSlug = $this->escape($this->settings->get($tenant, 'contact_slug', 'contact'));
 
         return <<<HTML
 <!doctype html>
@@ -217,15 +228,16 @@ HTML
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Artist portfolio">
     <link rel="stylesheet" href="/assets/site.css">
+    <link rel="stylesheet" href="/tenant.css">
 </head>
-<body style="--primary:#111;--accent:#c9a85f;--bg:#f7f2e8;">
+<body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};">
 <header class="site-header">
     <a class="brand" href="/">{$siteTitle}</a>
     <nav>
-        <a href="/">Home</a>
-        <a href="/portfolio">Portfolio</a>
-        <a href="/about">About</a>
-        <a href="/contact">Contact</a>
+        <a href="/">{$homeTab}</a>
+        <a href="/{$portfolioSlug}">{$portfolioTab}</a>
+        <a href="/{$aboutSlug}">{$aboutTab}</a>
+        <a href="/{$contactSlug}">{$contactTab}</a>
     </nav>
 </header>
 <main class="site-main">
@@ -247,10 +259,31 @@ HTML;
              ORDER BY sort_order ASC, id DESC"
         );
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
+        $rows = $stmt->fetchAll();
+
+        if (!$rows) {
+            return '';
+        }
+
+        $mode = $this->settings->get($tenant, 'exhibitions_display_mode', 'text');
+
+        if ($mode === 'table') {
+            $html = '<table class="events-table"><tr><th>Date</th><th>Exhibition</th><th>Type</th><th>Location</th><th>Work</th><th>Additional information</th></tr>';
+            foreach ($rows as $event) {
+                $date = $this->escape((string) ($event['exhibition_date'] ?? ''));
+                $name = $this->escape((string) $event['name']);
+                $type = $this->escape((string) ($event['exhibition_type'] ?? ''));
+                $locationRaw = (string) (($event['location'] ?? '') ?: (($event['city'] ?? '') . ', ' . ($event['state_region'] ?? '')));
+                $location = $this->escape(trim($locationRaw, ', '));
+                $work = $this->escape((string) ($event['work_name'] ?? ''));
+                $notes = (string) ($event['notes'] ?? '');
+                $html .= "<tr><td>{$date}</td><td>{$name}</td><td>{$type}</td><td>{$location}</td><td>{$work}</td><td><div class=\"prose small\">{$notes}</div></td></tr>";
+            }
+            return $html . '</table>';
+        }
 
         $html = '';
-
-        foreach ($stmt->fetchAll() as $event) {
+        foreach ($rows as $event) {
             $date = $this->escape((string) ($event['exhibition_date'] ?? ''));
             $name = $this->escape((string) $event['name']);
             $type = $this->escape((string) ($event['exhibition_type'] ?? ''));
@@ -260,10 +293,10 @@ HTML;
             $notes = (string) ($event['notes'] ?? '');
 
             $html .= "<article class=\"event-row\">";
-            $html .= "<p><strong>{$date}</strong></p>";
+            $html .= "<div class=\"event-date\">{$date}</div><div>";
             $html .= "<h3>{$name}</h3>";
             if ($type !== '') {
-                $html .= "<p>{$type}</p>";
+                $html .= "<p><strong>{$type}</strong></p>";
             }
             if ($location !== '') {
                 $html .= "<p>{$location}</p>";
@@ -272,9 +305,9 @@ HTML;
                 $html .= "<p>{$work}</p>";
             }
             if ($notes !== '') {
-                $html .= "<div>{$notes}</div>";
+                $html .= "<div class=\"prose small\">{$notes}</div>";
             }
-            $html .= "</article>\n";
+            $html .= "</div></article>\n";
         }
 
         return $html;

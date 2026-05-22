@@ -23,6 +23,7 @@ use App\Http\Controllers\Platform\HomeController as PlatformHomeController;
 use App\Http\Controllers\Platform\CaddyAskController;
 use App\Http\Controllers\Platform\SignupController as PlatformSignupController;
 use App\Http\Controllers\Tenant\HomeController as TenantHomeController;
+use App\Http\Controllers\Tenant\TenantCssController;
 use App\Http\Controllers\Tenant\MediaController as TenantMediaController;
 use App\Http\Controllers\Tenant\SignupController;
 use App\Http\Controllers\Tenant\Admin\DashboardController as TenantAdminDashboardController;
@@ -128,6 +129,10 @@ if ($tenant) {
         $emailOutbox = new EmailOutboxRepository($pdo);
         $csrf = new CsrfTokenService();
 
+        $portfolioSlug = $tenantSettings->get($tenant, 'portfolio_slug', 'portfolio');
+        $aboutSlug = $tenantSettings->get($tenant, 'about_slug', 'about');
+        $contactSlug = $tenantSettings->get($tenant, 'contact_slug', 'contact');
+
         $tenantController = new TenantHomeController(
             new TenantSettingsRepository($pdo),
             new ArtworkReadRepository($pdo),
@@ -155,7 +160,11 @@ if ($tenant) {
         );
 
         $router = new Router();
+        $router->get('/tenant.css', fn (Request $request): Response => (new TenantCssController($tenantSettings))->show($request, $tenant));
         $router->get('/', fn (Request $request): Response => $tenantController->home($request, $tenant));
+        $router->get('/' . $portfolioSlug, fn (Request $request): Response => $tenantController->portfolio($request, $tenant));
+        $router->get('/' . $aboutSlug, fn (Request $request): Response => $tenantController->about($request, $tenant));
+        $router->get('/' . $contactSlug, fn (Request $request): Response => $tenantController->contact($request, $tenant));
         $router->get('/portfolio', fn (Request $request): Response => $tenantController->portfolio($request, $tenant));
         $router->get('/artwork/{slug}', fn (Request $request, array $params): Response => $tenantController->artwork($request, $tenant, (string) $params['slug']));
         $router->get('/about', fn (Request $request): Response => $tenantController->about($request, $tenant));

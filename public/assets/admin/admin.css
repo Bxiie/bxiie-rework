@@ -199,3 +199,70 @@ body.admin-shell {
 }
 
 /* End of file. */
+
+
+/* ArtsFolio tenant admin shell additions. */
+.admin-shell {
+    width: min(1180px, calc(100% - 2rem));
+    margin: 2rem auto;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.admin-form {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.admin-form fieldset {
+    border: 1px solid #ddd;
+    border-radius: 18px;
+    padding: 1rem;
+    background: #fff;
+}
+
+.admin-form legend {
+    font-weight: 800;
+    padding: 0 .4rem;
+}
+
+.admin-form label {
+    display: grid;
+    gap: .35rem;
+    margin: .75rem 0;
+    font-weight: 700;
+}
+
+.admin-form input,
+.admin-form select,
+.admin-form textarea {
+    width: 100%;
+    padding: .65rem .75rem;
+    border: 1px solid #bbb;
+    border-radius: 10px;
+    font: inherit;
+}
+
+.admin-form textarea {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.admin-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: .75rem 1rem;
+}
+
+.admin-help {
+    color: #666;
+    font-size: .95rem;
+}
+
+.admin-notice {
+    padding: .75rem 1rem;
+    border-radius: 12px;
+}
+
+.admin-notice-success {
+    background: #eef8ee;
+    border: 1px solid #9ac99a;
+}
