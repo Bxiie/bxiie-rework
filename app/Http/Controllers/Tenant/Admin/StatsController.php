@@ -48,10 +48,10 @@ final class StatsController
             GROUP BY bucket
             ORDER BY bucket", ['tenant_id' => $tenant->tenantId]);
 
-        $locationRows = $this->rows("SELECT COALESCE(country, '') AS country, COALESCE(state, '') AS state, COALESCE(city, '') AS city, COUNT(*) AS total
+        $locationRows = $this->rows("SELECT COALESCE(country, '') AS country, COALESCE(region, '') AS state, COALESCE(city, '') AS city, COUNT(*) AS total
             FROM analytics_events
             WHERE tenant_id = :tenant_id AND created_at >= {$sinceSql}
-            GROUP BY country, state, city
+            GROUP BY country, region, city
             ORDER BY total DESC
             LIMIT 50", ['tenant_id' => $tenant->tenantId]);
 
