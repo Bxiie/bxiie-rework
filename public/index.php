@@ -131,6 +131,7 @@ if ($tenant) {
         $tenantController = new TenantHomeController(
             new TenantSettingsRepository($pdo),
             new ArtworkReadRepository($pdo),
+            $pdo,
             $csrf,
             new RateLimiter($pdo),
         );
