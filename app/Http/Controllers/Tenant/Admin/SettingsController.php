@@ -200,7 +200,7 @@ HTML);
             $after[$key] = $value;
         }
 
-        $this->auditAction($request, $currentUser, $tenant, 'tenant.settings.update', (string) $tenant->tenantId, [
+        $this->auditAction($request, $tenant, $currentUser, 'tenant.settings.update', (string) $tenant->tenantId, [
                 'before' => $before,
                 'after' => $after,
             ]);
