@@ -205,7 +205,7 @@ HTML
     {
         $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
         $browserTitle = $this->escape($title);
-        $copyrightName = $this->escape($this->settings->get($tenant, 'copyright_name', $siteTitle));
+        $copyrightName = $this->settings->get($tenant, 'copyright_name', $siteTitle);
         $year = date('Y');
         $primaryColor = $this->escape($this->settings->get($tenant, 'primary_color', '#111111'));
         $accentColor = $this->escape($this->settings->get($tenant, 'accent_color', '#c9a85f'));
