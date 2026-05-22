@@ -201,9 +201,9 @@ HTML
 
     private function layout(string $title, string $body): string
     {
-        $siteTitle = $this->escape($this->settings->getCurrentTenantSetting('site_title', 'Bxiie') ?? 'Bxiie');
+        $siteTitle = 'Bxiie';
         $browserTitle = $this->escape($title);
-        $copyrightName = $this->escape($this->settings->getCurrentTenantSetting('copyright_name', $siteTitle) ?? $siteTitle);
+        $copyrightName = $siteTitle;
         $year = date('Y');
 
         return <<<HTML
