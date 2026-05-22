@@ -52,10 +52,10 @@ final class DashboardController
 
         $html .= '</section>';
 
-        return AdminLayout::render(
+        return Response::html(AdminLayout::render(
             title: 'Tenant Admin',
             body: $html,
-        );
+        ));
     }
 }
 
