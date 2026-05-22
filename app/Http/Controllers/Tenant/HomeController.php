@@ -201,16 +201,35 @@ HTML
 
     private function layout(string $title, string $body): string
     {
+        $siteTitle = $this->escape($this->settings->getCurrentTenantSetting('site_title', 'Bxiie') ?? 'Bxiie');
+        $browserTitle = $this->escape($title);
+        $copyrightName = $this->escape($this->settings->getCurrentTenantSetting('copyright_name', $siteTitle) ?? $siteTitle);
+        $year = date('Y');
+
         return <<<HTML
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>{$title}</title>
+    <title>{$browserTitle}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Artist portfolio">
+    <link rel="stylesheet" href="/assets/site.css">
 </head>
-<body>
+<body style="--primary:#111;--accent:#c9a85f;--bg:#f7f2e8;">
+<header class="site-header">
+    <a class="brand" href="/">{$siteTitle}</a>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/portfolio">Portfolio</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+    </nav>
+</header>
+<main class="site-main">
 {$body}
+</main>
+<footer class="site-footer">© {$year} {$copyrightName}</footer>
 </body>
 </html>
 HTML;

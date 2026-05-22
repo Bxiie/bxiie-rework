@@ -26,6 +26,25 @@ final class ArtworksController
             return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
         }
 
+        $q = trim((string) ($_GET['q'] ?? ''));
+        $sort = (string) ($_GET['sort'] ?? 'created_desc');
+
+        $orderBy = match ($sort) {
+            'name' => 'a.title ASC, a.id DESC',
+            'medium' => 'a.medium ASC, a.title ASC',
+            'date' => 'a.year_created DESC, a.title ASC',
+            'status' => 'a.status ASC, a.title ASC',
+            default => 'a.id DESC',
+        };
+
+        $where = "a.tenant_id = :tenant_id AND a.status <> 'archived'";
+        $params = ['tenant_id' => $tenant->tenantId];
+
+        if ($q !== '') {
+            $where .= " AND (a.title LIKE :q OR a.medium LIKE :q)";
+            $params['q'] = '%' . $q . '%';
+        }
+
         $stmt = $this->pdo->prepare(
             "SELECT
                 a.id,
@@ -46,16 +65,17 @@ final class ArtworksController
                 m.height
              FROM artworks a
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
-             WHERE a.tenant_id = :tenant_id
-               AND a.status <> 'archived'
-             ORDER BY a.id DESC
-             LIMIT 200"
+             WHERE {$where}
+             ORDER BY {$orderBy}
+             LIMIT 240"
         );
 
-        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+        $stmt->execute($params);
         $rows = $stmt->fetchAll();
 
         $items = '';
+        $queryValue = htmlspecialchars($q, ENT_QUOTES, 'UTF-8');
+        $sortOption = fn (string $value): string => $sort === $value ? ' selected' : '';
 
         foreach ($rows as $row) {
             $title = htmlspecialchars((string) $row['title'], ENT_QUOTES, 'UTF-8');
@@ -132,6 +152,24 @@ HTML;
     <h1>Artworks</h1>
     {$notice}
     <p><a href="/admin/artwork/upload">Upload artwork</a></p>
+
+    <form method="get" action="/admin/artworks" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin:1rem 0;">
+        <label>Filter by name or medium<br>
+            <input type="search" name="q" value="{$queryValue}">
+        </label>
+        <label>Sort<br>
+            <select name="sort">
+                <option value="created_desc"{$sortOption('created_desc')}>Newest uploaded</option>
+                <option value="name"{$sortOption('name')}>Name</option>
+                <option value="medium"{$sortOption('medium')}>Medium</option>
+                <option value="date"{$sortOption('date')}>Date/year</option>
+                <option value="status"{$sortOption('status')}>Status</option>
+            </select>
+        </label>
+        <button type="submit">Apply</button>
+        <a href="/admin/artworks">Clear</a>
+    </form>
+
     <table border="1" cellpadding="8" cellspacing="0">
         <thead>
             <tr>
