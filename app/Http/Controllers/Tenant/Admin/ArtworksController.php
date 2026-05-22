@@ -481,12 +481,12 @@ HTML);
         $separator = str_contains($returnTo, '?') ? '&' : '?';
 
         if ($this->wantsJson()) {
-            return Response::json([
+            return new Response(json_encode([
                 'ok' => true,
                 'id' => $id,
                 'status' => $status,
                 'message' => 'Artwork status updated.',
-            ]);
+            ], JSON_THROW_ON_ERROR), 200, ['Content-Type' => 'application/json']);
         }
 
         return new Response('', 303, ['Location' => $returnTo . $separator . 'notice=status-updated#artwork-' . $id]);
@@ -522,12 +522,12 @@ HTML);
         $separator = str_contains($returnTo, '?') ? '&' : '?';
 
         if ($this->wantsJson()) {
-            return Response::json([
+            return new Response(json_encode([
                 'ok' => true,
                 'id' => $id,
                 'archived' => true,
                 'message' => 'Artwork archived.',
-            ]);
+            ], JSON_THROW_ON_ERROR), 200, ['Content-Type' => 'application/json']);
         }
 
         return new Response('', 303, ['Location' => $returnTo . $separator . 'notice=artwork-archived']);
