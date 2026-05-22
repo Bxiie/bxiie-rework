@@ -75,7 +75,7 @@ final class ArtworksController
             }
 
             $items .= <<<HTML
-<tr>
+<tr id="artwork-{$row['id']}">
     <td>{$image}</td>
     <td>
         <strong>{$title}</strong><br>
@@ -92,16 +92,16 @@ final class ArtworksController
         <form method="post" action="/admin/artworks/status" style="display:inline">
             <input type="hidden" name="id" value="{$row['id']}">
             <input type="hidden" name="status" value="published">
-            <button type="submit">Publish</button>
+            <button type="submit" onclick="return confirm('Publish this artwork? It will become visible on public pages.');">Publish</button>
         </form>
         <form method="post" action="/admin/artworks/status" style="display:inline">
             <input type="hidden" name="id" value="{$row['id']}">
             <input type="hidden" name="status" value="draft">
-            <button type="submit">Unpublish</button>
+            <button type="submit" onclick="return confirm('Unpublish this artwork? It will be hidden from public pages.');">Unpublish</button>
         </form>
         <form method="post" action="/admin/artworks/delete" style="display:inline" onsubmit="return confirm('Archive this artwork? It will disappear from normal review and public pages, but the file will not be deleted yet.');">
             <input type="hidden" name="id" value="{$row['id']}">
-            <button type="submit">Delete</button>
+            <button type="submit">Archive</button>
         </form>
     </td>
 </tr>
@@ -111,6 +111,12 @@ HTML;
         if ($items === '') {
             $items = '<tr><td colspan="9">No artwork uploaded yet.</td></tr>';
         }
+
+        $notice = match ((string) ($_GET['notice'] ?? '')) {
+            'status-updated' => '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Artwork status updated.</p>',
+            'artwork-archived' => '<p style="padding:.75rem;background:#fff4df;border:1px solid #d9b36a;">Artwork archived.</p>',
+            default => '',
+        };
 
         return Response::html(<<<HTML
 <!doctype html>
@@ -124,6 +130,7 @@ HTML;
 <main>
     <p><a href="/admin">&larr; Admin</a></p>
     <h1>Artworks</h1>
+    {$notice}
     <p><a href="/admin/artwork/upload">Upload artwork</a></p>
     <table border="1" cellpadding="8" cellspacing="0">
         <thead>
@@ -296,7 +303,7 @@ HTML);
             'tenant_id' => $tenant->tenantId,
         ]);
 
-        return Response::html('<h1>Status updated</h1><p><a href="/admin/artworks">Back to artworks</a></p>');
+        return Response::redirect('/admin/artworks?notice=status-updated#artwork-' . $id);
     }
 
 
@@ -325,7 +332,7 @@ HTML);
             'tenant_id' => $tenant->tenantId,
         ]);
 
-        return Response::html('<h1>Artwork archived</h1><p><a href="/admin/artworks">Back to artworks</a></p>');
+        return Response::redirect('/admin/artworks?notice=artwork-archived');
     }
 
     private function findArtwork(TenantContext $tenant, int $id): ?array
