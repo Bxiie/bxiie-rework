@@ -10,6 +10,7 @@ use App\Platform\Tenancy\TenantContext;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Artwork\ArtworkReadRepository;
 use App\Tenant\Settings\TenantSettingsRepository;
+use PDO;
 
 /**
  * Handles tenant public site routes.
@@ -19,6 +20,7 @@ final class HomeController
     public function __construct(
         private readonly TenantSettingsRepository $settings,
         private readonly ArtworkReadRepository $artworks,
+        private readonly PDO $pdo,
         private readonly ?CsrfTokenService $csrf = null,
     ) {
     }
@@ -216,8 +218,7 @@ HTML;
 
     private function events(TenantContext $tenant): string
     {
-        $pdo = \App\Support\Database::connect(dirname(__DIR__, 3));
-        $stmt = $pdo->prepare(
+        $stmt = $this->pdo->prepare(
             "SELECT exhibition_date, name, exhibition_type, location, city, state_region, work_name, notes
              FROM exhibitions
              WHERE tenant_id = :tenant_id
