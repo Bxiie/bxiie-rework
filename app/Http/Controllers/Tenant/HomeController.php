@@ -236,7 +236,7 @@ HTML;
             $locationRaw = (string) (($event['location'] ?? '') ?: (($event['city'] ?? '') . ', ' . ($event['state_region'] ?? '')));
             $location = $this->escape(trim($locationRaw, ', '));
             $work = $this->escape((string) ($event['work_name'] ?? ''));
-            $notes = nl2br($this->escape((string) ($event['notes'] ?? '')));
+            $notes = (string) ($event['notes'] ?? '');
 
             $html .= "<article class=\"event-row\">";
             $html .= "<p><strong>{$date}</strong></p>";
