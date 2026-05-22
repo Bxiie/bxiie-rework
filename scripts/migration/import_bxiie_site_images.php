@@ -174,7 +174,7 @@ try {
         }
 
         $mediaId = importMedia($pdo, $tenant->tenantId, $tenant->slug, $sourcePath, $legacyRelative, $title, $notes, $dryRun);
-        $artworkId = upsertArtwork($pdo, $tenant->tenantId, $mediaId, $title, $medium, $year, $notes, $dryRun);
+        $artworkId = upsertArtwork($pdo, $tenant->tenantId, $mediaId, $title, $fileName, $medium, $year, $notes, $dryRun);
 
         foreach ($sectionColumns as $sectionName => $columnIndex) {
             $value = strtolower(trim((string) ($row[$columnIndex] ?? '')));
@@ -463,9 +463,9 @@ function importMedia(PDO $pdo, int $tenantId, string $tenantSlug, string $source
     return (int) $pdo->lastInsertId();
 }
 
-function upsertArtwork(PDO $pdo, int $tenantId, int $mediaId, string $title, string $medium, string $year, string $notes, bool $dryRun): int
+function upsertArtwork(PDO $pdo, int $tenantId, int $mediaId, string $title, string $fileName, string $medium, string $year, string $notes, bool $dryRun): int
 {
-    $slug = slugify($title);
+    $slug = slugify($title . '-' . pathinfo($fileName, PATHINFO_FILENAME));
 
     $stmt = $pdo->prepare('SELECT id FROM artworks WHERE tenant_id = :tenant_id AND slug = :slug LIMIT 1');
     $stmt->execute(['tenant_id' => $tenantId, 'slug' => $slug]);
