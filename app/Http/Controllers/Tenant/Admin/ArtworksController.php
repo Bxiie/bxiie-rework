@@ -303,7 +303,7 @@ HTML);
             'tenant_id' => $tenant->tenantId,
         ]);
 
-        return Response::redirect('/admin/artworks?notice=status-updated#artwork-' . $id);
+        return new Response('', 303, ['Location' => '/admin/artworks?notice=status-updated#artwork-' . $id]);
     }
 
 
@@ -332,7 +332,7 @@ HTML);
             'tenant_id' => $tenant->tenantId,
         ]);
 
-        return Response::redirect('/admin/artworks?notice=artwork-archived');
+        return new Response('', 303, ['Location' => '/admin/artworks?notice=artwork-archived']);
     }
 
     private function findArtwork(TenantContext $tenant, int $id): ?array
