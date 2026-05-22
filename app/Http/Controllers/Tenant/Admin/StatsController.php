@@ -62,7 +62,26 @@ final class StatsController
             $imageParams['q'] = '%' . $imageSearch . '%';
         }
 
-        $imageRows = [];
+        $imageRows = $this->rows("SELECT
+                ae.entity_id AS artwork_id,
+                a.title,
+                a.slug,
+                m.uuid AS media_uuid,
+                COUNT(*) AS total
+            FROM analytics_events ae
+            JOIN artworks a
+              ON a.id = ae.entity_id
+             AND a.tenant_id = ae.tenant_id
+            LEFT JOIN media_assets m
+              ON m.id = a.primary_media_id
+             AND m.tenant_id = a.tenant_id
+            WHERE ae.tenant_id = :tenant_id
+              AND ae.event_type = 'image_view'
+              AND ae.entity_type = 'artwork'
+              AND ae.created_at >= {$sinceSql}
+            GROUP BY ae.entity_id, a.title, a.slug, m.uuid
+            ORDER BY total DESC, a.title ASC
+            LIMIT 25", ['tenant_id' => $tenant->tenantId]);
 
         $daysOptions = $this->daysOptions($days);
         $q = $this->escape($imageSearch);
