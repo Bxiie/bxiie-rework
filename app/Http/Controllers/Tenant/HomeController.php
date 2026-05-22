@@ -31,6 +31,7 @@ final class HomeController
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
 
         return Response::html($this->layout(
+            tenant: $tenant,
             title: $siteTitle,
             body: <<<HTML
 <h1>{$siteTitle}</h1>
@@ -108,6 +109,7 @@ HTML;
         }
 
         return Response::html($this->layout(
+            tenant: $tenant,
             title: "{$this->escape($tenant->name)} | Portfolio",
             body: $body,
         ));
@@ -141,6 +143,7 @@ HTML;
         $body .= "<div>{$description}</div>\n";
 
         return Response::html($this->layout(
+            tenant: $tenant,
             title: "{$title} | {$this->escape($tenant->name)}",
             body: $body,
         ));
@@ -157,6 +160,7 @@ HTML;
         }
 
         return Response::html($this->layout(
+            tenant: $tenant,
             title: "{$this->escape($tenant->name)} | About",
             body: $body
         ));
@@ -167,6 +171,7 @@ HTML;
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
 
         return Response::html($this->layout(
+            tenant: $tenant,
             title: "{$this->escape($tenant->name)} | Contact",
             body: <<<HTML
 <h1>Contact</h1>
@@ -199,11 +204,11 @@ HTML
         ));
     }
 
-    private function layout(string $title, string $body): string
+    private function layout(TenantContext $tenant, string $title, string $body): string
     {
-        $siteTitle = 'Bxiie';
+        $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
         $browserTitle = $this->escape($title);
-        $copyrightName = $siteTitle;
+        $copyrightName = $this->escape($this->settings->get($tenant, 'copyright_name', $siteTitle));
         $year = date('Y');
 
         return <<<HTML
