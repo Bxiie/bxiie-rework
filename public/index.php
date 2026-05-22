@@ -32,6 +32,7 @@ use App\Http\Controllers\Tenant\Admin\ArtworkUploadController as TenantAdminArtw
 use App\Http\Controllers\Tenant\Admin\ArtworksController as TenantAdminArtworksController;
 use App\Http\Controllers\Tenant\Admin\ContentController as TenantAdminContentController;
 use App\Http\Controllers\Tenant\Admin\EventsController as TenantAdminEventsController;
+use App\Http\Controllers\Tenant\Admin\EngagementController as TenantAdminEngagementController;
 use App\Http\Controllers\Tenant\Admin\SettingsController as TenantAdminSettingsController;
 use App\Http\Controllers\Tenant\Admin\RoutesController as TenantAdminRoutesController;
 use App\Http\Controllers\Tenant\Admin\EmailSignupsController as TenantAdminEmailSignupsController;
@@ -173,6 +174,10 @@ if ($tenant) {
         $router->post('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->login($request));
         $router->get('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->logout($request));
         $router->get('/admin/media', fn (Request $request): Response => (new TenantMediaController($pdo, new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->admin($request, $tenant, $currentUser));
+        $router->get('/admin/contact-messages', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->contacts($request, $tenant, $currentUser));
+        $router->post('/admin/contact-messages/delete', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->deleteContact($request, $tenant, $currentUser));
+        $router->get('/admin/email-signups', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->subscribers($request, $tenant, $currentUser));
+        $router->post('/admin/email-signups/import', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->importSubscribers($request, $tenant, $currentUser));
         $router->get('/admin/events', fn (Request $request): Response => (new TenantAdminEventsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->index($request, $tenant, $currentUser));
         $router->get('/admin/events/edit', fn (Request $request): Response => (new TenantAdminEventsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->edit($request, $tenant, $currentUser));
         $router->post('/admin/events/edit', fn (Request $request): Response => (new TenantAdminEventsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->update($request, $tenant, $currentUser));
