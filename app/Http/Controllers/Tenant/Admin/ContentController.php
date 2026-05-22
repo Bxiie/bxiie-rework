@@ -70,7 +70,7 @@ HTML);
             $this->settings->set($tenant, $key, trim((string) ($_POST[$key] ?? '')));
         }
 
-        return Response::redirect('/admin/content?notice=saved');
+        return new Response('', 303, ['Location' => '/admin/content?notice=saved']);
     }
 }
 
