@@ -56,7 +56,7 @@ HTML
 
     public function portfolio(Request $request, TenantContext $tenant): Response
     {
-        $items = $this->artworks->latestPublished($tenant);
+        $items = $this->artworks->latestPublished($tenant, 240);
         $body = "<h1>Portfolio</h1>\n";
 
         if (!$items) {
