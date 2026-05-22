@@ -1,0 +1,615 @@
+../bxiie/index.html:15:<link href="css/contact.css" rel="stylesheet" type="text/css" media="screen" />
+../bxiie/index.html:39:<script src="js/image-hover.js" type="text/javascript"></script>
+../bxiie/index.html:75:        <li><a href="#filter=.about"><font color="white">About</font></a></li>
+../bxiie/index.html:78:        <li><a href="#filter=.contact"><font color="white">Contact</font></a></li>
+../bxiie/index.html:91:          <div class="images">
+../bxiie/index.html:119:      <div class="images"><img src="site_small/spikey_sm.jpg" alt="" />
+../bxiie/index.html:148:      <div class="images"><img src="/site_small/IMG_0149_sm.jpg" alt="Isolation in Boulder, Colorado" />
+../bxiie/index.html:163:      <div class="images"><img src="/site_small/IMG_0696_sm.jpg" alt="Curves V1" />
+../bxiie/index.html:178:      <div class="images"><img src="/site_small/IMG_0867_sm.jpg" alt="Black Sea" />
+../bxiie/index.html:193:      <div class="images"><img src="/site_small/IMG_0926_sm.jpg" alt="Curves V1 in Sinaia, Romania" />
+../bxiie/index.html:208:      <div class="images"><img src="/site_small/IMG_1730_sm.jpg" alt="Street Intervention in Bucharest, Romania" />
+../bxiie/index.html:223:      <div class="images"><img src="/site_small/IMG_2385_sm.jpg" alt="Inside Out V2 Maquette" />
+../bxiie/index.html:238:      <div class="images"><img src="/site_small/IMG_2565_sm.jpg" alt="Opposition in Watertown, Massachusetts" />
+../bxiie/index.html:253:      <div class="images"><img src="/site_small/IMG_2878_sm.jpg" alt="Curves V2 Detail" />
+../bxiie/index.html:268:      <div class="images"><img src="/site_small/IMG_7953_sm.jpg" alt="Inside Out V1" />
+../bxiie/index.html:283:      <div class="images"><img src="/site_small/IMG_7980_sm.jpg" alt="Small Sculpture" />
+../bxiie/index.html:298:      <div class="images"><img src="/site_small/IMG_8006_sm.jpg" alt="Small Sculpture" />
+../bxiie/index.html:313:      <div class="images"><img src="/site_small/IMG_9017_sm.jpg" alt="Reoriented" />
+../bxiie/index.html:328:      <div class="images"><img src="/site_small/bsf_ploisti_sm.jpg" alt="Small sculpture in Ploiești, Romania" />
+../bxiie/index.html:343:      <div class="images"><img src="/site_small/pointy_derivative_sm.jpg" alt="Pointy Derivative" />
+../bxiie/index.html:358:      <div class="images"><img src="/site_small/sticker_ball_sm.jpg" alt="Sticker Ball" />
+../bxiie/index.html:373:      <div class="images"><img src="/site_small/IMG_7413_sm.jpg" alt="Opposition in Watertown, Massachusetts" />
+../bxiie/index.html:388:      <div class="images"><img src="/site_small/IMG_7723_sm.jpg" alt="Summers End in 2024" />
+../bxiie/index.html:403:      <div class="images"><img src="/site_small/IMG_8263_sm.jpg" alt="Looking Up in Bucharest" />
+../bxiie/index.html:418:      <div class="images"><img src="/site_small/IMG_8657_sm.jpg" alt="Inside Out Maquette" />
+../bxiie/index.html:433:      <div class="images"><img src="/site_small/assembly_1-Recovered_sm.jpg" alt="Wave Assembly - CAD Study" />
+../bxiie/index.html:448:      <div class="images"><img src="/site_small/assembly_2-Recovered_sm.jpg" alt="Wave Assembly - CAD Study" />
+../bxiie/index.html:463:      <div class="images"><img src="/site_small/curvy_qr_sm.jpg" alt="Curvy" />
+../bxiie/index.html:478:      <div class="images"><img src="/site_small/evergreen_dronie_sm.jpg" alt="Isolation in Evergreen" />
+../bxiie/index.html:493:      <div class="images"><img src="/site_small/hedgehog_2-Recovered_sm.jpg" alt="Hedgehog on Edge" />
+../bxiie/index.html:508:      <div class="images"><img src="/site_small/pointy_v6_sm.jpg" alt="Pointy - CAD Study" />
+../bxiie/index.html:523:      <div class="images"><img src="/site_small/roostah_sm.jpg" alt="Roostah Element - CAD study" />
+../bxiie/index.html:538:      <div class="images"><img src="/site_small/sharp v3_sm.jpg" alt="Sharp - CAD study" />
+../bxiie/index.html:553:      <div class="images"><img src="/site_small/underground_2nd_maquette_golden_sm.jpg" alt="Underground - Second Maquette" />
+../bxiie/index.html:568:      <div class="images"><img src="/site_small/xmas_sited_sm.jpg" alt="Hedgehog - CAD study" />
+../bxiie/index.html:583:      <div class="images"><img src="/site_small/IMG_5733_sm.jpg" alt="Underground" />
+../bxiie/index.html:598:      <div class="images"><img src="/site_small/IMG_5726_sm.jpg" alt="Underground" />
+../bxiie/index.html:613:      <div class="images"><img src="/site_small/IMG_5723_sm.jpg" alt="Underground" />
+../bxiie/index.html:628:      <div class="images"><img src="/site_small/IMG_5740_sm.jpg" alt="Underground" />
+../bxiie/index.html:643:      <div class="images"><img src="/site_small/underground_oblique_sm.jpg" alt="Underground" />
+../bxiie/index.html:658:      <div class="images"><img src="/site_small/IMG_5616_sm.jpg" alt="Opposition" />
+../bxiie/index.html:673:      <div class="images"><img src="/site_small/IMG_5614_sm.jpg" alt="Opposition" />
+../bxiie/index.html:688:      <div class="images"><img src="/site_small/IMG_5602_sm.jpg" alt="Opposition" />
+../bxiie/index.html:703:      <div class="images"><img src="/site_small/IMG_5489_sm.jpg" alt="Rearing Pony" />
+../bxiie/index.html:718:      <div class="images"><img src="/site_small/IMG_5447_sm.jpg" alt="Rearing Pony" />
+../bxiie/index.html:733:      <div class="images"><img src="/site_small/IMG_5402_sm.jpg" alt="Rearing Pony" />
+../bxiie/index.html:748:      <div class="images"><img src="/site_small/IMG_5377_sm.jpg" alt="Sideshow" />
+../bxiie/index.html:763:      <div class="images"><img src="/site_small/IMG_5527_sm.jpg" alt="Unrealized" />
+../bxiie/index.html:778:      <div class="images"><img src="/site_small/IMG_5357_sm.jpg" alt="Unrealized" />
+../bxiie/index.html:793:      <div class="images"><img src="/site_small/IMG_4939_sm.jpg" alt="Opposition with Artist" />
+../bxiie/index.html:808:      <div class="images"><img src="/site_small/dancer_blue_sm.jpg" alt="Dancer Blue" />
+../bxiie/index.html:823:      <div class="images"><img src="/site_small/dave_cloud_spiral_sm.jpg" alt="Cloud Spiral" />
+../bxiie/index.html:838:      <div class="images"><img src="/site_small/spikes_sm.jpg" alt="Spikes" />
+../bxiie/index.html:853:      <div class="images"><img src="/site_small/Bonus_sm.jpg" alt="Bonus" />
+../bxiie/index.html:868:      <div class="images"><img src="/site_small/IMG_0959_sm.jpg" alt="Reoriented" />
+../bxiie/index.html:883:      <div class="images"><img src="/site_small/IMG_1105_sm.jpg" alt="Detail" />
+../bxiie/index.html:898:      <div class="images"><img src="/site_small/IMG_1773_sm.jpg" alt="Isolation" />
+../bxiie/index.html:913:      <div class="images"><img src="/site_small/IMG_1906_sm.jpg" alt="Unrealized" />
+../bxiie/index.html:928:      <div class="images"><img src="/site_small/IMG_1950_sm.jpg" alt="Sideshow" />
+../bxiie/index.html:943:      <div class="images"><img src="/site_small/IMG_1982_sm.jpg" alt="Reoriented" />
+../bxiie/index.html:958:      <div class="images"><img src="/site_small/IMG_1997_sm.jpg" alt="Sideshow" />
+../bxiie/index.html:973:      <div class="images"><img src="/site_small/IMG_1998_sm.jpg" alt="Reoriented" />
+../bxiie/index.html:988:      <div class="images"><img src="/site_small/IMG_2019_sm.jpg" alt="Unrealized" />
+../bxiie/index.html:1003:      <div class="images"><img src="/site_small/IMG_2037_sm.jpg" alt="Unrealized" />
+../bxiie/index.html:1018:      <div class="images"><img src="/site_small/IMG_2073_sm.jpg" alt="Series Six" />
+../bxiie/index.html:1033:      <div class="images"><img src="/site_small/IMG_2085_sm.jpg" alt="Early Swirl prototype" />
+../bxiie/index.html:1048:      <div class="images"><img src="/site_small/IMG_2212_sm.jpg" alt="Graveyard of the Arts" />
+../bxiie/index.html:1063:      <div class="images"><img src="/site_small/IMG_3562_sm.jpg" alt="Prototype" />
+../bxiie/index.html:1078:      <div class="images"><img src="/site_small/IMG_3595_sm.jpg" alt="March" />
+../bxiie/index.html:1093:      <div class="images"><img src="/site_small/IMG_3708_sm.jpg" alt="Train Crossing" />
+../bxiie/index.html:1108:      <div class="images"><img src="/site_small/IMG_4532_sm.jpg" alt="Series Six Prototype" />
+../bxiie/index.html:1123:      <div class="images"><img src="/site_small/IMG_4589_sm.jpg" alt="Swirl" />
+../bxiie/index.html:1138:      <div class="images"><img src="/site_small/IMG_4598_sm.jpg" alt="Summers End" />
+../bxiie/index.html:1153:      <div class="images"><img src="/site_small/assault_sm.jpg" alt="Assault" />
+../bxiie/index.html:1168:      <div class="images"><img src="/site_small/transition_sm.jpg" alt="Transition" />
+../bxiie/index.html:1183:      <div class="images"><img src="/site_small/upper_falls_road_sm.jpg" alt="Falls Road" />
+../bxiie/index.html:1198:      <div class="images"><img src="/site_small/baby_sm.jpg" alt="Baby" />
+../bxiie/index.html:1213:      <div class="images"><img src="/site_small/chase_sm.jpg" alt="Nemesis" />
+../bxiie/index.html:1228:      <div class="images"><img src="/site_small/distraction_sm.jpg" alt="Distraction" />
+../bxiie/index.html:1243:      <div class="images"><img src="/site_small/furnace_test_sm.jpg" alt="Furnace Test" />
+../bxiie/index.html:1258:      <div class="images"><img src="/site_small/IMG_4738_sm.jpg" alt="Isolation" />
+../bxiie/index.html:1273:      <div class="images"><img src="/site_small/isolation_above_sm.jpg" alt="Isolation" />
+../bxiie/index.html:1288:      <div class="images"><img src="/site_small/isolation_bridge_sm.jpg" alt="Isolation" />
+../bxiie/index.html:1303:      <div class="images"><img src="/site_small/isolation_drill_sm.jpg" alt="Isolation; specialized tool" />
+../bxiie/index.html:1318:      <div class="images"><img src="/site_small/isolation_maquette_first_sm.jpg" alt="Isolation - First Maquette" />
+../bxiie/index.html:1333:      <div class="images"><img src="/site_small/isolation_maquette_second_sm.jpg" alt="Isolation - Second Maquette" />
+../bxiie/index.html:1348:      <div class="images"><img src="/site_small/isolation_sh_sm.jpg" alt="Isolation" />
+../bxiie/index.html:1363:      <div class="images"><img src="/site_small/thing_tape_sm.jpg" alt="Thing - Preparation" />
+../bxiie/index.html:1378:      <div class="images"><img src="/site_small/thing_tree_sm.jpg" alt="Thing" />
+../bxiie/index.html:1393:      <div class="images"><img src="/site_small/ss_prototype01_sm.jpg" alt="Series Six Prototype" />
+../bxiie/index.html:1408:      <div class="images"><img src="/site_small/ss_prototype02_sm.jpg" alt="Series Six Prototype" />
+../bxiie/index.html:1423:      <div class="images"><img src="/site_small/ss_prototype03_sm.jpg" alt="Series Six Prototype" />
+../bxiie/index.html:1438:      <div class="images"><img src="/site_small/ss_prototype04_sm.jpg" alt="Series Six Prototype" />
+../bxiie/index.html:1453:      <div class="images"><img src="/site_small/ss_summersend00_sm.jpg" alt="Summers End" />
+../bxiie/index.html:1468:      <div class="images"><img src="/site_small/ss_summersend01_sm.jpg" alt="Summers End" />
+../bxiie/index.html:1483:      <div class="images"><img src="/site_small/ss_summersend02_sm.jpg" alt="Summers End" />
+../bxiie/index.html:1498:      <div class="images"><img src="/site_small/ss_summersend03_sm.jpg" alt="Summers End" />
+../bxiie/index.html:1513:      <div class="images"><img src="/site_small/ss_summersend04_sm.jpg" alt="Summers End" />
+../bxiie/index.html:1528:      <div class="images"><img src="/site_small/ss_summersend05_sm.jpg" alt="Summers End" />
+../bxiie/index.html:1543:      <div class="images"><img src="/site_small/swarm_nboss_sm.jpg" alt="Swarm at NBOSS" />
+../bxiie/index.html:1558:      <div class="images"><img src="/site_small/art_graveyard_sm.jpg" alt="Graveyard of the Arts" />
+../bxiie/index.html:1573:      <div class="images"><img src="/site_small/fr_rouen_sm.jpg" alt="Rouen" />
+../bxiie/index.html:1588:      <div class="images"><img src="/site_small/fr_seine_sm.jpg" alt="Poissy" />
+../bxiie/index.html:1603:      <div class="images"><img src="/site_small/poc_sculpturefest_sm.jpg" alt="Points of Contention at Sculpturefest" />
+../bxiie/index.html:1618:      <div class="images"><img src="/site_small/ro_blackchurch_sm.jpg" alt="Black Church - Brasov" />
+../bxiie/index.html:1633:      <div class="images"><img src="/site_small/ro_poiana_sm.jpg" alt="Poiana " />
+../bxiie/index.html:1648:      <div class="images"><img src="/site_small/ro_tower_sm.jpg" alt="Brasov" />
+../bxiie/index.html:1663:      <div class="images"><img src="/site_small/ss_drawing_sm.jpg" alt="Series Six CAD Drawing" />
+../bxiie/index.html:1678:      <div class="images"><img src="/site_small/poc_burn0_sm.jpg" alt="Points of Contention at Playa del Fuego" />
+../bxiie/index.html:1693:      <div class="images"><img src="/site_small/poc_burn1_sm.jpg" alt="Points of Contention at Playa del Fuego" />
+../bxiie/index.html:1708:      <div class="images"><img src="/site_small/poc_burn3_sm.jpg" alt="Points of Contention at Playa del Fuego" />
+../bxiie/index.html:1723:      <div class="images"><img src="/site_small/poc_burn4_sm.jpg" alt="Points of Contention at Playa del Fuego" />
+../bxiie/index.html:1738:      <div class="images"><img src="/site_small/poc_design_sm.jpg" alt="Points of Contention - Design Model" />
+../bxiie/index.html:1753:      <div class="images"><img src="/site_small/poc_giaf_sm.jpg" alt="Points of Contention at Governors Island Art Fair" />
+../bxiie/index.html:1768:      <div class="images"><img src="/site_small/poc_giaf2_sm.jpg" alt="Points of Contention at Governors Island Art Fair" />
+../bxiie/index.html:1783:      <div class="images"><img src="/site_small/poc_nboss0_sm.jpg" alt="Points of Contention at NBOSS" />
+../bxiie/index.html:1798:      <div class="images"><img src="/site_small/poc_nboss2_sm.jpg" alt="Points of Contention at NBOSS" />
+../bxiie/index.html:1813:      <div class="images"><img src="/site_small/pod_nboss_decon_sm.jpg" alt="Points of Contention at NBOSS" />
+../bxiie/index.html:1828:      <div class="images"><img src="/site_small/snakie_drone_sm.jpg" alt="Snakie at Prosper Farm" />
+../bxiie/index.html:1843:      <div class="images"><img src="/site_small/swarm_children_sm.jpg" alt="Swarm at King Farm" />
+../bxiie/index.html:1858:      <div class="images"><img src="/site_small/swarm_dc_sm.jpg" alt="Swarm in Washington, DC" />
+../bxiie/index.html:1873:      <div class="images"><img src="/site_small/swarm_king1_sm.jpg" alt="Swarm at King Farm" />
+../bxiie/index.html:1888:      <div class="images"><img src="/site_small/swarm_king2_sm.jpg" alt="Swarm at King Farm" />
+../bxiie/index.html:1903:      <div class="images"><img src="/site_small/swarm_move_sm.jpg" alt="Swarm on the Move" />
+../bxiie/index.html:1918:      <div class="images"><img src="/site_small/swarm_prosper_sm.jpg" alt="Swarm at Prosper Farm" />
+../bxiie/index.html:1933:      <div class="images"><img src="/site_small/zu_with_qr_sm.jpg" alt="Zions Union Church" />
+../bxiie/index.html:1948:      <div class="images"><img src="/site_small/ben_vrackie_skewed_sm.jpg" alt="Ben Vrackie Skewed" />
+../bxiie/index.html:1963:      <div class="images"><img src="/site_small/carpet_pg_sm.jpg" alt="Carpet" />
+../bxiie/index.html:1978:      <div class="images"><img src="/site_small/drone_north_branch_sm.jpg" alt="North Branch" />
+../bxiie/index.html:1993:      <div class="images"><img src="/site_small/dronie_sm.jpg" alt="On Hoth" />
+../bxiie/index.html:2008:      <div class="images"><img src="/site_small/mesh_snow_sm.jpg" alt="Mesh in Snow" />
+../bxiie/index.html:2023:      <div class="images"><img src="/site_small/swirls_protogram_sm.jpg" alt="Swirls Photogrammetric Model" />
+../bxiie/index.html:2038:      <div class="images"><img src="/site_small/swirls_proto_sm.jpg" alt="Swirls First Prototype" />
+../bxiie/index.html:2053:      <div class="images"><img src="/site_small/swirls_fire_detail_sm.jpg" alt="Swirls" />
+../bxiie/index.html:2068:      <div class="images"><img src="/site_small/swirls_and_me_sm.jpg" alt="Swirls" />
+../bxiie/index.html:2083:      <div class="images"><img src="/site_small/auto_zion_lot_sm.jpg" alt="Parking Lot" />
+../bxiie/index.html:2098:      <div class="images"><img src="/site_small/snakie_prototype_sm.jpg" alt="Snakie Prototype" />
+../bxiie/index.html:2113:      <div class="images"><img src="/site_small/swirl_decay_sm.jpg" alt="Swirl Prototype in decay" />
+../bxiie/index.html:2128:      <div class="images"><img src="/site_small/swirl_decay2_sm.jpg" alt="Swirl Prototype in decay" />
+../bxiie/index.html:2143:      <div class="images"><img src="/site_small/swirl_decay3_sm.jpg" alt="Swirl Prototype in decay" />
+../bxiie/index.html:2158:      <div class="images"><img src="/site_small/spikey_sm.jpg" alt="Spikey Logo" />
+../bxiie/index.html:2173:      <div class="images"><img src="/site_small/reruns_sm.jpg" alt="Reruns" />
+../bxiie/index.html:2188:      <div class="images"><img src="/site_small/qr1_detail_sm.jpg" alt="QR Experimentation 2" />
+../bxiie/index.html:2203:      <div class="images"><img src="/site_small/IMG_6058_sm.jpg" alt="Down to the Wire" />
+../bxiie/index.html:2218:      <div class="images"><img src="/site_small/IMG_5503_sm.jpg" alt="Down to the Wire" />
+../bxiie/index.html:2233:      <div class="images"><img src="/site_small/IMG_5460_sm.jpg" alt="Down to the Wire detail" />
+../bxiie/index.html:2248:      <div class="images"><img src="/site_small/igloo_hat_sm.jpg" alt="Igloofest Hat" />
+../bxiie/index.html:2263:      <div class="images"><img src="/site_small/dttwi_sm.jpg" alt="Down to the Wire Detail" />
+../bxiie/index.html:2278:      <div class="images"><img src="/site_small/witness_sm.jpg" alt="Witness (EFAC Collaboration)" />
+../bxiie/index.html:2293:      <div class="images"><img src="/site_small/stew_argument_sm.jpg" alt="Argument" />
+../bxiie/index.html:2308:      <div class="images"><img src="/site_small/in_close_sm.jpg" alt="Anniversary 3D Study" />
+../bxiie/index.html:2323:      <div class="images"><img src="/site_small/IMG_9939_sm.jpg" alt="Experiment Series" />
+../bxiie/index.html:2338:      <div class="images"><img src="/site_small/IMG_9834_sm.jpg" alt="Beam" />
+../bxiie/index.html:2353:      <div class="images"><img src="/site_small/IMG_9765_sm.jpg" alt="Crusty Device With Twigs" />
+../bxiie/index.html:2368:      <div class="images"><img src="/site_small/IMG_1147_sm.jpg" alt="Continued Experimentation" />
+../bxiie/index.html:2383:      <div class="images"><img src="/site_small/IMG_1040_sm.jpg" alt="Continued Experimentation" />
+../bxiie/index.html:2398:      <div class="images"><img src="/site_small/IMG_0997_sm.jpg" alt="Continued Experimentation" />
+../bxiie/index.html:2413:      <div class="images"><img src="/site_small/IMG_0955_sm.jpg" alt="Argument" />
+../bxiie/index.html:2428:      <div class="images"><img src="/site_small/IMG_0829_sm.jpg" alt="Experiment Series" />
+../bxiie/index.html:2443:      <div class="images"><img src="/site_small/IMG_0825_sm.jpg" alt="Workshop" />
+../bxiie/index.html:2458:      <div class="images"><img src="/site_small/IMG_0824_sm.jpg" alt="Green Thing" />
+../bxiie/index.html:2473:      <div class="images"><img src="/site_small/faux_sm.jpg" alt="Faux Naturale" />
+../bxiie/index.html:2488:      <div class="images"><img src="/site_small/experiment_sm.jpg" alt="Experiment Series" />
+../bxiie/index.html:2503:      <div class="images"><img src="/site_small/device_4_bw_sm.jpg" alt="Device Four Monochrome" />
+../bxiie/index.html:2518:      <div class="images"><img src="/site_small/bigsaw_sm.jpg" alt="Sharp Things / Big Saw" />
+../bxiie/index.html:2533:      <div class="images"><img src="/site_small/argument_at_home_sm.jpg" alt="Argument" />
+../bxiie/index.html:2548:      <div class="images"><img src="/site_small/1200_under_construction_sm.jpg" alt="1200 Pieces" />
+../bxiie/index.html:2563:      <div class="images"><img src="/site_small/1200_truck_sm.jpg" alt="1200 Pieces" />
+../bxiie/index.html:2578:      <div class="images"><img src="/site_small/1200_king_farm_sm.jpg" alt="1200 Pieces" />
+../bxiie/index.html:2593:      <div class="images"><img src="/site_small/1200_autumn_sm.jpg" alt="1200 Pieces" />
+../bxiie/index.html:2608:      <div class="images"><img src="/site_small/cube_sm.jpg" alt="1200 Pieces" />
+../bxiie/index.html:2623:      <div class="images"><img src="/site_small/tendrils_sm.jpg" alt="Tendrils" />
+../bxiie/index.html:2638:      <div class="images"><img src="/site_small/essence_sm.jpg" alt="Essence" />
+../bxiie/index.html:2653:      <div class="images"><img src="/site_small/bosind_s_sm.jpg" alt="Bee-Dib" />
+../bxiie/index.html:2668:      <div class="images"><img src="/site_small/big_pvc_sm.jpg" alt="PVC 6" />
+../bxiie/index.html:2683:      <div class="images"><img src="/site_small/above_tendrils_sm.jpg" alt="Tendrils" />
+../bxiie/index.html:2698:      <div class="images"><img src="/site_small/power_sm.jpg" alt="Power" />
+../bxiie/index.html:2713:      <div class="images"><img src="/site_small/pic14_sm.jpg" alt="Device Four" />
+../bxiie/index.html:2728:      <div class="images"><img src="/site_small/IMG_4418_sm.jpg" alt="Device Seven Scene" />
+../bxiie/index.html:2743:      <div class="images"><img src="/site_small/IMG_3751_sm.jpg" alt="Palais Garnier" />
+../bxiie/index.html:2758:      <div class="images"><img src="/site_small/IMG_3700_sm.jpg" alt="Catacombs" />
+../bxiie/index.html:2773:      <div class="images"><img src="/site_small/education_v2_site_9_sm.jpg" alt="Education Series" />
+../bxiie/index.html:2788:      <div class="images"><img src="/site_small/education_v2_site_8_sm.jpg" alt="Education Series" />
+../bxiie/index.html:2803:      <div class="images"><img src="/site_small/education_v2_site_7_sm.jpg" alt="Education Series" />
+../bxiie/index.html:2818:      <div class="images"><img src="/site_small/education_v2_site_6_sm.jpg" alt="Education Series" />
+../bxiie/index.html:2833:      <div class="images"><img src="/site_small/education_v2_site_5_sm.jpg" alt="Education Series" />
+../bxiie/index.html:2848:      <div class="images"><img src="/site_small/education_v2_site_4_sm.jpg" alt="Education Series" />
+../bxiie/index.html:2863:      <div class="images"><img src="/site_small/education_v2_site_2_sm.jpg" alt="Education Series" />
+../bxiie/index.html:2878:      <div class="images"><img src="/site_small/education_v2_site_10_sm.jpg" alt="Education Series" />
+../bxiie/index.html:2893:      <div class="images"><img src="/site_small/education_v2_site_1_sm.jpg" alt="Education Series" />
+../bxiie/index.html:2908:      <div class="images"><img src="/site_small/device_work_sm.jpg" alt="Device Work" />
+../bxiie/index.html:2923:      <div class="images"><img src="/site_small/device_4_sm.jpg" alt="Device Four" />
+../bxiie/index.html:2938:      <div class="images"><img src="/site_small/device_3_qr_blue_sm.jpg" alt="QR Blue" />
+../bxiie/index.html:2953:      <div class="images"><img src="/site_small/device_3_at_the_graveyard_sm.jpg" alt="Device Three at the Graveyard" />
+../bxiie/index.html:2968:      <div class="images"><img src="/site_small/device_1_s_swimmer_sm.jpg" alt="Device One Swimmer" />
+../bxiie/index.html:2983:      <div class="images"><img src="/site_small/card_md_4_sm.jpg" alt="Seven Cards" />
+../bxiie/index.html:2998:      <div class="images"><img src="/site_small/card_md_3_sm.jpg" alt="Device Seven Washed" />
+../bxiie/index.html:3013:      <div class="images"><img src="/site_small/card_md_2_sm.jpg" alt="Device One Study" />
+../bxiie/index.html:3028:      <div class="images"><img src="/site_small/card_md_1_sm.jpg" alt="Device One Study" />
+../bxiie/index.html:3043:      <div class="images"><img src="/site_small/bxiie_ul_10_sm.jpg" alt="Device Fragment" />
+../bxiie/index.html:3058:      <div class="images"><img src="/site_small/bxiie_br_8_sm.jpg" alt="Lid" />
+../bxiie/index.html:3073:      <div class="images"><img src="/site_small/bxiie_br_7_sm.jpg" alt="Plastic" />
+../bxiie/index.html:3088:      <div class="images"><img src="/site_small/bxiie_br_6_sm.jpg" alt="Plastic" />
+../bxiie/index.html:3103:      <div class="images"><img src="/site_small/bxiie_br_5_sm.jpg" alt="Device Two" />
+../bxiie/index.html:3118:      <div class="images"><img src="/site_small/bxiie_br_43_sm.jpg" alt="Red Paint Process" />
+../bxiie/index.html:3133:      <div class="images"><img src="/site_small/bxiie_br_4_sm.jpg" alt="Device One" />
+../bxiie/index.html:3148:      <div class="images"><img src="/site_small/bxiie_br_34_sm.jpg" alt="In Paint" />
+../bxiie/index.html:3163:      <div class="images"><img src="/site_small/bxiie_br_30_sm.jpg" alt="Plastic" />
+../bxiie/index.html:3178:      <div class="images"><img src="/site_small/bxiie_br_3_sm.jpg" alt="Red Fan" />
+../bxiie/index.html:3193:      <div class="images"><img src="/site_small/bxiie_br_2_sm.jpg" alt="Reflections" />
+../bxiie/index.html:3208:      <div class="images"><img src="/site_small/bxiie_br_1_sm.jpg" alt="Subite" />
+../bxiie/index.html:3223:      <div class="images"><img src="/site_small/bxiie_8_sm.jpg" alt="Device Three at the Tower" />
+../bxiie/index.html:3238:      <div class="images"><img src="/site_small/bxiie_3_sm.jpg" alt="Stone Metro" />
+../bxiie/index.html:3253:      <div class="images"><img src="/site_small/bxiie_2_3_sm.jpg" alt="PVC Two" />
+../bxiie/index.html:3268:      <div class="images"><img src="/site_small/bxiie_2_1_sm.jpg" alt="Reflections" />
+../bxiie/index.html:3283:      <div class="images"><img src="/site_small/bxiie_26_sm.jpg" alt="Amsden Hollow Irene" />
+../bxiie/index.html:3299:    <div class="element clearfix col1-3 about">
+../bxiie/index.html:3300:      <div class="images"><img src="img/summersend_selfie.png" alt="" />
+../bxiie/index.html:3314:<p>I majored in art in college but then followed different paths, working in information technology, emergency medicine, and search and rescue.  After a long hiatus from art I started creating sculpture again about twenty years ago.</p>
+../bxiie/index.html:3320:    <div class="element clearfix col1-3 about">
+../bxiie/index.html:3334:<tr><td><b>May 2023</b></td><td><b>Community Sculpture Walk</b><br/>Watertown, Massachusetts<br/><b>Opposition</b><br/>Juried Exhibition, chosen for two-year exhibition </td></tr>
+../bxiie/index.html:3343:<tr><td><b>May 2021</b></td><td><b>SculptureNow at The Mount</b><br/>Lenox, Massachusetts<br/><b>Unrealized</b><br/>Juried exhibition selection based on CAD design and prior works </td></tr>
+../bxiie/index.html:3344:<tr><td><b>May 2021</b></td><td><b>Jamestown Arts Center</b><br/>Jamestown, Rhode Island<br/><b>JAC Talk</b><br/> <a target="_blank" href='https://www.jamestownartcenter.org/events-past/jac-talk-james-payne'><b style="color: red">Link to Presentation</b></a></td></tr>
+../bxiie/index.html:3346:<tr><td><b>June 2020</b></td><td><b>Outdoor Arts Experience</b><br/>Jamestown, Rhode Island<br/><b>Isolation</b><br/>Juried exhibition selection based on CAD design and prior works, tied for audience choice award </td></tr>
+../bxiie/index.html:3376:    <div class="element clearfix col1-3 contact">
+../bxiie/index.html:3377:      <div class="images"><img src="img/pic8.jpg" alt="" />
+../bxiie/index.html:3405:    <!-- div class="element other Portfolio clearfix col2-3 contact">
+../bxiie/index.html:3408:        <div class="images"><img src="img/pic11.jpg" alt="" />
+../bxiie/index.html:3431:      <div class="images"><img src="img/pic10.jpg" alt="" />
+Binary file ../bxiie/site_rotate/qr1_detail_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_7980_rt.jpg matches
+Binary file ../bxiie/site_rotate/1200_autumn_rt.jpg matches
+Binary file ../bxiie/site_rotate/bxiie_br_4_rt.jpg matches
+Binary file ../bxiie/site_rotate/bxiie_br_8_rt.jpg matches
+Binary file ../bxiie/site_rotate/argument_at_home_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_1001_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_8006_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_0824_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_0955_rt.jpg matches
+Binary file ../bxiie/site_rotate/igloo_hat_rt.jpg matches
+Binary file ../bxiie/site_rotate/mesh_snow_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_6058_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_1040_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_9765_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_1119_rt.jpg matches
+Binary file ../bxiie/site_rotate/card_md_3_rt.jpg matches
+Binary file ../bxiie/site_rotate/bxiie_br_2_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_7953_rt.jpg matches
+Binary file ../bxiie/site_rotate/poc_burn3_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_5503_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_5460_rt.jpg matches
+Binary file ../bxiie/site_rotate/stew_argument_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_5733_rt.jpg matches
+Binary file ../bxiie/site_rotate/bxiie_br_34_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_1730_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_0997_rt.jpg matches
+Binary file ../bxiie/site_rotate/essence_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_5740_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_1047_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_1147_rt.jpg matches
+Binary file ../bxiie/site_rotate/card_md_4_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_0987_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_1090_rt.jpg matches
+Binary file ../bxiie/site_rotate/dttwi_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_4418_rt.jpg matches
+Binary file ../bxiie/site_rotate/IMG_2212_rt.jpg matches
+Binary file ../bxiie/site_rotate/1200_under_construction_rt.jpg matches
+Binary file ../bxiie/site_rotate/1200_truck_rt.jpg matches
+Binary file ../bxiie/site_rotate/tendrils_rt.jpg matches
+Binary file ../bxiie/img/education_v2_sm_1.jpg matches
+Binary file ../bxiie/img/education_v2_sm_3.jpg matches
+Binary file ../bxiie/img/education_v2_sm_2.jpg matches
+Binary file ../bxiie/img/education_v2_sm_6.jpg matches
+Binary file ../bxiie/img/education_v2_sm_7.jpg matches
+Binary file ../bxiie/img/education_v2_site_9.jpg matches
+Binary file ../bxiie/img/education_v2_sm_5.jpg matches
+Binary file ../bxiie/img/summersend_selfie.png matches
+Binary file ../bxiie/img/education_v2_sm_4.jpg matches
+Binary file ../bxiie/img/education_v2_site_8.jpg matches
+Binary file ../bxiie/img/pic13.jpg matches
+Binary file ../bxiie/img/pic9.jpg matches
+Binary file ../bxiie/img/card_sm_1.jpg matches
+Binary file ../bxiie/img/pic8.jpg matches
+Binary file ../bxiie/img/pic12.jpg matches
+Binary file ../bxiie/img/pic10.jpg matches
+Binary file ../bxiie/img/card_sm_3.jpg matches
+Binary file ../bxiie/img/card_sm_2.jpg matches
+Binary file ../bxiie/img/pic11.jpg matches
+Binary file ../bxiie/img/sclpt2.jpg matches
+Binary file ../bxiie/img/pic15.jpg matches
+Binary file ../bxiie/img/pic14.jpg matches
+Binary file ../bxiie/img/pic1b.jpg matches
+Binary file ../bxiie/img/sclpt1.jpg matches
+Binary file ../bxiie/img/sclpt_sm_9.jpg matches
+Binary file ../bxiie/img/card_sm_4.jpg matches
+Binary file ../bxiie/img/sclpt_sm_8.jpg matches
+Binary file ../bxiie/img/dronie.png matches
+Binary file ../bxiie/img/sclpt11.jpg matches
+Binary file ../bxiie/img/pic1.png matches
+Binary file ../bxiie/img/card_md_1.jpg matches
+Binary file ../bxiie/img/sclpt10.jpg matches
+Binary file ../bxiie/img/sclpt12.jpg matches
+Binary file ../bxiie/img/card_md_3.jpg matches
+Binary file ../bxiie/img/pic3.jpg matches
+Binary file ../bxiie/img/pic2.jpg matches
+Binary file ../bxiie/img/pic6.psd matches
+Binary file ../bxiie/img/card_md_2.jpg matches
+Binary file ../bxiie/img/pic6.jpg matches
+Binary file ../bxiie/img/sclpt_sm_2.jpg matches
+Binary file ../bxiie/img/pic7.jpg matches
+Binary file ../bxiie/img/sclpt_sm_12.jpg matches
+Binary file ../bxiie/img/sclpt8.jpg matches
+Binary file ../bxiie/img/sclpt_sm_10.jpg matches
+Binary file ../bxiie/img/pic5.jpg matches
+Binary file ../bxiie/img/sclpt_sm_1.jpg matches
+Binary file ../bxiie/img/pic4.jpg matches
+Binary file ../bxiie/img/sclpt_sm_11.jpg matches
+Binary file ../bxiie/img/sclpt9.jpg matches
+Binary file ../bxiie/img/card_md_4.jpg matches
+Binary file ../bxiie/img/education_v2_site_5.jpg matches
+Binary file ../bxiie/img/education_v2_sm_9.jpg matches
+Binary file ../bxiie/img/education_v2_sm_8.jpg matches
+Binary file ../bxiie/img/education_v2_site_4.jpg matches
+Binary file ../bxiie/img/education_v2_site_6.jpg matches
+Binary file ../bxiie/img/education_v2_sm_10.jpg matches
+Binary file ../bxiie/img/education_v2_site_7.jpg matches
+Binary file ../bxiie/img/education_v2_site_3.jpg matches
+Binary file ../bxiie/img/education_v2_site_10.jpg matches
+Binary file ../bxiie/img/education_v2_site_2.jpg matches
+Binary file ../bxiie/img/education_v2_site_1.jpg matches
+Binary file ../bxiie/site_large/fr_seine_wm.jpg matches
+Binary file ../bxiie/site_large/mesh_snow_wm.jpg matches
+Binary file ../bxiie/site_large/igloo_hat_wm.jpg matches
+Binary file ../bxiie/site_large/poc_burn1_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_0955_wm.jpg matches
+Binary file ../bxiie/site_large/ro_blackchurch_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_0824_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_8657_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_8006_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_9939_wm.jpg matches
+Binary file ../bxiie/site_large/card_md_1_wm.jpg matches
+Binary file ../bxiie/site_large/ss_summersend05_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_6058_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_2_1_wm.jpg matches
+Binary file ../bxiie/site_large/drone_north_branch_wm.jpg matches
+Binary file ../bxiie/site_large/isolation_maquette_second_wm.jpg matches
+Binary file ../bxiie/site_large/baby_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_4246_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_1119_wm.jpg matches
+Binary file ../bxiie/site_large/isolation_above_wm.jpg matches
+Binary file ../bxiie/site_large/education_v2_site_3_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_2_3_wm.jpg matches
+Binary file ../bxiie/site_large/cube_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_9765_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_1040_wm.jpg matches
+Binary file ../bxiie/site_large/sclpt2_wm.jpg matches
+Binary file ../bxiie/site_large/witness_wm.jpg matches
+Binary file ../bxiie/site_large/swirl_decay2_wm.jpg matches
+Binary file ../bxiie/site_large/ro_poiana_wm.jpg matches
+Binary file ../bxiie/site_large/ben_vrackie_skewed_wm.jpg matches
+Binary file ../bxiie/site_large/stew_argument_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_5460_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_5503_wm.jpg matches
+Binary file ../bxiie/site_large/swarm_king2_wm.jpg matches
+Binary file ../bxiie/site_large/poc_burn3_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_7953_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_br_2_wm.jpg matches
+Binary file ../bxiie/site_large/poc_nboss3_wm.jpg matches
+Binary file ../bxiie/site_large/sclpt6_wm.jpg matches
+Binary file ../bxiie/site_large/poc_giaf2_wm.jpg matches
+Binary file ../bxiie/site_large/education_v2_site_7_wm.jpg matches
+Binary file ../bxiie/site_large/swirl_decay_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_ul_5_wm.jpg matches
+Binary file ../bxiie/site_large/swarm_prosper_wm.jpg matches
+Binary file ../bxiie/site_large/poc_sculpturefest_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_7980_wm.jpg matches
+Binary file ../bxiie/site_large/qr1_detail_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_br_6_wm.jpg matches
+Binary file ../bxiie/site_large/1200_autumn_wm.jpg matches
+Binary file ../bxiie/site_large/wireframe_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_br_8_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_br_4_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_ul_10_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_7723_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_3751_wm.jpg matches
+Binary file ../bxiie/site_large/sclpt8_wm.jpg matches
+Binary file ../bxiie/site_large/swarm_dc_wm.jpg matches
+Binary file ../bxiie/site_large/education_v2_site_5_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_4364_wm.jpg matches
+Binary file ../bxiie/site_large/education_v2_site_10_wm.jpg matches
+Binary file ../bxiie/site_large/subite_3_wm.jpg matches
+Binary file ../bxiie/site_large/education_v2_site_9_wm.jpg matches
+Binary file ../bxiie/site_large/ss_prototype01_wm.jpg matches
+Binary file ../bxiie/site_large/sclpt4_wm.jpg matches
+Binary file ../bxiie/site_large/faux_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_3_wm.jpg matches
+Binary file ../bxiie/site_large/swarm_move_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_1001_wm.jpg matches
+Binary file ../bxiie/site_large/sclpt11_wm.jpg matches
+Binary file ../bxiie/site_large/argument_at_home_wm.jpg matches
+Binary file ../bxiie/site_large/poc_giaf_wm.jpg matches
+Binary file ../bxiie/site_large/ss_prototype04_wm.jpg matches
+Binary file ../bxiie/site_large/sclpt1_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_7413_wm.jpg matches
+Binary file ../bxiie/site_large/isolation_maquette_first_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_br_43_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_4418_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_9834_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_0829_wm.jpg matches
+Binary file ../bxiie/site_large/swarm_king1_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_br_1_wm.jpg matches
+Binary file ../bxiie/site_large/poc_nboss0_wm.jpg matches
+Binary file ../bxiie/site_large/poc_burn0_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_0825_wm.jpg matches
+Binary file ../bxiie/site_large/art_graveyard_wm.jpg matches
+Binary file ../bxiie/site_large/thing_tree_wm.jpg matches
+Binary file ../bxiie/site_large/pod_nboss_decon_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_2212_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_br_3_wm.jpg matches
+Binary file ../bxiie/site_large/poc_nboss2_wm.jpg matches
+Binary file ../bxiie/site_large/device_4_wm.jpg matches
+Binary file ../bxiie/site_large/1200_truck_wm.jpg matches
+Binary file ../bxiie/site_large/swirl_decay3_wm.jpg matches
+Binary file ../bxiie/site_large/1200_under_construction_wm.jpg matches
+Binary file ../bxiie/site_large/tendrils_wm.jpg matches
+Binary file ../bxiie/site_large/sclpt3_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_br_30_wm.jpg matches
+Binary file ../bxiie/site_large/card_md_2_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_8_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_br_7_wm.jpg matches
+Binary file ../bxiie/site_large/power_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_0997_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_1730_wm.jpg matches
+Binary file ../bxiie/site_large/thing_tape_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_br_34_wm.jpg matches
+Binary file ../bxiie/site_large/chase_wm.jpg matches
+Binary file ../bxiie/site_large/swarm_nboss_wm.jpg matches
+Binary file ../bxiie/site_large/distraction_wm.jpg matches
+Binary file ../bxiie/site_large/snakie_prototype_wm.jpg matches
+Binary file ../bxiie/site_large/furnace_test_wm.jpg matches
+Binary file ../bxiie/site_large/sclpt7_wm.jpg matches
+Binary file ../bxiie/site_large/ss_prototype02_wm.jpg matches
+Binary file ../bxiie/site_large/isolation_drill_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_5733_wm.jpg matches
+Binary file ../bxiie/site_large/swarm_children_wm.jpg matches
+Binary file ../bxiie/site_large/education_v2_site_6_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_26_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_0987_wm.jpg matches
+Binary file ../bxiie/site_large/dronie_wm.jpg matches
+Binary file ../bxiie/site_large/card_md_4_wm.jpg matches
+Binary file ../bxiie/site_large/pvc_wm.jpg matches
+Binary file ../bxiie/site_large/sclpt10_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_4561_wm.jpg matches
+Binary file ../bxiie/site_large/education_v2_site_4_wm.jpg matches
+Binary file ../bxiie/site_large/ro_tower_wm.jpg matches
+Binary file ../bxiie/site_large/sclpt9_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_1147_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_1047_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_5740_wm.jpg matches
+Binary file ../bxiie/site_large/sclpt5_wm.jpg matches
+Binary file ../bxiie/site_large/snakie_drone_wm.jpg matches
+Binary file ../bxiie/site_large/ss_summersend00_wm.jpg matches
+Binary file ../bxiie/site_large/essence_wm.jpg matches
+Binary file ../bxiie/site_large/education_v2_site_8_wm.jpg matches
+Binary file ../bxiie/site_large/isolation_sh_wm.jpg matches
+Binary file ../bxiie/site_large/dttwi_wm.jpg matches
+Binary file ../bxiie/site_large/IMG_1090_wm.jpg matches
+Binary file ../bxiie/site_large/pvc_12_005_wm.jpg matches
+Binary file ../bxiie/site_large/poc_burn4_wm.jpg matches
+Binary file ../bxiie/site_large/bxiie_br_5_wm.jpg matches
+Binary file ../bxiie/site_large/pvc3_wm.jpg matches
+Binary file ../bxiie/site_small/IMG_2212_sm.jpg matches
+Binary file ../bxiie/site_small/pod_nboss_decon_sm.jpg matches
+Binary file ../bxiie/site_small/thing_tree_sm.jpg matches
+Binary file ../bxiie/site_small/art_graveyard_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_0825_sm.jpg matches
+Binary file ../bxiie/site_small/poc_burn0_sm.jpg matches
+Binary file ../bxiie/site_small/poc_nboss0_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_br_1_sm.jpg matches
+Binary file ../bxiie/site_small/swarm_king1_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_0829_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_9834_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_4418_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_br_43_sm.jpg matches
+Binary file ../bxiie/site_small/isolation_maquette_first_sm.jpg matches
+Binary file ../bxiie/site_small/sclpt1_sm.jpg matches
+Binary file ../bxiie/site_small/ss_prototype04_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_8_sm.jpg matches
+Binary file ../bxiie/site_small/card_md_2_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_br_30_sm.jpg matches
+Binary file ../bxiie/site_small/sclpt3_sm.jpg matches
+Binary file ../bxiie/site_small/education_v2_site_2_sm.jpg matches
+Binary file ../bxiie/site_small/tendrils_sm.jpg matches
+Binary file ../bxiie/site_small/1200_under_construction_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_3744_sm.jpg matches
+Binary file ../bxiie/site_small/swirl_decay3_sm.jpg matches
+Binary file ../bxiie/site_small/1200_truck_sm.jpg matches
+Binary file ../bxiie/site_small/device_4_sm.jpg matches
+Binary file ../bxiie/site_small/poc_nboss2_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_br_3_sm.jpg matches
+Binary file ../bxiie/site_small/education_v2_site_6_sm.jpg matches
+Binary file ../bxiie/site_small/swarm_children_sm.jpg matches
+Binary file ../bxiie/site_small/isolation_drill_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_5733_sm.jpg matches
+Binary file ../bxiie/site_small/ss_prototype02_sm.jpg matches
+Binary file ../bxiie/site_small/furnace_test_sm.jpg matches
+Binary file ../bxiie/site_small/sclpt7_sm.jpg matches
+Binary file ../bxiie/site_small/snakie_prototype_sm.jpg matches
+Binary file ../bxiie/site_small/distraction_sm.jpg matches
+Binary file ../bxiie/site_small/chase_sm.jpg matches
+Binary file ../bxiie/site_small/swarm_nboss_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_br_34_sm.jpg matches
+Binary file ../bxiie/site_small/thing_tape_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_1730_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_0997_sm.jpg matches
+Binary file ../bxiie/site_small/sclpt12_sm.jpg matches
+Binary file ../bxiie/site_small/power_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_br_7_sm.jpg matches
+Binary file ../bxiie/site_small/pvc3_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_br_5_sm.jpg matches
+Binary file ../bxiie/site_small/poc_burn4_sm.jpg matches
+Binary file ../bxiie/site_small/pvc_12_005_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_1090_sm.jpg matches
+Binary file ../bxiie/site_small/dttwi_sm.jpg matches
+Binary file ../bxiie/site_small/isolation_sh_sm.jpg matches
+Binary file ../bxiie/site_small/essence_sm.jpg matches
+Binary file ../bxiie/site_small/education_v2_site_8_sm.jpg matches
+Binary file ../bxiie/site_small/snakie_drone_sm.jpg matches
+Binary file ../bxiie/site_small/ss_summersend00_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_5740_sm.jpg matches
+Binary file ../bxiie/site_small/sclpt5_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_1147_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_1047_sm.jpg matches
+Binary file ../bxiie/site_small/sclpt9_sm.jpg matches
+Binary file ../bxiie/site_small/ro_tower_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_3787_sm.jpg matches
+Binary file ../bxiie/site_small/education_v2_site_4_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_4561_sm.jpg matches
+Binary file ../bxiie/site_small/sclpt10_sm.jpg matches
+Binary file ../bxiie/site_small/pvc_sm.jpg matches
+Binary file ../bxiie/site_small/card_md_4_sm.jpg matches
+Binary file ../bxiie/site_small/dronie_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_0987_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_26_sm.jpg matches
+Binary file ../bxiie/site_small/education_v2_site_1_sm.jpg matches
+Binary file ../bxiie/site_small/drone_north_branch_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_2_1_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_6058_sm.jpg matches
+Binary file ../bxiie/site_small/ss_summersend05_sm.jpg matches
+Binary file ../bxiie/site_small/card_md_1_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_9939_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_8006_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_0824_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_3700_sm.jpg matches
+Binary file ../bxiie/site_small/ro_blackchurch_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_0955_sm.jpg matches
+Binary file ../bxiie/site_small/poc_burn1_sm.jpg matches
+Binary file ../bxiie/site_small/igloo_hat_sm.jpg matches
+Binary file ../bxiie/site_small/mesh_snow_sm.jpg matches
+Binary file ../bxiie/site_small/fr_seine_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_7953_sm.jpg matches
+Binary file ../bxiie/site_small/poc_nboss3_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_br_2_sm.jpg matches
+Binary file ../bxiie/site_small/poc_burn3_sm.jpg matches
+Binary file ../bxiie/site_small/swarm_king2_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_5503_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_5460_sm.jpg matches
+Binary file ../bxiie/site_small/stew_argument_sm.jpg matches
+Binary file ../bxiie/site_small/ben_vrackie_skewed_sm.jpg matches
+Binary file ../bxiie/site_small/ro_poiana_sm.jpg matches
+Binary file ../bxiie/site_small/swirl_decay2_sm.jpg matches
+Binary file ../bxiie/site_small/witness_sm.jpg matches
+Binary file ../bxiie/site_small/sclpt2_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_1040_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_9765_sm.jpg matches
+Binary file ../bxiie/site_small/cube_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_2_3_sm.jpg matches
+Binary file ../bxiie/site_small/isolation_above_sm.jpg matches
+Binary file ../bxiie/site_small/card_md_3_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_1119_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_4246_sm.jpg matches
+Binary file ../bxiie/site_small/isolation_maquette_second_sm.jpg matches
+Binary file ../bxiie/site_small/baby_sm.jpg matches
+Binary file ../bxiie/site_small/wireframe_sm.jpg matches
+Binary file ../bxiie/site_small/1200_autumn_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_br_6_sm.jpg matches
+Binary file ../bxiie/site_small/qr1_detail_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_7980_sm.jpg matches
+Binary file ../bxiie/site_small/poc_sculpturefest_sm.jpg matches
+Binary file ../bxiie/site_small/swarm_prosper_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_ul_5_sm.jpg matches
+Binary file ../bxiie/site_small/swirl_decay_sm.jpg matches
+Binary file ../bxiie/site_small/education_v2_site_7_sm.jpg matches
+Binary file ../bxiie/site_small/poc_giaf2_sm.jpg matches
+Binary file ../bxiie/site_small/sclpt6_sm.jpg matches
+Binary file ../bxiie/site_small/poc_giaf_sm.jpg matches
+Binary file ../bxiie/site_small/argument_at_home_sm.jpg matches
+Binary file ../bxiie/site_small/sclpt11_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_1001_sm.jpg matches
+Binary file ../bxiie/site_small/swarm_move_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_3_sm.jpg matches
+Binary file ../bxiie/site_small/faux_sm.jpg matches
+Binary file ../bxiie/site_small/sclpt4_sm.jpg matches
+Binary file ../bxiie/site_small/ss_prototype01_sm.jpg matches
+Binary file ../bxiie/site_small/subite_3_sm.jpg matches
+Binary file ../bxiie/site_small/education_v2_site_9_sm.jpg matches
+Binary file ../bxiie/site_small/education_v2_site_10_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_4364_sm.jpg matches
+Binary file ../bxiie/site_small/education_v2_site_5_sm.jpg matches
+Binary file ../bxiie/site_small/swarm_dc_sm.jpg matches
+Binary file ../bxiie/site_small/sclpt8_sm.jpg matches
+Binary file ../bxiie/site_small/IMG_3751_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_ul_10_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_br_4_sm.jpg matches
+Binary file ../bxiie/site_small/bxiie_br_8_sm.jpg matches

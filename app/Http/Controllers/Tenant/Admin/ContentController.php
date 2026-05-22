@@ -62,7 +62,9 @@ HTML);
             return Response::html('<h1>Forbidden</h1>', 403);
         }
 
-        $this->csrf->verify((string) ($_POST['csrf_token'] ?? ''));
+        if (!$this->csrf->isValid((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid request</h1><p>CSRF token failed.</p>', 419);
+        }
 
         foreach (['about_content', 'contact_details', 'instagram_url', 'facebook_url', 'linkedin_url'] as $key) {
             $this->settings->set($tenant, $key, trim((string) ($_POST[$key] ?? '')));
