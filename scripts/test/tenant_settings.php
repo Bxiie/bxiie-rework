@@ -14,7 +14,7 @@ $root = dirname(__DIR__, 2);
 
 require $root . '/bootstrap/app.php';
 
-$host = $argv[1] ?? 'bxiie.com';
+$host = $argv[1] ?? 'settings-test.artsfol.io';
 
 $pdo = Database::connect($root);
 $resolver = new TenantResolver($pdo);

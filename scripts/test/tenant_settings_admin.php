@@ -15,7 +15,7 @@ require $root . '/bootstrap/app.php';
 
 $pdo = Database::connect($root);
 $resolver = new TenantResolver($pdo);
-$tenant = $resolver->resolveFromHost('bxiie.com');
+$tenant = $resolver->resolveFromHost('settings-test.artsfol.io');
 
 if (!$tenant) {
     fwrite(STDERR, "Missing bxiie tenant.\n");
