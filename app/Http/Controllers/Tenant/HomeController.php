@@ -147,7 +147,12 @@ HTML;
     public function about(Request $request, TenantContext $tenant): Response
     {
         $about = $this->settings->get($tenant, 'about_content', '');
+        $events = $this->events($tenant);
         $body = "<h1>About</h1>\n<article class=\"prose\">{$about}</article>\n";
+
+        if ($events !== '') {
+            $body .= "<section class=\"events\"><h2>Exhibitions</h2>{$events}</section>\n";
+        }
 
         return Response::html($this->layout(
             title: "{$this->escape($tenant->name)} | About",
@@ -207,6 +212,50 @@ HTML
 </body>
 </html>
 HTML;
+    }
+
+    private function events(TenantContext $tenant): string
+    {
+        $pdo = \App\Support\Database::connect(dirname(__DIR__, 3));
+        $stmt = $pdo->prepare(
+            "SELECT exhibition_date, name, exhibition_type, location, city, state_region, work_name, notes
+             FROM exhibitions
+             WHERE tenant_id = :tenant_id
+               AND status = 'active'
+             ORDER BY sort_order ASC, id DESC"
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+
+        $html = '';
+
+        foreach ($stmt->fetchAll() as $event) {
+            $date = $this->escape((string) ($event['exhibition_date'] ?? ''));
+            $name = $this->escape((string) $event['name']);
+            $type = $this->escape((string) ($event['exhibition_type'] ?? ''));
+            $locationRaw = (string) (($event['location'] ?? '') ?: (($event['city'] ?? '') . ', ' . ($event['state_region'] ?? '')));
+            $location = $this->escape(trim($locationRaw, ', '));
+            $work = $this->escape((string) ($event['work_name'] ?? ''));
+            $notes = nl2br($this->escape((string) ($event['notes'] ?? '')));
+
+            $html .= "<article class=\"event-row\">";
+            $html .= "<p><strong>{$date}</strong></p>";
+            $html .= "<h3>{$name}</h3>";
+            if ($type !== '') {
+                $html .= "<p>{$type}</p>";
+            }
+            if ($location !== '') {
+                $html .= "<p>{$location}</p>";
+            }
+            if ($work !== '') {
+                $html .= "<p>{$work}</p>";
+            }
+            if ($notes !== '') {
+                $html .= "<div>{$notes}</div>";
+            }
+            $html .= "</article>\n";
+        }
+
+        return $html;
     }
 
     private function escape(string $value): string
