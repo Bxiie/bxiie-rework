@@ -114,25 +114,25 @@ final class ArtworksController
     </td>
     <td>{$year}</td>
     <td>{$medium}</td>
-    <td>{$status}</td>
+    <td class="js-artwork-status">{$status}</td>
     <td>{$saleStatus}</td>
     <td>{$price}</td>
     <td>{$notes}</td>
     <td>
         <a href="/admin/artworks/edit?id={$row['id']}">Edit</a>
-        <form method="post" action="/admin/artworks/status" style="display:inline">
+        <form method="post" action="/admin/artworks/status" class="js-artwork-action" style="display:inline">
             <input type="hidden" name="id" value="{$row['id']}">
             <input type="hidden" name="status" value="published">
             <input type="hidden" name="return_to" value="{$returnToValue}">
             <button type="submit" onclick="return confirm('Publish this artwork? It will become visible on public pages.');">Publish</button>
         </form>
-        <form method="post" action="/admin/artworks/status" style="display:inline">
+        <form method="post" action="/admin/artworks/status" class="js-artwork-action" style="display:inline">
             <input type="hidden" name="id" value="{$row['id']}">
             <input type="hidden" name="status" value="draft">
             <input type="hidden" name="return_to" value="{$returnToValue}">
             <button type="submit" onclick="return confirm('Unpublish this artwork? It will be hidden from public pages.');">Unpublish</button>
         </form>
-        <form method="post" action="/admin/artworks/delete" style="display:inline" onsubmit="return confirm('Archive this artwork? It will disappear from normal review and public pages, but the file will not be deleted yet.');">
+        <form method="post" action="/admin/artworks/delete" class="js-artwork-action" style="display:inline" onsubmit="return confirm('Archive this artwork? It will disappear from normal review and public pages, but the file will not be deleted yet.');">
             <input type="hidden" name="id" value="{$row['id']}">
             <input type="hidden" name="return_to" value="{$returnToValue}">
             <button type="submit">Archive</button>
@@ -164,7 +164,7 @@ HTML;
 <main>
     <p><a href="/admin">&larr; Admin</a></p>
     <h1>Artworks</h1>
-    {$notice}
+    <div id="artwork-action-notice">{$notice}</div>
     <p><a href="/admin/artwork/upload">Upload artwork</a></p>
 
     <form method="get" action="/admin/artworks" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin:1rem 0;">
@@ -203,6 +203,67 @@ HTML;
         </tbody>
     </table>
 </main>
+
+<script>
+document.addEventListener('submit', async function (event) {
+    const form = event.target.closest('.js-artwork-action');
+    if (!form) return;
+
+    event.preventDefault();
+
+    if (form.onsubmit && form.onsubmit() === false) {
+        return;
+    }
+
+    const row = form.closest('tr');
+    const notice = document.getElementById('artwork-action-notice');
+    const button = form.querySelector('button[type="submit"], button');
+
+    if (button) {
+        button.disabled = true;
+        button.dataset.originalText = button.textContent;
+        button.textContent = 'Working...';
+    }
+
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'X-Requested-With': 'fetch',
+                'Accept': 'application/json'
+            }
+        });
+
+        const payload = await response.json();
+
+        if (!response.ok || !payload.ok) {
+            throw new Error(payload.message || 'Action failed.');
+        }
+
+        if (payload.archived) {
+            if (row) row.remove();
+        } else if (row && payload.status) {
+            const statusCell = row.querySelector('.js-artwork-status');
+            if (statusCell) statusCell.textContent = payload.status;
+        }
+
+        if (notice) {
+            notice.innerHTML = '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">' + payload.message + '</p>';
+        }
+    } catch (error) {
+        if (notice) {
+            notice.innerHTML = '<p style="padding:.75rem;background:#fff0f0;border:1px solid #d88;">' + error.message + '</p>';
+        }
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.textContent = button.dataset.originalText || 'Submit';
+        }
+    }
+});
+</script>
+
 </body>
 </html>
 HTML);
@@ -271,6 +332,67 @@ HTML);
         <button type="submit">Save artwork</button>
     </form>
 </main>
+
+<script>
+document.addEventListener('submit', async function (event) {
+    const form = event.target.closest('.js-artwork-action');
+    if (!form) return;
+
+    event.preventDefault();
+
+    if (form.onsubmit && form.onsubmit() === false) {
+        return;
+    }
+
+    const row = form.closest('tr');
+    const notice = document.getElementById('artwork-action-notice');
+    const button = form.querySelector('button[type="submit"], button');
+
+    if (button) {
+        button.disabled = true;
+        button.dataset.originalText = button.textContent;
+        button.textContent = 'Working...';
+    }
+
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'X-Requested-With': 'fetch',
+                'Accept': 'application/json'
+            }
+        });
+
+        const payload = await response.json();
+
+        if (!response.ok || !payload.ok) {
+            throw new Error(payload.message || 'Action failed.');
+        }
+
+        if (payload.archived) {
+            if (row) row.remove();
+        } else if (row && payload.status) {
+            const statusCell = row.querySelector('.js-artwork-status');
+            if (statusCell) statusCell.textContent = payload.status;
+        }
+
+        if (notice) {
+            notice.innerHTML = '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">' + payload.message + '</p>';
+        }
+    } catch (error) {
+        if (notice) {
+            notice.innerHTML = '<p style="padding:.75rem;background:#fff0f0;border:1px solid #d88;">' + error.message + '</p>';
+        }
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.textContent = button.dataset.originalText || 'Submit';
+        }
+    }
+});
+</script>
+
 </body>
 </html>
 HTML);
@@ -358,6 +480,15 @@ HTML);
         $returnTo = $this->safeReturnTo((string) ($_POST['return_to'] ?? '/admin/artworks'));
         $separator = str_contains($returnTo, '?') ? '&' : '?';
 
+        if ($this->wantsJson()) {
+            return Response::json([
+                'ok' => true,
+                'id' => $id,
+                'status' => $status,
+                'message' => 'Artwork status updated.',
+            ]);
+        }
+
         return new Response('', 303, ['Location' => $returnTo . $separator . 'notice=status-updated#artwork-' . $id]);
     }
 
@@ -390,7 +521,22 @@ HTML);
         $returnTo = $this->safeReturnTo((string) ($_POST['return_to'] ?? '/admin/artworks'));
         $separator = str_contains($returnTo, '?') ? '&' : '?';
 
+        if ($this->wantsJson()) {
+            return Response::json([
+                'ok' => true,
+                'id' => $id,
+                'archived' => true,
+                'message' => 'Artwork archived.',
+            ]);
+        }
+
         return new Response('', 303, ['Location' => $returnTo . $separator . 'notice=artwork-archived']);
+    }
+
+    private function wantsJson(): bool
+    {
+        return strtolower((string) ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'fetch'
+            || str_contains((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json');
     }
 
     private function safeReturnTo(string $returnTo): string
