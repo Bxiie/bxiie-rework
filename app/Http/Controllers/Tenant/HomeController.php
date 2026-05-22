@@ -146,9 +146,12 @@ HTML;
 
     public function about(Request $request, TenantContext $tenant): Response
     {
+        $about = $this->settings->get($tenant, 'about_content', '');
+        $body = "<h1>About</h1>\n<article class=\"prose\">{$about}</article>\n";
+
         return Response::html($this->layout(
             title: "{$this->escape($tenant->name)} | About",
-            body: "<h1>About</h1>\n<p>About route resolved for tenant <strong>{$this->escape($tenant->slug)}</strong>.</p>\n"
+            body: $body
         ));
     }
 
@@ -160,6 +163,7 @@ HTML;
             title: "{$this->escape($tenant->name)} | Contact",
             body: <<<HTML
 <h1>Contact</h1>
+<article class="prose">{$this->settings->get($tenant, 'contact_details', '')}</article>
 <form method="post" action="/contact">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <p>

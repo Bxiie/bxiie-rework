@@ -29,6 +29,7 @@ use App\Http\Controllers\Tenant\Admin\DashboardController as TenantAdminDashboar
 use App\Http\Controllers\Tenant\Admin\GettingStartedController as TenantAdminGettingStartedController;
 use App\Http\Controllers\Tenant\Admin\ArtworkUploadController as TenantAdminArtworkUploadController;
 use App\Http\Controllers\Tenant\Admin\ArtworksController as TenantAdminArtworksController;
+use App\Http\Controllers\Tenant\Admin\ContentController as TenantAdminContentController;
 use App\Http\Controllers\Tenant\Admin\SettingsController as TenantAdminSettingsController;
 use App\Http\Controllers\Tenant\Admin\RoutesController as TenantAdminRoutesController;
 use App\Http\Controllers\Tenant\Admin\EmailSignupsController as TenantAdminEmailSignupsController;
@@ -161,6 +162,8 @@ if ($tenant) {
         $router->post('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->login($request));
         $router->get('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->logout($request));
         $router->get('/admin/media', fn (Request $request): Response => (new TenantMediaController($pdo, new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->admin($request, $tenant, $currentUser));
+        $router->get('/admin/content', fn (Request $request): Response => (new TenantAdminContentController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf))->edit($request, $tenant, $currentUser));
+        $router->post('/admin/content', fn (Request $request): Response => (new TenantAdminContentController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf))->update($request, $tenant, $currentUser));
         $router->get('/admin/artworks', fn (Request $request): Response => (new TenantAdminArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new AuditLogRepository($pdo)))->index($request, $tenant, $currentUser));
         $router->get('/admin/artworks/edit', fn (Request $request): Response => (new TenantAdminArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new AuditLogRepository($pdo)))->edit($request, $tenant, $currentUser));
         $router->post('/admin/artworks/edit', fn (Request $request): Response => (new TenantAdminArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new AuditLogRepository($pdo)))->update($request, $tenant, $currentUser));
