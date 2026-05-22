@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant\Admin;
 
-use App\Http\Controllers\Tenant\Admin\AdminLayout;
 
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
