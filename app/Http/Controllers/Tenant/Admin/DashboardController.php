@@ -4,57 +4,35 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant\Admin;
 
-
-use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\View\AdminLayout;
-use App\Platform\Membership\Roles;
 use App\Platform\Tenancy\TenantContext;
 
-/**
- * Handles tenant admin dashboard placeholder routes.
- */
 final class DashboardController
 {
-    public function __construct(
-        private readonly RequireTenantRoleBrowser $roles,
-    ) {
-    }
+    public function index(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        $body = <<<HTML
+<p class="admin-muted">Manage the public site, artwork catalog, engagement, and reporting.</p>
 
-    public function index(Request $request, TenantContext $tenant, ?array $currentUser): Response {
-        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
-        }
-
-        $cards = [
-            ['Site settings', '/admin/settings', 'Titles, tabs, slugs, colors, home intro, exhibition display, and tenant CSS.'],
-            ['Content', '/admin/content', 'About/contact HTML, social links, page images, and public page copy.'],
-            ['Artworks', '/admin/artworks', 'Review, filter, publish, edit, archive, and manage artwork metadata.'],
-            ['Upload artwork', '/admin/artwork/upload', 'Add new artwork and media files.'],
-            ['Portfolio sections', '/admin/portfolio-sections', 'Create sections, show tabs, and control tab ordering.'],
-            ['Events / exhibitions', '/admin/events', 'Edit exhibition history and public About page event display.'],
-            ['Contact messages', '/admin/contact-messages', 'Review and delete inbound public contact messages.'],
-            ['Email signups', '/admin/email-signups', 'Review, import, export, and manage email-list subscribers.'],
-            ['Stats', '/admin/stats', 'Traffic, artwork views, location rollups, and engagement analytics.'],
-            ['Audit log', '/admin/audit-log', 'Review tenant admin activity and security-relevant changes.'],
-        ];
-
-        $html = '<section class="admin-hero"><h1>Tenant Admin</h1><p>Manage the public site, artwork catalog, engagement, and reporting.</p></section>';
-        $html .= '<section class="admin-card-grid">';
-
-        foreach ($cards as [$title, $href, $description]) {
-            $title = AdminLayout::escape($title);
-            $href = AdminLayout::escape($href);
-            $description = AdminLayout::escape($description);
-            $html .= "<a class=\"admin-card\" href=\"{$href}\"><strong>{$title}</strong><span>{$description}</span></a>";
-        }
-
-        $html .= '</section>';
+<div class="dashboard-grid">
+    <a class="dashboard-card" href="/admin/settings"><h3>Site Settings</h3><p>Branding, tabs, slugs, CSS, homepage text, backgrounds, and SEO.</p></a>
+    <a class="dashboard-card" href="/admin/content"><h3>Content</h3><p>About text, contact text, page images, and public content blocks.</p></a>
+    <a class="dashboard-card" href="/admin/artworks"><h3>Artworks</h3><p>Upload, edit, publish, archive, sort, filter, and manage artwork metadata.</p></a>
+    <a class="dashboard-card" href="/admin/portfolio-sections"><h3>Portfolio Sections</h3><p>Organize artworks and control public portfolio tabs.</p></a>
+    <a class="dashboard-card" href="/admin/events"><h3>Events / Exhibitions</h3><p>Edit exhibition history and public presentation.</p></a>
+    <a class="dashboard-card" href="/admin/contact-messages"><h3>Contact Messages</h3><p>Review and delete public contact form messages.</p></a>
+    <a class="dashboard-card" href="/admin/email-signups"><h3>Email Signups</h3><p>View, import, export, and manage subscribers.</p></a>
+    <a class="dashboard-card" href="/admin/stats"><h3>Stats</h3><p>Traffic, artwork views, location rollups, and engagement analytics.</p></a>
+    <a class="dashboard-card" href="/admin/audit-log"><h3>Audit Log</h3><p>Review tenant admin activity and security-relevant changes.</p></a>
+</div>
+HTML;
 
         return Response::html(AdminLayout::render(
             title: 'Tenant Admin',
-            body: $html,
+            heading: 'Tenant Admin',
+            body: $body,
         ));
     }
 }
