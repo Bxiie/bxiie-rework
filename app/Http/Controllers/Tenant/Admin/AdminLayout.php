@@ -67,12 +67,18 @@ HTML;
             'audit' => ['/admin/audit-log', 'Audit log'],
         ];
 
-        $html = '<nav class="admin-nav">';
-        foreach ($items as $key => [$href, $label]) {
-            $class = $key === $active ? ' class="active"' : '';
-            $html .= '<a' . $class . ' href="' . self::escape($href) . '">' . self::escape($label) . '</a>';
-        }
-        $html .= '</nav>';
+        $html = '<nav class="admin-nav">
+        <a href="/admin">Dashboard</a>
+        <a href="/admin/settings">Site</a>
+        <a href="/admin/content">Content</a>
+        <a href="/admin/artworks">Artworks</a>
+        <a href="/admin/portfolio-sections">Sections</a>
+        <a href="/admin/events">Events</a>
+        <a href="/admin/contact-messages">Messages</a>
+        <a href="/admin/email-signups">Email list</a>
+        <a href="/admin/stats">Stats</a>
+        <a href="/admin/audit-log">Audit log</a>
+    </nav>';
 
         return $html;
     }
