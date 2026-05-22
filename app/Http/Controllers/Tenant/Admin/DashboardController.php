@@ -30,9 +30,8 @@ final class DashboardController
 HTML;
 
         return Response::html(AdminLayout::render(
-            title: 'Tenant Admin',
-            heading: 'Tenant Admin',
-            body: $body,
+            'Tenant Admin',
+            $body,
         ));
     }
 }
