@@ -88,3 +88,36 @@
     padding: 18px;
   }
 }
+
+.dashboard-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+}
+
+.dashboard-card {
+  position: static !important;
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 130px !important;
+  margin: 0 !important;
+  padding: 22px !important;
+  border-radius: 18px !important;
+  background: #fff !important;
+  color: #191919 !important;
+  text-decoration: none !important;
+  overflow: visible !important;
+}
+
+.dashboard-card h3,
+.dashboard-card p {
+  position: static !important;
+  margin-left: 0 !important;
+}
+
+.admin-muted {
+  color: #555;
+  margin: 0 0 24px;
+}
