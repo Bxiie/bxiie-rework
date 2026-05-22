@@ -56,27 +56,53 @@ HTML
 
     public function portfolio(Request $request, TenantContext $tenant): Response
     {
-        $items = $this->artworks->latestPublished($tenant, 240);
+        $sectionSlug = trim((string) ($_GET['section'] ?? ''));
+        $sections = $this->artworks->activeSections($tenant);
+        $items = $sectionSlug !== ''
+            ? $this->artworks->publishedForSection($tenant, $sectionSlug, 240)
+            : $this->artworks->latestPublished($tenant, 240);
+
         $body = "<h1>Portfolio</h1>\n";
+        $body .= "<nav style=\"display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 2rem;\">\n";
+        $body .= "    <a href=\"/portfolio\" style=\"padding:.5rem .75rem;border:1px solid #222;text-decoration:none;\">All</a>\n";
+
+        foreach ($sections as $section) {
+            $slug = rawurlencode((string) $section['slug']);
+            $name = $this->escape((string) $section['name']);
+            $body .= "    <a href=\"/portfolio?section={$slug}\" style=\"padding:.5rem .75rem;border:1px solid #222;text-decoration:none;\">{$name}</a>\n";
+        }
+
+        $body .= "</nav>\n";
 
         if (!$items) {
             $body .= "<p>No published artwork yet.</p>\n";
         } else {
-            $body .= "<ul>\n";
+            $body .= "<div style=\"display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.25rem;\">\n";
+
             foreach ($items as $item) {
                 $title = $this->escape((string) $item['title']);
                 $slug = rawurlencode((string) $item['slug']);
+                $year = $this->escape((string) ($item['year_created'] ?? ''));
+                $medium = $this->escape((string) ($item['medium'] ?? ''));
                 $image = '';
 
                 if (!empty($item['media_uuid'])) {
-                    $src = '/media?uuid=' . rawurlencode((string) $item['media_uuid']);
+                    $src = '/media?uuid=' . rawurlencode((string) $item['media_uuid']) . '&variant=thumb';
                     $alt = $this->escape((string) ($item['media_alt_text'] ?? $item['title']));
-                    $image = "<br><img src=\"{$src}\" alt=\"{$alt}\" style=\"max-width:260px;max-height:220px;object-fit:contain;\">";
+                    $image = "<img src=\"{$src}\" alt=\"{$alt}\" loading=\"lazy\" style=\"width:100%;height:240px;object-fit:contain;background:#fff;\">";
                 }
 
-                $body .= "    <li><a href=\"/artwork/{$slug}\">{$title}</a>{$image}</li>\n";
+                $body .= <<<HTML
+<article style="border:1px solid #ddd;padding:1rem;background:#fffaf5;">
+    <a href="/artwork/{$slug}">{$image}</a>
+    <h2 style="font-size:1.1rem;margin:.75rem 0 .25rem;"><a href="/artwork/{$slug}">{$title}</a></h2>
+    <p style="margin:.2rem 0;color:#666;">{$year}</p>
+    <p style="margin:.2rem 0;color:#666;">{$medium}</p>
+</article>
+HTML;
             }
-            $body .= "</ul>\n";
+
+            $body .= "</div>\n";
         }
 
         return Response::html($this->layout(
