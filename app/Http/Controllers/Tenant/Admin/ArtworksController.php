@@ -73,6 +73,17 @@ final class ArtworksController
         $stmt->execute($params);
         $rows = $stmt->fetchAll();
 
+        $returnTo = '/admin/artworks';
+        $queryString = http_build_query(array_filter([
+            'q' => $q,
+            'sort' => $sort,
+        ], static fn ($value): bool => $value !== ''));
+
+        if ($queryString !== '') {
+            $returnTo .= '?' . $queryString;
+        }
+
+        $returnToValue = htmlspecialchars($returnTo, ENT_QUOTES, 'UTF-8');
         $items = '';
         $queryValue = htmlspecialchars($q, ENT_QUOTES, 'UTF-8');
         $sortOption = fn (string $value): string => $sort === $value ? ' selected' : '';
@@ -112,15 +123,18 @@ final class ArtworksController
         <form method="post" action="/admin/artworks/status" style="display:inline">
             <input type="hidden" name="id" value="{$row['id']}">
             <input type="hidden" name="status" value="published">
+            <input type="hidden" name="return_to" value="{$returnToValue}">
             <button type="submit" onclick="return confirm('Publish this artwork? It will become visible on public pages.');">Publish</button>
         </form>
         <form method="post" action="/admin/artworks/status" style="display:inline">
             <input type="hidden" name="id" value="{$row['id']}">
             <input type="hidden" name="status" value="draft">
+            <input type="hidden" name="return_to" value="{$returnToValue}">
             <button type="submit" onclick="return confirm('Unpublish this artwork? It will be hidden from public pages.');">Unpublish</button>
         </form>
         <form method="post" action="/admin/artworks/delete" style="display:inline" onsubmit="return confirm('Archive this artwork? It will disappear from normal review and public pages, but the file will not be deleted yet.');">
             <input type="hidden" name="id" value="{$row['id']}">
+            <input type="hidden" name="return_to" value="{$returnToValue}">
             <button type="submit">Archive</button>
         </form>
     </td>
@@ -341,7 +355,10 @@ HTML);
             'tenant_id' => $tenant->tenantId,
         ]);
 
-        return new Response('', 303, ['Location' => '/admin/artworks?notice=status-updated#artwork-' . $id]);
+        $returnTo = $this->safeReturnTo((string) ($_POST['return_to'] ?? '/admin/artworks'));
+        $separator = str_contains($returnTo, '?') ? '&' : '?';
+
+        return new Response('', 303, ['Location' => $returnTo . $separator . 'notice=status-updated#artwork-' . $id]);
     }
 
 
@@ -370,7 +387,19 @@ HTML);
             'tenant_id' => $tenant->tenantId,
         ]);
 
-        return new Response('', 303, ['Location' => '/admin/artworks?notice=artwork-archived']);
+        $returnTo = $this->safeReturnTo((string) ($_POST['return_to'] ?? '/admin/artworks'));
+        $separator = str_contains($returnTo, '?') ? '&' : '?';
+
+        return new Response('', 303, ['Location' => $returnTo . $separator . 'notice=artwork-archived']);
+    }
+
+    private function safeReturnTo(string $returnTo): string
+    {
+        if ($returnTo === '' || !str_starts_with($returnTo, '/admin/artworks')) {
+            return '/admin/artworks';
+        }
+
+        return $returnTo;
     }
 
     private function findArtwork(TenantContext $tenant, int $id): ?array
