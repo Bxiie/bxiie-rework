@@ -14,6 +14,8 @@ use App\Platform\Membership\MembershipService;
 use App\Support\Database;
 
 $root = dirname(__DIR__, 2);
+require_once __DIR__ . '/TestEnvironment.php';
+TestEnvironment::skipIfProduction(basename(__FILE__));
 require $root . '/bootstrap/app.php';
 
 $pdo = Database::connect($root);
@@ -38,7 +40,7 @@ $stmt->execute();
 $tenant = $stmt->fetch();
 
 if (!$tenant) {
-    fwrite(STDERR, "Missing bxiie tenant.\n");
+    fwrite(STDERR, "Missing expected tenant for this test.\n");
     exit(1);
 }
 

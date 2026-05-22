@@ -755,3 +755,11 @@
 - Upload metadata maps date/year to artworks.year_created, notes to artworks.description, medium to artworks.medium, sale status to artworks.sale_status, and price to artworks.price.
 - New uploaded artworks are created as draft.
 - Added artwork DB upload pipeline smoke test.
+
+## 2026-05-22 Production-safe test guard
+
+- Added scripts/test/TestEnvironment.php.
+- Mutating scripts/test files now skip when ARTSFOLIO_ENV_FILE points at production.
+- Added scripts/test/production_mutation_guard.php.
+- Updated preflight to verify mutating tests include the production guard.
+- Documented that production preflight must not mutate live tenant data.

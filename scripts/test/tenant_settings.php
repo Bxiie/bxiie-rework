@@ -11,6 +11,8 @@ use App\Support\Database;
 use App\Tenant\Settings\TenantSettingsRepository;
 
 $root = dirname(__DIR__, 2);
+require_once __DIR__ . '/TestEnvironment.php';
+TestEnvironment::skipIfProduction(basename(__FILE__));
 
 require $root . '/bootstrap/app.php';
 

@@ -18,6 +18,8 @@ if (str_contains($envFile, '/etc/artsfolio/')) {
 }
 
 $root = dirname(__DIR__, 2);
+require_once __DIR__ . '/TestEnvironment.php';
+TestEnvironment::skipIfProduction(basename(__FILE__));
 require $root . '/bootstrap/app.php';
 
 $pdo = Database::connect($root);
