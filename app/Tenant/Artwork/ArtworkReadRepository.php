@@ -25,8 +25,8 @@ final class ArtworkReadRepository
              FROM artworks a
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
              WHERE a.tenant_id = :tenant_id
-               AND slug = :slug
-               AND status = 'published'
+               AND a.slug = :slug
+               AND a.status = 'published'
              LIMIT 1"
         );
 
@@ -48,8 +48,8 @@ final class ArtworkReadRepository
              FROM artworks a
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
              WHERE a.tenant_id = :tenant_id
-               AND status = 'published'
-             ORDER BY sort_order ASC, id DESC
+               AND a.status = 'published'
+             ORDER BY a.sort_order ASC, a.id DESC
              LIMIT :limit_count"
         );
 
