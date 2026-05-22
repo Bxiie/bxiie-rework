@@ -200,17 +200,10 @@ HTML);
             $after[$key] = $value;
         }
 
-        $this->auditAction(
-            request: $request,
-            currentUser: $currentUser,
-            tenant: $tenant,
-            action: 'tenant.settings.update',
-            entityId: (string) $tenant->tenantId,
-            details: [
+        $this->auditAction($request, $currentUser, $tenant, 'tenant.settings.update', (string) $tenant->tenantId, [
                 'before' => $before,
                 'after' => $after,
-            ],
-        );
+            ]);
 
         return new Response('', 303, ['Location' => '/admin/settings?notice=saved']);
     }
@@ -240,15 +233,7 @@ HTML);
             return;
         }
 
-        $this->auditLog->record(
-            action: 'tenant.settings.updated',
-            tenantId: $tenant->tenantId,
-            userId: isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
-            entityType: 'tenant_settings',
-            entityId: (string) $tenant->tenantId,
-            details: $details,
-            ipAddress: $request->server('REMOTE_ADDR'),
-        );
+        $this->auditLog->record('tenant.settings.updated', $tenant->tenantId, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, 'tenant_settings', (string) $tenant->tenantId, $details, $request->server('REMOTE_ADDR'));
     }
 
     private function canManageSettings(?array $currentUser, TenantContext $tenant): bool
