@@ -264,6 +264,21 @@ HTML);
     {
         return AdminLayout::escape($value);
     }
+    private function recordAudit(Request $request, TenantContext $tenant, ?array $currentUser, string $action, array $details): void
+    {
+        $userId = isset($currentUser['id']) ? (int) $currentUser['id'] : null;
+
+        $this->auditLog->record(
+            $action,
+            $tenant->tenantId,
+            $userId,
+            'tenant_settings',
+            (string) $tenant->tenantId,
+            $details,
+            $request->ip(),
+        );
+    }
+
 }
 
 // End of file.
