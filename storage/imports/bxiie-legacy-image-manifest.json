@@ -1,6 +1,6 @@
 {
     "tenant": "bxiie",
-    "generated_at": "2026-05-18T08:23:55+00:00",
+    "generated_at": "2026-05-22T11:23:10+00:00",
     "images": [
         {
             "source": "../bxiie/site_rotate/IMG_5616_rt.jpg",
@@ -1913,6 +1913,36 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/IMG_4939_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_4939_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/65f1b95542df437551f3d362e90b24394856870529b91240970fc3241e292e22.jpg",
+            "sha256": "65f1b95542df437551f3d362e90b24394856870529b91240970fc3241e292e22",
+            "suggested_title": "IMG_4939_wm",
+            "width": 3024,
+            "height": 4032,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/mesh_snow_wm.jpg",
+            "legacy_relative_path": "site_large/mesh_snow_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/9435a41c02bf132d806b4929dcf902c8750454bceae2ab7a130491bbfef446f7.jpg",
+            "sha256": "9435a41c02bf132d806b4929dcf902c8750454bceae2ab7a130491bbfef446f7",
+            "suggested_title": "mesh_snow_wm",
+            "width": 2781,
+            "height": 2165,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/igloo_hat_wm.jpg",
+            "legacy_relative_path": "site_large/igloo_hat_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/015ec9fbdd05c5d1fe76f0a34dd8d55a50316a73d309ef853ba36e1eb0a3ffce.jpg",
+            "sha256": "015ec9fbdd05c5d1fe76f0a34dd8d55a50316a73d309ef853ba36e1eb0a3ffce",
+            "suggested_title": "igloo_hat_wm",
+            "width": 905,
+            "height": 1143,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/IMG_4589_wm.jpg",
             "legacy_relative_path": "site_large/IMG_4589_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/7f8e6a5710e0213352f3d7a13fe003d66d77abe0d687bc671812048c5f76a7e3.jpg",
@@ -1963,12 +1993,82 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/above_tendrils_wm.jpg",
+            "legacy_relative_path": "site_large/above_tendrils_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/67214c31a251619ae782ed1129fb926e6f28a50f2374ac5b95ac3458b65ca95b.jpg",
+            "sha256": "67214c31a251619ae782ed1129fb926e6f28a50f2374ac5b95ac3458b65ca95b",
+            "suggested_title": "above_tendrils_wm",
+            "width": 253,
+            "height": 298,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/IMG_0959_wm.jpg",
             "legacy_relative_path": "site_large/IMG_0959_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/12facff2e81e00f655b730d118c4319325eb9bb2f70f26097c7bb1e6eab0b7f1.jpg",
             "sha256": "12facff2e81e00f655b730d118c4319325eb9bb2f70f26097c7bb1e6eab0b7f1",
             "suggested_title": "IMG_0959_wm",
             "width": 1500,
+            "height": 1000,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/IMG_0824_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_0824_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/fdee3b99559eb3356b9e59168df482442a304fd8497ea756e2eaa92bd58e43fa.jpg",
+            "sha256": "fdee3b99559eb3356b9e59168df482442a304fd8497ea756e2eaa92bd58e43fa",
+            "suggested_title": "IMG_0824_wm",
+            "width": 2448,
+            "height": 3264,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/IMG_8657_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_8657_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/dc827d673ca48f69c4a1bee34fdd5459ff93ad5b9783fcd5d122faa74242fb50.jpg",
+            "sha256": "dc827d673ca48f69c4a1bee34fdd5459ff93ad5b9783fcd5d122faa74242fb50",
+            "suggested_title": "IMG_8657_wm",
+            "width": 2932,
+            "height": 3664,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/IMG_8006_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_8006_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/2d7fe3628584673937597770adedccba5348976691086bbab29207e6a5aa408b.jpg",
+            "sha256": "2d7fe3628584673937597770adedccba5348976691086bbab29207e6a5aa408b",
+            "suggested_title": "IMG_8006_wm",
+            "width": 4032,
+            "height": 3024,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/IMG_5602_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_5602_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/18839c3d95ff32212fdbb1d8ee92344bfd3514b4aac51c91acd41b063c535190.jpg",
+            "sha256": "18839c3d95ff32212fdbb1d8ee92344bfd3514b4aac51c91acd41b063c535190",
+            "suggested_title": "IMG_5602_wm",
+            "width": 3024,
+            "height": 4032,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/IMG_9939_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_9939_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/ae50ed8573766f40a99d7bd13fee9659f92b30e6fe93a23139bcf9320c1e810d.jpg",
+            "sha256": "ae50ed8573766f40a99d7bd13fee9659f92b30e6fe93a23139bcf9320c1e810d",
+            "suggested_title": "IMG_9939_wm",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/IMG_1105_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_1105_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/168d1ce8a69fbe5127bf4f66ec4f48da0532e4d80a53ef26a941cda5e5f079d3.jpg",
+            "sha256": "168d1ce8a69fbe5127bf4f66ec4f48da0532e4d80a53ef26a941cda5e5f079d3",
+            "suggested_title": "IMG_1105_wm",
+            "width": 2164,
             "height": 1000,
             "mime_type": "image/jpeg"
         },
@@ -2003,6 +2103,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/ss_summersend05_wm.jpg",
+            "legacy_relative_path": "site_large/ss_summersend05_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/87e9ae2f3e98c66fad744337fd7a06a25af35378cd39c25816c305c2eb39317c.jpg",
+            "sha256": "87e9ae2f3e98c66fad744337fd7a06a25af35378cd39c25816c305c2eb39317c",
+            "suggested_title": "ss_summersend05_wm",
+            "width": 5472,
+            "height": 3648,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/IMG_1906_wm.jpg",
             "legacy_relative_path": "site_large/IMG_1906_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/2a8c97629579531884c0d5aa8772b66660f37545c9b5beb787978660764ff75e.jpg",
@@ -2033,6 +2143,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/pic14_wm.jpg",
+            "legacy_relative_path": "site_large/pic14_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/146e6370608aead78e073d7c842b27095ed57a11346e0caee15345c4161f0d9e.jpg",
+            "sha256": "146e6370608aead78e073d7c842b27095ed57a11346e0caee15345c4161f0d9e",
+            "suggested_title": "pic14_wm",
+            "width": 300,
+            "height": 402,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/bxiie_2_1_wm.jpg",
             "legacy_relative_path": "site_large/bxiie_2_1_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/7223ad2205b9c2fa2864e2fe66283b3f4ffa6102638e2285cf0bea059427a9a0.jpg",
@@ -2050,6 +2170,16 @@
             "suggested_title": "drone_north_branch_wm",
             "width": 4000,
             "height": 2250,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/isolation_maquette_second_wm.jpg",
+            "legacy_relative_path": "site_large/isolation_maquette_second_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/e6e4ea26be8d08a79aef01a26b3aede0809f05ee362ba45895dee3f6af47fd14.jpg",
+            "sha256": "e6e4ea26be8d08a79aef01a26b3aede0809f05ee362ba45895dee3f6af47fd14",
+            "suggested_title": "isolation_maquette_second_wm",
+            "width": 4032,
+            "height": 3024,
             "mime_type": "image/jpeg"
         },
         {
@@ -2183,6 +2313,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/IMG_9765_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_9765_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/a3db866afb8003e87caab518da40e6ff42d0ec9b4113ae680229db4089c79570.jpg",
+            "sha256": "a3db866afb8003e87caab518da40e6ff42d0ec9b4113ae680229db4089c79570",
+            "suggested_title": "IMG_9765_wm",
+            "width": 2448,
+            "height": 3264,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/IMG_1040_wm.jpg",
             "legacy_relative_path": "site_large/IMG_1040_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/5420b1904651dda3f890ffeaf2b8cb9756647f3a445dafd61f0c3fd485e41f76.jpg",
@@ -2190,6 +2330,26 @@
             "suggested_title": "IMG_1040_wm",
             "width": 2448,
             "height": 3264,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/sclpt2_wm.jpg",
+            "legacy_relative_path": "site_large/sclpt2_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/8c81f647e75a55bc30af4632026faa3cbee589956f34e99cd297eae56fb53ed1.jpg",
+            "sha256": "8c81f647e75a55bc30af4632026faa3cbee589956f34e99cd297eae56fb53ed1",
+            "suggested_title": "sclpt2_wm",
+            "width": 2448,
+            "height": 3264,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/sharp_v3_wm.jpg",
+            "legacy_relative_path": "site_large/sharp_v3_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/6319b89f9f5bd209d970dced23652aff6897164243359f1cf62ad7c57a151d0e.jpg",
+            "sha256": "6319b89f9f5bd209d970dced23652aff6897164243359f1cf62ad7c57a151d0e",
+            "suggested_title": "sharp_v3_wm",
+            "width": 4465,
+            "height": 2000,
             "mime_type": "image/jpeg"
         },
         {
@@ -2203,6 +2363,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/assault_wm.jpg",
+            "legacy_relative_path": "site_large/assault_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/9a1388bb81053bd61af23d6d485541dca70964014faed93259257d4c4f7e0b40.jpg",
+            "sha256": "9a1388bb81053bd61af23d6d485541dca70964014faed93259257d4c4f7e0b40",
+            "suggested_title": "assault_wm",
+            "width": 1778,
+            "height": 1000,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/pic6_wm.jpg",
             "legacy_relative_path": "site_large/pic6_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/c759e2c801a3cd0364d0ade74233b4eeb95be13e7a85c7b85c8aced9260ba459.jpg",
@@ -2213,11 +2383,31 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/swirl_decay2_wm.jpg",
+            "legacy_relative_path": "site_large/swirl_decay2_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/2c6ad7bb6237a35cda17123d42fe835a3597faf79711deb5031802e2003dde96.jpg",
+            "sha256": "2c6ad7bb6237a35cda17123d42fe835a3597faf79711deb5031802e2003dde96",
+            "suggested_title": "swirl_decay2_wm",
+            "width": 4032,
+            "height": 3024,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/IMG_5527_wm.jpg",
             "legacy_relative_path": "site_large/IMG_5527_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/73a5420d92a52df2fb573ad7ba2267df13332a6d3aa2e05d89e0e9eae9dfd735.jpg",
             "sha256": "73a5420d92a52df2fb573ad7ba2267df13332a6d3aa2e05d89e0e9eae9dfd735",
             "suggested_title": "IMG_5527_wm",
+            "width": 4032,
+            "height": 3024,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/ro_poiana_wm.jpg",
+            "legacy_relative_path": "site_large/ro_poiana_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/7611c997e28cb53af92aafd8ecd17a82f8534a4755b9f4b4eded4e9b997ad964.jpg",
+            "sha256": "7611c997e28cb53af92aafd8ecd17a82f8534a4755b9f4b4eded4e9b997ad964",
+            "suggested_title": "ro_poiana_wm",
             "width": 4032,
             "height": 3024,
             "mime_type": "image/jpeg"
@@ -2240,6 +2430,26 @@
             "suggested_title": "pointy_derivative_wm",
             "width": 1117,
             "height": 932,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/ben_vrackie_skewed_wm.jpg",
+            "legacy_relative_path": "site_large/ben_vrackie_skewed_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/16da63d969b7a0b821d6b3c8a5900a711aa92c5bc0b7d7beb24687c54a49550b.jpg",
+            "sha256": "16da63d969b7a0b821d6b3c8a5900a711aa92c5bc0b7d7beb24687c54a49550b",
+            "suggested_title": "ben_vrackie_skewed_wm",
+            "width": 14262,
+            "height": 3792,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/swirls_protogram_wm.jpg",
+            "legacy_relative_path": "site_large/swirls_protogram_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/85f5ead6ad2acce03cc2e6544d370c0f3172e66fe2be6cf7ca91e4622c34ac83.jpg",
+            "sha256": "85f5ead6ad2acce03cc2e6544d370c0f3172e66fe2be6cf7ca91e4622c34ac83",
+            "suggested_title": "swirls_protogram_wm",
+            "width": 1017,
+            "height": 1002,
             "mime_type": "image/jpeg"
         },
         {
@@ -2323,6 +2533,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/bxiie_br_2_wm.jpg",
+            "legacy_relative_path": "site_large/bxiie_br_2_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/1041bcae92e79034cb5b5e048c7fa5dfa41e1581a649eed3a090625006b38457.jpg",
+            "sha256": "1041bcae92e79034cb5b5e048c7fa5dfa41e1581a649eed3a090625006b38457",
+            "suggested_title": "bxiie_br_2_wm",
+            "width": 800,
+            "height": 600,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/poc_nboss3_wm.jpg",
             "legacy_relative_path": "site_large/poc_nboss3_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/1227dfc68ef914d95ba0aca1ea89873b94473347beae744615926c8a7ab2e4ab.jpg",
@@ -2333,6 +2553,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/sclpt6_wm.jpg",
+            "legacy_relative_path": "site_large/sclpt6_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/8c4647e273309b90f75584b0d66cd779bce518f8c05dd740882be6582065ccbb.jpg",
+            "sha256": "8c4647e273309b90f75584b0d66cd779bce518f8c05dd740882be6582065ccbb",
+            "suggested_title": "sclpt6_wm",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/pic12_wm.jpg",
             "legacy_relative_path": "site_large/pic12_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/19e6384b2ebde98c7428e739092d848ce3a6c90a71ecbfbefe9f28d07cffdaf3.jpg",
@@ -2340,6 +2570,26 @@
             "suggested_title": "pic12_wm",
             "width": 300,
             "height": 191,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/ss_prototype03_wm.jpg",
+            "legacy_relative_path": "site_large/ss_prototype03_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/e344bc46a2a681eb10f625b5006e32c2fe703b211bbe72b0ed7948f5c1bb0bb4.jpg",
+            "sha256": "e344bc46a2a681eb10f625b5006e32c2fe703b211bbe72b0ed7948f5c1bb0bb4",
+            "suggested_title": "ss_prototype03_wm",
+            "width": 1200,
+            "height": 897,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/IMG_5489_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_5489_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/fe2065cfe42af66ae88220dc8e831546715c041525cda0ddde15a739dd05cb39.jpg",
+            "sha256": "fe2065cfe42af66ae88220dc8e831546715c041525cda0ddde15a739dd05cb39",
+            "suggested_title": "IMG_5489_wm",
+            "width": 1170,
+            "height": 2532,
             "mime_type": "image/jpeg"
         },
         {
@@ -2393,6 +2643,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/bxiie_ul_5_wm.jpg",
+            "legacy_relative_path": "site_large/bxiie_ul_5_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/2fa4a8cffcf08815c0133291635efdf93d7e6f4afb44da794a6062e9a22fabdc.jpg",
+            "sha256": "2fa4a8cffcf08815c0133291635efdf93d7e6f4afb44da794a6062e9a22fabdc",
+            "suggested_title": "bxiie_ul_5_wm",
+            "width": 3552,
+            "height": 2252,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/Bonus_wm.jpg",
             "legacy_relative_path": "site_large/Bonus_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/3183a3d1e2742171b8a3cfa9ad234ee6d17e14b78c2ef6cdff27a171b85f8542.jpg",
@@ -2410,6 +2670,16 @@
             "suggested_title": "underground_oblique_wm",
             "width": 1298,
             "height": 830,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/IMG_2385_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_2385_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/e54cd59c6da72023e536cd62ddf00154f92c4cb5a974c67b917f3e195f6cf0c0.jpg",
+            "sha256": "e54cd59c6da72023e536cd62ddf00154f92c4cb5a974c67b917f3e195f6cf0c0",
+            "suggested_title": "IMG_2385_wm",
+            "width": 4032,
+            "height": 3024,
             "mime_type": "image/jpeg"
         },
         {
@@ -2463,6 +2733,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/IMG_1982_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_1982_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/30122afc153d73ca847e81f99b554461a4e8b2d9445974b66715430dcca5ad5d.jpg",
+            "sha256": "30122afc153d73ca847e81f99b554461a4e8b2d9445974b66715430dcca5ad5d",
+            "suggested_title": "IMG_1982_wm",
+            "width": 2164,
+            "height": 1000,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/bxiie_br_6_wm.jpg",
             "legacy_relative_path": "site_large/bxiie_br_6_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/cc3e90bc46edc84b7d533f78ec439e9e46dac597f28d0fbbdf69de0ad464580a.jpg",
@@ -2470,6 +2750,26 @@
             "suggested_title": "bxiie_br_6_wm",
             "width": 2448,
             "height": 3264,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/1200_autumn_wm.jpg",
+            "legacy_relative_path": "site_large/1200_autumn_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/67d5d133a981c0e901606fab74e70546e830256c378f063707c5a45f8517c070.jpg",
+            "sha256": "67d5d133a981c0e901606fab74e70546e830256c378f063707c5a45f8517c070",
+            "suggested_title": "1200_autumn_wm",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/bsf_ploisti_wm.jpg",
+            "legacy_relative_path": "site_large/bsf_ploisti_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/52860957940241d323edfe3b0cea7ff9e333e7c3e9b5f228a0dae77b05499225.jpg",
+            "sha256": "52860957940241d323edfe3b0cea7ff9e333e7c3e9b5f228a0dae77b05499225",
+            "suggested_title": "bsf_ploisti_wm",
+            "width": 1170,
+            "height": 1528,
             "mime_type": "image/jpeg"
         },
         {
@@ -2553,6 +2853,26 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/assembly_2-Recovered_wm.jpg",
+            "legacy_relative_path": "site_large/assembly_2-Recovered_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/90bd9883ba8acf071d80c8602b6b1f3b7a4182c9c990b0ba8a396d1490b7e454.jpg",
+            "sha256": "90bd9883ba8acf071d80c8602b6b1f3b7a4182c9c990b0ba8a396d1490b7e454",
+            "suggested_title": "assembly_2-Recovered_wm",
+            "width": 1486,
+            "height": 1927,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/pointy_v6_wm.jpg",
+            "legacy_relative_path": "site_large/pointy_v6_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/b2167da28995e0095f1d26caff135dc4511953e9acf94be860081e89e23400ce.jpg",
+            "sha256": "b2167da28995e0095f1d26caff135dc4511953e9acf94be860081e89e23400ce",
+            "suggested_title": "pointy_v6_wm",
+            "width": 4465,
+            "height": 2000,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/bxiie_ul_10_wm.jpg",
             "legacy_relative_path": "site_large/bxiie_ul_10_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/f49227e7f61eaf984652feee4c1a8a3e447392a9dce28c88956136ef49c1c9e8.jpg",
@@ -2590,6 +2910,26 @@
             "suggested_title": "IMG_3708_wm",
             "width": 992,
             "height": 1000,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/IMG_0867_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_0867_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/f2e835685b8f362f7148a7466aded76207ed345fcdefb55654722ace36df123a.jpg",
+            "sha256": "f2e835685b8f362f7148a7466aded76207ed345fcdefb55654722ace36df123a",
+            "suggested_title": "IMG_0867_wm",
+            "width": 6503,
+            "height": 3330,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/evergreen_dronie_wm.jpg",
+            "legacy_relative_path": "site_large/evergreen_dronie_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/ca9326d06ddca776de1fcdb302e94cb1ce2d4230d6a34ecf1532bfda5c06aace.jpg",
+            "sha256": "ca9326d06ddca776de1fcdb302e94cb1ce2d4230d6a34ecf1532bfda5c06aace",
+            "suggested_title": "evergreen_dronie_wm",
+            "width": 2238,
+            "height": 1170,
             "mime_type": "image/jpeg"
         },
         {
@@ -2793,6 +3133,26 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/sclpt11_wm.jpg",
+            "legacy_relative_path": "site_large/sclpt11_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/9ee3707bd07265c85446fa1fbf6cff09fdc2259e518715277e4c200b675ea4d0.jpg",
+            "sha256": "9ee3707bd07265c85446fa1fbf6cff09fdc2259e518715277e4c200b675ea4d0",
+            "suggested_title": "sclpt11_wm",
+            "width": 3888,
+            "height": 2592,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/argument_at_home_wm.jpg",
+            "legacy_relative_path": "site_large/argument_at_home_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/1555f6875710ebd83348223b5d0612eda45d2f6289f84d91f24a6e710962d268.jpg",
+            "sha256": "1555f6875710ebd83348223b5d0612eda45d2f6289f84d91f24a6e710962d268",
+            "suggested_title": "argument_at_home_wm",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/poc_giaf_wm.jpg",
             "legacy_relative_path": "site_large/poc_giaf_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/71ebb75ed0836f184438912ee37cda5bb8b4756e9226a4dd7f45d7f4070583da.jpg",
@@ -2800,6 +3160,16 @@
             "suggested_title": "poc_giaf_wm",
             "width": 2048,
             "height": 1536,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/upper_falls_road_wm.jpg",
+            "legacy_relative_path": "site_large/upper_falls_road_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/612475957644758bcdc68ef067aba54671851ffb0000f6d9c8b1fdae85181c4a.jpg",
+            "sha256": "612475957644758bcdc68ef067aba54671851ffb0000f6d9c8b1fdae85181c4a",
+            "suggested_title": "upper_falls_road_wm",
+            "width": 1333,
+            "height": 1000,
             "mime_type": "image/jpeg"
         },
         {
@@ -2828,9 +3198,9 @@
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/c1dc1ee8f84a725f975b0ac816efa2d24af450f7c609dea7967c084516cd30f9.jpg",
             "sha256": "c1dc1ee8f84a725f975b0ac816efa2d24af450f7c609dea7967c084516cd30f9",
             "suggested_title": "pic15_wm",
-            "width": null,
-            "height": null,
-            "mime_type": null
+            "width": 300,
+            "height": 402,
+            "mime_type": "image/jpeg"
         },
         {
             "source": "../bxiie/site_large/roostah_wm.jpg",
@@ -2850,6 +3220,16 @@
             "suggested_title": "IMG_7413_wm",
             "width": 4032,
             "height": 3024,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/ss_summersend04_wm.jpg",
+            "legacy_relative_path": "site_large/ss_summersend04_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/42fdcf4db20bdd76a93b3649af0149767f08164f79b6a0b769e4ea8de0b95ef2.jpg",
+            "sha256": "42fdcf4db20bdd76a93b3649af0149767f08164f79b6a0b769e4ea8de0b95ef2",
+            "suggested_title": "ss_summersend04_wm",
+            "width": 3024,
+            "height": 4032,
             "mime_type": "image/jpeg"
         },
         {
@@ -2883,6 +3263,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/IMG_4418_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_4418_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/6b7d35dd114022250499806ec9549f16f0dbf44b075140e31a7b1a37e517c72b.jpg",
+            "sha256": "6b7d35dd114022250499806ec9549f16f0dbf44b075140e31a7b1a37e517c72b",
+            "suggested_title": "IMG_4418_wm",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/IMG_9834_wm.jpg",
             "legacy_relative_path": "site_large/IMG_9834_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/fb1277f35c5bfd5874acef957cf2295951630f8cfa0ad08c65b9ee5e89c22a70.jpg",
@@ -2898,9 +3288,9 @@
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/81c5607fe483d1eda4fa5664ac09ac66fc8f722a5213e129ee90e9f5c7ba06da.jpg",
             "sha256": "81c5607fe483d1eda4fa5664ac09ac66fc8f722a5213e129ee90e9f5c7ba06da",
             "suggested_title": "IMG_0696_wm",
-            "width": null,
-            "height": null,
-            "mime_type": null
+            "width": 4032,
+            "height": 3024,
+            "mime_type": "image/jpeg"
         },
         {
             "source": "../bxiie/site_large/IMG_0829_wm.jpg",
@@ -2923,6 +3313,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/bxiie_br_1_wm.jpg",
+            "legacy_relative_path": "site_large/bxiie_br_1_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/ea416e62ccee428f3f510dfba05ca170bf4480c3d075b924ef5ec0455a7c923f.jpg",
+            "sha256": "ea416e62ccee428f3f510dfba05ca170bf4480c3d075b924ef5ec0455a7c923f",
+            "suggested_title": "bxiie_br_1_wm",
+            "width": 800,
+            "height": 600,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/poc_nboss0_wm.jpg",
             "legacy_relative_path": "site_large/poc_nboss0_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/063ef65856f121f85c8f3ee0727024fcb8865bf266e72b549ef155e5b5c4590a.jpg",
@@ -2940,6 +3340,16 @@
             "suggested_title": "poc_burn0_wm",
             "width": 3024,
             "height": 4032,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/1200_king_farm_wm.jpg",
+            "legacy_relative_path": "site_large/1200_king_farm_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/96e237dd5fef7231f93b931adb0a9989ac870525dd6f5d61fe46074b2e4973ee.jpg",
+            "sha256": "96e237dd5fef7231f93b931adb0a9989ac870525dd6f5d61fe46074b2e4973ee",
+            "suggested_title": "1200_king_farm_wm",
+            "width": 580,
+            "height": 326,
             "mime_type": "image/jpeg"
         },
         {
@@ -2980,6 +3390,16 @@
             "suggested_title": "IMG_0149_wm",
             "width": 2388,
             "height": 1668,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/sticker_ball_wm.jpg",
+            "legacy_relative_path": "site_large/sticker_ball_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/237b46aecc6f271635246d5d961ea4da554cf02a4bdd85b7ef02436a13c11dfb.jpg",
+            "sha256": "237b46aecc6f271635246d5d961ea4da554cf02a4bdd85b7ef02436a13c11dfb",
+            "suggested_title": "sticker_ball_wm",
+            "width": 2048,
+            "height": 1613,
             "mime_type": "image/jpeg"
         },
         {
@@ -3073,6 +3493,26 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/IMG_5402_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_5402_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/09e568264cce5889a2c388e4b7a43f65efd7fa7d43f037e77ebe7b251fc6a259.jpg",
+            "sha256": "09e568264cce5889a2c388e4b7a43f65efd7fa7d43f037e77ebe7b251fc6a259",
+            "suggested_title": "IMG_5402_wm",
+            "width": 4032,
+            "height": 3024,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/bxiie_br_3_wm.jpg",
+            "legacy_relative_path": "site_large/bxiie_br_3_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/6e787d7386e8781333e1ef9ae5541a22b9b07dd39cae31773ba6a770a5c852b9.jpg",
+            "sha256": "6e787d7386e8781333e1ef9ae5541a22b9b07dd39cae31773ba6a770a5c852b9",
+            "suggested_title": "bxiie_br_3_wm",
+            "width": 368,
+            "height": 800,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/poc_nboss2_wm.jpg",
             "legacy_relative_path": "site_large/poc_nboss2_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/d7288a27995e078b505d9f84812fbca574482efe3e765452404c13cca8134286.jpg",
@@ -3093,6 +3533,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/device_3_qr_blue_wm.jpg",
+            "legacy_relative_path": "site_large/device_3_qr_blue_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/fbec71753a25e914574808ccb0310d4a5290b3697cc55fb170d0fcbe26442231.jpg",
+            "sha256": "fbec71753a25e914574808ccb0310d4a5290b3697cc55fb170d0fcbe26442231",
+            "suggested_title": "device_3_qr_blue_wm",
+            "width": 1316,
+            "height": 1316,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/device_4_wm.jpg",
             "legacy_relative_path": "site_large/device_4_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/a2e95368daa3af4a89d7b513b35adb1637acd1b318dc9df90500c88ebb2d1c3b.jpg",
@@ -3100,6 +3550,16 @@
             "suggested_title": "device_4_wm",
             "width": 2448,
             "height": 3264,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/bosind_s_wm.jpg",
+            "legacy_relative_path": "site_large/bosind_s_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/c9b052ac85dae14e215589ff3a883331dddc710d8ba24558e734faeed2f4ff05.jpg",
+            "sha256": "c9b052ac85dae14e215589ff3a883331dddc710d8ba24558e734faeed2f4ff05",
+            "suggested_title": "bosind_s_wm",
+            "width": 1000,
+            "height": 663,
             "mime_type": "image/jpeg"
         },
         {
@@ -3173,6 +3633,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/tendrils_wm.jpg",
+            "legacy_relative_path": "site_large/tendrils_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/9f9f1d98e2fb8e162aa019b3c86d142ec87ca44eac361261a05ba6bd5d1a2f5a.jpg",
+            "sha256": "9f9f1d98e2fb8e162aa019b3c86d142ec87ca44eac361261a05ba6bd5d1a2f5a",
+            "suggested_title": "tendrils_wm",
+            "width": 2907,
+            "height": 2232,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/IMG_4532_wm.jpg",
             "legacy_relative_path": "site_large/IMG_4532_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/81831338dc87134f80c1f28e56b61bb2951f797bef2d049c711a11d21c891f40.jpg",
@@ -3193,6 +3663,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/sclpt3_wm.jpg",
+            "legacy_relative_path": "site_large/sclpt3_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/2e0ba6a6150c1287b083563da3cb64c5aae4219a349261c562830ca6550fbaa4.jpg",
+            "sha256": "2e0ba6a6150c1287b083563da3cb64c5aae4219a349261c562830ca6550fbaa4",
+            "suggested_title": "sclpt3_wm",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/ss_drawing_wm.jpg",
             "legacy_relative_path": "site_large/ss_drawing_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/883d3fd903f687da40d20c7ae47addfb2db2bc1416f6e8e86e19b8bb93025ca2.jpg",
@@ -3200,6 +3680,16 @@
             "suggested_title": "ss_drawing_wm",
             "width": 500,
             "height": 242,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/assembly_1-Recovered_wm.jpg",
+            "legacy_relative_path": "site_large/assembly_1-Recovered_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/4a7e3aaa6cb9494fa076346de6748ffc97868dfd6eaa35eba9009b937582d34c.jpg",
+            "sha256": "4a7e3aaa6cb9494fa076346de6748ffc97868dfd6eaa35eba9009b937582d34c",
+            "suggested_title": "assembly_1-Recovered_wm",
+            "width": 1537,
+            "height": 1854,
             "mime_type": "image/jpeg"
         },
         {
@@ -3260,6 +3750,36 @@
             "suggested_title": "bxiie_8_wm",
             "width": 1345,
             "height": 1001,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/reruns_wm.jpg",
+            "legacy_relative_path": "site_large/reruns_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/ec925c90969c99a73fae5784707c04a2dd6cc4c44602f39c57c40868cb95693d.jpg",
+            "sha256": "ec925c90969c99a73fae5784707c04a2dd6cc4c44602f39c57c40868cb95693d",
+            "suggested_title": "reruns_wm",
+            "width": 2440,
+            "height": 2383,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/device_3_at_the_graveyard_wm.jpg",
+            "legacy_relative_path": "site_large/device_3_at_the_graveyard_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/71f697762e65ba9178da7dd2a86cb8146d207a14dd5a3471f8fbf8a4c1edd826.jpg",
+            "sha256": "71f697762e65ba9178da7dd2a86cb8146d207a14dd5a3471f8fbf8a4c1edd826",
+            "suggested_title": "device_3_at_the_graveyard_wm",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/ws_wm.jpg",
+            "legacy_relative_path": "site_large/ws_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/c40d3fcc7b1c388371b2008d7213087609373a106ec626fa4a5df61177c8d2bb.jpg",
+            "sha256": "c40d3fcc7b1c388371b2008d7213087609373a106ec626fa4a5df61177c8d2bb",
+            "suggested_title": "ws_wm",
+            "width": 5320,
+            "height": 2936,
             "mime_type": "image/jpeg"
         },
         {
@@ -3333,6 +3853,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/IMG_1730_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_1730_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/04e835d512793e3a8478ea5e1344e93f92a44078a1c81c0632676ccd261ebed9.jpg",
+            "sha256": "04e835d512793e3a8478ea5e1344e93f92a44078a1c81c0632676ccd261ebed9",
+            "suggested_title": "IMG_1730_wm",
+            "width": 3024,
+            "height": 4032,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/thing_tape_wm.jpg",
             "legacy_relative_path": "site_large/thing_tape_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/5c30a7f2b847420aa31316d5dd021c98ef07c3c7e56afe0f1ec67245884df31c.jpg",
@@ -3390,6 +3920,16 @@
             "suggested_title": "snakie_prototype_wm",
             "width": 3024,
             "height": 4032,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/ss_summersend02_wm.jpg",
+            "legacy_relative_path": "site_large/ss_summersend02_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/0b41691eb068b24a7f6df6a323e007c4c31f8714aa12ca4050966721c15ed2e5.jpg",
+            "sha256": "0b41691eb068b24a7f6df6a323e007c4c31f8714aa12ca4050966721c15ed2e5",
+            "suggested_title": "ss_summersend02_wm",
+            "width": 4032,
+            "height": 3024,
             "mime_type": "image/jpeg"
         },
         {
@@ -3493,6 +4033,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/bxiie_26_wm.jpg",
+            "legacy_relative_path": "site_large/bxiie_26_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/f5d907874ce85e131da5d13189ef8a569e14258c94d1ba6d70569304d3ab7e50.jpg",
+            "sha256": "f5d907874ce85e131da5d13189ef8a569e14258c94d1ba6d70569304d3ab7e50",
+            "suggested_title": "bxiie_26_wm",
+            "width": 1256,
+            "height": 836,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/IMG_9017_wm.jpg",
             "legacy_relative_path": "site_large/IMG_9017_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/15be88633036e367bd26c938e5ac5757aab9fa07c9e8232a9d9d94204c156557.jpg",
@@ -3553,6 +4103,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/sclpt10_wm.jpg",
+            "legacy_relative_path": "site_large/sclpt10_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/5acd3cbd94e4bd5b130c9f6eea5f9e950f7a89ce6efefd97575b2b1be8accc24.jpg",
+            "sha256": "5acd3cbd94e4bd5b130c9f6eea5f9e950f7a89ce6efefd97575b2b1be8accc24",
+            "suggested_title": "sclpt10_wm",
+            "width": 3888,
+            "height": 2592,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/IMG_4561_wm.jpg",
             "legacy_relative_path": "site_large/IMG_4561_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/790ca203c38b277a60a37f6c4baaac656420b92d67113f28358e26bddded2cc7.jpg",
@@ -3600,6 +4160,16 @@
             "suggested_title": "ro_tower_wm",
             "width": 1249,
             "height": 828,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/sclpt9_wm.jpg",
+            "legacy_relative_path": "site_large/sclpt9_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/130dfd52a324cddd08aceda01088af2196a43450b5a8b3782cd5eb49b5f17cef.jpg",
+            "sha256": "130dfd52a324cddd08aceda01088af2196a43450b5a8b3782cd5eb49b5f17cef",
+            "suggested_title": "sclpt9_wm",
+            "width": 3888,
+            "height": 2592,
             "mime_type": "image/jpeg"
         },
         {
@@ -3753,6 +4323,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_large/auto_zion_lot_wm.jpg",
+            "legacy_relative_path": "site_large/auto_zion_lot_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/077454cca666f9d8f806e7da77ab9e426b8b92e7cc7440a392477432cd182aa6.jpg",
+            "sha256": "077454cca666f9d8f806e7da77ab9e426b8b92e7cc7440a392477432cd182aa6",
+            "suggested_title": "auto_zion_lot_wm",
+            "width": 1439,
+            "height": 1054,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_large/poc_design_wm.jpg",
             "legacy_relative_path": "site_large/poc_design_wm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/eab634266d2d277da2d8451905d381ddd5b349657828964c12ee5e527f41557c.jpg",
@@ -3760,6 +4340,16 @@
             "suggested_title": "poc_design_wm",
             "width": 518,
             "height": 942,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_large/IMG_2085_wm.jpg",
+            "legacy_relative_path": "site_large/IMG_2085_wm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/01466c133a3715523bf0f16f2053b0f9ea5843a0d4018646726a6063e68cf6d7.jpg",
+            "sha256": "01466c133a3715523bf0f16f2053b0f9ea5843a0d4018646726a6063e68cf6d7",
+            "suggested_title": "IMG_2085_wm",
+            "width": 750,
+            "height": 1000,
             "mime_type": "image/jpeg"
         },
         {
@@ -3803,6 +4393,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/bigsaw_sm.jpg",
+            "legacy_relative_path": "site_small/bigsaw_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/13ebb1523722e1a15fe53227206f6c819537abc233e0c6093545f92e8ff2fa20.jpg",
+            "sha256": "13ebb1523722e1a15fe53227206f6c819537abc233e0c6093545f92e8ff2fa20",
+            "suggested_title": "bigsaw_sm",
+            "width": 294,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/IMG_2212_sm.jpg",
             "legacy_relative_path": "site_small/IMG_2212_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/9f884ba987f80bb504269fd60233c23bb5c8618d4bedb80ced65ee1300a88521.jpg",
@@ -3843,6 +4443,66 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/pod_nboss_decon_sm.jpg",
+            "legacy_relative_path": "site_small/pod_nboss_decon_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/95de10042976ef2fa96e13a86202ec300becb1e00ca0939d9dcddc2c14af530e.jpg",
+            "sha256": "95de10042976ef2fa96e13a86202ec300becb1e00ca0939d9dcddc2c14af530e",
+            "suggested_title": "pod_nboss_decon_sm",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/thing_tree_sm.jpg",
+            "legacy_relative_path": "site_small/thing_tree_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/ea16cf1e55c25ba12f5f5cbd9dadbc24fcbc5032a4e69039f4c7def3f83a0185.jpg",
+            "sha256": "ea16cf1e55c25ba12f5f5cbd9dadbc24fcbc5032a4e69039f4c7def3f83a0185",
+            "suggested_title": "thing_tree_sm",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/big_pvc_sm.jpg",
+            "legacy_relative_path": "site_small/big_pvc_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/f7983b19b140cea333fb8018b990e7a1d8e1777dd6ba1aa5060c4c9d4576a6e8.jpg",
+            "sha256": "f7983b19b140cea333fb8018b990e7a1d8e1777dd6ba1aa5060c4c9d4576a6e8",
+            "suggested_title": "big_pvc_sm",
+            "width": 400,
+            "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/sticker_ball_sm.jpg",
+            "legacy_relative_path": "site_small/sticker_ball_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/a4bf8718264ea15bab2d4f4fffe7928327c6e9794c6e446998fa9239d26ae823.jpg",
+            "sha256": "a4bf8718264ea15bab2d4f4fffe7928327c6e9794c6e446998fa9239d26ae823",
+            "suggested_title": "sticker_ball_sm",
+            "width": 508,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_0149_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_0149_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/b32beda1edf129df18e998db100cf1776ee5843a46f097f86fdc047fb3f67559.jpg",
+            "sha256": "b32beda1edf129df18e998db100cf1776ee5843a46f097f86fdc047fb3f67559",
+            "suggested_title": "IMG_0149_sm",
+            "width": 573,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/art_graveyard_sm.jpg",
+            "legacy_relative_path": "site_small/art_graveyard_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/7774120ee9c125d51c6d41ee8bb8a9f61c8d967b32fd66881d9f60198ada3252.jpg",
+            "sha256": "7774120ee9c125d51c6d41ee8bb8a9f61c8d967b32fd66881d9f60198ada3252",
+            "suggested_title": "art_graveyard_sm",
+            "width": 599,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/IMG_0825_sm.jpg",
             "legacy_relative_path": "site_small/IMG_0825_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/d7054640506edda06fea3fa412a4473c09f03042f9c39a573592733c2a9880ac.jpg",
@@ -3853,6 +4513,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/IMG_1997_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_1997_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/37c72d014a66fc2f88478a9d4fa24ba3a0b7c0cf02e6848451061447ce36d1c8.jpg",
+            "sha256": "37c72d014a66fc2f88478a9d4fa24ba3a0b7c0cf02e6848451061447ce36d1c8",
+            "suggested_title": "IMG_1997_sm",
+            "width": 764,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/1200_king_farm_sm.jpg",
             "legacy_relative_path": "site_small/1200_king_farm_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/b83c5b0450401571898d2f5965181ebc22e27c707342115a597713dbafbc85a9.jpg",
@@ -3860,6 +4530,16 @@
             "suggested_title": "1200_king_farm_sm",
             "width": 400,
             "height": 224,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/poc_burn0_sm.jpg",
+            "legacy_relative_path": "site_small/poc_burn0_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/433ff5dc7083b0754a787c077daece13152f82fb97f3c28535841e08acdd1ceb.jpg",
+            "sha256": "433ff5dc7083b0754a787c077daece13152f82fb97f3c28535841e08acdd1ceb",
+            "suggested_title": "poc_burn0_sm",
+            "width": 300,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -3893,6 +4573,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/IMG_0829_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_0829_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/b3d4b59215291b9705b82dfb313bf7f293a5e3241945e91cfb08f3ef580f0287.jpg",
+            "sha256": "b3d4b59215291b9705b82dfb313bf7f293a5e3241945e91cfb08f3ef580f0287",
+            "suggested_title": "IMG_0829_sm",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/IMG_0696_sm.jpg",
             "legacy_relative_path": "site_small/IMG_0696_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/25f02761275e25e6f651f79255613f595aef67201cae22a444ada9cf180100a3.jpg",
@@ -3910,6 +4600,16 @@
             "suggested_title": "IMG_9834_sm",
             "width": 300,
             "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_4418_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_4418_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/00e8ca35fae5ae420017ad3f2b7f314c505abe4ec1e23ace9077f68c08aa1fbe.jpg",
+            "sha256": "00e8ca35fae5ae420017ad3f2b7f314c505abe4ec1e23ace9077f68c08aa1fbe",
+            "suggested_title": "IMG_4418_sm",
+            "width": 400,
+            "height": 300,
             "mime_type": "image/jpeg"
         },
         {
@@ -3963,6 +4663,26 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/sclpt1_sm.jpg",
+            "legacy_relative_path": "site_small/sclpt1_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/3eac936fea1dfa5aef0da5e286f2fc06bd51ae7d4bcb60905186f44a7850e7ce.jpg",
+            "sha256": "3eac936fea1dfa5aef0da5e286f2fc06bd51ae7d4bcb60905186f44a7850e7ce",
+            "suggested_title": "sclpt1_sm",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/roostah_sm.jpg",
+            "legacy_relative_path": "site_small/roostah_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/2119f4b2280101baae33e8ac185d3e9b1f16bab09b009ab432835d4a88f7bef5.jpg",
+            "sha256": "2119f4b2280101baae33e8ac185d3e9b1f16bab09b009ab432835d4a88f7bef5",
+            "suggested_title": "roostah_sm",
+            "width": 400,
+            "height": 530,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/pic15_sm.jpg",
             "legacy_relative_path": "site_small/pic15_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/dd2f9583f30c39ba093d578858cd9603c4ba54229cee3051370947efecc708bf.jpg",
@@ -3970,6 +4690,36 @@
             "suggested_title": "pic15_sm",
             "width": 298,
             "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/upper_falls_road_sm.jpg",
+            "legacy_relative_path": "site_small/upper_falls_road_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/0c02a0a211246454d04ce9af6697902b512eac99f6da13f868e0f99e50479e3c.jpg",
+            "sha256": "0c02a0a211246454d04ce9af6697902b512eac99f6da13f868e0f99e50479e3c",
+            "suggested_title": "upper_falls_road_sm",
+            "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/ss_prototype04_sm.jpg",
+            "legacy_relative_path": "site_small/ss_prototype04_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/78a40c940cb9d11e559f61a85f4255e219d39a9aabffa119e0fb3ba6fd785d74.jpg",
+            "sha256": "78a40c940cb9d11e559f61a85f4255e219d39a9aabffa119e0fb3ba6fd785d74",
+            "suggested_title": "ss_prototype04_sm",
+            "width": 600,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/bxiie_8_sm.jpg",
+            "legacy_relative_path": "site_small/bxiie_8_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/d36d52655c208aba99655937bbd61290e529ba06058de03380430ed15c804d91.jpg",
+            "sha256": "d36d52655c208aba99655937bbd61290e529ba06058de03380430ed15c804d91",
+            "suggested_title": "bxiie_8_sm",
+            "width": 400,
+            "height": 297,
             "mime_type": "image/jpeg"
         },
         {
@@ -3989,6 +4739,16 @@
             "sha256": "bf2e4201c1b53d8007f045260ae73cfecd13e8bd66dab75a32605bf1635d74ae",
             "suggested_title": "card_md_2_sm",
             "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_2037_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_2037_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/4c3d6a2150d9a7ed07fb874d4738cd7e9cc53e6d2ccb9a348617ea0d0d61157e.jpg",
+            "sha256": "4c3d6a2150d9a7ed07fb874d4738cd7e9cc53e6d2ccb9a348617ea0d0d61157e",
+            "suggested_title": "IMG_2037_sm",
+            "width": 560,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -4013,6 +4773,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/ss_drawing_sm.jpg",
+            "legacy_relative_path": "site_small/ss_drawing_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/76d3ac49d563d49d58b4d9e1f8aed4d195583a38bcf2bd98da958757361297be.jpg",
+            "sha256": "76d3ac49d563d49d58b4d9e1f8aed4d195583a38bcf2bd98da958757361297be",
+            "suggested_title": "ss_drawing_sm",
+            "width": 826,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/assembly_1-Recovered_sm.jpg",
             "legacy_relative_path": "site_small/assembly_1-Recovered_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/8cd7feee3720cdacbab0b3252dcb6fb55e88c5ce193084e27d1a0357ff1d4db6.jpg",
@@ -4030,6 +4800,16 @@
             "suggested_title": "sclpt3_sm",
             "width": 400,
             "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_1773_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_1773_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/992f115510a59d506568989a6c420c1e08c98840551bd3bcc2875992cc5b813e.jpg",
+            "sha256": "992f115510a59d506568989a6c420c1e08c98840551bd3bcc2875992cc5b813e",
+            "suggested_title": "IMG_1773_sm",
+            "width": 533,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -4093,6 +4873,26 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/pic7_sm.jpg",
+            "legacy_relative_path": "site_small/pic7_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/3e0d17e0cfce1e7180f6db1322aed38d11a9eb81ad45d4963e19eaf5531742a2.jpg",
+            "sha256": "3e0d17e0cfce1e7180f6db1322aed38d11a9eb81ad45d4963e19eaf5531742a2",
+            "suggested_title": "pic7_sm",
+            "width": 400,
+            "height": 208,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/zu_with_qr_sm.jpg",
+            "legacy_relative_path": "site_small/zu_with_qr_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/c66af6366cddd7c00daafd03c4084eb739f503c3536c75486a9371d4f6474f96.jpg",
+            "sha256": "c66af6366cddd7c00daafd03c4084eb739f503c3536c75486a9371d4f6474f96",
+            "suggested_title": "zu_with_qr_sm",
+            "width": 490,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/IMG_3744_sm.jpg",
             "legacy_relative_path": "site_small/IMG_3744_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/4ee84b6f37cc7196ed512cfeda69d34bd90dcb1dcfd546d606762086808d7c00.jpg",
@@ -4110,6 +4910,36 @@
             "suggested_title": "swirl_decay3_sm",
             "width": 533,
             "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_5377_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_5377_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/ddb09e14e8de0db1645b9d531627b163942dbec69e8c1d089e616f94df163d1c.jpg",
+            "sha256": "ddb09e14e8de0db1645b9d531627b163942dbec69e8c1d089e616f94df163d1c",
+            "suggested_title": "IMG_5377_sm",
+            "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/1200_truck_sm.jpg",
+            "legacy_relative_path": "site_small/1200_truck_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/46592d05deacf5639d23046cffd684f0e0afc2cb1f8eaf4b3016ca5538c0db87.jpg",
+            "sha256": "46592d05deacf5639d23046cffd684f0e0afc2cb1f8eaf4b3016ca5538c0db87",
+            "suggested_title": "1200_truck_sm",
+            "width": 400,
+            "height": 225,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/bosind_s_sm.jpg",
+            "legacy_relative_path": "site_small/bosind_s_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/c3f4a6b370e81b1f6cd0a9d3c2fdb4e1410722a8110b8188b8acfa6a2c090eb4.jpg",
+            "sha256": "c3f4a6b370e81b1f6cd0a9d3c2fdb4e1410722a8110b8188b8acfa6a2c090eb4",
+            "suggested_title": "bosind_s_sm",
+            "width": 400,
+            "height": 265,
             "mime_type": "image/jpeg"
         },
         {
@@ -4153,6 +4983,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/bxiie_br_3_sm.jpg",
+            "legacy_relative_path": "site_small/bxiie_br_3_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/8266b24d090e5c1af7d02703da06ff02cdffbe6e30e80eeee6faa9b9847fdef2.jpg",
+            "sha256": "8266b24d090e5c1af7d02703da06ff02cdffbe6e30e80eeee6faa9b9847fdef2",
+            "suggested_title": "bxiie_br_3_sm",
+            "width": 184,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/IMG_5402_sm.jpg",
             "legacy_relative_path": "site_small/IMG_5402_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/b2f10f7050a95337d0be5d35246966715f38291b9a356bc982c967f396bab423.jpg",
@@ -4179,6 +5019,16 @@
             "sha256": "e894c17596079afe5a116e706bb94badb8ed63c5f7e3abcc04511a75c37e5999",
             "suggested_title": "swirls_and_me_sm",
             "width": 482,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/education_v2_site_6_sm.jpg",
+            "legacy_relative_path": "site_small/education_v2_site_6_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/22c91f191d0aa9131b15d73c9d3e4d61a3bca11337e8f4caf6fd92f39c68d35f.jpg",
+            "sha256": "22c91f191d0aa9131b15d73c9d3e4d61a3bca11337e8f4caf6fd92f39c68d35f",
+            "suggested_title": "education_v2_site_6_sm",
+            "width": 143,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -4240,6 +5090,16 @@
             "suggested_title": "underground_2nd_maquette_golden_sm",
             "width": 400,
             "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/sclpt7_sm.jpg",
+            "legacy_relative_path": "site_small/sclpt7_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/de6758b801a1f6ed787d9ff61fe55b014dfd2de3c2c011d18248b255446f4c85.jpg",
+            "sha256": "de6758b801a1f6ed787d9ff61fe55b014dfd2de3c2c011d18248b255446f4c85",
+            "suggested_title": "sclpt7_sm",
+            "width": 300,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -4353,6 +5213,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/dave_cloud_spiral_sm.jpg",
+            "legacy_relative_path": "site_small/dave_cloud_spiral_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/1b3e0e57e5949d8361f77ade5ddfa8a50686da1858c5c1430e6e379c74e20083.jpg",
+            "sha256": "1b3e0e57e5949d8361f77ade5ddfa8a50686da1858c5c1430e6e379c74e20083",
+            "suggested_title": "dave_cloud_spiral_sm",
+            "width": 305,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/IMG_5357_sm.jpg",
             "legacy_relative_path": "site_small/IMG_5357_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/23b45afbc2a838bc14b83cd34756bd6e4e60296ad65a7dacb77cdafcd23216fd.jpg",
@@ -4360,6 +5230,16 @@
             "suggested_title": "IMG_5357_sm",
             "width": 536,
             "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/power_sm.jpg",
+            "legacy_relative_path": "site_small/power_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/9c39380cc27c74b80c16a621d87a882ed519f5fa4385513dbefa0920ab81d9d4.jpg",
+            "sha256": "9c39380cc27c74b80c16a621d87a882ed519f5fa4385513dbefa0920ab81d9d4",
+            "suggested_title": "power_sm",
+            "width": 400,
+            "height": 300,
             "mime_type": "image/jpeg"
         },
         {
@@ -4383,6 +5263,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/carpet_pg_sm.jpg",
+            "legacy_relative_path": "site_small/carpet_pg_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/91aa57681272819f44ec7f919216f21840ad353f602f10078f404ebe4d2483cd.jpg",
+            "sha256": "91aa57681272819f44ec7f919216f21840ad353f602f10078f404ebe4d2483cd",
+            "suggested_title": "carpet_pg_sm",
+            "width": 664,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/device_3_at_the_graveyard_sm.jpg",
             "legacy_relative_path": "site_small/device_3_at_the_graveyard_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/71aad734749959e94f8bd83062468af60142e97352e42b046bb3e5811ad49d0e.jpg",
@@ -4390,6 +5280,26 @@
             "suggested_title": "device_3_at_the_graveyard_sm",
             "width": 400,
             "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/ws_sm.jpg",
+            "legacy_relative_path": "site_small/ws_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/59682d80c690f96adb6d4467162e1f432ac8acfb7bd9ad8fc0ada889e3ec2e50.jpg",
+            "sha256": "59682d80c690f96adb6d4467162e1f432ac8acfb7bd9ad8fc0ada889e3ec2e50",
+            "suggested_title": "ws_sm",
+            "width": 400,
+            "height": 220,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/reruns_sm.jpg",
+            "legacy_relative_path": "site_small/reruns_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/a290610807fdb2bc9d152e01192cdca4d1d26fd2899ea0df6a45692d74684023.jpg",
+            "sha256": "a290610807fdb2bc9d152e01192cdca4d1d26fd2899ea0df6a45692d74684023",
+            "suggested_title": "reruns_sm",
+            "width": 400,
+            "height": 390,
             "mime_type": "image/jpeg"
         },
         {
@@ -4513,6 +5423,26 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/essence_sm.jpg",
+            "legacy_relative_path": "site_small/essence_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/bcfd34771a4d6c08fb0162a827fd7e31d07783b21b5509121f6a13f56daaa5a1.jpg",
+            "sha256": "bcfd34771a4d6c08fb0162a827fd7e31d07783b21b5509121f6a13f56daaa5a1",
+            "suggested_title": "essence_sm",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/education_v2_site_8_sm.jpg",
+            "legacy_relative_path": "site_small/education_v2_site_8_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/cd4ca4a7e5abbe57745d811b888f514dc8c927f30e97c6090d52dac6b73856fa.jpg",
+            "sha256": "cd4ca4a7e5abbe57745d811b888f514dc8c927f30e97c6090d52dac6b73856fa",
+            "suggested_title": "education_v2_site_8_sm",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/isolation_bridge_rt_sm.jpg",
             "legacy_relative_path": "site_small/isolation_bridge_rt_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/3bdf7e1b7c5ff6a5f8878bf5c02803871883a802f674db528a4b4b1fd528a744.jpg",
@@ -4573,6 +5503,36 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/pic11_sm.jpg",
+            "legacy_relative_path": "site_small/pic11_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/e88c4f7ed2910fff293095c99f4fd183aaa08a3655f951a415b66adb4c4a9e2b.jpg",
+            "sha256": "e88c4f7ed2910fff293095c99f4fd183aaa08a3655f951a415b66adb4c4a9e2b",
+            "suggested_title": "pic11_sm",
+            "width": 400,
+            "height": 178,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_1147_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_1147_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/25065370667d3d1f8e4e6c8afdbb87c2563a7aefac6aa72c696edac2c294e605.jpg",
+            "sha256": "25065370667d3d1f8e4e6c8afdbb87c2563a7aefac6aa72c696edac2c294e605",
+            "suggested_title": "IMG_1147_sm",
+            "width": 400,
+            "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_1047_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_1047_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/dd6fd5218f61fafc8b1ab8329b208c780138840be0753b419eed721f8006095c.jpg",
+            "sha256": "dd6fd5218f61fafc8b1ab8329b208c780138840be0753b419eed721f8006095c",
+            "suggested_title": "IMG_1047_sm",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/sclpt9_sm.jpg",
             "legacy_relative_path": "site_small/sclpt9_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/41dac659a65c3591e08cc2cd1e15524f11c64b55bc9e7281dfb129db5938b71f.jpg",
@@ -4589,6 +5549,16 @@
             "sha256": "959bb0703831b0fbcf2901705a12f8fc9a6c40a1034fdc0883a9921e4b196706",
             "suggested_title": "ro_tower_sm",
             "width": 603,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_3787_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_3787_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/05c5c54717731c8b2d183de804a2d4da201ca71a28d4680f1ff913f5f9b453a1.jpg",
+            "sha256": "05c5c54717731c8b2d183de804a2d4da201ca71a28d4680f1ff913f5f9b453a1",
+            "suggested_title": "IMG_3787_sm",
+            "width": 128,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -4610,6 +5580,16 @@
             "suggested_title": "IMG_2019_sm",
             "width": 533,
             "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_8263_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_8263_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/faf7cb74210a04869e909f2ef54f94f3bbdb09c5771eae6184559b0b9952ba54.jpg",
+            "sha256": "faf7cb74210a04869e909f2ef54f94f3bbdb09c5771eae6184559b0b9952ba54",
+            "suggested_title": "IMG_8263_sm",
+            "width": 400,
+            "height": 638,
             "mime_type": "image/jpeg"
         },
         {
@@ -4703,12 +5683,72 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/education_v2_site_1_sm.jpg",
+            "legacy_relative_path": "site_small/education_v2_site_1_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/220850bbc6b074e68ba606341b8718afe4cd480ba1cbccf9cc7985889e09e017.jpg",
+            "sha256": "220850bbc6b074e68ba606341b8718afe4cd480ba1cbccf9cc7985889e09e017",
+            "suggested_title": "education_v2_site_1_sm",
+            "width": 400,
+            "height": 332,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/drone_north_branch_sm.jpg",
+            "legacy_relative_path": "site_small/drone_north_branch_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/bba335e99a8c68b3fc90215918eb13a2bada87637b9c9c19f7bf39b6a61c66a9.jpg",
+            "sha256": "bba335e99a8c68b3fc90215918eb13a2bada87637b9c9c19f7bf39b6a61c66a9",
+            "suggested_title": "drone_north_branch_sm",
+            "width": 711,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/bxiie_2_1_sm.jpg",
+            "legacy_relative_path": "site_small/bxiie_2_1_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/593b81db8826f022c21e2ab986c3d15cccf8990f614fbaaecf15975957fc2f8e.jpg",
+            "sha256": "593b81db8826f022c21e2ab986c3d15cccf8990f614fbaaecf15975957fc2f8e",
+            "suggested_title": "bxiie_2_1_sm",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/pic14_sm.jpg",
+            "legacy_relative_path": "site_small/pic14_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/eeeab4526393774def0a463dfc10d2b1c68ccb7e4a5cfc0a3659a5589fef598a.jpg",
+            "sha256": "eeeab4526393774def0a463dfc10d2b1c68ccb7e4a5cfc0a3659a5589fef598a",
+            "suggested_title": "pic14_sm",
+            "width": 298,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_6058_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_6058_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/cc3c486de3e0d5a158c97d50ab082554749b313137b23bfb331cd114ee0f2e71.jpg",
+            "sha256": "cc3c486de3e0d5a158c97d50ab082554749b313137b23bfb331cd114ee0f2e71",
+            "suggested_title": "IMG_6058_sm",
+            "width": 276,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/IMG_2073_sm.jpg",
             "legacy_relative_path": "site_small/IMG_2073_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/53064d1edaa895040062070aff54022fd30f57811222b71d4423b9a0ca21a0ee.jpg",
             "sha256": "53064d1edaa895040062070aff54022fd30f57811222b71d4423b9a0ca21a0ee",
             "suggested_title": "IMG_2073_sm",
             "width": 360,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_1906_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_1906_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/bf16619e77073f36865679a0807591b644b50bbf8b01ffc4f92253240ec74594.jpg",
+            "sha256": "bf16619e77073f36865679a0807591b644b50bbf8b01ffc4f92253240ec74594",
+            "suggested_title": "IMG_1906_sm",
+            "width": 866,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -4823,12 +5863,32 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/IMG_0959_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_0959_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/6480ce4bf459be1ce57f6ce8806affdac7ba6e118fa30d590f5b071624c3dee5.jpg",
+            "sha256": "6480ce4bf459be1ce57f6ce8806affdac7ba6e118fa30d590f5b071624c3dee5",
+            "suggested_title": "IMG_0959_sm",
+            "width": 600,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/above_tendrils_sm.jpg",
             "legacy_relative_path": "site_small/above_tendrils_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/118c7a2b20e3c5684f9f3c9dbfc9b99fb2dfddd28e22029f77302cb696760f33.jpg",
             "sha256": "118c7a2b20e3c5684f9f3c9dbfc9b99fb2dfddd28e22029f77302cb696760f33",
             "suggested_title": "above_tendrils_sm",
             "width": 339,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/ro_blackchurch_sm.jpg",
+            "legacy_relative_path": "site_small/ro_blackchurch_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/aa561af5d965fdcb520b9661090468484b37b7c44877e57fc357ce3c8f0004b0.jpg",
+            "sha256": "aa561af5d965fdcb520b9661090468484b37b7c44877e57fc357ce3c8f0004b0",
+            "suggested_title": "ro_blackchurch_sm",
+            "width": 300,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -4840,6 +5900,16 @@
             "suggested_title": "IMG_0955_sm",
             "width": 400,
             "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/poc_burn1_sm.jpg",
+            "legacy_relative_path": "site_small/poc_burn1_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/e57b9bb9d4e76c18bd924634dfa544cc55529d3537daf8a92d756ce9fe5cb42e.jpg",
+            "sha256": "e57b9bb9d4e76c18bd924634dfa544cc55529d3537daf8a92d756ce9fe5cb42e",
+            "suggested_title": "poc_burn1_sm",
+            "width": 300,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -4913,6 +5983,36 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/IMG_7953_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_7953_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/8499a47f577fcda958496836c7cf05f67b6bc826e9b714133f1b81b92b95f9ce.jpg",
+            "sha256": "8499a47f577fcda958496836c7cf05f67b6bc826e9b714133f1b81b92b95f9ce",
+            "suggested_title": "IMG_7953_sm",
+            "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/poc_nboss3_sm.jpg",
+            "legacy_relative_path": "site_small/poc_nboss3_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/f6568f6ee6fec161bdbb5e1badff21513de5da8c75d13336a7914c21e6d9a647.jpg",
+            "sha256": "f6568f6ee6fec161bdbb5e1badff21513de5da8c75d13336a7914c21e6d9a647",
+            "suggested_title": "poc_nboss3_sm",
+            "width": 712,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/bxiie_br_2_sm.jpg",
+            "legacy_relative_path": "site_small/bxiie_br_2_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/d149430cd52d18f6a3a120d3395a9c21655b15777451f6eaf62762f66fb605ad.jpg",
+            "sha256": "d149430cd52d18f6a3a120d3395a9c21655b15777451f6eaf62762f66fb605ad",
+            "suggested_title": "bxiie_br_2_sm",
+            "width": 400,
+            "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/poc_burn3_sm.jpg",
             "legacy_relative_path": "site_small/poc_burn3_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/8074acea0d80182e3816161dc0fbd45a6f6032abbe3e08cbfdd75f693991ed8e.jpg",
@@ -4928,9 +6028,9 @@
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/1279b32c73ab214ef12de2526a7b61369d88d3070436c01f8c4827f263099591.jpg",
             "sha256": "1279b32c73ab214ef12de2526a7b61369d88d3070436c01f8c4827f263099591",
             "suggested_title": "IMG_1998_sm",
-            "width": null,
-            "height": null,
-            "mime_type": null
+            "width": 209,
+            "height": 400,
+            "mime_type": "image/jpeg"
         },
         {
             "source": "../bxiie/site_small/swarm_king2_sm.jpg",
@@ -5003,6 +6103,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/pointy_derivative_sm.jpg",
+            "legacy_relative_path": "site_small/pointy_derivative_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/38857e004f32c228d94362a556406ddf742ac00df1821741384923b1ec08230c.jpg",
+            "sha256": "38857e004f32c228d94362a556406ddf742ac00df1821741384923b1ec08230c",
+            "suggested_title": "pointy_derivative_sm",
+            "width": 479,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/IMG_4730_sm.jpg",
             "legacy_relative_path": "site_small/IMG_4730_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/bd59036c622c88cf56b1144ad6addc9d28cf7439fb6171e32587d26e261a7955.jpg",
@@ -5033,6 +6143,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/swirl_decay2_sm.jpg",
+            "legacy_relative_path": "site_small/swirl_decay2_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/5f10bbe68456299023bc3095909ed233918fa2c2cbee1a10f79c0a3cb7f31439.jpg",
+            "sha256": "5f10bbe68456299023bc3095909ed233918fa2c2cbee1a10f79c0a3cb7f31439",
+            "suggested_title": "swirl_decay2_sm",
+            "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/pic6_sm.jpg",
             "legacy_relative_path": "site_small/pic6_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/4edbb45e60dbbb8de321a64202b69388bac924b0027623a2a8b6bfd5b9b423a3.jpg",
@@ -5040,6 +6160,16 @@
             "suggested_title": "pic6_sm",
             "width": 400,
             "height": 208,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/assault_sm.jpg",
+            "legacy_relative_path": "site_small/assault_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/58b114ad1b224c49ddd84ee7f0cd8f90ed2aec99400caadc3f11843eeef8128d.jpg",
+            "sha256": "58b114ad1b224c49ddd84ee7f0cd8f90ed2aec99400caadc3f11843eeef8128d",
+            "suggested_title": "assault_sm",
+            "width": 711,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -5093,6 +6223,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/cube_sm.jpg",
+            "legacy_relative_path": "site_small/cube_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/925f82f8899b40bc7607bce326457698384b35a7743f77473a23519e3efdd699.jpg",
+            "sha256": "925f82f8899b40bc7607bce326457698384b35a7743f77473a23519e3efdd699",
+            "suggested_title": "cube_sm",
+            "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/transition_sm.jpg",
             "legacy_relative_path": "site_small/transition_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/dfbbac275cb23d0c90ae23476b0664de41f427cf7f24ba79a7dbc362a7803420.jpg",
@@ -5110,6 +6250,16 @@
             "suggested_title": "bxiie_2_3_sm",
             "width": 400,
             "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/isolation_bridge_sm.jpg",
+            "legacy_relative_path": "site_small/isolation_bridge_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/b86c377d86e9041931fe846e4e6ee858b803f102849bdbfd53ab07e244606074.jpg",
+            "sha256": "b86c377d86e9041931fe846e4e6ee858b803f102849bdbfd53ab07e244606074",
+            "suggested_title": "isolation_bridge_sm",
+            "width": 711,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -5133,12 +6283,42 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/card_md_3_sm.jpg",
+            "legacy_relative_path": "site_small/card_md_3_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/dfb8289f190af488192344bef36d01193b63e8101b6ca4ca5a089ee0ed42ee88.jpg",
+            "sha256": "dfb8289f190af488192344bef36d01193b63e8101b6ca4ca5a089ee0ed42ee88",
+            "suggested_title": "card_md_3_sm",
+            "width": 400,
+            "height": 355,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_1119_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_1119_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/671f1fc21b2ff900f2bee1de129fd61e2d2c72015116c7971557e7933e5f00af.jpg",
+            "sha256": "671f1fc21b2ff900f2bee1de129fd61e2d2c72015116c7971557e7933e5f00af",
+            "suggested_title": "IMG_1119_sm",
+            "width": 400,
+            "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/IMG_3562_sm.jpg",
             "legacy_relative_path": "site_small/IMG_3562_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/35f1720bbbe848510525fe5e5d7b4e4a5234972af85848500c39628d8de46b21.jpg",
             "sha256": "35f1720bbbe848510525fe5e5d7b4e4a5234972af85848500c39628d8de46b21",
             "suggested_title": "IMG_3562_sm",
             "width": 574,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/spikes_sm.jpg",
+            "legacy_relative_path": "site_small/spikes_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/7eeb3a3250c74641d9b316f54330a3d1e126a561024916c4193b79d956f35e2d.jpg",
+            "sha256": "7eeb3a3250c74641d9b316f54330a3d1e126a561024916c4193b79d956f35e2d",
+            "suggested_title": "spikes_sm",
+            "width": 548,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -5169,6 +6349,16 @@
             "sha256": "be164deb5a0bb15e10afede0cd56fa9fc37a52ef0befb8e98746fb4705f3ffaf",
             "suggested_title": "isolation_maquette_second_sm",
             "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/baby_sm.jpg",
+            "legacy_relative_path": "site_small/baby_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/bba9f1d484ee7355a7d6bd9aaf6936e46d0fea025dd5cd333d95943ab4799bc7.jpg",
+            "sha256": "bba9f1d484ee7355a7d6bd9aaf6936e46d0fea025dd5cd333d95943ab4799bc7",
+            "suggested_title": "baby_sm",
+            "width": 300,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -5223,6 +6413,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/bsf_ploisti_sm.jpg",
+            "legacy_relative_path": "site_small/bsf_ploisti_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/259deff7134b45c7089839313083455fb5ecc3941aaff4cd6ee9ce60eec81a12.jpg",
+            "sha256": "259deff7134b45c7089839313083455fb5ecc3941aaff4cd6ee9ce60eec81a12",
+            "suggested_title": "bsf_ploisti_sm",
+            "width": 306,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/1200_autumn_sm.jpg",
             "legacy_relative_path": "site_small/1200_autumn_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/25943008e3083ca056332d8d677422cad40711daad0ba852b1965c06b908665a.jpg",
@@ -5253,6 +6453,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/IMG_5616_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_5616_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/c070dd9d4033589f357b08f738662f96789528be286d16addb535e542aae5333.jpg",
+            "sha256": "c070dd9d4033589f357b08f738662f96789528be286d16addb535e542aae5333",
+            "suggested_title": "IMG_5616_sm",
+            "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/qr1_detail_sm.jpg",
             "legacy_relative_path": "site_small/qr1_detail_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/d36462007829967e3c7eaf208e5a5aa989a67fa7216a9c93d77d3dc0e4cff779.jpg",
@@ -5279,6 +6489,16 @@
             "sha256": "07360025cd86a5ff468e8d8ed396b2ffe1dc46e48ec96642182f607f0cfc7590",
             "suggested_title": "poc_sculpturefest_sm",
             "width": 299,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/swarm_prosper_sm.jpg",
+            "legacy_relative_path": "site_small/swarm_prosper_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/3b47147205fbe08940b080f1369124d68518feecfe150575015a7e2301305b3a.jpg",
+            "sha256": "3b47147205fbe08940b080f1369124d68518feecfe150575015a7e2301305b3a",
+            "suggested_title": "swarm_prosper_sm",
+            "width": 600,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -5343,6 +6563,26 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/ss_summersend03_sm.jpg",
+            "legacy_relative_path": "site_small/ss_summersend03_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/54d04ee85820fb19c0f9383531e0973e02ee5062fd1554fa2d256cacfd74fd1d.jpg",
+            "sha256": "54d04ee85820fb19c0f9383531e0973e02ee5062fd1554fa2d256cacfd74fd1d",
+            "suggested_title": "ss_summersend03_sm",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/poc_giaf2_sm.jpg",
+            "legacy_relative_path": "site_small/poc_giaf2_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/19e93defbc8894cc4069936076db107146b3aa6bc5088fed657d6e477fbaf068.jpg",
+            "sha256": "19e93defbc8894cc4069936076db107146b3aa6bc5088fed657d6e477fbaf068",
+            "suggested_title": "poc_giaf2_sm",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/in_close_sm.jpg",
             "legacy_relative_path": "site_small/in_close_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/456c0dfd7520138a5ec8cb6730a89e0f6e14d0c4072507853a055af2cbd694e7.jpg",
@@ -5350,6 +6590,16 @@
             "suggested_title": "in_close_sm",
             "width": 400,
             "height": 233,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_5489_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_5489_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/8b686676aaf38c406beda8d74c709536d11148b51974d4370c246729cd6bd444.jpg",
+            "sha256": "8b686676aaf38c406beda8d74c709536d11148b51974d4370c246729cd6bd444",
+            "suggested_title": "IMG_5489_sm",
+            "width": 185,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -5403,6 +6653,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/sclpt11_sm.jpg",
+            "legacy_relative_path": "site_small/sclpt11_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/2a2f61bc99dddf8df45e1f38830bd287f389abee86fa65a262bc9d16a7b265f4.jpg",
+            "sha256": "2a2f61bc99dddf8df45e1f38830bd287f389abee86fa65a262bc9d16a7b265f4",
+            "suggested_title": "sclpt11_sm",
+            "width": 400,
+            "height": 266,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/IMG_1001_sm.jpg",
             "legacy_relative_path": "site_small/IMG_1001_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/adc64c80fe291162b47e648cb3ba930f0b38a766d6c009a084215a759f61e6d6.jpg",
@@ -5418,6 +6678,26 @@
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/9b487d3d799a26a4af60d62182729e0938c1b7dbdb7314c5eb1cb45c8f9a1811.jpg",
             "sha256": "9b487d3d799a26a4af60d62182729e0938c1b7dbdb7314c5eb1cb45c8f9a1811",
             "suggested_title": "IMG_2878_sm",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/IMG_5614_sm.jpg",
+            "legacy_relative_path": "site_small/IMG_5614_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/2f9c171ecd79249bd0894cc3caeee587961a4e8799da33e8b2b5c5f6e88d3b04.jpg",
+            "sha256": "2f9c171ecd79249bd0894cc3caeee587961a4e8799da33e8b2b5c5f6e88d3b04",
+            "suggested_title": "IMG_5614_sm",
+            "width": 479,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/swarm_move_sm.jpg",
+            "legacy_relative_path": "site_small/swarm_move_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/7e9f96b4818a86808c5e87b7076d0fe5e3d85d4130cebe4abc2bab9e2a53632b.jpg",
+            "sha256": "7e9f96b4818a86808c5e87b7076d0fe5e3d85d4130cebe4abc2bab9e2a53632b",
+            "suggested_title": "swarm_move_sm",
             "width": 300,
             "height": 400,
             "mime_type": "image/jpeg"
@@ -5440,6 +6720,16 @@
             "suggested_title": "spikey_sm",
             "width": 200,
             "height": 139,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/faux_sm.jpg",
+            "legacy_relative_path": "site_small/faux_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/9fddb0433d62ccdbd1ecf04b886d318a8475fec057e60b389ee494729c3f0161.jpg",
+            "sha256": "9fddb0433d62ccdbd1ecf04b886d318a8475fec057e60b389ee494729c3f0161",
+            "suggested_title": "faux_sm",
+            "width": 300,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -5483,6 +6773,16 @@
             "mime_type": "image/jpeg"
         },
         {
+            "source": "../bxiie/site_small/subite_3_sm.jpg",
+            "legacy_relative_path": "site_small/subite_3_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/b1ebe053cd0f6d020917b2368496281f7f925cdff489c1bc22a64f8199727947.jpg",
+            "sha256": "b1ebe053cd0f6d020917b2368496281f7f925cdff489c1bc22a64f8199727947",
+            "suggested_title": "subite_3_sm",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "source": "../bxiie/site_small/education_v2_site_9_sm.jpg",
             "legacy_relative_path": "site_small/education_v2_site_9_sm.jpg",
             "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/2427ae658a85e8675ae0825fe86fe7ca02ca9efa8a3f28d8807ba378ec8a47ac.jpg",
@@ -5519,6 +6819,16 @@
             "sha256": "c5b132f98229e32afb78ce76f7c331a46be65afd0630a677c20db3fe7f6bab9a",
             "suggested_title": "education_v2_site_5_sm",
             "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/swarm_dc_sm.jpg",
+            "legacy_relative_path": "site_small/swarm_dc_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/c2a8f50181a32fe6d129fdbf896d1576963fb8611595cec9577368e0ac304f38.jpg",
+            "sha256": "c2a8f50181a32fe6d129fdbf896d1576963fb8611595cec9577368e0ac304f38",
+            "suggested_title": "swarm_dc_sm",
+            "width": 533,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -5600,6 +6910,16 @@
             "suggested_title": "hedgehog_2-Recovered_sm",
             "width": 400,
             "height": 571,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "source": "../bxiie/site_small/bxiie_ul_10_sm.jpg",
+            "legacy_relative_path": "site_small/bxiie_ul_10_sm.jpg",
+            "staged_path": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/uploads/artwork/bxiie/legacy/401525c92622511a759fb9e0b4a0ddea09611e502664e7d7555d533fab8bcc39.jpg",
+            "sha256": "401525c92622511a759fb9e0b4a0ddea09611e502664e7d7555d533fab8bcc39",
+            "suggested_title": "bxiie_ul_10_sm",
+            "width": 300,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
