@@ -32,6 +32,7 @@ use App\Http\Controllers\Tenant\Admin\ArtworkUploadController as TenantAdminArtw
 use App\Http\Controllers\Tenant\Admin\ArtworksController as TenantAdminArtworksController;
 use App\Http\Controllers\Tenant\Admin\ContentController as TenantAdminContentController;
 use App\Http\Controllers\Tenant\Admin\EventsController as TenantAdminEventsController;
+use App\Http\Controllers\Tenant\Admin\PortfolioSectionsController as TenantAdminPortfolioSectionsController;
 use App\Http\Controllers\Tenant\Admin\EngagementController as TenantAdminEngagementController;
 use App\Http\Controllers\Tenant\Admin\SettingsController as TenantAdminSettingsController;
 use App\Http\Controllers\Tenant\Admin\RoutesController as TenantAdminRoutesController;
@@ -178,6 +179,9 @@ if ($tenant) {
         $router->post('/admin/contact-messages/delete', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->deleteContact($request, $tenant, $currentUser));
         $router->get('/admin/email-signups', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->subscribers($request, $tenant, $currentUser));
         $router->post('/admin/email-signups/import', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->importSubscribers($request, $tenant, $currentUser));
+        $router->get('/admin/portfolio-sections', fn (Request $request): Response => (new TenantAdminPortfolioSectionsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->index($request, $tenant, $currentUser));
+        $router->get('/admin/portfolio-sections/edit', fn (Request $request): Response => (new TenantAdminPortfolioSectionsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->edit($request, $tenant, $currentUser));
+        $router->post('/admin/portfolio-sections/edit', fn (Request $request): Response => (new TenantAdminPortfolioSectionsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->update($request, $tenant, $currentUser));
         $router->get('/admin/events', fn (Request $request): Response => (new TenantAdminEventsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->index($request, $tenant, $currentUser));
         $router->get('/admin/events/edit', fn (Request $request): Response => (new TenantAdminEventsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->edit($request, $tenant, $currentUser));
         $router->post('/admin/events/edit', fn (Request $request): Response => (new TenantAdminEventsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->update($request, $tenant, $currentUser));
