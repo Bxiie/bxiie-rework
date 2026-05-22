@@ -62,7 +62,7 @@ HTML);
             return Response::html('<h1>Forbidden</h1>', 403);
         }
 
-        if (!$this->csrf->isValid((string) ($_POST['csrf_token'] ?? ''))) {
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
             return Response::html('<h1>Invalid request</h1><p>CSRF token failed.</p>', 419);
         }
 
