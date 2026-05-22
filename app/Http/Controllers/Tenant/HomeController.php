@@ -35,9 +35,6 @@ final class HomeController
             title: $siteTitle,
             body: <<<HTML
 <h1>{$siteTitle}</h1>
-<p>Tenant public site resolved for <strong>{$this->escape($tenant->slug)}</strong>.</p>
-<p>Host: {$this->escape($tenant->hostname)}</p>
-
 <h2>Stay in the loop</h2>
 <form method="post" action="/signup">
     <input type="hidden" name="csrf_token" value="{$csrf}">

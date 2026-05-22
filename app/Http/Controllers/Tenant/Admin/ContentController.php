@@ -10,6 +10,7 @@ use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Settings\TenantSettingsRepository;
+use App\Http\Controllers\Tenant\Admin\AdminLayout;
 
 final class ContentController
 {
@@ -43,16 +44,7 @@ final class ContentController
             default => '',
         };
 
-        return Response::html(<<<HTML
-<!doctype html>
-<html>
-<head><title>Content</title><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-<body>
-<main>
-<p><a href="/admin">&larr; Admin</a></p>
-<h1>Content</h1>
-{$notice}
-{$error}
+        return Response::html(AdminLayout::render($tenant, 'Content', <<<HTML
 <form method="post" action="/admin/content">
 <input type="hidden" name="csrf_token" value="{$token}">
 <p><label>About content<br><textarea name="about_content" rows="14" style="width:100%">{$about}</textarea></label></p>
@@ -62,10 +54,7 @@ final class ContentController
 <p><label>LinkedIn URL<br><input name="linkedin_url" value="{$linkedin}" style="width:100%"></label></p>
 <button>Save content</button>
 </form>
-</main>
-</body>
-</html>
-HTML);
+HTML, ['active' => 'content']));
     }
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response

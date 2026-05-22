@@ -1,50 +1,34 @@
 ## Now
-- The site does not load on a phone.  The site needs to work flawlessly on phones and tablets
-- The site should email site admin on contact message or email signup
-- Show aggregated hit graphs for days of the week and hours of the day for selected range on stats page
+
+- Show aggregated hit graphs for days of the week and hours of the day for selected range on stats page in tenant admin
 - Allow showing portfolio sections as tabs at the top
 - Allow ordering of tabs
+- Allow selection of image for about and contact pages in tenant admin.
 - Add small as option for size of about and contact images
 - Allow background image and color for top bar
-
-
-
-
-
-## Later
-- site creation
-
-
-## Done
 - Allow editing of 'Recent exhibitions' text.
 - Allow display of exhibitions as text or table-based, slelected in admin section
 - allow deletion of contact messages
-
---
-
 - add recaptcha to contact messages and email signup
-- location is not showing up on stats.  This information should be derived from request IP lookup
-- HTML in user-entered content should be rendered as entered
+- location shown on stats.  This information should be derived from request IP lookup
 - Each tenant should it's own CSS.  Allow editing of CSS from admin page
 - Tab names ('home') and slugs ('Bxiie') should be editable from admin section
-- Remove the 'Stay in the loop' form from each page.  Should be able to sign up for email from the contact page and from the modal dialog box shown after one minute of not subscribed.
-- Show emails collected on the admin section.  Allow exporting of email list.
+- Remove the 'Stay in the loop' form from each page.  Should be able to sign up for email from the contact page and from a modal dialog box shown after one minute of not subscribed.
+- Show emails collected on the admin section.  Allow importing and exporting of email list.
 - Allow selection of size of images shown on about and contact pages
 - Images selected for on-page use (contact, about) should be optimized for the size of the image to ensure fast download times.
-
---
-
 - Create separate viariables for name in copyright, Browser tab, and artist name.  These should be editable from site tab of admin section
 - Usage statistics: Show a thumbnail of the image in stats.  Allow search by name.  Include city, state, country - and populate those statistics.  Allow aggregation by location.
 - About and contact pages should include an image.  Selection of the image from images tab in admin section.
 - Allow editing of events from admin section.
 - After a minute on the site, if not already subscribed, show a modal dialog inviting user to sign up for email list.
 - When details are saved (for instance, contact info), display message indicating content has been saved.
-- Where do I go to see contact messages?
 - Allow adding background from admin section.  Allow image selection, tiled or osingle image, size of tile, opacity.
 - Allow use of HTML in user-entered content
 - Allow editing of images in admin section
-- Show year of work on image thumbnail displays.  Show year and medium on image detail pages
-- Allow editing of 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.' text on home page from admin section.
+- Allow editing of home page text 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.' text on home page from admin section.
+
+# later
+- The site should email site admin on contact message or email signup
 
 ## End of file.
