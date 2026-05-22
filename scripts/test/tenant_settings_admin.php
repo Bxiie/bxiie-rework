@@ -10,6 +10,13 @@ use App\Platform\Tenancy\TenantResolver;
 use App\Support\Database;
 use App\Tenant\Settings\TenantSettingsRepository;
 
+$envFile = (string) (getenv('ARTSFOLIO_ENV_FILE') ?: '');
+
+if (str_contains($envFile, '/etc/artsfolio/')) {
+    echo "Skipping tenant_settings_admin.php against production env.\n";
+    exit(0);
+}
+
 $root = dirname(__DIR__, 2);
 require $root . '/bootstrap/app.php';
 
@@ -18,7 +25,7 @@ $resolver = new TenantResolver($pdo);
 $tenant = $resolver->resolveFromHost('settings-test.artsfol.io');
 
 if (!$tenant) {
-    fwrite(STDERR, "Missing bxiie tenant.\n");
+    fwrite(STDERR, "Missing settings-test tenant.\n");
     exit(1);
 }
 
