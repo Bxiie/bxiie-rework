@@ -1,6 +1,6 @@
 {
     "source": "../bxiie",
-    "generated_at": "2026-05-18T08:23:08+00:00",
+    "generated_at": "2026-05-22T11:22:01+00:00",
     "images": [
         {
             "relative_path": "site_rotate/IMG_5616_rt.jpg",
@@ -1722,6 +1722,33 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/IMG_4939_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_4939_wm.jpg",
+            "size_bytes": 5215803,
+            "modified_at": "2022-07-28T20:42:31+00:00",
+            "width": 3024,
+            "height": 4032,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/mesh_snow_wm.jpg",
+            "absolute_path": "../bxiie/site_large/mesh_snow_wm.jpg",
+            "size_bytes": 1206790,
+            "modified_at": "2019-03-28T14:22:10+00:00",
+            "width": 2781,
+            "height": 2165,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/igloo_hat_wm.jpg",
+            "absolute_path": "../bxiie/site_large/igloo_hat_wm.jpg",
+            "size_bytes": 282720,
+            "modified_at": "2016-05-03T03:14:20+00:00",
+            "width": 905,
+            "height": 1143,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/IMG_4589_wm.jpg",
             "absolute_path": "../bxiie/site_large/IMG_4589_wm.jpg",
             "size_bytes": 534969,
@@ -1767,11 +1794,74 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/above_tendrils_wm.jpg",
+            "absolute_path": "../bxiie/site_large/above_tendrils_wm.jpg",
+            "size_bytes": 45681,
+            "modified_at": "2016-05-03T03:14:13+00:00",
+            "width": 253,
+            "height": 298,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/IMG_0959_wm.jpg",
             "absolute_path": "../bxiie/site_large/IMG_0959_wm.jpg",
             "size_bytes": 530064,
             "modified_at": "2022-04-21T04:07:30+00:00",
             "width": 1500,
+            "height": 1000,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/IMG_0824_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_0824_wm.jpg",
+            "size_bytes": 1325850,
+            "modified_at": "2015-06-24T03:31:49+00:00",
+            "width": 2448,
+            "height": 3264,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/IMG_8657_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_8657_wm.jpg",
+            "size_bytes": 1745850,
+            "modified_at": "2024-07-02T22:33:58+00:00",
+            "width": 2932,
+            "height": 3664,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/IMG_8006_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_8006_wm.jpg",
+            "size_bytes": 3596115,
+            "modified_at": "2024-12-12T19:08:20+00:00",
+            "width": 4032,
+            "height": 3024,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/IMG_5602_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_5602_wm.jpg",
+            "size_bytes": 2653295,
+            "modified_at": "2022-07-28T20:42:34+00:00",
+            "width": 3024,
+            "height": 4032,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/IMG_9939_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_9939_wm.jpg",
+            "size_bytes": 1883853,
+            "modified_at": "2015-06-24T03:34:58+00:00",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/IMG_1105_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_1105_wm.jpg",
+            "size_bytes": 245005,
+            "modified_at": "2022-04-21T04:07:31+00:00",
+            "width": 2164,
             "height": 1000,
             "mime_type": "image/jpeg"
         },
@@ -1803,6 +1893,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/ss_summersend05_wm.jpg",
+            "absolute_path": "../bxiie/site_large/ss_summersend05_wm.jpg",
+            "size_bytes": 8753760,
+            "modified_at": "2020-02-17T01:58:01+00:00",
+            "width": 5472,
+            "height": 3648,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/IMG_1906_wm.jpg",
             "absolute_path": "../bxiie/site_large/IMG_1906_wm.jpg",
             "size_bytes": 612135,
@@ -1830,6 +1929,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/pic14_wm.jpg",
+            "absolute_path": "../bxiie/site_large/pic14_wm.jpg",
+            "size_bytes": 28045,
+            "modified_at": "2015-06-24T03:35:02+00:00",
+            "width": 300,
+            "height": 402,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/bxiie_2_1_wm.jpg",
             "absolute_path": "../bxiie/site_large/bxiie_2_1_wm.jpg",
             "size_bytes": 374442,
@@ -1845,6 +1953,15 @@
             "modified_at": "2019-03-28T04:19:29+00:00",
             "width": 4000,
             "height": 2250,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/isolation_maquette_second_wm.jpg",
+            "absolute_path": "../bxiie/site_large/isolation_maquette_second_wm.jpg",
+            "size_bytes": 4041970,
+            "modified_at": "2020-11-09T02:47:38+00:00",
+            "width": 4032,
+            "height": 3024,
             "mime_type": "image/jpeg"
         },
         {
@@ -1965,12 +2082,39 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/IMG_9765_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_9765_wm.jpg",
+            "size_bytes": 1136186,
+            "modified_at": "2015-06-24T03:34:23+00:00",
+            "width": 2448,
+            "height": 3264,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/IMG_1040_wm.jpg",
             "absolute_path": "../bxiie/site_large/IMG_1040_wm.jpg",
             "size_bytes": 1380800,
             "modified_at": "2015-06-30T22:54:58+00:00",
             "width": 2448,
             "height": 3264,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/sclpt2_wm.jpg",
+            "absolute_path": "../bxiie/site_large/sclpt2_wm.jpg",
+            "size_bytes": 1321821,
+            "modified_at": "2015-06-24T03:37:49+00:00",
+            "width": 2448,
+            "height": 3264,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/sharp_v3_wm.jpg",
+            "absolute_path": "../bxiie/site_large/sharp_v3_wm.jpg",
+            "size_bytes": 1316763,
+            "modified_at": "2024-07-02T22:33:58+00:00",
+            "width": 4465,
+            "height": 2000,
             "mime_type": "image/jpeg"
         },
         {
@@ -1983,6 +2127,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/assault_wm.jpg",
+            "absolute_path": "../bxiie/site_large/assault_wm.jpg",
+            "size_bytes": 387893,
+            "modified_at": "2022-04-21T04:07:31+00:00",
+            "width": 1778,
+            "height": 1000,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/pic6_wm.jpg",
             "absolute_path": "../bxiie/site_large/pic6_wm.jpg",
             "size_bytes": 26130,
@@ -1992,10 +2145,28 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/swirl_decay2_wm.jpg",
+            "absolute_path": "../bxiie/site_large/swirl_decay2_wm.jpg",
+            "size_bytes": 2392223,
+            "modified_at": "2019-03-28T14:22:18+00:00",
+            "width": 4032,
+            "height": 3024,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/IMG_5527_wm.jpg",
             "absolute_path": "../bxiie/site_large/IMG_5527_wm.jpg",
             "size_bytes": 5803617,
             "modified_at": "2022-07-28T21:29:20+00:00",
+            "width": 4032,
+            "height": 3024,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/ro_poiana_wm.jpg",
+            "absolute_path": "../bxiie/site_large/ro_poiana_wm.jpg",
+            "size_bytes": 2721215,
+            "modified_at": "2020-02-17T01:57:31+00:00",
             "width": 4032,
             "height": 3024,
             "mime_type": "image/jpeg"
@@ -2016,6 +2187,24 @@
             "modified_at": "2024-12-12T19:08:18+00:00",
             "width": 1117,
             "height": 932,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/ben_vrackie_skewed_wm.jpg",
+            "absolute_path": "../bxiie/site_large/ben_vrackie_skewed_wm.jpg",
+            "size_bytes": 10977280,
+            "modified_at": "2019-03-28T04:19:29+00:00",
+            "width": 14262,
+            "height": 3792,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/swirls_protogram_wm.jpg",
+            "absolute_path": "../bxiie/site_large/swirls_protogram_wm.jpg",
+            "size_bytes": 316170,
+            "modified_at": "2017-06-01T03:03:43+00:00",
+            "width": 1017,
+            "height": 1002,
             "mime_type": "image/jpeg"
         },
         {
@@ -2091,6 +2280,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/bxiie_br_2_wm.jpg",
+            "absolute_path": "../bxiie/site_large/bxiie_br_2_wm.jpg",
+            "size_bytes": 113096,
+            "modified_at": "2015-06-24T03:26:25+00:00",
+            "width": 800,
+            "height": 600,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/poc_nboss3_wm.jpg",
             "absolute_path": "../bxiie/site_large/poc_nboss3_wm.jpg",
             "size_bytes": 3263040,
@@ -2100,12 +2298,39 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/sclpt6_wm.jpg",
+            "absolute_path": "../bxiie/site_large/sclpt6_wm.jpg",
+            "size_bytes": 4062610,
+            "modified_at": "2015-06-24T03:41:44+00:00",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/pic12_wm.jpg",
             "absolute_path": "../bxiie/site_large/pic12_wm.jpg",
             "size_bytes": 17871,
             "modified_at": "2015-06-24T03:35:01+00:00",
             "width": 300,
             "height": 191,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/ss_prototype03_wm.jpg",
+            "absolute_path": "../bxiie/site_large/ss_prototype03_wm.jpg",
+            "size_bytes": 386987,
+            "modified_at": "2020-02-17T01:57:36+00:00",
+            "width": 1200,
+            "height": 897,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/IMG_5489_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_5489_wm.jpg",
+            "size_bytes": 985881,
+            "modified_at": "2022-07-28T20:42:32+00:00",
+            "width": 1170,
+            "height": 2532,
             "mime_type": "image/jpeg"
         },
         {
@@ -2154,6 +2379,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/bxiie_ul_5_wm.jpg",
+            "absolute_path": "../bxiie/site_large/bxiie_ul_5_wm.jpg",
+            "size_bytes": 1459251,
+            "modified_at": "2015-06-24T03:29:41+00:00",
+            "width": 3552,
+            "height": 2252,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/Bonus_wm.jpg",
             "absolute_path": "../bxiie/site_large/Bonus_wm.jpg",
             "size_bytes": 373532,
@@ -2169,6 +2403,15 @@
             "modified_at": "2022-07-28T21:29:17+00:00",
             "width": 1298,
             "height": 830,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/IMG_2385_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_2385_wm.jpg",
+            "size_bytes": 1703758,
+            "modified_at": "2024-12-12T19:08:11+00:00",
+            "width": 4032,
+            "height": 3024,
             "mime_type": "image/jpeg"
         },
         {
@@ -2217,12 +2460,39 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/IMG_1982_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_1982_wm.jpg",
+            "size_bytes": 1061358,
+            "modified_at": "2022-04-21T04:07:28+00:00",
+            "width": 2164,
+            "height": 1000,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/bxiie_br_6_wm.jpg",
             "absolute_path": "../bxiie/site_large/bxiie_br_6_wm.jpg",
             "size_bytes": 2065606,
             "modified_at": "2015-06-24T03:28:13+00:00",
             "width": 2448,
             "height": 3264,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/1200_autumn_wm.jpg",
+            "absolute_path": "../bxiie/site_large/1200_autumn_wm.jpg",
+            "size_bytes": 3050499,
+            "modified_at": "2016-05-03T03:14:08+00:00",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/bsf_ploisti_wm.jpg",
+            "absolute_path": "../bxiie/site_large/bsf_ploisti_wm.jpg",
+            "size_bytes": 530190,
+            "modified_at": "2024-12-12T19:08:06+00:00",
+            "width": 1170,
+            "height": 1528,
             "mime_type": "image/jpeg"
         },
         {
@@ -2298,6 +2568,24 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/assembly_2-Recovered_wm.jpg",
+            "absolute_path": "../bxiie/site_large/assembly_2-Recovered_wm.jpg",
+            "size_bytes": 262602,
+            "modified_at": "2024-07-02T22:33:47+00:00",
+            "width": 1486,
+            "height": 1927,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/pointy_v6_wm.jpg",
+            "absolute_path": "../bxiie/site_large/pointy_v6_wm.jpg",
+            "size_bytes": 1328243,
+            "modified_at": "2024-07-02T22:33:57+00:00",
+            "width": 4465,
+            "height": 2000,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/bxiie_ul_10_wm.jpg",
             "absolute_path": "../bxiie/site_large/bxiie_ul_10_wm.jpg",
             "size_bytes": 1590164,
@@ -2331,6 +2619,24 @@
             "modified_at": "2022-04-21T04:07:31+00:00",
             "width": 992,
             "height": 1000,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/IMG_0867_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_0867_wm.jpg",
+            "size_bytes": 4628457,
+            "modified_at": "2024-12-12T19:08:13+00:00",
+            "width": 6503,
+            "height": 3330,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/evergreen_dronie_wm.jpg",
+            "absolute_path": "../bxiie/site_large/evergreen_dronie_wm.jpg",
+            "size_bytes": 1392448,
+            "modified_at": "2024-07-02T22:33:55+00:00",
+            "width": 2238,
+            "height": 1170,
             "mime_type": "image/jpeg"
         },
         {
@@ -2514,12 +2820,39 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/sclpt11_wm.jpg",
+            "absolute_path": "../bxiie/site_large/sclpt11_wm.jpg",
+            "size_bytes": 2764991,
+            "modified_at": "2015-06-24T03:37:10+00:00",
+            "width": 3888,
+            "height": 2592,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/argument_at_home_wm.jpg",
+            "absolute_path": "../bxiie/site_large/argument_at_home_wm.jpg",
+            "size_bytes": 3506374,
+            "modified_at": "2016-05-03T03:14:19+00:00",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/poc_giaf_wm.jpg",
             "absolute_path": "../bxiie/site_large/poc_giaf_wm.jpg",
             "size_bytes": 1161042,
             "modified_at": "2019-03-28T14:22:11+00:00",
             "width": 2048,
             "height": 1536,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/upper_falls_road_wm.jpg",
+            "absolute_path": "../bxiie/site_large/upper_falls_road_wm.jpg",
+            "size_bytes": 639971,
+            "modified_at": "2022-04-21T04:07:29+00:00",
+            "width": 1333,
+            "height": 1000,
             "mime_type": "image/jpeg"
         },
         {
@@ -2543,8 +2876,11 @@
         {
             "relative_path": "site_large/pic15_wm.jpg",
             "absolute_path": "../bxiie/site_large/pic15_wm.jpg",
-            "size_bytes": 0,
-            "modified_at": "2026-05-18T08:23:08+00:00"
+            "size_bytes": 32563,
+            "modified_at": "2015-06-24T03:35:10+00:00",
+            "width": 300,
+            "height": 402,
+            "mime_type": "image/jpeg"
         },
         {
             "relative_path": "site_large/roostah_wm.jpg",
@@ -2562,6 +2898,15 @@
             "modified_at": "2024-07-02T22:34:00+00:00",
             "width": 4032,
             "height": 3024,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/ss_summersend04_wm.jpg",
+            "absolute_path": "../bxiie/site_large/ss_summersend04_wm.jpg",
+            "size_bytes": 2738358,
+            "modified_at": "2020-02-17T01:57:55+00:00",
+            "width": 3024,
+            "height": 4032,
             "mime_type": "image/jpeg"
         },
         {
@@ -2592,6 +2937,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/IMG_4418_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_4418_wm.jpg",
+            "size_bytes": 1507901,
+            "modified_at": "2015-06-24T03:33:55+00:00",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/IMG_9834_wm.jpg",
             "absolute_path": "../bxiie/site_large/IMG_9834_wm.jpg",
             "size_bytes": 2161150,
@@ -2603,8 +2957,11 @@
         {
             "relative_path": "site_large/IMG_0696_wm.jpg",
             "absolute_path": "../bxiie/site_large/IMG_0696_wm.jpg",
-            "size_bytes": 0,
-            "modified_at": "2026-05-18T08:23:08+00:00"
+            "size_bytes": 1407252,
+            "modified_at": "2024-12-12T19:08:08+00:00",
+            "width": 4032,
+            "height": 3024,
+            "mime_type": "image/jpeg"
         },
         {
             "relative_path": "site_large/IMG_0829_wm.jpg",
@@ -2625,6 +2982,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/bxiie_br_1_wm.jpg",
+            "absolute_path": "../bxiie/site_large/bxiie_br_1_wm.jpg",
+            "size_bytes": 249224,
+            "modified_at": "2015-06-24T03:26:23+00:00",
+            "width": 800,
+            "height": 600,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/poc_nboss0_wm.jpg",
             "absolute_path": "../bxiie/site_large/poc_nboss0_wm.jpg",
             "size_bytes": 3864982,
@@ -2640,6 +3006,15 @@
             "modified_at": "2019-03-28T14:22:10+00:00",
             "width": 3024,
             "height": 4032,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/1200_king_farm_wm.jpg",
+            "absolute_path": "../bxiie/site_large/1200_king_farm_wm.jpg",
+            "size_bytes": 71371,
+            "modified_at": "2016-05-03T03:14:08+00:00",
+            "width": 580,
+            "height": 326,
             "mime_type": "image/jpeg"
         },
         {
@@ -2676,6 +3051,15 @@
             "modified_at": "2024-12-12T19:08:08+00:00",
             "width": 2388,
             "height": 1668,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/sticker_ball_wm.jpg",
+            "absolute_path": "../bxiie/site_large/sticker_ball_wm.jpg",
+            "size_bytes": 878652,
+            "modified_at": "2024-12-12T19:08:20+00:00",
+            "width": 2048,
+            "height": 1613,
             "mime_type": "image/jpeg"
         },
         {
@@ -2760,6 +3144,24 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/IMG_5402_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_5402_wm.jpg",
+            "size_bytes": 2837699,
+            "modified_at": "2022-07-28T20:42:33+00:00",
+            "width": 4032,
+            "height": 3024,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/bxiie_br_3_wm.jpg",
+            "absolute_path": "../bxiie/site_large/bxiie_br_3_wm.jpg",
+            "size_bytes": 76389,
+            "modified_at": "2015-06-24T03:27:08+00:00",
+            "width": 368,
+            "height": 800,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/poc_nboss2_wm.jpg",
             "absolute_path": "../bxiie/site_large/poc_nboss2_wm.jpg",
             "size_bytes": 1979684,
@@ -2778,12 +3180,30 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/device_3_qr_blue_wm.jpg",
+            "absolute_path": "../bxiie/site_large/device_3_qr_blue_wm.jpg",
+            "size_bytes": 302848,
+            "modified_at": "2015-06-24T03:30:27+00:00",
+            "width": 1316,
+            "height": 1316,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/device_4_wm.jpg",
             "absolute_path": "../bxiie/site_large/device_4_wm.jpg",
             "size_bytes": 1320658,
             "modified_at": "2015-06-24T03:30:48+00:00",
             "width": 2448,
             "height": 3264,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/bosind_s_wm.jpg",
+            "absolute_path": "../bxiie/site_large/bosind_s_wm.jpg",
+            "size_bytes": 164709,
+            "modified_at": "2016-05-03T03:14:20+00:00",
+            "width": 1000,
+            "height": 663,
             "mime_type": "image/jpeg"
         },
         {
@@ -2850,6 +3270,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/tendrils_wm.jpg",
+            "absolute_path": "../bxiie/site_large/tendrils_wm.jpg",
+            "size_bytes": 1231352,
+            "modified_at": "2016-05-03T03:14:31+00:00",
+            "width": 2907,
+            "height": 2232,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/IMG_4532_wm.jpg",
             "absolute_path": "../bxiie/site_large/IMG_4532_wm.jpg",
             "size_bytes": 778814,
@@ -2868,12 +3297,30 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/sclpt3_wm.jpg",
+            "absolute_path": "../bxiie/site_large/sclpt3_wm.jpg",
+            "size_bytes": 2938010,
+            "modified_at": "2015-06-24T03:38:23+00:00",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/ss_drawing_wm.jpg",
             "absolute_path": "../bxiie/site_large/ss_drawing_wm.jpg",
             "size_bytes": 39635,
             "modified_at": "2020-02-17T01:57:31+00:00",
             "width": 500,
             "height": 242,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/assembly_1-Recovered_wm.jpg",
+            "absolute_path": "../bxiie/site_large/assembly_1-Recovered_wm.jpg",
+            "size_bytes": 221746,
+            "modified_at": "2024-07-02T22:33:48+00:00",
+            "width": 1537,
+            "height": 1854,
             "mime_type": "image/jpeg"
         },
         {
@@ -2928,6 +3375,33 @@
             "modified_at": "2015-06-24T03:26:21+00:00",
             "width": 1345,
             "height": 1001,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/reruns_wm.jpg",
+            "absolute_path": "../bxiie/site_large/reruns_wm.jpg",
+            "size_bytes": 902931,
+            "modified_at": "2016-05-03T03:14:29+00:00",
+            "width": 2440,
+            "height": 2383,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/device_3_at_the_graveyard_wm.jpg",
+            "absolute_path": "../bxiie/site_large/device_3_at_the_graveyard_wm.jpg",
+            "size_bytes": 1239240,
+            "modified_at": "2015-06-24T03:30:24+00:00",
+            "width": 3264,
+            "height": 2448,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/ws_wm.jpg",
+            "absolute_path": "../bxiie/site_large/ws_wm.jpg",
+            "size_bytes": 3698801,
+            "modified_at": "2015-06-24T03:43:30+00:00",
+            "width": 5320,
+            "height": 2936,
             "mime_type": "image/jpeg"
         },
         {
@@ -2994,6 +3468,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/IMG_1730_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_1730_wm.jpg",
+            "size_bytes": 5599449,
+            "modified_at": "2024-12-12T19:08:15+00:00",
+            "width": 3024,
+            "height": 4032,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/thing_tape_wm.jpg",
             "absolute_path": "../bxiie/site_large/thing_tape_wm.jpg",
             "size_bytes": 2095431,
@@ -3006,7 +3489,7 @@
             "relative_path": "site_large/bxiie_br_34_wm.jpg",
             "absolute_path": "../bxiie/site_large/bxiie_br_34_wm.jpg",
             "size_bytes": 1703306,
-            "modified_at": "2026-05-18T08:23:08+00:00",
+            "modified_at": "2015-06-24T03:27:05+00:00",
             "width": 2448,
             "height": 3264,
             "mime_type": "image/jpeg"
@@ -3045,6 +3528,15 @@
             "modified_at": "2019-03-28T14:22:16+00:00",
             "width": 3024,
             "height": 4032,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/ss_summersend02_wm.jpg",
+            "absolute_path": "../bxiie/site_large/ss_summersend02_wm.jpg",
+            "size_bytes": 3941722,
+            "modified_at": "2020-02-17T01:57:50+00:00",
+            "width": 4032,
+            "height": 3024,
             "mime_type": "image/jpeg"
         },
         {
@@ -3138,6 +3630,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/bxiie_26_wm.jpg",
+            "absolute_path": "../bxiie/site_large/bxiie_26_wm.jpg",
+            "size_bytes": 288809,
+            "modified_at": "2015-06-24T03:25:53+00:00",
+            "width": 1256,
+            "height": 836,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/IMG_9017_wm.jpg",
             "absolute_path": "../bxiie/site_large/IMG_9017_wm.jpg",
             "size_bytes": 8521261,
@@ -3192,6 +3693,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/sclpt10_wm.jpg",
+            "absolute_path": "../bxiie/site_large/sclpt10_wm.jpg",
+            "size_bytes": 2064628,
+            "modified_at": "2015-06-24T03:36:46+00:00",
+            "width": 3888,
+            "height": 2592,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/IMG_4561_wm.jpg",
             "absolute_path": "../bxiie/site_large/IMG_4561_wm.jpg",
             "size_bytes": 2156447,
@@ -3234,6 +3744,15 @@
             "modified_at": "2020-02-17T01:57:31+00:00",
             "width": 1249,
             "height": 828,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/sclpt9_wm.jpg",
+            "absolute_path": "../bxiie/site_large/sclpt9_wm.jpg",
+            "size_bytes": 2513431,
+            "modified_at": "2015-06-24T03:42:56+00:00",
+            "width": 3888,
+            "height": 2592,
             "mime_type": "image/jpeg"
         },
         {
@@ -3372,12 +3891,30 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_large/auto_zion_lot_wm.jpg",
+            "absolute_path": "../bxiie/site_large/auto_zion_lot_wm.jpg",
+            "size_bytes": 524777,
+            "modified_at": "2017-06-01T03:01:21+00:00",
+            "width": 1439,
+            "height": 1054,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_large/poc_design_wm.jpg",
             "absolute_path": "../bxiie/site_large/poc_design_wm.jpg",
             "size_bytes": 199573,
             "modified_at": "2019-03-28T14:22:11+00:00",
             "width": 518,
             "height": 942,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_large/IMG_2085_wm.jpg",
+            "absolute_path": "../bxiie/site_large/IMG_2085_wm.jpg",
+            "size_bytes": 553161,
+            "modified_at": "2022-04-21T04:07:30+00:00",
+            "width": 750,
+            "height": 1000,
             "mime_type": "image/jpeg"
         },
         {
@@ -3417,6 +3954,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/bigsaw_sm.jpg",
+            "absolute_path": "../bxiie/site_small/bigsaw_sm.jpg",
+            "size_bytes": 62962,
+            "modified_at": "2015-06-24T03:43:33+00:00",
+            "width": 294,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/IMG_2212_sm.jpg",
             "absolute_path": "../bxiie/site_small/IMG_2212_sm.jpg",
             "size_bytes": 167725,
@@ -3453,6 +3999,60 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/pod_nboss_decon_sm.jpg",
+            "absolute_path": "../bxiie/site_small/pod_nboss_decon_sm.jpg",
+            "size_bytes": 69295,
+            "modified_at": "2019-03-28T04:20:16+00:00",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/thing_tree_sm.jpg",
+            "absolute_path": "../bxiie/site_small/thing_tree_sm.jpg",
+            "size_bytes": 75833,
+            "modified_at": "2020-11-09T02:46:38+00:00",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/big_pvc_sm.jpg",
+            "absolute_path": "../bxiie/site_small/big_pvc_sm.jpg",
+            "size_bytes": 77841,
+            "modified_at": "2015-06-24T03:43:32+00:00",
+            "width": 400,
+            "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/sticker_ball_sm.jpg",
+            "absolute_path": "../bxiie/site_small/sticker_ball_sm.jpg",
+            "size_bytes": 72630,
+            "modified_at": "2024-12-12T18:23:34+00:00",
+            "width": 508,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_0149_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_0149_sm.jpg",
+            "size_bytes": 129681,
+            "modified_at": "2024-12-12T18:23:33+00:00",
+            "width": 573,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/art_graveyard_sm.jpg",
+            "absolute_path": "../bxiie/site_small/art_graveyard_sm.jpg",
+            "size_bytes": 131124,
+            "modified_at": "2020-02-17T02:00:44+00:00",
+            "width": 599,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/IMG_0825_sm.jpg",
             "absolute_path": "../bxiie/site_small/IMG_0825_sm.jpg",
             "size_bytes": 47043,
@@ -3462,12 +4062,30 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/IMG_1997_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_1997_sm.jpg",
+            "size_bytes": 213184,
+            "modified_at": "2022-04-21T04:04:56+00:00",
+            "width": 764,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/1200_king_farm_sm.jpg",
             "absolute_path": "../bxiie/site_small/1200_king_farm_sm.jpg",
             "size_bytes": 33966,
             "modified_at": "2016-05-03T03:16:35+00:00",
             "width": 400,
             "height": 224,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/poc_burn0_sm.jpg",
+            "absolute_path": "../bxiie/site_small/poc_burn0_sm.jpg",
+            "size_bytes": 70575,
+            "modified_at": "2019-03-28T04:20:07+00:00",
+            "width": 300,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -3498,6 +4116,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/IMG_0829_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_0829_sm.jpg",
+            "size_bytes": 38840,
+            "modified_at": "2015-06-24T03:44:10+00:00",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/IMG_0696_sm.jpg",
             "absolute_path": "../bxiie/site_small/IMG_0696_sm.jpg",
             "size_bytes": 58728,
@@ -3513,6 +4140,15 @@
             "modified_at": "2015-06-24T03:44:19+00:00",
             "width": 300,
             "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_4418_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_4418_sm.jpg",
+            "size_bytes": 41551,
+            "modified_at": "2015-06-24T03:44:16+00:00",
+            "width": 400,
+            "height": 300,
             "mime_type": "image/jpeg"
         },
         {
@@ -3561,12 +4197,57 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/sclpt1_sm.jpg",
+            "absolute_path": "../bxiie/site_small/sclpt1_sm.jpg",
+            "size_bytes": 37182,
+            "modified_at": "2015-06-24T03:44:38+00:00",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/roostah_sm.jpg",
+            "absolute_path": "../bxiie/site_small/roostah_sm.jpg",
+            "size_bytes": 62699,
+            "modified_at": "2024-07-02T22:33:32+00:00",
+            "width": 400,
+            "height": 530,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/pic15_sm.jpg",
             "absolute_path": "../bxiie/site_small/pic15_sm.jpg",
             "size_bytes": 28177,
             "modified_at": "2015-06-24T03:44:24+00:00",
             "width": 298,
             "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/upper_falls_road_sm.jpg",
+            "absolute_path": "../bxiie/site_small/upper_falls_road_sm.jpg",
+            "size_bytes": 106539,
+            "modified_at": "2022-04-21T04:06:10+00:00",
+            "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/ss_prototype04_sm.jpg",
+            "absolute_path": "../bxiie/site_small/ss_prototype04_sm.jpg",
+            "size_bytes": 90716,
+            "modified_at": "2020-02-17T02:00:45+00:00",
+            "width": 600,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/bxiie_8_sm.jpg",
+            "absolute_path": "../bxiie/site_small/bxiie_8_sm.jpg",
+            "size_bytes": 49837,
+            "modified_at": "2015-06-24T03:43:37+00:00",
+            "width": 400,
+            "height": 297,
             "mime_type": "image/jpeg"
         },
         {
@@ -3584,6 +4265,15 @@
             "size_bytes": 43211,
             "modified_at": "2015-06-24T03:43:50+00:00",
             "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_2037_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_2037_sm.jpg",
+            "size_bytes": 147683,
+            "modified_at": "2022-04-21T04:05:50+00:00",
+            "width": 560,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -3606,6 +4296,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/ss_drawing_sm.jpg",
+            "absolute_path": "../bxiie/site_small/ss_drawing_sm.jpg",
+            "size_bytes": 73650,
+            "modified_at": "2020-02-17T02:00:45+00:00",
+            "width": 826,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/assembly_1-Recovered_sm.jpg",
             "absolute_path": "../bxiie/site_small/assembly_1-Recovered_sm.jpg",
             "size_bytes": 29160,
@@ -3621,6 +4320,15 @@
             "modified_at": "2015-06-24T03:44:40+00:00",
             "width": 400,
             "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_1773_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_1773_sm.jpg",
+            "size_bytes": 141172,
+            "modified_at": "2022-04-21T04:06:02+00:00",
+            "width": 533,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -3678,6 +4386,24 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/pic7_sm.jpg",
+            "absolute_path": "../bxiie/site_small/pic7_sm.jpg",
+            "size_bytes": 27245,
+            "modified_at": "2015-06-24T03:44:30+00:00",
+            "width": 400,
+            "height": 208,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/zu_with_qr_sm.jpg",
+            "absolute_path": "../bxiie/site_small/zu_with_qr_sm.jpg",
+            "size_bytes": 54374,
+            "modified_at": "2017-06-01T03:00:11+00:00",
+            "width": 490,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/IMG_3744_sm.jpg",
             "absolute_path": "../bxiie/site_small/IMG_3744_sm.jpg",
             "size_bytes": 30200,
@@ -3693,6 +4419,33 @@
             "modified_at": "2019-03-28T04:20:29+00:00",
             "width": 533,
             "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_5377_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_5377_sm.jpg",
+            "size_bytes": 80402,
+            "modified_at": "2022-07-28T20:41:44+00:00",
+            "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/1200_truck_sm.jpg",
+            "absolute_path": "../bxiie/site_small/1200_truck_sm.jpg",
+            "size_bytes": 36713,
+            "modified_at": "2016-05-03T03:16:35+00:00",
+            "width": 400,
+            "height": 225,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/bosind_s_sm.jpg",
+            "absolute_path": "../bxiie/site_small/bosind_s_sm.jpg",
+            "size_bytes": 33085,
+            "modified_at": "2016-05-03T03:16:37+00:00",
+            "width": 400,
+            "height": 265,
             "mime_type": "image/jpeg"
         },
         {
@@ -3732,6 +4485,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/bxiie_br_3_sm.jpg",
+            "absolute_path": "../bxiie/site_small/bxiie_br_3_sm.jpg",
+            "size_bytes": 30430,
+            "modified_at": "2015-06-24T03:43:41+00:00",
+            "width": 184,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/IMG_5402_sm.jpg",
             "absolute_path": "../bxiie/site_small/IMG_5402_sm.jpg",
             "size_bytes": 61956,
@@ -3755,6 +4517,15 @@
             "size_bytes": 110229,
             "modified_at": "2017-06-01T03:00:08+00:00",
             "width": 482,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/education_v2_site_6_sm.jpg",
+            "absolute_path": "../bxiie/site_small/education_v2_site_6_sm.jpg",
+            "size_bytes": 25386,
+            "modified_at": "2015-06-24T03:44:02+00:00",
+            "width": 143,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -3810,6 +4581,15 @@
             "modified_at": "2024-07-02T22:33:32+00:00",
             "width": 400,
             "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/sclpt7_sm.jpg",
+            "absolute_path": "../bxiie/site_small/sclpt7_sm.jpg",
+            "size_bytes": 75655,
+            "modified_at": "2015-06-24T03:44:45+00:00",
+            "width": 300,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -3912,12 +4692,30 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/dave_cloud_spiral_sm.jpg",
+            "absolute_path": "../bxiie/site_small/dave_cloud_spiral_sm.jpg",
+            "size_bytes": 41557,
+            "modified_at": "2022-07-28T20:41:44+00:00",
+            "width": 305,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/IMG_5357_sm.jpg",
             "absolute_path": "../bxiie/site_small/IMG_5357_sm.jpg",
             "size_bytes": 99554,
             "modified_at": "2022-07-28T20:41:43+00:00",
             "width": 536,
             "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/power_sm.jpg",
+            "absolute_path": "../bxiie/site_small/power_sm.jpg",
+            "size_bytes": 69117,
+            "modified_at": "2015-06-24T03:44:32+00:00",
+            "width": 400,
+            "height": 300,
             "mime_type": "image/jpeg"
         },
         {
@@ -3939,12 +4737,39 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/carpet_pg_sm.jpg",
+            "absolute_path": "../bxiie/site_small/carpet_pg_sm.jpg",
+            "size_bytes": 76723,
+            "modified_at": "2019-03-28T04:20:02+00:00",
+            "width": 664,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/device_3_at_the_graveyard_sm.jpg",
             "absolute_path": "../bxiie/site_small/device_3_at_the_graveyard_sm.jpg",
             "size_bytes": 31835,
             "modified_at": "2015-06-24T03:43:54+00:00",
             "width": 400,
             "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/ws_sm.jpg",
+            "absolute_path": "../bxiie/site_small/ws_sm.jpg",
+            "size_bytes": 33393,
+            "modified_at": "2015-06-24T03:44:49+00:00",
+            "width": 400,
+            "height": 220,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/reruns_sm.jpg",
+            "absolute_path": "../bxiie/site_small/reruns_sm.jpg",
+            "size_bytes": 37382,
+            "modified_at": "2016-05-03T03:16:39+00:00",
+            "width": 400,
+            "height": 390,
             "mime_type": "image/jpeg"
         },
         {
@@ -4056,6 +4881,24 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/essence_sm.jpg",
+            "absolute_path": "../bxiie/site_small/essence_sm.jpg",
+            "size_bytes": 34728,
+            "modified_at": "2015-06-24T03:44:06+00:00",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/education_v2_site_8_sm.jpg",
+            "absolute_path": "../bxiie/site_small/education_v2_site_8_sm.jpg",
+            "size_bytes": 60849,
+            "modified_at": "2015-06-24T03:44:04+00:00",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/isolation_bridge_rt_sm.jpg",
             "absolute_path": "../bxiie/site_small/isolation_bridge_rt_sm.jpg",
             "size_bytes": 106992,
@@ -4110,6 +4953,33 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/pic11_sm.jpg",
+            "absolute_path": "../bxiie/site_small/pic11_sm.jpg",
+            "size_bytes": 30440,
+            "modified_at": "2015-06-24T03:44:21+00:00",
+            "width": 400,
+            "height": 178,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_1147_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_1147_sm.jpg",
+            "size_bytes": 77125,
+            "modified_at": "2015-06-30T22:57:59+00:00",
+            "width": 400,
+            "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_1047_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_1047_sm.jpg",
+            "size_bytes": 84929,
+            "modified_at": "2015-06-30T22:57:56+00:00",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/sclpt9_sm.jpg",
             "absolute_path": "../bxiie/site_small/sclpt9_sm.jpg",
             "size_bytes": 34402,
@@ -4124,6 +4994,15 @@
             "size_bytes": 43329,
             "modified_at": "2020-02-17T02:00:45+00:00",
             "width": 603,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_3787_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_3787_sm.jpg",
+            "size_bytes": 19630,
+            "modified_at": "2015-06-24T03:44:13+00:00",
+            "width": 128,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -4143,6 +5022,15 @@
             "modified_at": "2022-04-21T04:06:10+00:00",
             "width": 533,
             "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_8263_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_8263_sm.jpg",
+            "size_bytes": 48292,
+            "modified_at": "2024-07-02T22:33:32+00:00",
+            "width": 400,
+            "height": 638,
             "mime_type": "image/jpeg"
         },
         {
@@ -4227,11 +5115,65 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/education_v2_site_1_sm.jpg",
+            "absolute_path": "../bxiie/site_small/education_v2_site_1_sm.jpg",
+            "size_bytes": 60702,
+            "modified_at": "2015-06-24T03:43:59+00:00",
+            "width": 400,
+            "height": 332,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/drone_north_branch_sm.jpg",
+            "absolute_path": "../bxiie/site_small/drone_north_branch_sm.jpg",
+            "size_bytes": 142391,
+            "modified_at": "2019-03-28T04:20:04+00:00",
+            "width": 711,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/bxiie_2_1_sm.jpg",
+            "absolute_path": "../bxiie/site_small/bxiie_2_1_sm.jpg",
+            "size_bytes": 34655,
+            "modified_at": "2015-06-24T03:43:34+00:00",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/pic14_sm.jpg",
+            "absolute_path": "../bxiie/site_small/pic14_sm.jpg",
+            "size_bytes": 24385,
+            "modified_at": "2015-06-24T03:44:23+00:00",
+            "width": 298,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_6058_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_6058_sm.jpg",
+            "size_bytes": 50810,
+            "modified_at": "2017-06-01T03:00:07+00:00",
+            "width": 276,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/IMG_2073_sm.jpg",
             "absolute_path": "../bxiie/site_small/IMG_2073_sm.jpg",
             "size_bytes": 86434,
             "modified_at": "2022-04-21T04:06:27+00:00",
             "width": 360,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_1906_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_1906_sm.jpg",
+            "size_bytes": 141708,
+            "modified_at": "2022-04-21T04:05:56+00:00",
+            "width": 866,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -4335,11 +5277,29 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/IMG_0959_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_0959_sm.jpg",
+            "size_bytes": 100004,
+            "modified_at": "2022-04-21T04:06:19+00:00",
+            "width": 600,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/above_tendrils_sm.jpg",
             "absolute_path": "../bxiie/site_small/above_tendrils_sm.jpg",
             "size_bytes": 65332,
             "modified_at": "2016-05-03T03:16:36+00:00",
             "width": 339,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/ro_blackchurch_sm.jpg",
+            "absolute_path": "../bxiie/site_small/ro_blackchurch_sm.jpg",
+            "size_bytes": 38699,
+            "modified_at": "2020-02-17T02:00:45+00:00",
+            "width": 300,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -4350,6 +5310,15 @@
             "modified_at": "2015-06-24T03:44:11+00:00",
             "width": 400,
             "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/poc_burn1_sm.jpg",
+            "absolute_path": "../bxiie/site_small/poc_burn1_sm.jpg",
+            "size_bytes": 54293,
+            "modified_at": "2019-03-28T04:20:08+00:00",
+            "width": 300,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -4416,6 +5385,33 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/IMG_7953_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_7953_sm.jpg",
+            "size_bytes": 96534,
+            "modified_at": "2024-12-12T18:23:34+00:00",
+            "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/poc_nboss3_sm.jpg",
+            "absolute_path": "../bxiie/site_small/poc_nboss3_sm.jpg",
+            "size_bytes": 127438,
+            "modified_at": "2019-03-28T04:20:15+00:00",
+            "width": 712,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/bxiie_br_2_sm.jpg",
+            "absolute_path": "../bxiie/site_small/bxiie_br_2_sm.jpg",
+            "size_bytes": 49574,
+            "modified_at": "2015-06-24T03:43:39+00:00",
+            "width": 400,
+            "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/poc_burn3_sm.jpg",
             "absolute_path": "../bxiie/site_small/poc_burn3_sm.jpg",
             "size_bytes": 57384,
@@ -4427,8 +5423,11 @@
         {
             "relative_path": "site_small/IMG_1998_sm.jpg",
             "absolute_path": "../bxiie/site_small/IMG_1998_sm.jpg",
-            "size_bytes": 0,
-            "modified_at": "2026-05-18T08:23:08+00:00"
+            "size_bytes": 72156,
+            "modified_at": "2022-04-21T04:06:35+00:00",
+            "width": 209,
+            "height": 400,
+            "mime_type": "image/jpeg"
         },
         {
             "relative_path": "site_small/swarm_king2_sm.jpg",
@@ -4494,6 +5493,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/pointy_derivative_sm.jpg",
+            "absolute_path": "../bxiie/site_small/pointy_derivative_sm.jpg",
+            "size_bytes": 77487,
+            "modified_at": "2024-12-12T18:23:34+00:00",
+            "width": 479,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/IMG_4730_sm.jpg",
             "absolute_path": "../bxiie/site_small/IMG_4730_sm.jpg",
             "size_bytes": 34982,
@@ -4521,12 +5529,30 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/swirl_decay2_sm.jpg",
+            "absolute_path": "../bxiie/site_small/swirl_decay2_sm.jpg",
+            "size_bytes": 121348,
+            "modified_at": "2019-03-28T04:20:27+00:00",
+            "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/pic6_sm.jpg",
             "absolute_path": "../bxiie/site_small/pic6_sm.jpg",
             "size_bytes": 34615,
             "modified_at": "2015-06-24T03:44:29+00:00",
             "width": 400,
             "height": 208,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/assault_sm.jpg",
+            "absolute_path": "../bxiie/site_small/assault_sm.jpg",
+            "size_bytes": 92481,
+            "modified_at": "2022-04-21T04:06:27+00:00",
+            "width": 711,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -4575,6 +5601,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/cube_sm.jpg",
+            "absolute_path": "../bxiie/site_small/cube_sm.jpg",
+            "size_bytes": 97058,
+            "modified_at": "2019-03-28T04:20:03+00:00",
+            "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/transition_sm.jpg",
             "absolute_path": "../bxiie/site_small/transition_sm.jpg",
             "size_bytes": 89781,
@@ -4590,6 +5625,15 @@
             "modified_at": "2015-06-24T03:43:35+00:00",
             "width": 400,
             "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/isolation_bridge_sm.jpg",
+            "absolute_path": "../bxiie/site_small/isolation_bridge_sm.jpg",
+            "size_bytes": 104875,
+            "modified_at": "2020-11-09T02:46:39+00:00",
+            "width": 711,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -4611,11 +5655,38 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/card_md_3_sm.jpg",
+            "absolute_path": "../bxiie/site_small/card_md_3_sm.jpg",
+            "size_bytes": 46385,
+            "modified_at": "2015-06-24T03:43:51+00:00",
+            "width": 400,
+            "height": 355,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_1119_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_1119_sm.jpg",
+            "size_bytes": 66698,
+            "modified_at": "2015-06-30T22:57:58+00:00",
+            "width": 400,
+            "height": 300,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/IMG_3562_sm.jpg",
             "absolute_path": "../bxiie/site_small/IMG_3562_sm.jpg",
             "size_bytes": 30375,
             "modified_at": "2024-12-12T18:23:33+00:00",
             "width": 574,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/spikes_sm.jpg",
+            "absolute_path": "../bxiie/site_small/spikes_sm.jpg",
+            "size_bytes": 84105,
+            "modified_at": "2022-07-28T20:41:46+00:00",
+            "width": 548,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -4643,6 +5714,15 @@
             "size_bytes": 126402,
             "modified_at": "2020-11-09T02:46:38+00:00",
             "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/baby_sm.jpg",
+            "absolute_path": "../bxiie/site_small/baby_sm.jpg",
+            "size_bytes": 41574,
+            "modified_at": "2020-11-09T02:46:39+00:00",
+            "width": 300,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -4692,6 +5772,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/bsf_ploisti_sm.jpg",
+            "absolute_path": "../bxiie/site_small/bsf_ploisti_sm.jpg",
+            "size_bytes": 58498,
+            "modified_at": "2024-12-12T18:23:33+00:00",
+            "width": 306,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/1200_autumn_sm.jpg",
             "absolute_path": "../bxiie/site_small/1200_autumn_sm.jpg",
             "size_bytes": 58336,
@@ -4719,6 +5808,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/IMG_5616_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_5616_sm.jpg",
+            "size_bytes": 132058,
+            "modified_at": "2022-07-28T20:41:45+00:00",
+            "width": 533,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/qr1_detail_sm.jpg",
             "absolute_path": "../bxiie/site_small/qr1_detail_sm.jpg",
             "size_bytes": 54487,
@@ -4742,6 +5840,15 @@
             "size_bytes": 53157,
             "modified_at": "2020-02-17T02:00:44+00:00",
             "width": 299,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/swarm_prosper_sm.jpg",
+            "absolute_path": "../bxiie/site_small/swarm_prosper_sm.jpg",
+            "size_bytes": 77924,
+            "modified_at": "2019-03-28T04:20:24+00:00",
+            "width": 600,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -4800,12 +5907,39 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/ss_summersend03_sm.jpg",
+            "absolute_path": "../bxiie/site_small/ss_summersend03_sm.jpg",
+            "size_bytes": 69667,
+            "modified_at": "2020-02-17T02:00:46+00:00",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/poc_giaf2_sm.jpg",
+            "absolute_path": "../bxiie/site_small/poc_giaf2_sm.jpg",
+            "size_bytes": 60892,
+            "modified_at": "2019-03-28T04:20:12+00:00",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/in_close_sm.jpg",
             "absolute_path": "../bxiie/site_small/in_close_sm.jpg",
             "size_bytes": 31529,
             "modified_at": "2016-05-03T03:16:38+00:00",
             "width": 400,
             "height": 233,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_5489_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_5489_sm.jpg",
+            "size_bytes": 36964,
+            "modified_at": "2022-07-28T20:41:44+00:00",
+            "width": 185,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -4854,6 +5988,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/sclpt11_sm.jpg",
+            "absolute_path": "../bxiie/site_small/sclpt11_sm.jpg",
+            "size_bytes": 53016,
+            "modified_at": "2015-06-24T03:44:37+00:00",
+            "width": 400,
+            "height": 266,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/IMG_1001_sm.jpg",
             "absolute_path": "../bxiie/site_small/IMG_1001_sm.jpg",
             "size_bytes": 68779,
@@ -4867,6 +6010,24 @@
             "absolute_path": "../bxiie/site_small/IMG_2878_sm.jpg",
             "size_bytes": 43778,
             "modified_at": "2024-12-12T18:23:33+00:00",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/IMG_5614_sm.jpg",
+            "absolute_path": "../bxiie/site_small/IMG_5614_sm.jpg",
+            "size_bytes": 112153,
+            "modified_at": "2022-07-28T20:41:44+00:00",
+            "width": 479,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/swarm_move_sm.jpg",
+            "absolute_path": "../bxiie/site_small/swarm_move_sm.jpg",
+            "size_bytes": 49741,
+            "modified_at": "2019-03-28T04:20:23+00:00",
             "width": 300,
             "height": 400,
             "mime_type": "image/jpeg"
@@ -4887,6 +6048,15 @@
             "modified_at": "2016-05-03T03:40:36+00:00",
             "width": 200,
             "height": 139,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/faux_sm.jpg",
+            "absolute_path": "../bxiie/site_small/faux_sm.jpg",
+            "size_bytes": 38375,
+            "modified_at": "2015-06-24T03:44:07+00:00",
+            "width": 300,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -4926,6 +6096,15 @@
             "mime_type": "image/jpeg"
         },
         {
+            "relative_path": "site_small/subite_3_sm.jpg",
+            "absolute_path": "../bxiie/site_small/subite_3_sm.jpg",
+            "size_bytes": 72764,
+            "modified_at": "2015-06-24T03:44:47+00:00",
+            "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
             "relative_path": "site_small/education_v2_site_9_sm.jpg",
             "absolute_path": "../bxiie/site_small/education_v2_site_9_sm.jpg",
             "size_bytes": 39278,
@@ -4958,6 +6137,15 @@
             "size_bytes": 54101,
             "modified_at": "2015-06-24T03:44:01+00:00",
             "width": 300,
+            "height": 400,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/swarm_dc_sm.jpg",
+            "absolute_path": "../bxiie/site_small/swarm_dc_sm.jpg",
+            "size_bytes": 110186,
+            "modified_at": "2019-03-28T04:20:20+00:00",
+            "width": 533,
             "height": 400,
             "mime_type": "image/jpeg"
         },
@@ -5031,6 +6219,15 @@
             "modified_at": "2024-07-02T22:33:32+00:00",
             "width": 400,
             "height": 571,
+            "mime_type": "image/jpeg"
+        },
+        {
+            "relative_path": "site_small/bxiie_ul_10_sm.jpg",
+            "absolute_path": "../bxiie/site_small/bxiie_ul_10_sm.jpg",
+            "size_bytes": 72196,
+            "modified_at": "2015-06-24T03:43:48+00:00",
+            "width": 300,
+            "height": 400,
             "mime_type": "image/jpeg"
         },
         {
@@ -5109,7 +6306,7 @@
         }
     ],
     "counts": {
-        "images": 565,
+        "images": 697,
         "pages": 1,
         "other": 3
     }

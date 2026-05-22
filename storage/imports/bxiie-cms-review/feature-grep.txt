@@ -1,0 +1,996 @@
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:26:CREATE TABLE IF NOT EXISTS settings (
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:33:CREATE TABLE IF NOT EXISTS images (
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:55:    featured_rotator INTEGER NOT NULL DEFAULT 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:56:    featured_about INTEGER NOT NULL DEFAULT 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:57:    featured_contact INTEGER NOT NULL DEFAULT 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:58:    background_image INTEGER NOT NULL DEFAULT 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:63:CREATE TABLE IF NOT EXISTS portfolio_sections (
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:73:CREATE TABLE IF NOT EXISTS image_sections (
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:74:    image_id INTEGER NOT NULL REFERENCES images(id) ON DELETE CASCADE,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:75:    section_id INTEGER NOT NULL REFERENCES portfolio_sections(id) ON DELETE CASCADE,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:76:    PRIMARY KEY (image_id, section_id)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:79:CREATE TABLE IF NOT EXISTS exhibitions (
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:86:    event_date TEXT,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:90:    event_type TEXT,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:106:CREATE TABLE IF NOT EXISTS contact_messages (
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:118:    event_type TEXT NOT NULL,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:119:    image_id INTEGER REFERENCES images(id) ON DELETE SET NULL,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/database/schema.sql:143:CREATE INDEX IF NOT EXISTS idx_page_views_image ON page_views(tenant_id, image_id, created_at);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/View.php:26:        // Only trusted admin users should be able to edit these fields.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:3: * Request router for public and admin routes.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:27:        if (str_starts_with($path, '/admin')) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:34:        $portfolio = '/' . $slugs['portfolio'];
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:35:        $about = '/' . $slugs['about'];
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:36:        $contact = '/' . $slugs['contact'];
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:40:            $path === $portfolio || preg_match('#^' . preg_quote($portfolio, '#') . '/[^/]+/?$#', $path) => $controller->portfolio($path),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:41:            $path === '/portfolio' || preg_match('#^/portfolio/[^/]+/?$#', $path) => $controller->portfolio($path),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:42:            $path === $about || $path === '/about' => $controller->about(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:43:            $path === $contact || $path === '/contact' => $controller->contact($method),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:46:            str_starts_with($path, '/image/') => $controller->image($path),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:55:        if ($path === '/admin/login') {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:59:        if ($path === '/admin/logout') {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:67:            $path === '/admin' => $controller->dashboard(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:68:            $path === '/admin/site' => $controller->site($method),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:69:            $path === '/admin/images' => $controller->images($method),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:70:            $path === '/admin/images/edit' => $controller->imageEdit($method),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:71:            $path === '/admin/portfolio' => $controller->portfolio($method),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:72:            $path === '/admin/portfolio/edit' => $controller->portfolioEdit($method),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:73:            $path === '/admin/events' => $controller->events($method),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:74:            $path === '/admin/events/edit' => $controller->eventEdit($method),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:75:            $path === '/admin/content' => $controller->content($method),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:76:            $path === '/admin/messages' => $controller->messages(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:77:            $path === '/admin/messages/delete' => $controller->deleteMessage($method),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:78:            $path === '/admin/subscribers' => $controller->subscribers(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:79:            $path === '/admin/subscribers/export' => $controller->exportSubscribers(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:80:            $path === '/admin/users' => $controller->users($method),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:81:            $path === '/admin/stats' => $controller->stats(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:82:            $path === '/admin/stats/reset' => $controller->resetStats($method),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:91:            return ['portfolio' => 'portfolio', 'about' => 'about', 'contact' => 'contact'];
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:94:        $stmt = $db->prepare('SELECT setting_key, setting_value FROM settings WHERE tenant_id = :tenant_id AND setting_key IN ("portfolio_slug", "about_slug", "contact_slug")');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:96:        $settings = array_column($stmt->fetchAll(), 'setting_value', 'setting_key');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:99:            'portfolio' => $this->safeSlug($settings['portfolio_slug'] ?? 'portfolio', 'portfolio'),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:100:            'about' => $this->safeSlug($settings['about_slug'] ?? 'about', 'about'),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Core/Router.php:101:            'contact' => $this->safeSlug($settings['contact_slug'] ?? 'contact', 'contact'),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:18:    private StatsTracker $stats;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:23:        $this->stats = new StatsTracker($this->db);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:28:        $this->stats->hit((int) $this->tenant['id'], 'page');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:29:        $images = $this->images('featured_home = 1 AND is_public = 1');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:30:        View::render('public/home', $this->base(['images' => $images]));
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:33:    public function portfolio(string $path): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:35:        $this->stats->hit((int) $this->tenant['id'], 'page');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:36:        $sectionSlug = null;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:37:        $settings = $this->settings();
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:38:        $portfolioSlug = $this->slugSetting($settings, 'portfolio_slug', 'portfolio');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:39:        if (preg_match('#^/' . preg_quote($portfolioSlug, '#') . '/([^/]+)#', $path, $m)) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:40:            $sectionSlug = $m[1];
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:42:        $sections = $this->sections();
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:43:        $images = $sectionSlug
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:44:            ? $this->images('is_public = 1 AND id IN (SELECT image_id FROM image_sections WHERE section_id = (SELECT id FROM portfolio_sections WHERE tenant_id = :tenant_id AND slug = :section_slug))', ['section_slug' => $sectionSlug])
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:45:            : $this->images('is_public = 1');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:46:        View::render('public/portfolio', $this->base(['sections' => $sections, 'images' => $images, 'sectionSlug' => $sectionSlug]));
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:49:    public function about(): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:51:        $this->stats->hit((int) $this->tenant['id'], 'page');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:52:        $settings = $this->settings();
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:53:        View::render('public/about', $this->base([
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:54:            'events' => $this->events(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:55:            'aboutImage' => $this->imageFromSetting('about_image_id'),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:56:            'aboutImageSize' => $this->imageSizeSetting($settings['about_image_size'] ?? 'medium'),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:60:    public function contact(string $method): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:62:        $settings = $this->settings();
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:66:            if (!RecaptchaVerifier::verify($settings['recaptcha_secret_key'] ?? '', $_POST['g-recaptcha-response'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '')) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:69:                $stmt = $this->db->prepare('INSERT INTO contact_messages (tenant_id, name, email, message, created_at) VALUES (:tenant_id, :name, :email, :message, datetime("now"))');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:79:        $this->stats->hit((int) $this->tenant['id'], 'page');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:80:        View::render('public/contact', $this->base([
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:83:            'contactImage' => $this->imageFromSetting('contact_image_id'),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:84:            'contactImageSize' => $this->imageSizeSetting($settings['contact_image_size'] ?? 'medium'),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:90:        $settings = $this->settings();
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:95:            if (!RecaptchaVerifier::verify($settings['recaptcha_secret_key'] ?? '', $_POST['g-recaptcha-response'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '')) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:118:        header('Location: /contact' . ($ok ? '?subscribed=1' : '?subscribe_error=1'));
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:121:    public function image(string $path): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:123:        preg_match('#^/image/(\d+)#', $path, $m);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:125:        $stmt = $this->db->prepare('SELECT * FROM images WHERE id = :id AND tenant_id = :tenant_id AND is_public = 1');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:127:        $image = $stmt->fetch();
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:128:        if (!$image) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:132:        $this->stats->hit((int) $this->tenant['id'], 'image_view', $id);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:133:        View::render('public/image', $this->base(['image' => $image]));
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:148:        header('Content-Type: image/jpeg');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:155:        $settings = $this->settings();
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:158:        echo $settings['tenant_css'] ?? '';
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:169:        $settings = $this->settings();
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:172:            'settings' => $settings,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:173:            'sections' => $this->sections(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:174:            'backgroundImage' => $this->imageById((int) ($settings['background_image_id'] ?? 0)),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:175:            'slugs' => $this->publicSlugs($settings),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:179:    private function settings(): array
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:181:        $stmt = $this->db->prepare('SELECT setting_key, setting_value FROM settings WHERE tenant_id = :tenant_id');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:186:    private function sections(): array
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:188:        $stmt = $this->db->prepare('SELECT * FROM portfolio_sections WHERE tenant_id = :tenant_id ORDER BY sort_order, name');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:193:    private function images(string $where, array $params = []): array
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:196:        $stmt = $this->db->prepare('SELECT * FROM images WHERE tenant_id = :tenant_id AND ' . $where . ' ORDER BY sort_order, created_at DESC');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:201:    private function imageById(int $id): ?array
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:206:        $stmt = $this->db->prepare('SELECT * FROM images WHERE tenant_id = :tenant_id AND id = :id AND is_public = 1');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:213:    private function imageFromSetting(string $key): ?array
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:215:        $settings = $this->settings();
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:216:        return $this->imageById((int) ($settings[$key] ?? 0));
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:219:    private function events(): array
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:221:        $stmt = $this->db->prepare('SELECT * FROM exhibitions WHERE tenant_id = :tenant_id AND is_recent = 1 ORDER BY event_date DESC, id DESC');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:226:    private function publicSlugs(array $settings): array
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:230:            'portfolio' => '/' . $this->slugSetting($settings, 'portfolio_slug', 'portfolio'),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:231:            'about' => '/' . $this->slugSetting($settings, 'about_slug', 'about'),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:232:            'contact' => '/' . $this->slugSetting($settings, 'contact_slug', 'contact'),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:236:    private function slugSetting(array $settings, string $key, string $default): string
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:238:        $value = strtolower(trim((string) ($settings[$key] ?? $default)));
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/PublicController.php:245:    private function imageSizeSetting(string $size): string
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:3: * Tenant-scoped admin controller.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:26:        View::render('admin/dashboard', ['tenant' => $this->tenant, 'counts' => $this->counts()]);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:38:                'portfolio_tab',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:39:                'about_tab',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:40:                'contact_tab',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:43:                'background_color',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:45:                'about_image_id',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:46:                'contact_image_id',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:47:                'background_image_id',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:48:                'background_mode',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:49:                'background_tile_size',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:50:                'background_opacity',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:51:                'about_image_size',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:52:                'contact_image_size',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:56:                'portfolio_slug',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:57:                'about_slug',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:58:                'contact_slug',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:59:                'exhibitions_heading',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:60:                'exhibitions_display_mode',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:62:            $this->flash('Site settings saved.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:63:            $this->redirect('/admin/site');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:66:        View::render('admin/site', [
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:68:            'settings' => $this->settings(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:69:            'images' => $this->imageOptions(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:73:    public function images(string $method): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:75:        if ($method === 'POST' && isset($_FILES['image'])) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:77:            $result = $service->processUpload($_FILES['image'], (int) $this->tenant['id'], !empty($_POST['watermark']));
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:79:                'INSERT INTO images (
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:100:                    featured_rotator,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:101:                    featured_about,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:102:                    featured_contact,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:103:                    background_image,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:127:                    :featured_rotator,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:128:                    :featured_about,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:129:                    :featured_contact,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:130:                    :background_image,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:151:                'featured_rotator' => !empty($_POST['featured_rotator']) ? 1 : 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:152:                'featured_about' => !empty($_POST['featured_about']) ? 1 : 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:153:                'featured_contact' => !empty($_POST['featured_contact']) ? 1 : 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:154:                'background_image' => !empty($_POST['background_image']) ? 1 : 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:156:            $imageId = (int) $this->db->lastInsertId();
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:157:            $this->replaceImageSections($imageId, $_POST['section_ids'] ?? []);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:158:            $this->flash('Image uploaded and derivatives created.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:159:            $this->redirect('/admin/images');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:162:        $stmt = $this->db->prepare('SELECT * FROM images WHERE tenant_id = :tenant_id ORDER BY sort_order, created_at DESC');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:164:        View::render('admin/images', [
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:166:            'images' => $stmt->fetchAll(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:167:            'sections' => $this->portfolioSections(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:171:    public function imageEdit(string $method): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:174:        $image = $this->findTenantRow('images', $id);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:175:        if (!$image) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:182:                'UPDATE images SET
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:197:                    featured_rotator = :featured_rotator,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:198:                    featured_about = :featured_about,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:199:                    featured_contact = :featured_contact,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:200:                    background_image = :background_image,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:221:                'featured_rotator' => !empty($_POST['featured_rotator']) ? 1 : 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:222:                'featured_about' => !empty($_POST['featured_about']) ? 1 : 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:223:                'featured_contact' => !empty($_POST['featured_contact']) ? 1 : 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:224:                'background_image' => !empty($_POST['background_image']) ? 1 : 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:227:            $this->replaceImageSections($id, $_POST['section_ids'] ?? []);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:229:            $this->redirect('/admin/images/edit?id=' . $id);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:232:        View::render('admin/image_edit', [
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:234:            'image' => $image,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:235:            'sections' => $this->portfolioSections(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:236:            'selectedSectionIds' => $this->imageSectionIds($id),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:240:    public function portfolio(string $method): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:244:            $this->flash('Portfolio section created.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:245:            $this->redirect('/admin/portfolio');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:248:        View::render('admin/portfolio', [
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:250:            'sections' => $this->portfolioSections(),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:254:    public function portfolioEdit(string $method): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:257:        $section = $this->findTenantSection($id);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:258:        if (!$section) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:265:            $this->flash('Portfolio section saved.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:266:            $this->redirect('/admin/portfolio/edit?id=' . $id);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:269:        View::render('admin/portfolio_edit', [
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:271:            'section' => $section,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:275:    public function events(string $method): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:280:            $this->redirect('/admin/events');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:282:        $stmt = $this->db->prepare('SELECT * FROM exhibitions WHERE tenant_id = :tenant_id ORDER BY event_date DESC, id DESC');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:284:        View::render('admin/events', ['tenant' => $this->tenant, 'events' => $stmt->fetchAll()]);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:287:    public function eventEdit(string $method): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:290:        $event = $this->findTenantRow('exhibitions', $id);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:291:        if (!$event) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:299:            $this->redirect('/admin/events/edit?id=' . $id);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:302:        View::render('admin/event_edit', ['tenant' => $this->tenant, 'event' => $event]);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:308:            $this->saveSettings(['about_content', 'contact_details', 'facebook_url', 'instagram_url', 'linkedin_url']);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:310:            $this->redirect('/admin/content');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:312:        View::render('admin/content', ['tenant' => $this->tenant, 'settings' => $this->settings()]);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:317:        $stmt = $this->db->prepare('SELECT * FROM contact_messages WHERE tenant_id = :tenant_id ORDER BY created_at DESC');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:319:        View::render('admin/messages', ['tenant' => $this->tenant, 'messages' => $stmt->fetchAll()]);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:331:            $stmt = $this->db->prepare('DELETE FROM contact_messages WHERE id = :id AND tenant_id = :tenant_id');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:339:        $this->redirect('/admin/messages');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:346:        View::render('admin/subscribers', ['tenant' => $this->tenant, 'subscribers' => $stmt->fetchAll()]);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:378:            $this->redirect('/admin/users');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:382:        View::render('admin/users', ['tenant' => $this->tenant, 'users' => $stmt->fetchAll()]);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:385:    public function stats(): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:391:        $statsStartedAt = $this->statsStartedAt();
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:402:            View::render('admin/stats', [
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:409:                'stats_started_at' => $statsStartedAt,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:423:                pv.event_type,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:429:                pv.image_id,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:430:                i.title AS image_title,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:434:             LEFT JOIN images i ON i.id = pv.image_id AND i.tenant_id = pv.tenant_id
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:436:             GROUP BY pv.event_type, pv.path, pv.country_code, pv.city, pv.state, pv.country, pv.image_id, i.title, i.storage_key
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:441:        View::render('admin/stats', [
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:448:            'stats_started_at' => $statsStartedAt,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:462:            $this->redirect('/admin/stats');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:470:            'INSERT INTO settings (tenant_id, setting_key, setting_value)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:471:             VALUES (:tenant_id, "stats_started_at", :started_at)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:479:        $this->flash('Usage statistics reset. New stats start: ' . $startedAt . '.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:480:        $this->redirect('/admin/stats');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:497:            'event_date' => $_POST['event_date'] ?? '',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:498:            'display_date' => $_POST['display_date'] ?? ($_POST['event_date'] ?? ''),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:501:            'event_type' => $_POST['event_type'] ?? '',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:509:                'INSERT INTO exhibitions (tenant_id, title, venue, city, state, event_date, display_date, url, description, event_type, work_name, additional_info, is_recent)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:510:                 VALUES (:tenant_id, :title, :venue, :city, :state, :event_date, :display_date, :url, :description, :event_type, :work_name, :additional_info, :is_recent)'
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:518:            'UPDATE exhibitions SET
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:523:                event_date = :event_date,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:527:                event_type = :event_type,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:536:    private function statsStartedAt(): string
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:538:        $stmt = $this->db->prepare('SELECT setting_value FROM settings WHERE tenant_id = :tenant_id AND setting_key = "stats_started_at"');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:557:    private function settings(): array
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:559:        $stmt = $this->db->prepare('SELECT setting_key, setting_value FROM settings WHERE tenant_id = :tenant_id');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:568:                'INSERT INTO settings (tenant_id, setting_key, setting_value)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:586:            $this->flash('Portfolio section name is required.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:587:            $this->redirect('/admin/portfolio');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:592:                'INSERT INTO portfolio_sections (tenant_id, name, slug, description, sort_order)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:610:            'UPDATE portfolio_sections SET
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:627:    private function portfolioSections(): array
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:629:        $stmt = $this->db->prepare('SELECT * FROM portfolio_sections WHERE tenant_id = :tenant_id ORDER BY sort_order, name');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:640:        $stmt = $this->db->prepare('SELECT * FROM portfolio_sections WHERE id = :id AND tenant_id = :tenant_id');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:647:    private function imageSectionIds(int $imageId): array
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:651:             FROM portfolio_sections ps
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:652:             INNER JOIN image_sections ims ON ims.section_id = ps.id
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:653:             WHERE ps.tenant_id = :tenant_id AND ims.image_id = :image_id'
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:657:            'image_id' => $imageId,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:663:    private function replaceImageSections(int $imageId, array|string $sectionIds): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:665:        if ($imageId <= 0) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:669:        $ids = is_array($sectionIds) ? $sectionIds : [$sectionIds];
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:673:            'DELETE FROM image_sections
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:674:             WHERE image_id = :image_id
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:675:             AND section_id IN (SELECT id FROM portfolio_sections WHERE tenant_id = :tenant_id)'
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:678:            'image_id' => $imageId,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:686:        $validate = $this->db->prepare('SELECT id FROM portfolio_sections WHERE id = :id AND tenant_id = :tenant_id');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:687:        $insert = $this->db->prepare('INSERT OR IGNORE INTO image_sections (image_id, section_id) VALUES (:image_id, :section_id)');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:689:        foreach ($ids as $sectionId) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:690:            $validate->execute(['id' => $sectionId, 'tenant_id' => $this->tenant['id']]);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:694:            $insert->execute(['image_id' => $imageId, 'section_id' => $sectionId]);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:705:        return $slug !== '' ? $slug : 'section';
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:708:    private function imageOptions(): array
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:710:        $stmt = $this->db->prepare('SELECT id, title, storage_key, year FROM images WHERE tenant_id = :tenant_id ORDER BY title');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:717:        if (!in_array($table, ['images', 'exhibitions'], true)) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:730:        foreach (['images', 'subscribers', 'contact_messages', 'page_views'] as $table) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AdminController.php:742:            'INSERT INTO settings (tenant_id, setting_key, setting_value)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AuthController.php:32:                header('Location: /admin');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AuthController.php:37:        View::render('admin/login', ['tenant' => $this->tenant, 'error' => $error]);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AuthController.php:43:        header('Location: /admin/login');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Controllers/AuthController.php:49:            header('Location: /admin/login');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/login.php:2:<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Login</title><link rel="stylesheet" href="/assets/admin.css"></head><body class="login"><form method="post" class="panel"><h1><?= View::e($tenant['display_name']) ?> Admin</h1><?php if ($error): ?><p class="error"><?= View::e($error) ?></p><?php endif; ?><label>Email <input name="email" type="email" required></label><label>Password <input name="password" type="password" required></label><button>Login</button></form></body></html>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:2:<h2>Edit image</h2>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:3:<p><a href="/admin/images">← Back to images</a></p>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:5:  <input type="hidden" name="id" value="<?= (int) $image['id'] ?>">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:6:  <label>Title<input name="title" value="<?= View::e($image['title']) ?>" required></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:7:  <label>Year<input name="year" value="<?= View::e($image['year'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:8:  <label>Medium<input name="medium" value="<?= View::e($image['medium'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:9:  <label>Dimensions<input name="dimensions" value="<?= View::e($image['dimensions'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:10:  <label>Price<input name="price" value="<?= View::e($image['price'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:11:  <label>Sale status<input name="sale_status" value="<?= View::e($image['sale_status'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:12:  <label>Location<input name="location" value="<?= View::e($image['location'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:13:  <label>Tags<input name="tags" value="<?= View::e($image['tags'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:14:  <label>Sort order<input name="sort_order" type="number" value="<?= (int) $image['sort_order'] ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:15:  <label class="wide">Portfolio sections
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:16:    <select name="section_ids[]" multiple size="8">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:17:      <?php foreach ($sections as $section): ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:18:        <option value="<?= (int) $section['id'] ?>" <?= in_array((int) $section['id'], $selectedSectionIds, true) ? 'selected' : '' ?>><?= View::e($section['name']) ?></option>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:21:    <small class="muted">Hold Command/Ctrl to select more than one section.</small>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:23:  <label class="wide">Description / HTML allowed<textarea name="description"><?= View::e($image['description'] ?? '') ?></textarea></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:24:  <label class="wide">Alt text<input name="alt_text" value="<?= View::e($image['alt_text'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:25:  <label><input type="checkbox" name="is_draft" <?= $image['is_draft'] ? 'checked' : '' ?>> Draft/private</label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:26:  <label><input type="checkbox" name="featured_home" <?= $image['featured_home'] ? 'checked' : '' ?>> Feature on home</label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:27:  <label><input type="checkbox" name="featured_rotator" <?= $image['featured_rotator'] ? 'checked' : '' ?>> Use in rotator</label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:28:  <label><input type="checkbox" name="featured_about" <?= $image['featured_about'] ? 'checked' : '' ?>> Candidate for about image</label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:29:  <label><input type="checkbox" name="featured_contact" <?= $image['featured_contact'] ? 'checked' : '' ?>> Candidate for contact image</label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:30:  <label><input type="checkbox" name="background_image" <?= $image['background_image'] ? 'checked' : '' ?>> Candidate for background</label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:31:  <label><input type="checkbox" name="watermarked" <?= $image['watermarked'] ? 'checked' : '' ?>> Watermarked</label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:32:  <button>Save image details</button>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/image_edit.php:34:<?php if ($image['storage_key']): ?><img class="preview" src="/media/<?= View::e($image['storage_key']) ?>-medium.jpg" alt=""><?php endif; ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:2:<h2>Edit event</h2>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:3:<p><a href="/admin/events">← Back to events</a></p>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:5:  <input type="hidden" name="id" value="<?= (int) $event['id'] ?>">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:6:  <label>Exhibition name<input name="title" value="<?= View::e($event['title']) ?>" required></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:7:  <label>Type<input name="event_type" value="<?= View::e($event['event_type'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:8:  <label>Date for sorting<input name="event_date" type="date" value="<?= View::e($event['event_date'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:9:  <label>Displayed date<input name="display_date" value="<?= View::e($event['display_date'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:10:  <label>Venue<input name="venue" value="<?= View::e($event['venue'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:11:  <label>City<input name="city" value="<?= View::e($event['city'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:12:  <label>State / region<input name="state" value="<?= View::e($event['state'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:13:  <label>URL<input name="url" value="<?= View::e($event['url'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:14:  <label>Work name<input name="work_name" value="<?= View::e($event['work_name'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:15:  <label><input type="checkbox" name="is_recent" <?= $event['is_recent'] ? 'checked' : '' ?>> Show on public about page</label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:16:  <label class="wide">Description / HTML allowed<textarea name="description"><?= View::e($event['description'] ?? '') ?></textarea></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:17:  <label class="wide">Additional information / HTML allowed<textarea name="additional_info"><?= View::e($event['additional_info'] ?? '') ?></textarea></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/event_edit.php:18:  <button>Save event details</button>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/events.php:2:<h2>Exhibitions and events</h2>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/events.php:5:  <label>Type<input name="event_type"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/events.php:6:  <label>Date for sorting<input name="event_date" type="date"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/events.php:13:  <label><input type="checkbox" name="is_recent" checked> Show on public about page</label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/events.php:16:  <button>Add event</button>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/events.php:20:  <?php foreach ($events as $event): ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/events.php:22:      <td><?= View::e($event['display_date'] ?: $event['event_date']) ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/events.php:23:      <td><?= View::e($event['title']) ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/events.php:24:      <td><?= View::e($event['event_type'] ?? '') ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/events.php:25:      <td><?= View::e(trim(($event['city'] ?? '') . ', ' . ($event['state'] ?? ''), ', ')) ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/events.php:26:      <td><?= View::e($event['work_name'] ?? '') ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/events.php:27:      <td><a href="/admin/events/edit?id=<?= (int) $event['id'] ?>">Edit</a></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/content.php:4:  <label>About content / HTML allowed<textarea name="about_content"><?= View::e($settings['about_content'] ?? '') ?></textarea></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/content.php:5:  <label>Contact details / HTML allowed<textarea name="contact_details"><?= View::e($settings['contact_details'] ?? '') ?></textarea></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/content.php:6:  <label>Instagram URL<input name="instagram_url" value="<?= View::e($settings['instagram_url'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/content.php:7:  <label>Facebook URL<input name="facebook_url" value="<?= View::e($settings['facebook_url'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/content.php:8:  <label>LinkedIn URL<input name="linkedin_url" value="<?= View::e($settings['linkedin_url'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/stats.php:4:<section class="panel">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/stats.php:5:  <p><strong>Stats start:</strong> <?= View::e($stats_started_at ?? 'Unknown') ?></p>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/stats.php:6:  <p class="muted">Resetting stats deletes tenant page-view/image-hit rows and starts a new reporting window. It does not delete images, subscribers, contact messages, or the IP location cache.</p>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/stats.php:7:  <form method="post" action="/admin/stats/reset" onsubmit="return confirm('Reset all usage statistics for this tenant? This cannot be undone.');" class="row">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/stats.php:9:    <button class="danger">Reset stats to zero</button>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/stats.php:11:</section>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/stats.php:16:  <label>Search image/name/location <input name="q" value="<?= View::e($q ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/stats.php:17:  <label>Group <select name="group"><option value="path" <?= ($group ?? 'path') === 'path' ? 'selected' : '' ?>>Path / image</option><option value="location" <?= ($group ?? '') === 'location' ? 'selected' : '' ?>>Location</option></select></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/stats.php:33:      <td><?= View::e($row['event_type']) ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/stats.php:35:      <td><?= View::e($row['image_title'] ?? '') ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio_edit.php:2:<h2>Edit portfolio section</h2>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio_edit.php:3:<p><a href="/admin/portfolio">← Back to portfolio sections</a></p>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio_edit.php:5:  <input type="hidden" name="id" value="<?= (int) $section['id'] ?>">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio_edit.php:6:  <label>Name<input name="name" value="<?= View::e($section['name']) ?>" required></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio_edit.php:7:  <label>Slug<input name="slug" value="<?= View::e($section['slug']) ?>" required></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio_edit.php:8:  <label>Sort order<input name="sort_order" type="number" value="<?= (int) $section['sort_order'] ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio_edit.php:9:  <label class="wide">Description<textarea name="description"><?= View::e($section['description'] ?? '') ?></textarea></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio_edit.php:10:  <button>Save section</button>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/_layout.php:8:  <link rel="stylesheet" href="/assets/admin.css">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/_layout.php:13:  <a href="/admin">Dashboard</a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/_layout.php:14:  <a href="/admin/site">Site</a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/_layout.php:15:  <a href="/admin/images">Images</a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/_layout.php:16:  <a href="/admin/portfolio">Portfolio</a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/_layout.php:17:  <a href="/admin/events">Exhibitions</a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/_layout.php:18:  <a href="/admin/content">Content</a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/_layout.php:19:  <a href="/admin/messages">Messages</a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/_layout.php:20:  <a href="/admin/subscribers">Email List</a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/_layout.php:21:  <a href="/admin/users">Users</a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/_layout.php:22:  <a href="/admin/stats">Stats</a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/_layout.php:23:  <a href="/admin/logout">Logout</a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio.php:2:<h2>Portfolio sections</h2>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio.php:8:  <button>Add section</button>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio.php:12:  <?php foreach ($sections as $section): ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio.php:14:      <td><?= View::e($section['name']) ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio.php:15:      <td><?= View::e($section['slug']) ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio.php:16:      <td><?= (int) $section['sort_order'] ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/portfolio.php:17:      <td><a href="/admin/portfolio/edit?id=<?= (int) $section['id'] ?>">Edit</a></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/subscribers.php:3:<p class="actions"><a class="button" href="/admin/subscribers/export">Export CSV</a></p>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/messages.php:3:<p class="notice">Contact messages submitted from the public contact form appear here.</p>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/messages.php:13:        <form method="post" action="/admin/messages/delete" onsubmit="return confirm('Delete this contact message?');">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:12:  <label class="wide">Portfolio sections
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:13:    <select name="section_ids[]" multiple size="8">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:14:      <?php foreach ($sections as $section): ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:15:        <option value="<?= (int) $section['id'] ?>"><?= View::e($section['name']) ?></option>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:18:    <small class="muted">Hold Command/Ctrl to select more than one section.</small>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:23:  <label>Image<input type="file" name="image" accept="image/*" required></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:26:  <label><input type="checkbox" name="featured_rotator"> Use in rotator</label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:27:  <label><input type="checkbox" name="featured_about"> Candidate for about image</label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:28:  <label><input type="checkbox" name="featured_contact"> Candidate for contact image</label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:29:  <label><input type="checkbox" name="background_image"> Candidate for background</label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:35:  <?php foreach ($images as $image): ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:37:      <td><?php if ($image['storage_key']): ?><img class="thumb" src="/media/<?= View::e($image['storage_key']) ?>-thumb.jpg" alt=""><?php endif; ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:38:      <td><?= View::e($image['title']) ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:39:      <td><?= View::e($image['year'] ?? '') ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:40:      <td><?= View::e($image['medium'] ?? '') ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:41:      <td><?= $image['is_public'] ? 'Public' : 'Draft' ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:42:      <td><?= $image['featured_home'] ? 'Home ' : '' ?><?= $image['featured_rotator'] ? 'Rotator ' : '' ?><?= $image['featured_about'] ? 'About ' : '' ?><?= $image['featured_contact'] ? 'Contact ' : '' ?><?= $image['background_image'] ? 'Background' : '' ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/images.php:43:      <td><a href="/admin/images/edit?id=<?= (int) $image['id'] ?>">Edit</a></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:4:  <label>Site title / visible logo text<input name="site_title" value="<?= View::e($settings['site_title'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:5:  <label>Browser tab title<input name="browser_title" value="<?= View::e($settings['browser_title'] ?? ($settings['site_title'] ?? '')) ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:6:  <label>Artist name<input name="artist_name" value="<?= View::e($settings['artist_name'] ?? ($settings['site_title'] ?? '')) ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:7:  <label>Copyright name<input name="copyright_name" value="<?= View::e($settings['copyright_name'] ?? ($settings['site_title'] ?? '')) ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:9:  <label>Home tab<input name="home_tab" value="<?= View::e($settings['home_tab'] ?? 'Home') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:10:  <label>Portfolio tab<input name="portfolio_tab" value="<?= View::e($settings['portfolio_tab'] ?? 'Portfolio') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:11:  <label>About tab<input name="about_tab" value="<?= View::e($settings['about_tab'] ?? 'About') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:12:  <label>Contact tab<input name="contact_tab" value="<?= View::e($settings['contact_tab'] ?? 'Contact') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:14:  <label>Portfolio slug<input name="portfolio_slug" value="<?= View::e($settings['portfolio_slug'] ?? 'portfolio') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:15:  <label>About slug<input name="about_slug" value="<?= View::e($settings['about_slug'] ?? 'about') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:16:  <label>Contact slug<input name="contact_slug" value="<?= View::e($settings['contact_slug'] ?? 'contact') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:17:  <p class="wide muted">The home page remains available at <code>/</code>. Slugs control public URLs such as <code>/portfolio</code>, <code>/about</code>, and <code>/contact</code>.</p>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:19:  <label>Primary color<input name="primary_color" type="color" value="<?= View::e($settings['primary_color'] ?? '#111111') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:20:  <label>Accent color<input name="accent_color" type="color" value="<?= View::e($settings['accent_color'] ?? '#c9a85f') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:21:  <label>Background color<input name="background_color" type="color" value="<?= View::e($settings['background_color'] ?? '#f7f2e8') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:23:  <label class="wide">Home intro text / HTML allowed<textarea name="home_intro"><?= View::e($settings['home_intro'] ?? 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.') ?></textarea></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:25:  <label>Recent exhibitions heading<input name="exhibitions_heading" value="<?= View::e($settings['exhibitions_heading'] ?? 'Recent exhibitions') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:26:  <label>Exhibitions display<select name="exhibitions_display_mode"><option value="text" <?= ($settings['exhibitions_display_mode'] ?? 'text') === 'text' ? 'selected' : '' ?>>Text / stacked</option><option value="table" <?= ($settings['exhibitions_display_mode'] ?? '') === 'table' ? 'selected' : '' ?>>Table</option></select></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:28:  <label>About page image<select name="about_image_id"><option value="">None</option><?php foreach ($images as $image): ?><option value="<?= (int) $image['id'] ?>" <?= (string)($settings['about_image_id'] ?? '') === (string)$image['id'] ? 'selected' : '' ?>><?= View::e($image['title']) ?><?= $image['year'] ? ' · ' . View::e($image['year']) : '' ?></option><?php endforeach; ?></select></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:29:  <label>About image size<select name="about_image_size"><option value="thumb" <?= ($settings['about_image_size'] ?? '') === 'thumb' ? 'selected' : '' ?>>Thumbnail</option><option value="medium" <?= ($settings['about_image_size'] ?? 'medium') === 'medium' ? 'selected' : '' ?>>Medium</option><option value="large" <?= ($settings['about_image_size'] ?? '') === 'large' ? 'selected' : '' ?>>Large</option></select></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:31:  <label>Contact page image<select name="contact_image_id"><option value="">None</option><?php foreach ($images as $image): ?><option value="<?= (int) $image['id'] ?>" <?= (string)($settings['contact_image_id'] ?? '') === (string)$image['id'] ? 'selected' : '' ?>><?= View::e($image['title']) ?><?= $image['year'] ? ' · ' . View::e($image['year']) : '' ?></option><?php endforeach; ?></select></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:32:  <label>Contact image size<select name="contact_image_size"><option value="thumb" <?= ($settings['contact_image_size'] ?? '') === 'thumb' ? 'selected' : '' ?>>Thumbnail</option><option value="medium" <?= ($settings['contact_image_size'] ?? 'medium') === 'medium' ? 'selected' : '' ?>>Medium</option><option value="large" <?= ($settings['contact_image_size'] ?? '') === 'large' ? 'selected' : '' ?>>Large</option></select></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:34:  <label>Background image<select name="background_image_id"><option value="">None</option><?php foreach ($images as $image): ?><option value="<?= (int) $image['id'] ?>" <?= (string)($settings['background_image_id'] ?? '') === (string)$image['id'] ? 'selected' : '' ?>><?= View::e($image['title']) ?><?= $image['year'] ? ' · ' . View::e($image['year']) : '' ?></option><?php endforeach; ?></select></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:35:  <label>Background mode<select name="background_mode"><option value="single" <?= ($settings['background_mode'] ?? 'single') === 'single' ? 'selected' : '' ?>>Single image</option><option value="tile" <?= ($settings['background_mode'] ?? '') === 'tile' ? 'selected' : '' ?>>Tiled</option></select></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:36:  <label>Tile size CSS value<input name="background_tile_size" value="<?= View::e($settings['background_tile_size'] ?? '360px') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:37:  <label>Background opacity 0-1<input name="background_opacity" value="<?= View::e($settings['background_opacity'] ?? '0.12') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:39:  <label>reCAPTCHA site key<input name="recaptcha_site_key" value="<?= View::e($settings['recaptcha_site_key'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:40:  <label>reCAPTCHA secret key<input name="recaptcha_secret_key" value="<?= View::e($settings['recaptcha_secret_key'] ?? '') ?>"></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:42:  <label class="wide">Tenant-specific CSS<textarea name="tenant_css" class="code-area" spellcheck="false"><?= View::e($settings['tenant_css'] ?? '') ?></textarea></label>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/admin/site.php:44:  <button>Save site settings</button>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/home.php:2:<section class="hero">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/home.php:3:  <h1><?= View::e($settings['artist_name'] ?? ($settings['site_title'] ?? $tenant['display_name'])) ?></h1>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/home.php:4:  <div class="prose"><?= View::html($settings['home_intro'] ?? 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.') ?></div>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/home.php:5:</section>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/home.php:6:<section class="grid">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/home.php:7:  <?php foreach ($images as $image): ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/home.php:8:    <a class="card" href="/image/<?= (int) $image['id'] ?>">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/home.php:9:      <img src="/media/<?= View::e($image['storage_key']) ?>-medium.jpg" alt="<?= View::e($image['alt_text'] ?: $image['title']) ?>">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/home.php:10:      <span><?= View::e($image['title']) ?></span>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/home.php:11:      <?php if (!empty($image['year'])): ?><small><?= View::e($image['year']) ?></small><?php endif; ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/home.php:14:</section>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/contact.php:7:<?php if (!empty($contactImage['storage_key'])): ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/contact.php:8:  <img class="page-image page-image-<?= View::e($contactImageSize ?? 'medium') ?>" src="/media/<?= View::e($contactImage['storage_key']) ?>-<?= View::e($contactImageSize ?? 'medium') ?>.jpg" alt="<?= View::e($contactImage['alt_text'] ?: $contactImage['title']) ?>">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/contact.php:10:<article class="prose"><?= View::html($settings['contact_details'] ?? '') ?></article>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/contact.php:15:  <?php if (!empty($settings['recaptcha_site_key'])): ?><div class="g-recaptcha" data-sitekey="<?= View::e($settings['recaptcha_site_key']) ?>"></div><?php endif; ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/contact.php:22:  <input type="hidden" name="source" value="contact">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/contact.php:23:  <?php if (!empty($settings['recaptcha_site_key'])): ?><div class="g-recaptcha" data-sitekey="<?= View::e($settings['recaptcha_site_key']) ?>"></div><?php endif; ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:4:$browserTitle = $settings['browser_title'] ?? ($settings['site_title'] ?? $tenant['display_name']);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:5:$brandTitle = $settings['site_title'] ?? $tenant['display_name'];
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:6:$copyrightName = $settings['copyright_name'] ?? $brandTitle;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:8:if (!empty($backgroundImage['storage_key'])) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:9:    $bgUrl = '/media/' . View::e($backgroundImage['storage_key']) . '-large.jpg';
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:10:    $mode = $settings['background_mode'] ?? 'single';
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:11:    $tileSize = $settings['background_tile_size'] ?? '360px';
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:12:    $opacity = $settings['background_opacity'] ?? '0.12';
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:13:    $bgStyle = '--site-bg-image:url(' . $bgUrl . ');--site-bg-repeat:' . ($mode === 'tile' ? 'repeat' : 'no-repeat') . ';--site-bg-size:' . ($mode === 'tile' ? View::e($tileSize) : 'cover') . ';--site-bg-opacity:' . View::e($opacity) . ';';
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:15:$recaptchaSiteKey = trim((string) ($settings['recaptcha_site_key'] ?? ''));
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:16:$portfolioHref = $slugs['portfolio'] ?? '/portfolio';
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:17:$aboutHref = $slugs['about'] ?? '/about';
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:18:$contactHref = $slugs['contact'] ?? '/contact';
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:26:  <meta name="description" content="<?= View::e($settings['seo_description'] ?? 'Artist portfolio') ?>">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:31:<body style="--primary: <?= View::e($settings['primary_color'] ?? '#111') ?>; --accent: <?= View::e($settings['accent_color'] ?? '#c9a85f') ?>; --bg: <?= View::e($settings['background_color'] ?? '#f7f2e8') ?>; <?= $bgStyle ?>">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:35:    <a href="/"><?= View::e($settings['home_tab'] ?? 'Home') ?></a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:36:    <a href="<?= View::e($portfolioHref) ?>"><?= View::e($settings['portfolio_tab'] ?? 'Portfolio') ?></a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:37:    <a href="<?= View::e($aboutHref) ?>"><?= View::e($settings['about_tab'] ?? 'About') ?></a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:38:    <a href="<?= View::e($contactHref) ?>"><?= View::e($settings['contact_tab'] ?? 'Contact') ?></a>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/layout.php:44:<footer class="site-footer">© <?= View::e($settings['copyright_year'] ?? date('Y')) ?> <?= View::e($copyrightName) ?></footer>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/portfolio.php:4:  <?php foreach ($sections as $section): ?><a href="<?= View::e($slugs['portfolio'] ?? '/portfolio') ?>/<?= View::e($section['slug']) ?>"><?= View::e($section['name']) ?></a><?php endforeach; ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/portfolio.php:6:<section class="grid">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/portfolio.php:7:  <?php foreach ($images as $image): ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/portfolio.php:8:    <a class="card" href="/image/<?= (int) $image['id'] ?>">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/portfolio.php:9:      <img src="/media/<?= View::e($image['storage_key']) ?>-thumb.jpg" alt="<?= View::e($image['alt_text'] ?: $image['title']) ?>">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/portfolio.php:10:      <span><?= View::e($image['title']) ?></span>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/portfolio.php:11:      <?php if (!empty($image['year'])): ?><small><?= View::e($image['year']) ?></small><?php endif; ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/portfolio.php:14:</section>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:3:<?php if (!empty($aboutImage['storage_key'])): ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:4:  <img class="page-image page-image-<?= View::e($aboutImageSize ?? 'medium') ?>" src="/media/<?= View::e($aboutImage['storage_key']) ?>-<?= View::e($aboutImageSize ?? 'medium') ?>.jpg" alt="<?= View::e($aboutImage['alt_text'] ?: $aboutImage['title']) ?>">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:6:<article class="prose"><?= View::html($settings['about_content'] ?? '') ?></article>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:7:<?php if (!empty($events)): ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:8:<section class="events">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:9:  <h2><?= View::e($settings['exhibitions_heading'] ?? 'Recent exhibitions') ?></h2>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:10:  <?php if (($settings['exhibitions_display_mode'] ?? 'text') === 'table'): ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:11:    <table class="events-table">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:13:      <?php foreach ($events as $event): ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:15:          <td><?= View::e($event['display_date'] ?: $event['event_date']) ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:16:          <td><?= View::e($event['title']) ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:17:          <td><?= View::e($event['event_type'] ?? '') ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:18:          <td><?= View::e(trim(($event['city'] ?? '') . ', ' . ($event['state'] ?? ''), ', ')) ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:19:          <td><?= View::e($event['work_name'] ?? '') ?></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:20:          <td><div class="prose small"><?= View::html($event['additional_info'] ?? '') ?></div></td>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:25:    <?php foreach ($events as $event): ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:26:      <article class="event-row">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:27:        <div class="event-date"><?= View::e($event['display_date'] ?: $event['event_date']) ?></div>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:29:          <h3><?= View::e($event['title']) ?></h3>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:30:          <?php if (!empty($event['event_type'])): ?><p><strong><?= View::e($event['event_type']) ?></strong></p><?php endif; ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:31:          <p><?= View::e(trim(($event['city'] ?? '') . ', ' . ($event['state'] ?? ''), ', ')) ?></p>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:32:          <?php if (!empty($event['work_name'])): ?><p><?= View::e($event['work_name']) ?></p><?php endif; ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:33:          <?php if (!empty($event['additional_info'])): ?><div class="prose small"><?= View::html($event['additional_info']) ?></div><?php endif; ?>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/about.php:38:</section>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/image.php:3:  <img src="/media/<?= View::e($image['storage_key']) ?>-large.jpg" alt="<?= View::e($image['alt_text'] ?: $image['title']) ?>">
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/image.php:4:  <h1><?= View::e($image['title']) ?></h1>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/image.php:5:  <p class="art-meta"><?php if (!empty($image['year'])): ?><?= View::e($image['year']) ?><?php endif; ?><?php if (!empty($image['year']) && !empty($image['medium'])): ?> · <?php endif; ?><?php if (!empty($image['medium'])): ?><?= View::e($image['medium']) ?><?php endif; ?></p>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Views/public/image.php:6:  <div class="prose"><?= View::html($image['description'] ?? '') ?></div>
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/StatsTracker.php:3: * Privacy-conscious usage tracking for admin analytics.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/StatsTracker.php:19:    public function hit(int $tenantId, string $type, ?int $imageId = null): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/StatsTracker.php:30:                event_type,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/StatsTracker.php:31:                image_id,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/StatsTracker.php:43:                :event_type,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/StatsTracker.php:44:                :image_id,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/StatsTracker.php:58:            'event_type' => $type,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/StatsTracker.php:59:            'image_id' => $imageId,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/StatsTracker.php:63:            'ip_hash' => hash('sha256', $ip . '|bxiie-stats'),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/StatsTracker.php:99:        $ipHash = hash('sha256', $ip . '|bxiie-stats');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:19:            throw new \RuntimeException('Image upload failed.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:23:        if (!in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:24:            throw new \RuntimeException('Only JPG, PNG, and WEBP images are supported.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:27:        $base = $this->config['storage_path'] . '/uploads/' . $tenantId;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:38:            'image/png' => 'png',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:39:            'image/webp' => 'webp',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:43:        move_uploaded_file($file['tmp_name'], $original);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:45:        foreach ($this->config['image_sizes'] as $label => $maxWidth) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:49:        [$width, $height] = getimagesize($original) ?: [0, 0];
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:62:        [$width, $height] = getimagesize($source);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:67:        $src = imagecreatefromstring(file_get_contents($source));
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:68:        $dst = imagecreatetruecolor($newWidth, $newHeight);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:69:        imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:73:            $color = imagecolorallocatealpha($dst, 255, 255, 255, 55);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:74:            imagestring($dst, 5, max(12, $newWidth - 12 - strlen($text) * 10), max(12, $newHeight - 32), $text, $color);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:77:        imagejpeg($dst, $target, 86);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:78:        imagedestroy($src);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/app/Services/ImageService.php:79:        imagedestroy($dst);
+Binary file /Users/bxiie/Dropbox/tcdev/bxiie-cms/Bxiie Website Rework.docx matches
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:3: * Apply mobile/email/stats/tabs/topbar patch to the local workstation repo.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:11:foreach(['app/Views/public/layout.php','app/Views/admin/site.php','app/Controllers/AdminController.php','public/assets/site.css'] as $f){ if(!is_file("$root/$f")) fail("Run from repo root; missing $f"); }
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:13:copy(__DIR__.'/../scripts/migrate_mobile_email_stats_tabs_topbar.php', "$root/scripts/migrate_mobile_email_stats_tabs_topbar.php") || fail('Could not copy migration');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:18:  $layout=str_replace('<header class="site-header">', '<?php $topbarParts=[]; if(!empty($settings[\'topbar_background_color\'])){$topbarParts[]=\'background-color: \'.$settings[\'topbar_background_color\'];} $topbarStyle=implode(\'; \',$topbarParts); ?>' . "\n" . '<header class="site-header" style="<?= View::e($topbarStyle) ?>">',$layout);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:21:$site=mustRead("$root/app/Views/admin/site.php");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:22:if(!str_contains($site,'name="admin_email"')){
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:23:  $insert='<label>Admin notification email<input name="admin_email" type="email" value="<?= View::e($settings[\'admin_email\'] ?? \'\') ?>"></label>' . "\n" .
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:24:  '<label>Mail From address<input name="mail_from" type="email" value="<?= View::e($settings[\'mail_from\'] ?? \'noreply@bxiie.com\') ?>"></label>' . "\n" .
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:25:  '<label><input type="checkbox" name="notify_on_contact" value="1" <?= ($settings[\'notify_on_contact\'] ?? \'1\') === \'1\' ? \'checked\' : \'\' ?>> Email admin on contact message</label>' . "\n" .
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:26:  '<label><input type="checkbox" name="notify_on_subscriber" value="1" <?= ($settings[\'notify_on_subscriber\'] ?? \'1\') === \'1\' ? \'checked\' : \'\' ?>> Email admin on email signup</label>' . "\n" .
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:27:  '<label><input type="checkbox" name="portfolio_sections_as_tabs" value="1" <?= ($settings[\'portfolio_sections_as_tabs\'] ?? \'0\') === \'1\' ? \'checked\' : \'\' ?>> Show portfolio sections as tabs</label>' . "\n" .
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:28:  '<label>Top bar background color<input name="topbar_background_color" type="color" value="<?= View::e($settings[\'topbar_background_color\'] ?: \'#ffffff\') ?>"></label>' . "\n";
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:31:$site=str_replace('<option value="thumb" <?= ($settings[\'about_image_size\'] ?? \'\') === \'thumb\' ? \'selected\' : \'\' ?>>Thumbnail</option>','<option value="small" <?= ($settings[\'about_image_size\'] ?? \'\') === \'small\' ? \'selected\' : \'\' ?>>Small</option><option value="thumb" <?= ($settings[\'about_image_size\'] ?? \'\') === \'thumb\' ? \'selected\' : \'\' ?>>Thumbnail</option>',$site);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:32:$site=str_replace('<option value="thumb" <?= ($settings[\'contact_image_size\'] ?? \'\') === \'thumb\' ? \'selected\' : \'\' ?>>Thumbnail</option>','<option value="small" <?= ($settings[\'contact_image_size\'] ?? \'\') === \'small\' ? \'selected\' : \'\' ?>>Small</option><option value="thumb" <?= ($settings[\'contact_image_size\'] ?? \'\') === \'thumb\' ? \'selected\' : \'\' ?>>Thumbnail</option>',$site);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:33:mustWrite("$root/app/Views/admin/site.php",$site);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:34:$admin=mustRead("$root/app/Controllers/AdminController.php");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:35:foreach(['admin_email','mail_from','notify_on_contact','notify_on_subscriber','portfolio_sections_as_tabs','topbar_background_color','topbar_background_image_id','topbar_background_image_mode'] as $key){
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:36:  if(!str_contains($admin,"'".$key."'")) $admin=preg_replace("/('tenant_css',)/","$1\n                '$key',",$admin,1,$count);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/bin/apply_mobile_email_stats_tabs_topbar_update.php:38:mustWrite("$root/app/Controllers/AdminController.php",$admin);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/config/config.php:11:    'admin_path' => getenv('ADMIN_PATH') ?: '/admin',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/config/config.php:12:    'session_name' => getenv('SESSION_NAME') ?: 'bxiie_admin',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/config/config.php:16:    'image_sizes' => [
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/config/config.php:25:        'contact_to' => getenv('CONTACT_TO') ?: 'artist@bxiie.com',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/events_import.csv:1:date,exhibition_name,city,state,work_name,notes,notes2
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/events_import.csv:11:May 2023,Community Sculpture Walk,Watertown,Massachusetts,Opposition,"Juried Exhibition, chosen for two-year exhibition",
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/events_import.csv:20:May 2021,SculptureNow at The Mount,Lenox,Massachusetts,Unrealized,Juried exhibition selection based on CAD design and prior works,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/events_import.csv:21:May 2021,Jamestown Arts Center,Jamestown,Rhode Island,JAC Talk,,"<a target=""_blank"" href='https://www.jamestownartcenter.org/events-past/jac-talk-james-payne'><b style=""color: red"">Link to Presentation</b></a>"
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/events_import.csv:23:June 2020,Outdoor Arts Experience,Jamestown,Rhode Island,Isolation,"Juried exhibition selection based on CAD design and prior works, tied for audience choice award",
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/admin/MOBILE_EMAIL_STATS_TABS_TOPBAR_UPDATE.md:5:This update adds a mobile stylesheet, migration defaults, admin settings for notifications/topbar/tabs, and a small about/contact image option.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/admin/CONTACT_MESSAGES.md:3:Contact messages are visible in the admin section at:
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/admin/CONTACT_MESSAGES.md:6:/admin/messages
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:25:- Admin site settings include title, browser title, artist name, copyright name, tab labels, public slugs, colors, page images, background image controls, reCAPTCHA keys, and tenant CSS.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:26:- Public content intentionally renders trusted admin-entered HTML.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:28:- Email subscribers are viewable at `/admin/subscribers` and exportable as CSV.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:29:- Usage stats store image views, thumbnails, search by image/location, and location aggregation.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:34:- reCAPTCHA secret key lives in tenant settings. A future hardening pass should allow secrets to live in `/etc/bxiie-cms` instead.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:45:- Added editable `exhibitions_heading` and `exhibitions_display_mode` settings under `/admin/site`.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:46:- Public About page can display exhibitions as stacked text entries or a table.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:47:- Added `/admin/messages/delete` for tenant-scoped contact-message deletion.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:48:- Migration script: `scripts/migrate_exhibitions_messages_cleanup.php`.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:54:- Added `/admin/stats/reset` POST route.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:55:- Added tenant-scoped stats reset control on `/admin/stats`.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:56:- Reset deletes `page_views` for the current tenant and stores a new `stats_started_at` setting.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:61:## 2026-05-11 Portfolio section editing and tenant CSS seed update
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:64:- Portfolio sections are now creatable and editable in admin.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:65:- Image creation and image editing now support assigning multiple portfolio sections.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:66:- Tenant CSS uses the `settings.setting_key = tenant_css` row.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:67:- The CSS seeding helper now defaults to `tenant_css` instead of `custom_css`.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/ai/BXIIE_PROJECT_STATE.md:68:- Default public CSS is formatted for human editing and seeded into tenant CSS with `scripts/migrate_portfolio_sections_and_tenant_css.php --force`.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_FEATURE_BATCH_DEPLOYMENT.md:20:git commit -m "Add site settings, analytics, image editing, events editing, and newsletter modal"
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_FEATURE_BATCH_DEPLOYMENT.md:40:curl -I https://bxiie.com/about
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_FEATURE_BATCH_DEPLOYMENT.md:41:curl -I https://bxiie.com/contact
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_FEATURE_BATCH_DEPLOYMENT.md:42:curl -I https://bxiie.com/admin/site
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_FEATURE_BATCH_DEPLOYMENT.md:43:curl -I https://bxiie.com/admin/images
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_FEATURE_BATCH_DEPLOYMENT.md:44:curl -I https://bxiie.com/admin/events
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_FEATURE_BATCH_DEPLOYMENT.md:45:curl -I https://bxiie.com/admin/messages
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_FEATURE_BATCH_DEPLOYMENT.md:46:curl -I https://bxiie.com/admin/stats
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_STATS_RESET_DEPLOYMENT.md:5:Adds tenant-scoped usage-stat reset support and displays the start time for the current stats reporting window on `/admin/stats`.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_STATS_RESET_DEPLOYMENT.md:11:unzip /path/to/bxiie_stats_reset_update.zip
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_STATS_RESET_DEPLOYMENT.md:14:git commit -m "Add usage stats reset controls"
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_STATS_RESET_DEPLOYMENT.md:25:sudo -u www-data DATABASE_PATH='/var/lib/bxiie-cms/database/bxiie.sqlite' php scripts/migrate_stats_reset.php
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_STATS_RESET_DEPLOYMENT.md:33:curl -I https://bxiie.com/admin/stats
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_STATS_RESET_DEPLOYMENT.md:36:Then visit `/admin/stats`, confirm the stats start date is shown, and test reset by typing `RESET` in the reset form.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_STATS_RESET_DEPLOYMENT.md:40:Revert the Git commit and redeploy. If stats were reset, page view rows cannot be recovered unless restored from database backup.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_EXHIBITIONS_MESSAGES_CLEANUP.md:5:This update removes the global newsletter modal from every public page, adds editable text/table display settings for recent exhibitions, and adds contact-message deletion from the admin area.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_EXHIBITIONS_MESSAGES_CLEANUP.md:13:unzip /path/to/bxiie_exhibitions_messages_cleanup.zip
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_EXHIBITIONS_MESSAGES_CLEANUP.md:16:git commit -m "Clean up newsletter modal and improve exhibitions/messages admin"
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_EXHIBITIONS_MESSAGES_CLEANUP.md:27:sudo -u www-data DATABASE_PATH='/var/lib/bxiie-cms/database/bxiie.sqlite' php scripts/migrate_exhibitions_messages_cleanup.php
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_EXHIBITIONS_MESSAGES_CLEANUP.md:35:curl -I https://bxiie.com/about
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_EXHIBITIONS_MESSAGES_CLEANUP.md:36:curl -I https://bxiie.com/admin/messages
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_EXHIBITIONS_MESSAGES_CLEANUP.md:37:curl -I https://bxiie.com/admin/site
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/MOBILE_EMAIL_STATS_TABS_TOPBAR_UPDATE.md:5:This update adds a mobile stylesheet, migration defaults, admin settings for notifications/topbar/tabs, and a small about/contact image option.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_PORTFOLIO_SECTIONS_CSS_UPDATE.md:5:- Portfolio sections can now be created and edited from `/admin/portfolio`.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_PORTFOLIO_SECTIONS_CSS_UPDATE.md:6:- Image creation and image editing now include a multi-select portfolio section control.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_PORTFOLIO_SECTIONS_CSS_UPDATE.md:7:- Image/section links are tenant-validated before saving.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_PORTFOLIO_SECTIONS_CSS_UPDATE.md:9:- The tenant CSS seeding script now defaults to `tenant_css`, not the obsolete `custom_css` key.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_PORTFOLIO_SECTIONS_CSS_UPDATE.md:16:unzip /path/to/bxiie_portfolio_sections_css_update.zip
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_PORTFOLIO_SECTIONS_CSS_UPDATE.md:19:git commit -m "Add portfolio section editing and readable tenant CSS"
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_PORTFOLIO_SECTIONS_CSS_UPDATE.md:30:sudo -u www-data DATABASE_PATH='/var/lib/bxiie-cms/database/bxiie.sqlite' php scripts/migrate_portfolio_sections_and_tenant_css.php --force
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_PORTFOLIO_SECTIONS_CSS_UPDATE.md:39:curl -I https://bxiie.com/admin/portfolio
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_PORTFOLIO_SECTIONS_CSS_UPDATE.md:40:curl -I https://bxiie.com/admin/images
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_PORTFOLIO_SECTIONS_CSS_UPDATE.md:45:- `/admin/portfolio` has Add and Edit controls.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_PORTFOLIO_SECTIONS_CSS_UPDATE.md:46:- `/admin/images` has a multi-select section chooser on image upload.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_PORTFOLIO_SECTIONS_CSS_UPDATE.md:47:- `/admin/images/edit?id=...` has a multi-select section chooser on image edit.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_PORTFOLIO_SECTIONS_CSS_UPDATE.md:48:- `/admin/site` shows readable tenant CSS without `End of file` comments.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_RECAPTCHA_CSS_STATS_DEPLOYMENT.md:1:# Bxiie reCAPTCHA, tenant CSS, slugs, subscribers, and stats deployment
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_RECAPTCHA_CSS_STATS_DEPLOYMENT.md:7:unzip /path/to/bxiie_recaptcha_css_stats_update.zip
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_RECAPTCHA_CSS_STATS_DEPLOYMENT.md:10:git commit -m "Add reCAPTCHA, tenant CSS, subscriber export, and location stats"
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_RECAPTCHA_CSS_STATS_DEPLOYMENT.md:21:sudo -u www-data DATABASE_PATH='/var/lib/bxiie-cms/database/bxiie.sqlite' php scripts/migrate_recaptcha_css_stats.php
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_RECAPTCHA_CSS_STATS_DEPLOYMENT.md:28:- `/admin/site`: reCAPTCHA keys, tenant CSS, tab labels, public slugs, about/contact image size.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_RECAPTCHA_CSS_STATS_DEPLOYMENT.md:29:- `/admin/subscribers`: collected emails.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_RECAPTCHA_CSS_STATS_DEPLOYMENT.md:30:- `/admin/subscribers/export`: CSV export.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_RECAPTCHA_CSS_STATS_DEPLOYMENT.md:31:- `/admin/stats`: location search and aggregation.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/docs/dev/BXIIE_RECAPTCHA_CSS_STATS_DEPLOYMENT.md:33:Location stats are populated from proxy geolocation headers first, then from request-IP lookup with a local hash-keyed cache in `ip_geolocations`.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/t.t:4:	app/Views/admin/_layout.php \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/t.t:5:	app/Views/admin/content.php \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/t.t:6:	app/Views/admin/images.php \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/t.t:7:	app/Views/admin/site.php \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/t.t:8:	app/Views/admin/stats.php \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/t.t:9:	app/Views/public/contact.php \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/t.t:11:	app/Views/public/image.php \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/t.t:13:	app/Views/public/portfolio.php \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/t.t:14:	public/assets/admin.css \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/storage/uploads/bxiie/t.t:2:  /var/www/bxiie-static-backup/images/ \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/storage/uploads/bxiie/t.t:3:  /var/lib/bxiie-cms/storage/uploads/bxiie/originals/
+Binary file /Users/bxiie/Dropbox/tcdev/bxiie-cms/bxiie_mobile_email_stats_tabs_topbar_update.zip matches
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:3:This is a first implementation pass for the Bxiie website rebuild. It is intentionally small: PHP, SQLite, Apache rewrite rules, generated image derivatives, tenant-aware routing, admin pages, contact messages, newsletter capture, and usage statistics.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:14:- `/admin` admin section
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:17:- image upload with original preservation and cached derivatives
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:19:- portfolio sections
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:20:- exhibition/event management
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:21:- about/contact/social settings
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:22:- contact form message capture
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:24:- usage statistics by date range, path, event type, image views, referrer/user agent/IP hash/country header
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:39:6. Visit `/admin/login`.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:44:- Replace default admin password immediately.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:45:- Add CSRF tokens to all admin forms.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:46:- Add server-level upload limits and file size checks.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:47:- Add rate limiting to contact and subscribe forms.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:48:- Add outbound email delivery for contact notifications.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:50:- Add an import script to migrate current static HTML image records into the database.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/README.md:54:The next pass should add edit/delete screens, image-to-section assignment, tag-based portfolio views, favicon generation, SEO/social metadata UI, CSV export of subscribers, richer analytics, and a migration/importer for the existing site content.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:18:  - uploaded originals
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:19:  - generated image cache
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:39:Be aware that Dropbox syncing and Git do not always behave perfectly together during large binary/image operations.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:104:    # Runtime upload/cache storage.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:105:    storage/uploads/*
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:110:    !storage/uploads/.gitkeep
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:130:    touch storage/uploads/.gitkeep
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:244:    sudo mkdir -p /var/lib/bxiie-cms/storage/uploads
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:429:    curl -I https://bxiie.com/admin/login
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:444:docs/admin/ADMIN_GUIDE.md
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:449:Strong recommendation regarding uploads
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:452:Do NOT commit uploaded artwork originals into Git.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:466:- uploaded images
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:473:Strong recommendation regarding image derivatives
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:476:Generated derivatives should eventually live under:
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:491:- every image belongs to a tenant
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:492:- every admin belongs to one or more tenants
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:493:- every stats query filters by tenant
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/BXIIE_GIT_DEPLOYMENT_COOKBOOK.txt:494:- every uploaded file path should partition by tenant slug or ID
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/admin.css:1:/* Bxiie Artist CMS admin stylesheet. */
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/admin.css:2:*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:#f6f1e8;color:#151515}aside{position:fixed;inset:0 auto 0 0;width:240px;background:#151515;color:white;padding:24px;display:flex;flex-direction:column;gap:12px;overflow:auto}aside h1{font-size:24px;margin:0 0 20px}aside a{color:white;text-decoration:none;padding:8px 0}main{margin-left:240px;padding:34px;width:min(1200px,calc(100vw - 260px))}h2{font-size:42px;letter-spacing:-.05em;margin:0 0 24px}.panel{background:white;border-radius:18px;padding:20px;margin-bottom:24px;box-shadow:0 10px 40px rgba(0,0,0,.08);display:grid;gap:14px}.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}.wide{grid-column:1/-1}.row{display:flex;align-items:end;flex-wrap:wrap;gap:12px}label{display:grid;gap:6px;font-weight:700}input,textarea,select{font:inherit;padding:10px;border:1px solid #d4d4d4;border-radius:10px;max-width:100%}textarea{min-height:120px}button{font:inherit;font-weight:800;padding:11px 16px;border:0;border-radius:999px;background:#151515;color:white;cursor:pointer}table{width:100%;border-collapse:collapse;background:white;border-radius:16px;overflow:hidden}th,td{text-align:left;padding:12px;border-bottom:1px solid #eee;vertical-align:top}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}.card{background:white;border-radius:18px;padding:20px;display:grid;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.08)}.card strong{font-size:42px}.notice{background:#fff2c7;padding:12px 14px;border-radius:12px}.error{background:#ffd8d8;padding:12px;border-radius:12px}.login{display:grid;place-items:center;min-height:100vh}.login .panel{width:min(420px,90vw)}.thumb{width:82px;height:82px;object-fit:cover;border-radius:10px;background:#eee}.preview{max-width:min(700px,100%);border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.12);background:white}.actions{display:flex;gap:10px;flex-wrap:wrap}.muted{color:#666;font-size:13px}
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/admin.css:4:.button{display:inline-block;text-decoration:none;font-weight:800;padding:11px 16px;border-radius:999px;background:#151515;color:white}.code-area{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;min-height:260px}.form-error,.error{background:#ffd8d8;padding:12px;border-radius:12px}
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/admin.css:7:button.danger { background: #9b1c1c; color: #fff; border-color: #9b1c1c; }
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:5: * because tenant-specific CSS is editable from the admin Site page.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:11:  background: var(--bg);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:22:  background: radial-gradient(circle at top, var(--bg), #fff 55%);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:25:/* Optional tenant-selected background image. */
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:31:  pointer-events: none;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:33:  background-image: var(--site-bg-image);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:34:  background-repeat: var(--site-bg-repeat, no-repeat);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:35:  background-size: var(--site-bg-size, cover);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:36:  background-position: center;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:50:  background: color-mix(in srgb, var(--bg), white 50%);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:119:.page-image {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:123:  background: #eee;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:147:  background: color-mix(in srgb, var(--bg), white 40%);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:168:  background: white;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:182:  background: var(--primary);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:191:  background: #fff6d6;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:198:  background: #ffd8d8;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:216:.page-image {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:221:.page-image-thumb {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:225:.page-image-medium {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:229:.page-image-large {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:234:.events {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:240:.event-row {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:247:  background: color-mix(in srgb, var(--bg), white 70%);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:250:.event-date {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:254:.events-table {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:260:.events-table th,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:261:.events-table td {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:268:.events-table th {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:280:  background: rgba(0, 0, 0, 0.45);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:293:  background: white;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/site.css:331:  .event-row {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/public/assets/mobile.css:5:html{-webkit-text-size-adjust:100%;text-size-adjust:100%}img{max-width:100%;height:auto}.site-header{gap:1rem}.site-header nav{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}.site-header nav a{white-space:nowrap}.portfolio-tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 2rem}.portfolio-tabs a{border:1px solid currentColor;border-radius:999px;padding:.45rem .8rem;text-decoration:none}.portfolio-tabs a.active{background:var(--primary);color:var(--bg)}.page-image-small{max-width:280px}.stats-graph{display:grid;gap:.5rem;margin:1rem 0 2rem}.stats-bar-row{display:grid;grid-template-columns:90px 1fr 70px;gap:.75rem;align-items:center}.stats-bar-track{background:rgba(0,0,0,.08);border-radius:999px;min-height:14px;overflow:hidden}.stats-bar-fill{display:block;min-height:14px;background:var(--primary,#111)}@media(max-width:900px){.site-main{width:min(100% - 2rem,1180px);margin:2rem auto}.site-header{padding:1rem}.brand{font-size:clamp(2rem,13vw,4rem);line-height:.95}.hero h1,h1{font-size:clamp(2.4rem,16vw,5.5rem);line-height:.95}.grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}.event-row{grid-template-columns:1fr}.events-table{display:block;overflow-x:auto;white-space:nowrap}.form input,.form textarea,.form select,button{min-height:44px}.modal-card{max-height:calc(100vh - 2rem);overflow:auto}.stats-bar-row{grid-template-columns:64px 1fr 50px;font-size:.9rem}}@media(max-width:520px){.site-header{align-items:stretch}.site-header nav{display:flex;flex-wrap:nowrap}.grid{grid-template-columns:1fr 1fr}.card img{border-radius:14px}.portfolio-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:.35rem}}
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/.gitignore:12:# Runtime upload/cache storage.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/.gitignore:13:storage/uploads/*
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/.gitignore:18:!storage/uploads/.gitkeep
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_stats_reset.php:3: * Add initial stats_started_at setting for each tenant.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_stats_reset.php:18:    $stmt = $pdo->prepare('SELECT setting_value FROM settings WHERE tenant_id = :tenant_id AND setting_key = "stats_started_at"');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_stats_reset.php:33:        'INSERT INTO settings (tenant_id, setting_key, setting_value)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_stats_reset.php:34:         VALUES (:tenant_id, "stats_started_at", :started_at)'
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_stats_reset.php:37:    echo "Set stats_started_at for tenant {$tenantId} to {$startedAt}\n";
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:3: * One-time installer: creates schema and default Bxiie tenant/admin.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:19:$settings = [
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:25:    'portfolio_tab' => 'Portfolio',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:26:    'about_tab' => 'About',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:27:    'contact_tab' => 'Contact',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:30:    'background_color' => '#f7f2e8',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:31:    'about_content' => 'Artist statement and biography go here.',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:32:    'contact_details' => 'Contact details go here.',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:34:    'background_mode' => 'single',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:35:    'background_tile_size' => '360px',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:36:    'background_opacity' => '0.12',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:39:foreach ($settings as $key => $value) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:40:    $stmt = $db->prepare('INSERT OR IGNORE INTO settings (tenant_id, setting_key, setting_value) VALUES (:tenant_id, :key, :value)');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:46:    $stmt = $db->prepare('INSERT OR IGNORE INTO portfolio_sections (tenant_id, name, slug, sort_order) VALUES (:tenant_id, :name, :slug, :sort_order)');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:50:$email = getenv('ADMIN_EMAIL') ?: 'admin@bxiie.com';
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/install.php:55:echo "Installed. Login at /admin/login with {$email}. Change the password immediately.\n";
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:3: * Rebuild Bxiie CMS image records from a spreadsheet-export CSV.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:6: * - Deletes all existing image rows for the selected tenant.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:7: * - Deletes image/section joins automatically through ON DELETE CASCADE.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:8: * - Optionally deletes existing portfolio sections for the tenant.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:9: * - Optionally deletes existing imported image storage/cache.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:12: * - "name" becomes images.title and images.alt_text.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:14: * - "medium" becomes images.medium.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:15: * - "year" becomes images.year.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:17: * - If a cell contains "x", the image is assigned to that column's section.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:19: *   - "rotator" sets featured_rotator = 1.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:20: *   - "home" sets featured_home = 1 and also creates/assigns the Home section.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:21: *   - "all" assigns the image to the "All Images" section.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:26: * - If the matched file has "_wm" before the extension, images.watermarked is set to 1.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:34: *     php scripts/rebuild_images_from_spreadsheet.php \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:35: *       --csv=/var/tmp/site_images.csv \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:39: *       --delete-sections
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:46:    'image/jpeg' => 'jpg',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:47:    'image/png' => 'png',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:48:    'image/webp' => 'webp',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:55:  php scripts/rebuild_images_from_spreadsheet.php --csv=/path/site_images.csv --source=/path/old/images [options]
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:58:  --csv=/path/site_images.csv      CSV exported from the spreadsheet.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:59:  --source=/path/old/images        Directory tree containing the named image files.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:64:  --delete-sections                Delete existing tenant portfolio sections before import.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:69:  Existing image rows for the tenant are deleted before import.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:310:function getOrCreateSection(PDO $pdo, int $tenantId, string $sectionName, int $sortOrder, bool $dryRun): int
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:312:    $sectionName = trim($sectionName);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:313:    if ($sectionName === '') {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:317:    $slug = slugify($sectionName);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:319:    $stmt = $pdo->prepare('SELECT id FROM portfolio_sections WHERE tenant_id = :tenant_id AND slug = :slug');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:331:        logLine("Would create section {$sectionName}");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:336:        'INSERT INTO portfolio_sections (tenant_id, name, slug, description, sort_order)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:341:        'name' => $sectionName,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:349:function linkImageToSection(PDO $pdo, int $imageId, int $sectionId, bool $dryRun): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:351:    if ($imageId <= 0 || $sectionId <= 0) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:356:        logLine("Would link image {$imageId} to section {$sectionId}");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:361:        'INSERT OR IGNORE INTO image_sections (image_id, section_id)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:362:         VALUES (:image_id, :section_id)'
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:365:        'image_id' => $imageId,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:366:        'section_id' => $sectionId,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:372:    [$width, $height] = getimagesize($source) ?: [0, 0];
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:380:        fail("Unable to read image file {$source}");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:383:    $sourceImage = imagecreatefromstring($blob);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:392:    $targetImage = imagecreatetruecolor($targetWidth, $targetHeight);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:393:    imagecopyresampled(
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:407:        $color = imagecolorallocatealpha($targetImage, 255, 255, 255, 55);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:408:        imagestring(
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:423:    imagejpeg($targetImage, $target, 86);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:426:    imagedestroy($sourceImage);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:427:    imagedestroy($targetImage);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:448:        logLine("Would insert image {$title}");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:453:        'INSERT INTO images (
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:469:            featured_rotator,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:488:            :featured_rotator,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:507:        'featured_rotator' => $featuredRotator ? 1 : 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:519:    'delete-sections',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:533:$deleteSections = hasFlag($options, 'delete-sections');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:561:$uploadBase = "{$storagePath}/uploads/{$tenantSlug}/originals";
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:588:    fail('No section/assignment columns found after year.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:595:        logLine('Deleting existing image rows for tenant.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:596:        $stmt = $pdo->prepare('DELETE FROM images WHERE tenant_id = :tenant_id');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:600:            logLine('Deleting existing portfolio sections for tenant.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:601:            $stmt = $pdo->prepare('DELETE FROM portfolio_sections WHERE tenant_id = :tenant_id');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:605:        logLine('Would delete existing image rows for tenant.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:607:            logLine('Would delete existing portfolio sections for tenant.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:612:        removeDirectoryContents($uploadBase, $dryRun);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:616:    ensureDirectory($uploadBase, $dryRun);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:656:        [$width, $height] = getimagesize($sourcePath) ?: [0, 0];
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:659:            logLine("Skipping unreadable image dimensions: {$sourcePath}");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:667:        $targetOriginal = "{$uploadBase}/{$targetFileName}";
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:693:        $featuredRotator = isMarked($row['rotator'] ?? '');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:695:        $imageId = insertImage(
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:713:        $sectionSortOrder = 100;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:716:                $sectionSortOrder += 10;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:720:            if ($normalizedHeader === 'rotator') {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:721:                $sectionSortOrder += 10;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:725:            $sectionName = $displayName;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:727:                $sectionName = 'All Images';
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:730:            $sectionId = getOrCreateSection($pdo, $tenantId, $sectionName, $sectionSortOrder, $dryRun);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:731:            linkImageToSection($pdo, $imageId, $sectionId, $dryRun);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/rebuild_images_from_spreadsheet.php:732:            $sectionSortOrder += 10;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:3: * Import images from an old static Bxiie site into the Bxiie CMS.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:6: * - Existing images are detected by tenant_id + original_path.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:7: * - Existing portfolio sections are reused by slug.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:8: * - Existing image/section links are not duplicated.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:15: *     php scripts/import_static_images.php \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:18: *       --section-from-dir \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:20: *       --featured-rotator-count=20
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:26:    'image/jpeg' => 'jpg',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:27:    'image/png' => 'png',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:28:    'image/webp' => 'webp',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:37:  php scripts/import_static_images.php --source=/path/to/old/site [options]
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:40:  --source=/path          Old static site directory or image directory.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:44:  --section=Portfolio     Section name for all imports. Default: Imported.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:45:  --section-from-dir      Use each image parent directory as the portfolio section.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:47:  --watermarked           Mark imported image records as watermarked.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:48:  --featured-home-count=N Mark first N imported images as featured_home.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:49:  --featured-rotator-count=N
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:50:                          Mark first N imported images as featured_rotator.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:51:  --limit=N               Stop after N supported images. Useful for testing.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:58:    php scripts/import_static_images.php \\
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:61:      --section-from-dir \\
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:63:      --featured-rotator-count=20
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:234:function getOrCreateSection(PDO $pdo, int $tenantId, string $sectionName, bool $dryRun): int
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:236:    $slug = slugify($sectionName);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:238:    $stmt = $pdo->prepare('SELECT id FROM portfolio_sections WHERE tenant_id = :tenant_id AND slug = :slug');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:250:        logLine("Would create section: {$sectionName} ({$slug})");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:255:        'INSERT INTO portfolio_sections (tenant_id, name, slug, description, sort_order)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:260:        'name' => $sectionName,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:271:    $stmt = $pdo->prepare('SELECT id FROM images WHERE tenant_id = :tenant_id AND original_path = :original_path');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:282:function linkImageToSection(PDO $pdo, int $imageId, int $sectionId, bool $dryRun): void
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:284:    if ($sectionId <= 0) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:289:        logLine("Would link image {$imageId} to section {$sectionId}");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:294:        'INSERT OR IGNORE INTO image_sections (image_id, section_id)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:295:         VALUES (:image_id, :section_id)'
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:298:        'image_id' => $imageId,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:299:        'section_id' => $sectionId,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:305:    [$width, $height] = getimagesize($source) ?: [0, 0];
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:307:        fail("Cannot read image dimensions: {$source}");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:316:        fail("Cannot read source image: {$source}");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:319:    $src = imagecreatefromstring($blob);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:321:        fail("GD cannot decode image: {$source}");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:324:    $dst = imagecreatetruecolor($newWidth, $newHeight);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:325:    imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:328:        $color = imagecolorallocatealpha($dst, 255, 255, 255, 55);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:329:        imagestring(
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:344:    imagejpeg($dst, $target, 86);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:345:    imagedestroy($src);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:346:    imagedestroy($dst);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:364:        logLine("Would insert image: {$title} ({$originalPath})");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:369:        'INSERT INTO images (
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:383:            featured_rotator,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:400:            :featured_rotator,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:420:        'featured_rotator' => $featuredRotator ? 1 : 0,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:430:    'section::',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:431:    'section-from-dir',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:435:    'featured-rotator-count::',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:453:$sectionName = optionValue($options, 'section', DEFAULT_SECTION_NAME) ?? DEFAULT_SECTION_NAME;
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:454:$sectionFromDir = hasFlag($options, 'section-from-dir');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:458:$featuredRotatorCount = (int) (optionValue($options, 'featured-rotator-count', '0') ?? '0');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:480:$uploadBase = "{$storagePath}/uploads/{$tenantSlug}/originals";
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:482:ensureDirectory($uploadBase, $dryRun);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:494:logLine('Found supported images: ' . count($files));
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:517:        $targetOriginal = "{$uploadBase}/{$relative}";
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:525:            if ($sectionFromDir) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:526:                $sectionNameForFile = basename(dirname(relativePath($source, $sourcePath)));
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:527:                $sectionId = getOrCreateSection($pdo, $tenantId, $sectionNameForFile, $dryRun);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:528:                linkImageToSection($pdo, $existingId, $sectionId, $dryRun);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:534:        [$width, $height] = getimagesize($sourcePath) ?: [0, 0];
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:567:        $imageId = insertImage(
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:582:        if ($sectionFromDir) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:583:            $sectionNameForFile = basename(dirname(relativePath($source, $sourcePath)));
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:584:            $sectionId = getOrCreateSection($pdo, $tenantId, $sectionNameForFile, $dryRun);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:585:            linkImageToSection($pdo, $imageId, $sectionId, $dryRun);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:587:            $sectionId = getOrCreateSection($pdo, $tenantId, $sectionName, $dryRun);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:588:            linkImageToSection($pdo, $imageId, $sectionId, $dryRun);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_static_images.php:592:        logLine("Imported {$relative} as image #{$imageId}");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_exhibitions_messages_cleanup.php:3: * Add settings used by the exhibitions display cleanup update.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_exhibitions_messages_cleanup.php:16:    'exhibitions_heading' => 'Recent exhibitions',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_exhibitions_messages_cleanup.php:17:    'exhibitions_display_mode' => 'text',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_exhibitions_messages_cleanup.php:21:    'INSERT INTO settings (tenant_id, setting_key, setting_value)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_portfolio_sections_and_tenant_css.php:3: * Apply portfolio-section admin helpers and populate readable tenant CSS.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_portfolio_sections_and_tenant_css.php:5: * The schema for portfolio_sections and image_sections already exists in the
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_portfolio_sections_and_tenant_css.php:17:    fwrite(STDOUT, "[portfolio-css-migration] {$message}\n");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_portfolio_sections_and_tenant_css.php:28:    fwrite(STDERR, "Usage: php scripts/migrate_portfolio_sections_and_tenant_css.php [--force] [--dry-run]\n");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_portfolio_sections_and_tenant_css.php:59:$select = $db->prepare('SELECT setting_value FROM settings WHERE tenant_id = :tenant_id AND setting_key = "tenant_css"');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_portfolio_sections_and_tenant_css.php:61:    'INSERT INTO settings (tenant_id, setting_key, setting_value)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_feature_batch.php:34:addColumn($db, 'exhibitions', 'state', 'TEXT');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_feature_batch.php:35:addColumn($db, 'exhibitions', 'display_date', 'TEXT');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_feature_batch.php:36:addColumn($db, 'exhibitions', 'event_type', 'TEXT');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_feature_batch.php:37:addColumn($db, 'exhibitions', 'work_name', 'TEXT');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_feature_batch.php:38:addColumn($db, 'exhibitions', 'additional_info', 'TEXT');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_feature_batch.php:49:    'background_mode' => 'single',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_feature_batch.php:50:    'background_tile_size' => '360px',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_feature_batch.php:51:    'background_opacity' => '0.12',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_feature_batch.php:57:        $stmt = $db->prepare('INSERT OR IGNORE INTO settings (tenant_id, setting_key, setting_value) VALUES (:tenant_id, :key, :value)');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:3: * Import Bxiie exhibition/event history from a normalized CSV export.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:6: *   date, exhibition_name, city, state, work_name, notes, notes2
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:9: * - date -> display_date and sortable event_date
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:10: * - exhibition_name -> title
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:11: * - notes -> event_type
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:16: * This script is intentionally destructive for the selected tenant's events:
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:17: * it deletes existing exhibition rows before importing the CSV rows.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:22: *     php scripts/import_events_from_resume.php \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:23: *       --csv=/var/tmp/events_import.csv \
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:33:  php scripts/import_events_from_resume.php --csv=/path/events_import.csv [options]
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:36:  --csv=/path/events_import.csv   CSV with date, exhibition_name, city, state, work_name, notes, notes2.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:54:    fwrite(STDOUT, "[events-import] {$message}\n");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:111:        'event_type' => 'TEXT',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:118:        if (columnExists($pdo, 'exhibitions', $column)) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:122:        $sql = "ALTER TABLE exhibitions ADD COLUMN {$column} {$type}";
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:127:            logLine("Added exhibitions.{$column}");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:156:    $required = ['date', 'exhibition_name', 'city', 'state', 'work_name', 'notes', 'notes2'];
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:203:        'INSERT INTO exhibitions (
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:209:            event_date,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:213:            event_type,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:223:            :event_date,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:227:            :event_type,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:236:        'title' => $row['exhibition_name'],
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:240:        'event_date' => sortableDate($row['date']),
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:244:        'event_type' => $row['notes'],
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:281:        logLine("Would import: {$row['date']} | {$row['exhibition_name']} | {$row['notes']} | {$location} | {$row['work_name']}");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:289:    $delete = $pdo->prepare('DELETE FROM exhibitions WHERE tenant_id = :tenant_id');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/import_events_from_resume.php:302:logLine('Imported events: ' . count($rows));
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_recaptcha_css_stats.php:3: * Apply schema/settings additions for reCAPTCHA, tenant CSS, subscriber export,
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_recaptcha_css_stats.php:4: * editable slugs, page image sizes, and IP geolocation cache.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_recaptcha_css_stats.php:17:        'INSERT INTO settings (tenant_id, setting_key, setting_value)
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_recaptcha_css_stats.php:41:$db->exec('CREATE INDEX IF NOT EXISTS idx_page_views_image ON page_views(tenant_id, image_id, created_at)');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_recaptcha_css_stats.php:47:    setting($db, $tenantId, 'portfolio_slug', 'portfolio');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_recaptcha_css_stats.php:48:    setting($db, $tenantId, 'about_slug', 'about');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_recaptcha_css_stats.php:49:    setting($db, $tenantId, 'contact_slug', 'contact');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_recaptcha_css_stats.php:50:    setting($db, $tenantId, 'about_image_size', 'medium');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_recaptcha_css_stats.php:51:    setting($db, $tenantId, 'contact_image_size', 'medium');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_mobile_email_stats_tabs_topbar.php:3: * Add settings defaults for mobile/email/stats/portfolio-tabs/topbar update.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_mobile_email_stats_tabs_topbar.php:11:$insert = $db->prepare('INSERT INTO settings (tenant_id, setting_key, setting_value) VALUES (:tenant_id, :setting_key, :setting_value) ON CONFLICT(tenant_id, setting_key) DO NOTHING');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_mobile_email_stats_tabs_topbar.php:13:    'admin_email' => '',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_mobile_email_stats_tabs_topbar.php:15:    'notify_on_contact' => '1',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_mobile_email_stats_tabs_topbar.php:17:    'portfolio_sections_as_tabs' => '0',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_mobile_email_stats_tabs_topbar.php:18:    'topbar_background_color' => '',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_mobile_email_stats_tabs_topbar.php:19:    'topbar_background_image_id' => '',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_mobile_email_stats_tabs_topbar.php:20:    'topbar_background_image_mode' => 'cover',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_mobile_email_stats_tabs_topbar.php:21:    'about_image_size' => 'medium',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_mobile_email_stats_tabs_topbar.php:22:    'contact_image_size' => 'medium',
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/migrate_mobile_email_stats_tabs_topbar.php:29:echo "Mobile/email/stats/tabs/topbar migration complete.\n";
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/populate_tenant_css_from_existing.php:7: * - It writes into tenant settings only when the editable CSS value is empty.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/populate_tenant_css_from_existing.php:140:    foreach (['tenant_settings', 'site_settings', 'settings'] as $table) {
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/populate_tenant_css_from_existing.php:146:    fail('No supported settings table found. Expected tenant_settings, site_settings, or settings.');
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/populate_tenant_css_from_existing.php:157:        fail("Unsupported settings table shape for {$table}.");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/populate_tenant_css_from_existing.php:190:        fail("Unsupported settings table shape for {$table}.");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/populate_tenant_css_from_existing.php:273:$settingsTable = detectSettingsTable($pdo);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/populate_tenant_css_from_existing.php:274:$currentCss = readSetting($pdo, $settingsTable, $tenantId, $settingKey);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/populate_tenant_css_from_existing.php:278:logLine("Settings table: {$settingsTable}");
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/scripts/populate_tenant_css_from_existing.php:293:writeSetting($pdo, $settingsTable, $tenantId, $settingKey, $css);
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/site_images.csv:1:name,File Name,medium,year,rotator,all,home,Portfolio,Underground,Opposition,Unrealized,Isolation,SeriesSix,Burn,PointsOfContention,Swarm,Swirls,Drone-related,Flat,PVC,Argument,TwelveHundredPieces,DTTW,Experiment,OtherPlastics,Card
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:3:- The site should email site admin on contact message or email signup
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:4:- Show aggregated hit graphs for days of the week and hours of the day for selected range on stats page
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:5:- Allow showing portfolio sections as tabs at the top
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:7:- Add small as option for size of about and contact images
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:8:- Allow background image and color for top bar
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:19:- Allow editing of 'Recent exhibitions' text.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:20:- Allow display of exhibitions as text or table-based, slelected in admin section
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:21:- allow deletion of contact messages
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:25:- add recaptcha to contact messages and email signup
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:26:- location is not showing up on stats.  This information should be derived from request IP lookup
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:28:- Each tenant should it's own CSS.  Allow editing of CSS from admin page
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:29:- Tab names ('home') and slugs ('Bxiie') should be editable from admin section
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:30:- Remove the 'Stay in the loop' form from each page.  Should be able to sign up for email from the contact page and from the modal dialog box shown after one minute of not subscribed.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:31:- Show emails collected on the admin section.  Allow exporting of email list.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:32:- Allow selection of size of images shown on about and contact pages
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:33:- Images selected for on-page use (contact, about) should be optimized for the size of the image to ensure fast download times.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:37:- Create separate viariables for name in copyright, Browser tab, and artist name.  These should be editable from site tab of admin section
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:38:- Usage statistics: Show a thumbnail of the image in stats.  Allow search by name.  Include city, state, country - and populate those statistics.  Allow aggregation by location.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:39:- About and contact pages should include an image.  Selection of the image from images tab in admin section.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:40:- Allow editing of events from admin section.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:42:- When details are saved (for instance, contact info), display message indicating content has been saved.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:43:- Where do I go to see contact messages?
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:44:- Allow adding background from admin section.  Allow image selection, tiled or osingle image, size of tile, opacity.
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:46:- Allow editing of images in admin section
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:47:- Show year of work on image thumbnail displays.  Show year and medium on image detail pages
+/Users/bxiie/Dropbox/tcdev/bxiie-cms/fix.txt:48:- Allow editing of 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.' text on home page from admin section.

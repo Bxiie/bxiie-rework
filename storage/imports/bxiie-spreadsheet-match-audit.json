@@ -1,0 +1,4816 @@
+{
+    "ok": false,
+    "xlsx": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/imports/site_images.xlsx",
+    "inventory": "/Users/bxiie/Dropbox/tcdev/artsfolio/storage/imports/bxiie-legacy-inventory.json",
+    "counts": {
+        "spreadsheet_rows_with_file": 210,
+        "matched": 209,
+        "missing": 1,
+        "duplicate_spreadsheet_files": 0
+    },
+    "missing": [
+        {
+            "spreadsheet_row": 29,
+            "name": "Sharp - CAD study",
+            "file_name": "sharp v3.jpg",
+            "match_key": "sharp v3.jpg"
+        }
+    ],
+    "duplicates": [],
+    "matched": [
+        {
+            "spreadsheet_row": 3,
+            "name": "Isolation in Boulder, Colorado",
+            "file_name": "IMG_0149.jpg",
+            "match_key": "img_0149.jpg",
+            "chosen_legacy_path": "site_small/IMG_0149_sm.jpg",
+            "chosen_width": 573,
+            "chosen_height": 400,
+            "chosen_size_bytes": 129681,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0149_sm.jpg",
+                    "basename": "img_0149_sm.jpg",
+                    "width": 573,
+                    "height": 400,
+                    "size_bytes": 129681,
+                    "area": 229200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 4,
+            "name": "Curves V1",
+            "file_name": "IMG_0696.jpg",
+            "match_key": "img_0696.jpg",
+            "chosen_legacy_path": "site_small/IMG_0696_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 58728,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0696_sm.jpg",
+                    "basename": "img_0696_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 58728,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 5,
+            "name": "Black Sea",
+            "file_name": "IMG_0867.jpg",
+            "match_key": "img_0867.jpg",
+            "chosen_legacy_path": "site_small/IMG_0867_sm.jpg",
+            "chosen_width": 781,
+            "chosen_height": 400,
+            "chosen_size_bytes": 107724,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0867_sm.jpg",
+                    "basename": "img_0867_sm.jpg",
+                    "width": 781,
+                    "height": 400,
+                    "size_bytes": 107724,
+                    "area": 312400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 6,
+            "name": "Curves V1 in Sinaia, Romania",
+            "file_name": "IMG_0926.jpg",
+            "match_key": "img_0926.jpg",
+            "chosen_legacy_path": "site_small/IMG_0926_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 52673,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0926_sm.jpg",
+                    "basename": "img_0926_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 52673,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 7,
+            "name": "Street Intervention in Bucharest, Romania",
+            "file_name": "IMG_1730.jpg",
+            "match_key": "img_1730.jpg",
+            "chosen_legacy_path": "site_small/IMG_1730_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 71554,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_1730_sm.jpg",
+                    "basename": "img_1730_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 71554,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 8,
+            "name": "Inside Out V2 Maquette",
+            "file_name": "IMG_2385.jpg",
+            "match_key": "img_2385.jpg",
+            "chosen_legacy_path": "site_small/IMG_2385_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 96934,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_2385_sm.jpg",
+                    "basename": "img_2385_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 96934,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 9,
+            "name": "Opposition in Watertown, Massachusetts",
+            "file_name": "IMG_2565.jpg",
+            "match_key": "img_2565.jpg",
+            "chosen_legacy_path": "site_small/IMG_2565_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 162630,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_2565_sm.jpg",
+                    "basename": "img_2565_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 162630,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 10,
+            "name": "Curves V2 Detail",
+            "file_name": "IMG_2878.jpg",
+            "match_key": "img_2878.jpg",
+            "chosen_legacy_path": "site_small/IMG_2878_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 43778,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_2878_sm.jpg",
+                    "basename": "img_2878_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 43778,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 11,
+            "name": "Inside Out V1",
+            "file_name": "IMG_7953.jpg",
+            "match_key": "img_7953.jpg",
+            "chosen_legacy_path": "site_small/IMG_7953_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 96534,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_7953_sm.jpg",
+                    "basename": "img_7953_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 96534,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 12,
+            "name": "Small Sculpture",
+            "file_name": "IMG_7980.jpg",
+            "match_key": "img_7980.jpg",
+            "chosen_legacy_path": "site_small/IMG_7980_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 66185,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_7980_sm.jpg",
+                    "basename": "img_7980_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 66185,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 13,
+            "name": "Small Sculpture",
+            "file_name": "IMG_8006.jpg",
+            "match_key": "img_8006.jpg",
+            "chosen_legacy_path": "site_small/IMG_8006_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 71092,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_8006_sm.jpg",
+                    "basename": "img_8006_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 71092,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 14,
+            "name": "Reoriented",
+            "file_name": "IMG_9017.jpg",
+            "match_key": "img_9017.jpg",
+            "chosen_legacy_path": "site_small/IMG_9017_sm.jpg",
+            "chosen_width": 384,
+            "chosen_height": 400,
+            "chosen_size_bytes": 96345,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_9017_sm.jpg",
+                    "basename": "img_9017_sm.jpg",
+                    "width": 384,
+                    "height": 400,
+                    "size_bytes": 96345,
+                    "area": 153600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 15,
+            "name": "Small sculpture in Ploie\u0219ti, Romania",
+            "file_name": "bsf_ploisti.jpg",
+            "match_key": "bsf_ploisti.jpg",
+            "chosen_legacy_path": "site_small/bsf_ploisti_sm.jpg",
+            "chosen_width": 306,
+            "chosen_height": 400,
+            "chosen_size_bytes": 58498,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bsf_ploisti_sm.jpg",
+                    "basename": "bsf_ploisti_sm.jpg",
+                    "width": 306,
+                    "height": 400,
+                    "size_bytes": 58498,
+                    "area": 122400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 16,
+            "name": "Pointy Derivative",
+            "file_name": "pointy_derivative.jpg",
+            "match_key": "pointy_derivative.jpg",
+            "chosen_legacy_path": "site_small/pointy_derivative_sm.jpg",
+            "chosen_width": 479,
+            "chosen_height": 400,
+            "chosen_size_bytes": 77487,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/pointy_derivative_sm.jpg",
+                    "basename": "pointy_derivative_sm.jpg",
+                    "width": 479,
+                    "height": 400,
+                    "size_bytes": 77487,
+                    "area": 191600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 17,
+            "name": "Sticker Ball",
+            "file_name": "sticker_ball.jpg",
+            "match_key": "sticker_ball.jpg",
+            "chosen_legacy_path": "site_small/sticker_ball_sm.jpg",
+            "chosen_width": 508,
+            "chosen_height": 400,
+            "chosen_size_bytes": 72630,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/sticker_ball_sm.jpg",
+                    "basename": "sticker_ball_sm.jpg",
+                    "width": 508,
+                    "height": 400,
+                    "size_bytes": 72630,
+                    "area": 203200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 18,
+            "name": "Opposition in Watertown, Massachusetts",
+            "file_name": "IMG_7413.jpg",
+            "match_key": "img_7413.jpg",
+            "chosen_legacy_path": "site_small/IMG_7413_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 77280,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_7413_sm.jpg",
+                    "basename": "img_7413_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 77280,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 19,
+            "name": "Summers End in 2024",
+            "file_name": "IMG_7723.jpg",
+            "match_key": "img_7723.jpg",
+            "chosen_legacy_path": "site_small/IMG_7723_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 81877,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_7723_sm.jpg",
+                    "basename": "img_7723_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 81877,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 20,
+            "name": "Looking Up in Bucharest",
+            "file_name": "IMG_8263.jpg",
+            "match_key": "img_8263.jpg",
+            "chosen_legacy_path": "site_small/IMG_8263_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 638,
+            "chosen_size_bytes": 48292,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_8263_sm.jpg",
+                    "basename": "img_8263_sm.jpg",
+                    "width": 400,
+                    "height": 638,
+                    "size_bytes": 48292,
+                    "area": 255200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 21,
+            "name": "Inside Out Maquette",
+            "file_name": "IMG_8657.jpg",
+            "match_key": "img_8657.jpg",
+            "chosen_legacy_path": "site_small/IMG_8657_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 499,
+            "chosen_size_bytes": 74955,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_8657_sm.jpg",
+                    "basename": "img_8657_sm.jpg",
+                    "width": 400,
+                    "height": 499,
+                    "size_bytes": 74955,
+                    "area": 199600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 22,
+            "name": "Wave Assembly - CAD Study",
+            "file_name": "assembly_1-Recovered.jpg",
+            "match_key": "assembly_1-recovered.jpg",
+            "chosen_legacy_path": "site_small/assembly_1-Recovered_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 482,
+            "chosen_size_bytes": 29160,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/assembly_1-Recovered_sm.jpg",
+                    "basename": "assembly_1-recovered_sm.jpg",
+                    "width": 400,
+                    "height": 482,
+                    "size_bytes": 29160,
+                    "area": 192800
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 23,
+            "name": "Wave Assembly - CAD Study",
+            "file_name": "assembly_2-Recovered.jpg",
+            "match_key": "assembly_2-recovered.jpg",
+            "chosen_legacy_path": "site_small/assembly_2-Recovered_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 518,
+            "chosen_size_bytes": 37553,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/assembly_2-Recovered_sm.jpg",
+                    "basename": "assembly_2-recovered_sm.jpg",
+                    "width": 400,
+                    "height": 518,
+                    "size_bytes": 37553,
+                    "area": 207200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 24,
+            "name": "Curvy",
+            "file_name": "curvy_qr.jpg",
+            "match_key": "curvy_qr.jpg",
+            "chosen_legacy_path": "site_small/curvy_qr_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 400,
+            "chosen_size_bytes": 76412,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/curvy_qr_sm.jpg",
+                    "basename": "curvy_qr_sm.jpg",
+                    "width": 400,
+                    "height": 400,
+                    "size_bytes": 76412,
+                    "area": 160000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 25,
+            "name": "Isolation in Evergreen",
+            "file_name": "evergreen_dronie.jpg",
+            "match_key": "evergreen_dronie.jpg",
+            "chosen_legacy_path": "site_small/evergreen_dronie_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 209,
+            "chosen_size_bytes": 54501,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/evergreen_dronie_sm.jpg",
+                    "basename": "evergreen_dronie_sm.jpg",
+                    "width": 400,
+                    "height": 209,
+                    "size_bytes": 54501,
+                    "area": 83600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 26,
+            "name": "Hedgehog on Edge",
+            "file_name": "hedgehog_2-Recovered.jpg",
+            "match_key": "hedgehog_2-recovered.jpg",
+            "chosen_legacy_path": "site_small/hedgehog_2-Recovered_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 571,
+            "chosen_size_bytes": 59975,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/hedgehog_2-Recovered_sm.jpg",
+                    "basename": "hedgehog_2-recovered_sm.jpg",
+                    "width": 400,
+                    "height": 571,
+                    "size_bytes": 59975,
+                    "area": 228400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 27,
+            "name": "Pointy - CAD Study",
+            "file_name": "pointy_v6.jpg",
+            "match_key": "pointy_v6.jpg",
+            "chosen_legacy_path": "site_small/pointy_v6_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 179,
+            "chosen_size_bytes": 33736,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/pointy_v6_sm.jpg",
+                    "basename": "pointy_v6_sm.jpg",
+                    "width": 400,
+                    "height": 179,
+                    "size_bytes": 33736,
+                    "area": 71600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 28,
+            "name": "Roostah Element - CAD study",
+            "file_name": "roostah.jpg",
+            "match_key": "roostah.jpg",
+            "chosen_legacy_path": "site_small/roostah_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 530,
+            "chosen_size_bytes": 62699,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/roostah_sm.jpg",
+                    "basename": "roostah_sm.jpg",
+                    "width": 400,
+                    "height": 530,
+                    "size_bytes": 62699,
+                    "area": 212000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 30,
+            "name": "Underground - Second Maquette",
+            "file_name": "underground_2nd_maquette_golden.jpg",
+            "match_key": "underground_2nd_maquette_golden.jpg",
+            "chosen_legacy_path": "site_small/underground_2nd_maquette_golden_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 66723,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/underground_2nd_maquette_golden_sm.jpg",
+                    "basename": "underground_2nd_maquette_golden_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 66723,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 31,
+            "name": "Hedgehog - CAD study",
+            "file_name": "xmas_sited.jpg",
+            "match_key": "xmas_sited.jpg",
+            "chosen_legacy_path": "site_small/xmas_sited_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 278,
+            "chosen_size_bytes": 41552,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/xmas_sited_sm.jpg",
+                    "basename": "xmas_sited_sm.jpg",
+                    "width": 400,
+                    "height": 278,
+                    "size_bytes": 41552,
+                    "area": 111200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 32,
+            "name": "Underground",
+            "file_name": "IMG_5733.jpg",
+            "match_key": "img_5733.jpg",
+            "chosen_legacy_path": "site_small/IMG_5733_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 135830,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5733_sm.jpg",
+                    "basename": "img_5733_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 135830,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 33,
+            "name": "Underground",
+            "file_name": "IMG_5726.jpg",
+            "match_key": "img_5726.jpg",
+            "chosen_legacy_path": "site_small/IMG_5726_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 143607,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5726_sm.jpg",
+                    "basename": "img_5726_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 143607,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 34,
+            "name": "Underground",
+            "file_name": "IMG_5723.jpg",
+            "match_key": "img_5723.jpg",
+            "chosen_legacy_path": "site_small/IMG_5723_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 149216,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5723_sm.jpg",
+                    "basename": "img_5723_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 149216,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 35,
+            "name": "Underground",
+            "file_name": "IMG_5740.jpg",
+            "match_key": "img_5740.jpg",
+            "chosen_legacy_path": "site_small/IMG_5740_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 533,
+            "chosen_size_bytes": 139109,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5740_sm.jpg",
+                    "basename": "img_5740_sm.jpg",
+                    "width": 400,
+                    "height": 533,
+                    "size_bytes": 139109,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 36,
+            "name": "Underground",
+            "file_name": "underground_oblique.jpg",
+            "match_key": "underground_oblique.jpg",
+            "chosen_legacy_path": "site_small/underground_oblique_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 256,
+            "chosen_size_bytes": 29914,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/underground_oblique_sm.jpg",
+                    "basename": "underground_oblique_sm.jpg",
+                    "width": 400,
+                    "height": 256,
+                    "size_bytes": 29914,
+                    "area": 102400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 37,
+            "name": "Opposition",
+            "file_name": "IMG_5616.jpg",
+            "match_key": "img_5616.jpg",
+            "chosen_legacy_path": "site_small/IMG_5616_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 132058,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5616_sm.jpg",
+                    "basename": "img_5616_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 132058,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 38,
+            "name": "Opposition",
+            "file_name": "IMG_5614.jpg",
+            "match_key": "img_5614.jpg",
+            "chosen_legacy_path": "site_small/IMG_5614_sm.jpg",
+            "chosen_width": 479,
+            "chosen_height": 400,
+            "chosen_size_bytes": 112153,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5614_sm.jpg",
+                    "basename": "img_5614_sm.jpg",
+                    "width": 479,
+                    "height": 400,
+                    "size_bytes": 112153,
+                    "area": 191600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 39,
+            "name": "Opposition",
+            "file_name": "IMG_5602.jpg",
+            "match_key": "img_5602.jpg",
+            "chosen_legacy_path": "site_small/IMG_5602_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 56941,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5602_sm.jpg",
+                    "basename": "img_5602_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 56941,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 40,
+            "name": "Rearing Pony",
+            "file_name": "IMG_5489.jpg",
+            "match_key": "img_5489.jpg",
+            "chosen_legacy_path": "site_small/IMG_5489_sm.jpg",
+            "chosen_width": 185,
+            "chosen_height": 400,
+            "chosen_size_bytes": 36964,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5489_sm.jpg",
+                    "basename": "img_5489_sm.jpg",
+                    "width": 185,
+                    "height": 400,
+                    "size_bytes": 36964,
+                    "area": 74000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 41,
+            "name": "Rearing Pony",
+            "file_name": "IMG_5447.jpg",
+            "match_key": "img_5447.jpg",
+            "chosen_legacy_path": "site_small/IMG_5447_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 55228,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5447_sm.jpg",
+                    "basename": "img_5447_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 55228,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 42,
+            "name": "Rearing Pony",
+            "file_name": "IMG_5402.jpg",
+            "match_key": "img_5402.jpg",
+            "chosen_legacy_path": "site_small/IMG_5402_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 61956,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5402_sm.jpg",
+                    "basename": "img_5402_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 61956,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 43,
+            "name": "Sideshow",
+            "file_name": "IMG_5377.jpg",
+            "match_key": "img_5377.jpg",
+            "chosen_legacy_path": "site_small/IMG_5377_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 80402,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5377_sm.jpg",
+                    "basename": "img_5377_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 80402,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 44,
+            "name": "Unrealized",
+            "file_name": "IMG_5527.jpg",
+            "match_key": "img_5527.jpg",
+            "chosen_legacy_path": "site_small/IMG_5527_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 74505,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5527_sm.jpg",
+                    "basename": "img_5527_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 74505,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 45,
+            "name": "Unrealized",
+            "file_name": "IMG_5357.jpg",
+            "match_key": "img_5357.jpg",
+            "chosen_legacy_path": "site_small/IMG_5357_sm.jpg",
+            "chosen_width": 536,
+            "chosen_height": 400,
+            "chosen_size_bytes": 99554,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5357_sm.jpg",
+                    "basename": "img_5357_sm.jpg",
+                    "width": 536,
+                    "height": 400,
+                    "size_bytes": 99554,
+                    "area": 214400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 46,
+            "name": "Opposition with Artist",
+            "file_name": "IMG_4939.jpg",
+            "match_key": "img_4939.jpg",
+            "chosen_legacy_path": "site_small/IMG_4939_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 73278,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_4939_sm.jpg",
+                    "basename": "img_4939_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 73278,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 47,
+            "name": "Dancer Blue",
+            "file_name": "dancer_blue.jpg",
+            "match_key": "dancer_blue.jpg",
+            "chosen_legacy_path": "site_small/dancer_blue_sm.jpg",
+            "chosen_width": 531,
+            "chosen_height": 400,
+            "chosen_size_bytes": 61505,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/dancer_blue_sm.jpg",
+                    "basename": "dancer_blue_sm.jpg",
+                    "width": 531,
+                    "height": 400,
+                    "size_bytes": 61505,
+                    "area": 212400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 48,
+            "name": "Cloud Spiral",
+            "file_name": "dave_cloud_spiral.jpg",
+            "match_key": "dave_cloud_spiral.jpg",
+            "chosen_legacy_path": "site_small/dave_cloud_spiral_sm.jpg",
+            "chosen_width": 305,
+            "chosen_height": 400,
+            "chosen_size_bytes": 41557,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/dave_cloud_spiral_sm.jpg",
+                    "basename": "dave_cloud_spiral_sm.jpg",
+                    "width": 305,
+                    "height": 400,
+                    "size_bytes": 41557,
+                    "area": 122000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 49,
+            "name": "Spikes",
+            "file_name": "spikes.jpg",
+            "match_key": "spikes.jpg",
+            "chosen_legacy_path": "site_small/spikes_sm.jpg",
+            "chosen_width": 548,
+            "chosen_height": 400,
+            "chosen_size_bytes": 84105,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/spikes_sm.jpg",
+                    "basename": "spikes_sm.jpg",
+                    "width": 548,
+                    "height": 400,
+                    "size_bytes": 84105,
+                    "area": 219200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 50,
+            "name": "Bonus",
+            "file_name": "Bonus.jpg",
+            "match_key": "bonus.jpg",
+            "chosen_legacy_path": "site_small/Bonus_sm.jpg",
+            "chosen_width": 734,
+            "chosen_height": 400,
+            "chosen_size_bytes": 99898,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/Bonus_sm.jpg",
+                    "basename": "bonus_sm.jpg",
+                    "width": 734,
+                    "height": 400,
+                    "size_bytes": 99898,
+                    "area": 293600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 51,
+            "name": "Reoriented",
+            "file_name": "IMG_0959.jpg",
+            "match_key": "img_0959.jpg",
+            "chosen_legacy_path": "site_small/IMG_0959_sm.jpg",
+            "chosen_width": 600,
+            "chosen_height": 400,
+            "chosen_size_bytes": 100004,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0959_sm.jpg",
+                    "basename": "img_0959_sm.jpg",
+                    "width": 600,
+                    "height": 400,
+                    "size_bytes": 100004,
+                    "area": 240000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 52,
+            "name": "Detail",
+            "file_name": "IMG_1105.jpg",
+            "match_key": "img_1105.jpg",
+            "chosen_legacy_path": "site_small/IMG_1105_sm.jpg",
+            "chosen_width": 866,
+            "chosen_height": 400,
+            "chosen_size_bytes": 81798,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_1105_sm.jpg",
+                    "basename": "img_1105_sm.jpg",
+                    "width": 866,
+                    "height": 400,
+                    "size_bytes": 81798,
+                    "area": 346400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 53,
+            "name": "Isolation",
+            "file_name": "IMG_1773.jpg",
+            "match_key": "img_1773.jpg",
+            "chosen_legacy_path": "site_small/IMG_1773_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 141172,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_1773_sm.jpg",
+                    "basename": "img_1773_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 141172,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 54,
+            "name": "Unrealized",
+            "file_name": "IMG_1906.jpg",
+            "match_key": "img_1906.jpg",
+            "chosen_legacy_path": "site_small/IMG_1906_sm.jpg",
+            "chosen_width": 866,
+            "chosen_height": 400,
+            "chosen_size_bytes": 141708,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_1906_sm.jpg",
+                    "basename": "img_1906_sm.jpg",
+                    "width": 866,
+                    "height": 400,
+                    "size_bytes": 141708,
+                    "area": 346400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 55,
+            "name": "Sideshow",
+            "file_name": "IMG_1950.jpg",
+            "match_key": "img_1950.jpg",
+            "chosen_legacy_path": "site_small/IMG_1950_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 82005,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_1950_sm.jpg",
+                    "basename": "img_1950_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 82005,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 56,
+            "name": "Reoriented",
+            "file_name": "IMG_1982.jpg",
+            "match_key": "img_1982.jpg",
+            "chosen_legacy_path": "site_small/IMG_1982_sm.jpg",
+            "chosen_width": 866,
+            "chosen_height": 400,
+            "chosen_size_bytes": 239096,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_1982_sm.jpg",
+                    "basename": "img_1982_sm.jpg",
+                    "width": 866,
+                    "height": 400,
+                    "size_bytes": 239096,
+                    "area": 346400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 57,
+            "name": "Sideshow",
+            "file_name": "IMG_1997.jpg",
+            "match_key": "img_1997.jpg",
+            "chosen_legacy_path": "site_small/IMG_1997_sm.jpg",
+            "chosen_width": 764,
+            "chosen_height": 400,
+            "chosen_size_bytes": 213184,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_1997_sm.jpg",
+                    "basename": "img_1997_sm.jpg",
+                    "width": 764,
+                    "height": 400,
+                    "size_bytes": 213184,
+                    "area": 305600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 58,
+            "name": "Reoriented",
+            "file_name": "IMG_1998.jpg",
+            "match_key": "img_1998.jpg",
+            "chosen_legacy_path": "site_small/IMG_1998_sm.jpg",
+            "chosen_width": 209,
+            "chosen_height": 400,
+            "chosen_size_bytes": 72156,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_1998_sm.jpg",
+                    "basename": "img_1998_sm.jpg",
+                    "width": 209,
+                    "height": 400,
+                    "size_bytes": 72156,
+                    "area": 83600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 59,
+            "name": "Unrealized",
+            "file_name": "IMG_2019.jpg",
+            "match_key": "img_2019.jpg",
+            "chosen_legacy_path": "site_small/IMG_2019_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 125200,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_2019_sm.jpg",
+                    "basename": "img_2019_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 125200,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 60,
+            "name": "Unrealized",
+            "file_name": "IMG_2037.jpg",
+            "match_key": "img_2037.jpg",
+            "chosen_legacy_path": "site_small/IMG_2037_sm.jpg",
+            "chosen_width": 560,
+            "chosen_height": 400,
+            "chosen_size_bytes": 147683,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_2037_sm.jpg",
+                    "basename": "img_2037_sm.jpg",
+                    "width": 560,
+                    "height": 400,
+                    "size_bytes": 147683,
+                    "area": 224000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 61,
+            "name": "Series Six",
+            "file_name": "IMG_2073.jpg",
+            "match_key": "img_2073.jpg",
+            "chosen_legacy_path": "site_small/IMG_2073_sm.jpg",
+            "chosen_width": 360,
+            "chosen_height": 400,
+            "chosen_size_bytes": 86434,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_2073_sm.jpg",
+                    "basename": "img_2073_sm.jpg",
+                    "width": 360,
+                    "height": 400,
+                    "size_bytes": 86434,
+                    "area": 144000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 62,
+            "name": "Early Swirl prototype",
+            "file_name": "IMG_2085.jpg",
+            "match_key": "img_2085.jpg",
+            "chosen_legacy_path": "site_small/IMG_2085_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 98135,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_2085_sm.jpg",
+                    "basename": "img_2085_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 98135,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 63,
+            "name": "Graveyard of the Arts",
+            "file_name": "IMG_2212.jpg",
+            "match_key": "img_2212.jpg",
+            "chosen_legacy_path": "site_small/IMG_2212_sm.jpg",
+            "chosen_width": 600,
+            "chosen_height": 400,
+            "chosen_size_bytes": 167725,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_2212_sm.jpg",
+                    "basename": "img_2212_sm.jpg",
+                    "width": 600,
+                    "height": 400,
+                    "size_bytes": 167725,
+                    "area": 240000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 64,
+            "name": "Prototype",
+            "file_name": "IMG_3562.jpg",
+            "match_key": "img_3562.jpg",
+            "chosen_legacy_path": "site_small/IMG_3562_sm.jpg",
+            "chosen_width": 574,
+            "chosen_height": 400,
+            "chosen_size_bytes": 30375,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_3562_sm.jpg",
+                    "basename": "img_3562_sm.jpg",
+                    "width": 574,
+                    "height": 400,
+                    "size_bytes": 30375,
+                    "area": 229600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 65,
+            "name": "March",
+            "file_name": "IMG_3595.jpg",
+            "match_key": "img_3595.jpg",
+            "chosen_legacy_path": "site_small/IMG_3595_sm.jpg",
+            "chosen_width": 637,
+            "chosen_height": 400,
+            "chosen_size_bytes": 54500,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_3595_sm.jpg",
+                    "basename": "img_3595_sm.jpg",
+                    "width": 637,
+                    "height": 400,
+                    "size_bytes": 54500,
+                    "area": 254800
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 66,
+            "name": "Train Crossing",
+            "file_name": "IMG_3708.jpg",
+            "match_key": "img_3708.jpg",
+            "chosen_legacy_path": "site_small/IMG_3708_sm.jpg",
+            "chosen_width": 397,
+            "chosen_height": 400,
+            "chosen_size_bytes": 62441,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_3708_sm.jpg",
+                    "basename": "img_3708_sm.jpg",
+                    "width": 397,
+                    "height": 400,
+                    "size_bytes": 62441,
+                    "area": 158800
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 67,
+            "name": "Series Six Prototype",
+            "file_name": "IMG_4532.jpg",
+            "match_key": "img_4532.jpg",
+            "chosen_legacy_path": "site_small/IMG_4532_sm.jpg",
+            "chosen_width": 567,
+            "chosen_height": 400,
+            "chosen_size_bytes": 134707,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_4532_sm.jpg",
+                    "basename": "img_4532_sm.jpg",
+                    "width": 567,
+                    "height": 400,
+                    "size_bytes": 134707,
+                    "area": 226800
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 68,
+            "name": "Swirl",
+            "file_name": "IMG_4589.jpg",
+            "match_key": "img_4589.jpg",
+            "chosen_legacy_path": "site_small/IMG_4589_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 125581,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_4589_sm.jpg",
+                    "basename": "img_4589_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 125581,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 69,
+            "name": "Summers End",
+            "file_name": "IMG_4598.jpg",
+            "match_key": "img_4598.jpg",
+            "chosen_legacy_path": "site_small/IMG_4598_sm.jpg",
+            "chosen_width": 515,
+            "chosen_height": 400,
+            "chosen_size_bytes": 155947,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_4598_sm.jpg",
+                    "basename": "img_4598_sm.jpg",
+                    "width": 515,
+                    "height": 400,
+                    "size_bytes": 155947,
+                    "area": 206000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 70,
+            "name": "Assault",
+            "file_name": "assault.jpg",
+            "match_key": "assault.jpg",
+            "chosen_legacy_path": "site_small/assault_sm.jpg",
+            "chosen_width": 711,
+            "chosen_height": 400,
+            "chosen_size_bytes": 92481,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/assault_sm.jpg",
+                    "basename": "assault_sm.jpg",
+                    "width": 711,
+                    "height": 400,
+                    "size_bytes": 92481,
+                    "area": 284400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 71,
+            "name": "Transition",
+            "file_name": "transition.jpg",
+            "match_key": "transition.jpg",
+            "chosen_legacy_path": "site_small/transition_sm.jpg",
+            "chosen_width": 759,
+            "chosen_height": 400,
+            "chosen_size_bytes": 89781,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/transition_sm.jpg",
+                    "basename": "transition_sm.jpg",
+                    "width": 759,
+                    "height": 400,
+                    "size_bytes": 89781,
+                    "area": 303600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 72,
+            "name": "Falls Road",
+            "file_name": "upper_falls_road.jpg",
+            "match_key": "upper_falls_road.jpg",
+            "chosen_legacy_path": "site_small/upper_falls_road_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 106539,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/upper_falls_road_sm.jpg",
+                    "basename": "upper_falls_road_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 106539,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 73,
+            "name": "Baby",
+            "file_name": "baby.jpg",
+            "match_key": "baby.jpg",
+            "chosen_legacy_path": "site_small/baby_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 41574,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/baby_sm.jpg",
+                    "basename": "baby_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 41574,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 74,
+            "name": "Nemesis",
+            "file_name": "chase.jpg",
+            "match_key": "chase.jpg",
+            "chosen_legacy_path": "site_small/chase_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 400,
+            "chosen_size_bytes": 33794,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/chase_sm.jpg",
+                    "basename": "chase_sm.jpg",
+                    "width": 400,
+                    "height": 400,
+                    "size_bytes": 33794,
+                    "area": 160000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 75,
+            "name": "Distraction",
+            "file_name": "distraction.jpg",
+            "match_key": "distraction.jpg",
+            "chosen_legacy_path": "site_small/distraction_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 113671,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/distraction_sm.jpg",
+                    "basename": "distraction_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 113671,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 76,
+            "name": "Furnace Test",
+            "file_name": "furnace_test.jpg",
+            "match_key": "furnace_test.jpg",
+            "chosen_legacy_path": "site_small/furnace_test_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 93736,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/furnace_test_sm.jpg",
+                    "basename": "furnace_test_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 93736,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 77,
+            "name": "Isolation",
+            "file_name": "IMG_4738.jpg",
+            "match_key": "img_4738.jpg",
+            "chosen_legacy_path": "site_small/IMG_4738_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 258,
+            "chosen_size_bytes": 63535,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_4738_sm.jpg",
+                    "basename": "img_4738_sm.jpg",
+                    "width": 400,
+                    "height": 258,
+                    "size_bytes": 63535,
+                    "area": 103200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 78,
+            "name": "Isolation",
+            "file_name": "isolation_above.jpg",
+            "match_key": "isolation_above.jpg",
+            "chosen_legacy_path": "site_small/isolation_above_sm.jpg",
+            "chosen_width": 600,
+            "chosen_height": 400,
+            "chosen_size_bytes": 74445,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/isolation_above_sm.jpg",
+                    "basename": "isolation_above_sm.jpg",
+                    "width": 600,
+                    "height": 400,
+                    "size_bytes": 74445,
+                    "area": 240000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 79,
+            "name": "Isolation",
+            "file_name": "isolation_bridge.jpg",
+            "match_key": "isolation_bridge.jpg",
+            "chosen_legacy_path": "site_small/isolation_bridge_sm.jpg",
+            "chosen_width": 711,
+            "chosen_height": 400,
+            "chosen_size_bytes": 104875,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/isolation_bridge_sm.jpg",
+                    "basename": "isolation_bridge_sm.jpg",
+                    "width": 711,
+                    "height": 400,
+                    "size_bytes": 104875,
+                    "area": 284400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 80,
+            "name": "Isolation; specialized tool",
+            "file_name": "isolation_drill.jpg",
+            "match_key": "isolation_drill.jpg",
+            "chosen_legacy_path": "site_small/isolation_drill_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 64326,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/isolation_drill_sm.jpg",
+                    "basename": "isolation_drill_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 64326,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 81,
+            "name": "Isolation - First Maquette",
+            "file_name": "isolation_maquette_first.jpg",
+            "match_key": "isolation_maquette_first.jpg",
+            "chosen_legacy_path": "site_small/isolation_maquette_first_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 119749,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/isolation_maquette_first_sm.jpg",
+                    "basename": "isolation_maquette_first_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 119749,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 82,
+            "name": "Isolation - Second Maquette",
+            "file_name": "isolation_maquette_second.jpg",
+            "match_key": "isolation_maquette_second.jpg",
+            "chosen_legacy_path": "site_small/isolation_maquette_second_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 126402,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/isolation_maquette_second_sm.jpg",
+                    "basename": "isolation_maquette_second_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 126402,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 83,
+            "name": "Isolation",
+            "file_name": "isolation_sh.jpg",
+            "match_key": "isolation_sh.jpg",
+            "chosen_legacy_path": "site_small/isolation_sh_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 90849,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/isolation_sh_sm.jpg",
+                    "basename": "isolation_sh_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 90849,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 84,
+            "name": "Thing - Preparation",
+            "file_name": "thing_tape.jpg",
+            "match_key": "thing_tape.jpg",
+            "chosen_legacy_path": "site_small/thing_tape_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 104379,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/thing_tape_sm.jpg",
+                    "basename": "thing_tape_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 104379,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 85,
+            "name": "Thing",
+            "file_name": "thing_tree.jpg",
+            "match_key": "thing_tree.jpg",
+            "chosen_legacy_path": "site_small/thing_tree_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 75833,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/thing_tree_sm.jpg",
+                    "basename": "thing_tree_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 75833,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 86,
+            "name": "Series Six Prototype",
+            "file_name": "ss_prototype01.jpg",
+            "match_key": "ss_prototype01.jpg",
+            "chosen_legacy_path": "site_small/ss_prototype01_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 96548,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ss_prototype01_sm.jpg",
+                    "basename": "ss_prototype01_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 96548,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 87,
+            "name": "Series Six Prototype",
+            "file_name": "ss_prototype02.jpg",
+            "match_key": "ss_prototype02.jpg",
+            "chosen_legacy_path": "site_small/ss_prototype02_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 82992,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ss_prototype02_sm.jpg",
+                    "basename": "ss_prototype02_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 82992,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 88,
+            "name": "Series Six Prototype",
+            "file_name": "ss_prototype03.jpg",
+            "match_key": "ss_prototype03.jpg",
+            "chosen_legacy_path": "site_small/ss_prototype03_sm.jpg",
+            "chosen_width": 535,
+            "chosen_height": 400,
+            "chosen_size_bytes": 87790,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ss_prototype03_sm.jpg",
+                    "basename": "ss_prototype03_sm.jpg",
+                    "width": 535,
+                    "height": 400,
+                    "size_bytes": 87790,
+                    "area": 214000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 89,
+            "name": "Series Six Prototype",
+            "file_name": "ss_prototype04.jpg",
+            "match_key": "ss_prototype04.jpg",
+            "chosen_legacy_path": "site_small/ss_prototype04_sm.jpg",
+            "chosen_width": 600,
+            "chosen_height": 400,
+            "chosen_size_bytes": 90716,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ss_prototype04_sm.jpg",
+                    "basename": "ss_prototype04_sm.jpg",
+                    "width": 600,
+                    "height": 400,
+                    "size_bytes": 90716,
+                    "area": 240000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 90,
+            "name": "Summers End",
+            "file_name": "ss_summersend00.jpg",
+            "match_key": "ss_summersend00.jpg",
+            "chosen_legacy_path": "site_small/ss_summersend00_sm.jpg",
+            "chosen_width": 600,
+            "chosen_height": 400,
+            "chosen_size_bytes": 120141,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ss_summersend00_sm.jpg",
+                    "basename": "ss_summersend00_sm.jpg",
+                    "width": 600,
+                    "height": 400,
+                    "size_bytes": 120141,
+                    "area": 240000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 91,
+            "name": "Summers End",
+            "file_name": "ss_summersend01.jpg",
+            "match_key": "ss_summersend01.jpg",
+            "chosen_legacy_path": "site_small/ss_summersend01_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 112747,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ss_summersend01_sm.jpg",
+                    "basename": "ss_summersend01_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 112747,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 92,
+            "name": "Summers End",
+            "file_name": "ss_summersend02.jpg",
+            "match_key": "ss_summersend02.jpg",
+            "chosen_legacy_path": "site_small/ss_summersend02_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 105402,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ss_summersend02_sm.jpg",
+                    "basename": "ss_summersend02_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 105402,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 93,
+            "name": "Summers End",
+            "file_name": "ss_summersend03.jpg",
+            "match_key": "ss_summersend03.jpg",
+            "chosen_legacy_path": "site_small/ss_summersend03_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 69667,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ss_summersend03_sm.jpg",
+                    "basename": "ss_summersend03_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 69667,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 94,
+            "name": "Summers End",
+            "file_name": "ss_summersend04.jpg",
+            "match_key": "ss_summersend04.jpg",
+            "chosen_legacy_path": "site_small/ss_summersend04_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 50961,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ss_summersend04_sm.jpg",
+                    "basename": "ss_summersend04_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 50961,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 95,
+            "name": "Summers End",
+            "file_name": "ss_summersend05.jpg",
+            "match_key": "ss_summersend05.jpg",
+            "chosen_legacy_path": "site_small/ss_summersend05_sm.jpg",
+            "chosen_width": 600,
+            "chosen_height": 400,
+            "chosen_size_bytes": 122245,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ss_summersend05_sm.jpg",
+                    "basename": "ss_summersend05_sm.jpg",
+                    "width": 600,
+                    "height": 400,
+                    "size_bytes": 122245,
+                    "area": 240000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 96,
+            "name": "Swarm at NBOSS",
+            "file_name": "swarm_nboss.jpg",
+            "match_key": "swarm_nboss.jpg",
+            "chosen_legacy_path": "site_small/swarm_nboss_sm.jpg",
+            "chosen_width": 600,
+            "chosen_height": 400,
+            "chosen_size_bytes": 114841,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swarm_nboss_sm.jpg",
+                    "basename": "swarm_nboss_sm.jpg",
+                    "width": 600,
+                    "height": 400,
+                    "size_bytes": 114841,
+                    "area": 240000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 97,
+            "name": "Graveyard of the Arts",
+            "file_name": "art_graveyard.jpg",
+            "match_key": "art_graveyard.jpg",
+            "chosen_legacy_path": "site_small/art_graveyard_sm.jpg",
+            "chosen_width": 599,
+            "chosen_height": 400,
+            "chosen_size_bytes": 131124,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/art_graveyard_sm.jpg",
+                    "basename": "art_graveyard_sm.jpg",
+                    "width": 599,
+                    "height": 400,
+                    "size_bytes": 131124,
+                    "area": 239600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 98,
+            "name": "Rouen",
+            "file_name": "fr_rouen.jpg",
+            "match_key": "fr_rouen.jpg",
+            "chosen_legacy_path": "site_small/fr_rouen_sm.jpg",
+            "chosen_width": 616,
+            "chosen_height": 400,
+            "chosen_size_bytes": 88852,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/fr_rouen_sm.jpg",
+                    "basename": "fr_rouen_sm.jpg",
+                    "width": 616,
+                    "height": 400,
+                    "size_bytes": 88852,
+                    "area": 246400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 99,
+            "name": "Poissy",
+            "file_name": "fr_seine.jpg",
+            "match_key": "fr_seine.jpg",
+            "chosen_legacy_path": "site_small/fr_seine_sm.jpg",
+            "chosen_width": 600,
+            "chosen_height": 400,
+            "chosen_size_bytes": 82136,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/fr_seine_sm.jpg",
+                    "basename": "fr_seine_sm.jpg",
+                    "width": 600,
+                    "height": 400,
+                    "size_bytes": 82136,
+                    "area": 240000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 100,
+            "name": "Points of Contention at Sculpturefest",
+            "file_name": "poc_sculpturefest.jpg",
+            "match_key": "poc_sculpturefest.jpg",
+            "chosen_legacy_path": "site_small/poc_sculpturefest_sm.jpg",
+            "chosen_width": 299,
+            "chosen_height": 400,
+            "chosen_size_bytes": 53157,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/poc_sculpturefest_sm.jpg",
+                    "basename": "poc_sculpturefest_sm.jpg",
+                    "width": 299,
+                    "height": 400,
+                    "size_bytes": 53157,
+                    "area": 119600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 101,
+            "name": "Black Church - Brasov",
+            "file_name": "ro_blackchurch.jpg",
+            "match_key": "ro_blackchurch.jpg",
+            "chosen_legacy_path": "site_small/ro_blackchurch_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 38699,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ro_blackchurch_sm.jpg",
+                    "basename": "ro_blackchurch_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 38699,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 102,
+            "name": "Poiana",
+            "file_name": "ro_poiana.jpg",
+            "match_key": "ro_poiana.jpg",
+            "chosen_legacy_path": "site_small/ro_poiana_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 66754,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ro_poiana_sm.jpg",
+                    "basename": "ro_poiana_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 66754,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 103,
+            "name": "Brasov",
+            "file_name": "ro_tower.jpg",
+            "match_key": "ro_tower.jpg",
+            "chosen_legacy_path": "site_small/ro_tower_sm.jpg",
+            "chosen_width": 603,
+            "chosen_height": 400,
+            "chosen_size_bytes": 43329,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ro_tower_sm.jpg",
+                    "basename": "ro_tower_sm.jpg",
+                    "width": 603,
+                    "height": 400,
+                    "size_bytes": 43329,
+                    "area": 241200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 104,
+            "name": "Series Six CAD Drawing",
+            "file_name": "ss_drawing.jpg",
+            "match_key": "ss_drawing.jpg",
+            "chosen_legacy_path": "site_small/ss_drawing_sm.jpg",
+            "chosen_width": 826,
+            "chosen_height": 400,
+            "chosen_size_bytes": 73650,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ss_drawing_sm.jpg",
+                    "basename": "ss_drawing_sm.jpg",
+                    "width": 826,
+                    "height": 400,
+                    "size_bytes": 73650,
+                    "area": 330400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 105,
+            "name": "Points of Contention at Playa del Fuego",
+            "file_name": "poc_burn0.jpg",
+            "match_key": "poc_burn0.jpg",
+            "chosen_legacy_path": "site_small/poc_burn0_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 70575,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/poc_burn0_sm.jpg",
+                    "basename": "poc_burn0_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 70575,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 106,
+            "name": "Points of Contention at Playa del Fuego",
+            "file_name": "poc_burn1.jpg",
+            "match_key": "poc_burn1.jpg",
+            "chosen_legacy_path": "site_small/poc_burn1_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 54293,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/poc_burn1_sm.jpg",
+                    "basename": "poc_burn1_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 54293,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 107,
+            "name": "Points of Contention at Playa del Fuego",
+            "file_name": "poc_burn3.jpg",
+            "match_key": "poc_burn3.jpg",
+            "chosen_legacy_path": "site_small/poc_burn3_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 57384,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/poc_burn3_sm.jpg",
+                    "basename": "poc_burn3_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 57384,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 108,
+            "name": "Points of Contention at Playa del Fuego",
+            "file_name": "poc_burn4.jpg",
+            "match_key": "poc_burn4.jpg",
+            "chosen_legacy_path": "site_small/poc_burn4_sm.jpg",
+            "chosen_width": 225,
+            "chosen_height": 400,
+            "chosen_size_bytes": 48172,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/poc_burn4_sm.jpg",
+                    "basename": "poc_burn4_sm.jpg",
+                    "width": 225,
+                    "height": 400,
+                    "size_bytes": 48172,
+                    "area": 90000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 109,
+            "name": "Points of Contention - Design Model",
+            "file_name": "poc_design.jpg",
+            "match_key": "poc_design.jpg",
+            "chosen_legacy_path": "site_small/poc_design_sm.jpg",
+            "chosen_width": 219,
+            "chosen_height": 400,
+            "chosen_size_bytes": 42597,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/poc_design_sm.jpg",
+                    "basename": "poc_design_sm.jpg",
+                    "width": 219,
+                    "height": 400,
+                    "size_bytes": 42597,
+                    "area": 87600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 110,
+            "name": "Points of Contention at Governors Island Art Fair",
+            "file_name": "poc_giaf.jpg",
+            "match_key": "poc_giaf.jpg",
+            "chosen_legacy_path": "site_small/poc_giaf_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 117226,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/poc_giaf_sm.jpg",
+                    "basename": "poc_giaf_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 117226,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 111,
+            "name": "Points of Contention at Governors Island Art Fair",
+            "file_name": "poc_giaf2.jpg",
+            "match_key": "poc_giaf2.jpg",
+            "chosen_legacy_path": "site_small/poc_giaf2_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 60892,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/poc_giaf2_sm.jpg",
+                    "basename": "poc_giaf2_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 60892,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 112,
+            "name": "Points of Contention at NBOSS",
+            "file_name": "poc_nboss0.jpg",
+            "match_key": "poc_nboss0.jpg",
+            "chosen_legacy_path": "site_small/poc_nboss0_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 98669,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/poc_nboss0_sm.jpg",
+                    "basename": "poc_nboss0_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 98669,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 113,
+            "name": "Points of Contention at NBOSS",
+            "file_name": "poc_nboss2.jpg",
+            "match_key": "poc_nboss2.jpg",
+            "chosen_legacy_path": "site_small/poc_nboss2_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 54509,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/poc_nboss2_sm.jpg",
+                    "basename": "poc_nboss2_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 54509,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 114,
+            "name": "Points of Contention at NBOSS",
+            "file_name": "pod_nboss_decon.jpg",
+            "match_key": "pod_nboss_decon.jpg",
+            "chosen_legacy_path": "site_small/pod_nboss_decon_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 69295,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/pod_nboss_decon_sm.jpg",
+                    "basename": "pod_nboss_decon_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 69295,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 115,
+            "name": "Snakie at Prosper Farm",
+            "file_name": "snakie_drone.jpg",
+            "match_key": "snakie_drone.jpg",
+            "chosen_legacy_path": "site_small/snakie_drone_sm.jpg",
+            "chosen_width": 534,
+            "chosen_height": 400,
+            "chosen_size_bytes": 125085,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/snakie_drone_sm.jpg",
+                    "basename": "snakie_drone_sm.jpg",
+                    "width": 534,
+                    "height": 400,
+                    "size_bytes": 125085,
+                    "area": 213600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 116,
+            "name": "Swarm at King Farm",
+            "file_name": "swarm_children.jpg",
+            "match_key": "swarm_children.jpg",
+            "chosen_legacy_path": "site_small/swarm_children_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 96843,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swarm_children_sm.jpg",
+                    "basename": "swarm_children_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 96843,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 117,
+            "name": "Swarm in Washington, DC",
+            "file_name": "swarm_dc.jpg",
+            "match_key": "swarm_dc.jpg",
+            "chosen_legacy_path": "site_small/swarm_dc_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 110186,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swarm_dc_sm.jpg",
+                    "basename": "swarm_dc_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 110186,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 118,
+            "name": "Swarm at King Farm",
+            "file_name": "swarm_king1.jpg",
+            "match_key": "swarm_king1.jpg",
+            "chosen_legacy_path": "site_small/swarm_king1_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 113746,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swarm_king1_sm.jpg",
+                    "basename": "swarm_king1_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 113746,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 119,
+            "name": "Swarm at King Farm",
+            "file_name": "swarm_king2.jpg",
+            "match_key": "swarm_king2.jpg",
+            "chosen_legacy_path": "site_small/swarm_king2_sm.jpg",
+            "chosen_width": 710,
+            "chosen_height": 400,
+            "chosen_size_bytes": 130991,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swarm_king2_sm.jpg",
+                    "basename": "swarm_king2_sm.jpg",
+                    "width": 710,
+                    "height": 400,
+                    "size_bytes": 130991,
+                    "area": 284000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 120,
+            "name": "Swarm on the Move",
+            "file_name": "swarm_move.jpg",
+            "match_key": "swarm_move.jpg",
+            "chosen_legacy_path": "site_small/swarm_move_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 49741,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swarm_move_sm.jpg",
+                    "basename": "swarm_move_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 49741,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 121,
+            "name": "Swarm at Prosper Farm",
+            "file_name": "swarm_prosper.jpg",
+            "match_key": "swarm_prosper.jpg",
+            "chosen_legacy_path": "site_small/swarm_prosper_sm.jpg",
+            "chosen_width": 600,
+            "chosen_height": 400,
+            "chosen_size_bytes": 77924,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swarm_prosper_sm.jpg",
+                    "basename": "swarm_prosper_sm.jpg",
+                    "width": 600,
+                    "height": 400,
+                    "size_bytes": 77924,
+                    "area": 240000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 122,
+            "name": "Zions Union Church",
+            "file_name": "zu_with_qr.jpg",
+            "match_key": "zu_with_qr.jpg",
+            "chosen_legacy_path": "site_small/zu_with_qr_sm.jpg",
+            "chosen_width": 490,
+            "chosen_height": 400,
+            "chosen_size_bytes": 54374,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/zu_with_qr_sm.jpg",
+                    "basename": "zu_with_qr_sm.jpg",
+                    "width": 490,
+                    "height": 400,
+                    "size_bytes": 54374,
+                    "area": 196000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 123,
+            "name": "Ben Vrackie Skewed",
+            "file_name": "ben_vrackie_skewed.jpg",
+            "match_key": "ben_vrackie_skewed.jpg",
+            "chosen_legacy_path": "site_small/ben_vrackie_skewed_sm.jpg",
+            "chosen_width": 1504,
+            "chosen_height": 400,
+            "chosen_size_bytes": 220817,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/ben_vrackie_skewed_sm.jpg",
+                    "basename": "ben_vrackie_skewed_sm.jpg",
+                    "width": 1504,
+                    "height": 400,
+                    "size_bytes": 220817,
+                    "area": 601600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 124,
+            "name": "Carpet",
+            "file_name": "carpet_pg.jpg",
+            "match_key": "carpet_pg.jpg",
+            "chosen_legacy_path": "site_small/carpet_pg_sm.jpg",
+            "chosen_width": 664,
+            "chosen_height": 400,
+            "chosen_size_bytes": 76723,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/carpet_pg_sm.jpg",
+                    "basename": "carpet_pg_sm.jpg",
+                    "width": 664,
+                    "height": 400,
+                    "size_bytes": 76723,
+                    "area": 265600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 125,
+            "name": "North Branch",
+            "file_name": "drone_north_branch.jpg",
+            "match_key": "drone_north_branch.jpg",
+            "chosen_legacy_path": "site_small/drone_north_branch_sm.jpg",
+            "chosen_width": 711,
+            "chosen_height": 400,
+            "chosen_size_bytes": 142391,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/drone_north_branch_sm.jpg",
+                    "basename": "drone_north_branch_sm.jpg",
+                    "width": 711,
+                    "height": 400,
+                    "size_bytes": 142391,
+                    "area": 284400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 126,
+            "name": "On Hoth",
+            "file_name": "dronie.jpg",
+            "match_key": "dronie.jpg",
+            "chosen_legacy_path": "site_small/dronie_sm.jpg",
+            "chosen_width": 823,
+            "chosen_height": 400,
+            "chosen_size_bytes": 112434,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/dronie_sm.jpg",
+                    "basename": "dronie_sm.jpg",
+                    "width": 823,
+                    "height": 400,
+                    "size_bytes": 112434,
+                    "area": 329200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 127,
+            "name": "Mesh in Snow",
+            "file_name": "mesh_snow.jpg",
+            "match_key": "mesh_snow.jpg",
+            "chosen_legacy_path": "site_small/mesh_snow_sm.jpg",
+            "chosen_width": 513,
+            "chosen_height": 400,
+            "chosen_size_bytes": 65620,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/mesh_snow_sm.jpg",
+                    "basename": "mesh_snow_sm.jpg",
+                    "width": 513,
+                    "height": 400,
+                    "size_bytes": 65620,
+                    "area": 205200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 128,
+            "name": "Swirls Photogrammetric Model",
+            "file_name": "swirls_protogram.jpg",
+            "match_key": "swirls_protogram.jpg",
+            "chosen_legacy_path": "site_small/swirls_protogram_sm.jpg",
+            "chosen_width": 405,
+            "chosen_height": 400,
+            "chosen_size_bytes": 69530,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swirls_protogram_sm.jpg",
+                    "basename": "swirls_protogram_sm.jpg",
+                    "width": 405,
+                    "height": 400,
+                    "size_bytes": 69530,
+                    "area": 162000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 129,
+            "name": "Swirls First Prototype",
+            "file_name": "swirls_proto.jpg",
+            "match_key": "swirls_proto.jpg",
+            "chosen_legacy_path": "site_small/swirls_proto_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 69983,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swirls_proto_sm.jpg",
+                    "basename": "swirls_proto_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 69983,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 130,
+            "name": "Swirls",
+            "file_name": "swirls_fire_detail.jpg",
+            "match_key": "swirls_fire_detail.jpg",
+            "chosen_legacy_path": "site_small/swirls_fire_detail_sm.jpg",
+            "chosen_width": 305,
+            "chosen_height": 400,
+            "chosen_size_bytes": 42039,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swirls_fire_detail_sm.jpg",
+                    "basename": "swirls_fire_detail_sm.jpg",
+                    "width": 305,
+                    "height": 400,
+                    "size_bytes": 42039,
+                    "area": 122000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 131,
+            "name": "Swirls",
+            "file_name": "swirls_and_me.jpg",
+            "match_key": "swirls_and_me.jpg",
+            "chosen_legacy_path": "site_small/swirls_and_me_sm.jpg",
+            "chosen_width": 482,
+            "chosen_height": 400,
+            "chosen_size_bytes": 110229,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swirls_and_me_sm.jpg",
+                    "basename": "swirls_and_me_sm.jpg",
+                    "width": 482,
+                    "height": 400,
+                    "size_bytes": 110229,
+                    "area": 192800
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 132,
+            "name": "Parking Lot",
+            "file_name": "auto_zion_lot.jpg",
+            "match_key": "auto_zion_lot.jpg",
+            "chosen_legacy_path": "site_small/auto_zion_lot_sm.jpg",
+            "chosen_width": 546,
+            "chosen_height": 400,
+            "chosen_size_bytes": 79176,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/auto_zion_lot_sm.jpg",
+                    "basename": "auto_zion_lot_sm.jpg",
+                    "width": 546,
+                    "height": 400,
+                    "size_bytes": 79176,
+                    "area": 218400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 133,
+            "name": "Snakie Prototype",
+            "file_name": "snakie_prototype.jpg",
+            "match_key": "snakie_prototype.jpg",
+            "chosen_legacy_path": "site_small/snakie_prototype_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 72267,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/snakie_prototype_sm.jpg",
+                    "basename": "snakie_prototype_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 72267,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 134,
+            "name": "Swirl Prototype in decay",
+            "file_name": "swirl_decay.jpg",
+            "match_key": "swirl_decay.jpg",
+            "chosen_legacy_path": "site_small/swirl_decay_sm.jpg",
+            "chosen_width": 711,
+            "chosen_height": 400,
+            "chosen_size_bytes": 170442,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swirl_decay_sm.jpg",
+                    "basename": "swirl_decay_sm.jpg",
+                    "width": 711,
+                    "height": 400,
+                    "size_bytes": 170442,
+                    "area": 284400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 135,
+            "name": "Swirl Prototype in decay",
+            "file_name": "swirl_decay2.jpg",
+            "match_key": "swirl_decay2.jpg",
+            "chosen_legacy_path": "site_small/swirl_decay2_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 121348,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swirl_decay2_sm.jpg",
+                    "basename": "swirl_decay2_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 121348,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 136,
+            "name": "Swirl Prototype in decay",
+            "file_name": "swirl_decay3.jpg",
+            "match_key": "swirl_decay3.jpg",
+            "chosen_legacy_path": "site_small/swirl_decay3_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 130151,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/swirl_decay3_sm.jpg",
+                    "basename": "swirl_decay3_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 130151,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 137,
+            "name": "Spikey Logo",
+            "file_name": "spikey.jpg",
+            "match_key": "spikey.jpg",
+            "chosen_legacy_path": "site_small/spikey_sm.jpg",
+            "chosen_width": 200,
+            "chosen_height": 139,
+            "chosen_size_bytes": 17458,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/spikey_sm.jpg",
+                    "basename": "spikey_sm.jpg",
+                    "width": 200,
+                    "height": 139,
+                    "size_bytes": 17458,
+                    "area": 27800
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 138,
+            "name": "Reruns",
+            "file_name": "reruns.jpg",
+            "match_key": "reruns.jpg",
+            "chosen_legacy_path": "site_small/reruns_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 390,
+            "chosen_size_bytes": 37382,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/reruns_sm.jpg",
+                    "basename": "reruns_sm.jpg",
+                    "width": 400,
+                    "height": 390,
+                    "size_bytes": 37382,
+                    "area": 156000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 139,
+            "name": "QR Experimentation 2",
+            "file_name": "qr1_detail.jpg",
+            "match_key": "qr1_detail.jpg",
+            "chosen_legacy_path": "site_small/qr1_detail_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 54487,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/qr1_detail_sm.jpg",
+                    "basename": "qr1_detail_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 54487,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 140,
+            "name": "Down to the Wire",
+            "file_name": "IMG_6058.jpg",
+            "match_key": "img_6058.jpg",
+            "chosen_legacy_path": "site_small/IMG_6058_sm.jpg",
+            "chosen_width": 276,
+            "chosen_height": 400,
+            "chosen_size_bytes": 50810,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_6058_sm.jpg",
+                    "basename": "img_6058_sm.jpg",
+                    "width": 276,
+                    "height": 400,
+                    "size_bytes": 50810,
+                    "area": 110400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 141,
+            "name": "Down to the Wire",
+            "file_name": "IMG_5503.jpg",
+            "match_key": "img_5503.jpg",
+            "chosen_legacy_path": "site_small/IMG_5503_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 55471,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5503_sm.jpg",
+                    "basename": "img_5503_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 55471,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 142,
+            "name": "Down to the Wire detail",
+            "file_name": "IMG_5460.jpg",
+            "match_key": "img_5460.jpg",
+            "chosen_legacy_path": "site_small/IMG_5460_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 98517,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_5460_sm.jpg",
+                    "basename": "img_5460_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 98517,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 143,
+            "name": "Igloofest Hat",
+            "file_name": "igloo_hat.jpg",
+            "match_key": "igloo_hat.jpg",
+            "chosen_legacy_path": "site_small/igloo_hat_sm.jpg",
+            "chosen_width": 316,
+            "chosen_height": 400,
+            "chosen_size_bytes": 41910,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/igloo_hat_sm.jpg",
+                    "basename": "igloo_hat_sm.jpg",
+                    "width": 316,
+                    "height": 400,
+                    "size_bytes": 41910,
+                    "area": 126400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 144,
+            "name": "Down to the Wire Detail",
+            "file_name": "dttwi.jpg",
+            "match_key": "dttwi.jpg",
+            "chosen_legacy_path": "site_small/dttwi_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 400,
+            "chosen_size_bytes": 53707,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/dttwi_sm.jpg",
+                    "basename": "dttwi_sm.jpg",
+                    "width": 400,
+                    "height": 400,
+                    "size_bytes": 53707,
+                    "area": 160000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 145,
+            "name": "Witness (EFAC Collaboration)",
+            "file_name": "witness.jpg",
+            "match_key": "witness.jpg",
+            "chosen_legacy_path": "site_small/witness_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 57543,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/witness_sm.jpg",
+                    "basename": "witness_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 57543,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 146,
+            "name": "Argument",
+            "file_name": "stew_argument.jpg",
+            "match_key": "stew_argument.jpg",
+            "chosen_legacy_path": "site_small/stew_argument_sm.jpg",
+            "chosen_width": 319,
+            "chosen_height": 400,
+            "chosen_size_bytes": 64463,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/stew_argument_sm.jpg",
+                    "basename": "stew_argument_sm.jpg",
+                    "width": 319,
+                    "height": 400,
+                    "size_bytes": 64463,
+                    "area": 127600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 147,
+            "name": "Anniversary 3D Study",
+            "file_name": "in_close.jpg",
+            "match_key": "in_close.jpg",
+            "chosen_legacy_path": "site_small/in_close_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 233,
+            "chosen_size_bytes": 31529,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/in_close_sm.jpg",
+                    "basename": "in_close_sm.jpg",
+                    "width": 400,
+                    "height": 233,
+                    "size_bytes": 31529,
+                    "area": 93200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 148,
+            "name": "Experiment Series",
+            "file_name": "IMG_9939.jpg",
+            "match_key": "img_9939.jpg",
+            "chosen_legacy_path": "site_small/IMG_9939_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 60152,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_9939_sm.jpg",
+                    "basename": "img_9939_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 60152,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 149,
+            "name": "Beam",
+            "file_name": "IMG_9834.jpg",
+            "match_key": "img_9834.jpg",
+            "chosen_legacy_path": "site_small/IMG_9834_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 59804,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_9834_sm.jpg",
+                    "basename": "img_9834_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 59804,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 150,
+            "name": "Crusty Device With Twigs",
+            "file_name": "IMG_9765.jpg",
+            "match_key": "img_9765.jpg",
+            "chosen_legacy_path": "site_small/IMG_9765_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 28308,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_9765_sm.jpg",
+                    "basename": "img_9765_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 28308,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 151,
+            "name": "Continued Experimentation",
+            "file_name": "IMG_1147.jpg",
+            "match_key": "img_1147.jpg",
+            "chosen_legacy_path": "site_small/IMG_1147_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 77125,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_1147_sm.jpg",
+                    "basename": "img_1147_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 77125,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 152,
+            "name": "Continued Experimentation",
+            "file_name": "IMG_1040.jpg",
+            "match_key": "img_1040.jpg",
+            "chosen_legacy_path": "site_small/IMG_1040_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 56190,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_1040_sm.jpg",
+                    "basename": "img_1040_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 56190,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 153,
+            "name": "Continued Experimentation",
+            "file_name": "IMG_0997.jpg",
+            "match_key": "img_0997.jpg",
+            "chosen_legacy_path": "site_small/IMG_0997_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 63430,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0997_sm.jpg",
+                    "basename": "img_0997_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 63430,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 154,
+            "name": "Argument",
+            "file_name": "IMG_0955.jpg",
+            "match_key": "img_0955.jpg",
+            "chosen_legacy_path": "site_small/IMG_0955_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 67389,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0955_sm.jpg",
+                    "basename": "img_0955_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 67389,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 155,
+            "name": "Experiment Series",
+            "file_name": "IMG_0829.jpg",
+            "match_key": "img_0829.jpg",
+            "chosen_legacy_path": "site_small/IMG_0829_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 38840,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0829_sm.jpg",
+                    "basename": "img_0829_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 38840,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 156,
+            "name": "Workshop",
+            "file_name": "IMG_0825.jpg",
+            "match_key": "img_0825.jpg",
+            "chosen_legacy_path": "site_small/IMG_0825_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 47043,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0825_sm.jpg",
+                    "basename": "img_0825_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 47043,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 157,
+            "name": "Green Thing",
+            "file_name": "IMG_0824.jpg",
+            "match_key": "img_0824.jpg",
+            "chosen_legacy_path": "site_small/IMG_0824_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 36855,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0824_sm.jpg",
+                    "basename": "img_0824_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 36855,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 158,
+            "name": "Faux Naturale",
+            "file_name": "faux.jpg",
+            "match_key": "faux.jpg",
+            "chosen_legacy_path": "site_small/faux_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 38375,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/faux_sm.jpg",
+                    "basename": "faux_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 38375,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 159,
+            "name": "Experiment Series",
+            "file_name": "experiment.jpg",
+            "match_key": "experiment.jpg",
+            "chosen_legacy_path": "site_small/experiment_sm.jpg",
+            "chosen_width": 340,
+            "chosen_height": 400,
+            "chosen_size_bytes": 54741,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/experiment_sm.jpg",
+                    "basename": "experiment_sm.jpg",
+                    "width": 340,
+                    "height": 400,
+                    "size_bytes": 54741,
+                    "area": 136000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 160,
+            "name": "Device Four Monochrome",
+            "file_name": "device_4_bw.jpg",
+            "match_key": "device_4_bw.jpg",
+            "chosen_legacy_path": "site_small/device_4_bw_sm.jpg",
+            "chosen_width": 287,
+            "chosen_height": 400,
+            "chosen_size_bytes": 21817,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/device_4_bw_sm.jpg",
+                    "basename": "device_4_bw_sm.jpg",
+                    "width": 287,
+                    "height": 400,
+                    "size_bytes": 21817,
+                    "area": 114800
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 161,
+            "name": "Sharp Things / Big Saw",
+            "file_name": "bigsaw.jpg",
+            "match_key": "bigsaw.jpg",
+            "chosen_legacy_path": "site_small/bigsaw_sm.jpg",
+            "chosen_width": 294,
+            "chosen_height": 400,
+            "chosen_size_bytes": 62962,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bigsaw_sm.jpg",
+                    "basename": "bigsaw_sm.jpg",
+                    "width": 294,
+                    "height": 400,
+                    "size_bytes": 62962,
+                    "area": 117600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 162,
+            "name": "Argument",
+            "file_name": "argument_at_home.jpg",
+            "match_key": "argument_at_home.jpg",
+            "chosen_legacy_path": "site_small/argument_at_home_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 74493,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/argument_at_home_sm.jpg",
+                    "basename": "argument_at_home_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 74493,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 163,
+            "name": "1200 Pieces",
+            "file_name": "1200_under_construction.jpg",
+            "match_key": "1200_under_construction.jpg",
+            "chosen_legacy_path": "site_small/1200_under_construction_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 52026,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/1200_under_construction_sm.jpg",
+                    "basename": "1200_under_construction_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 52026,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 164,
+            "name": "1200 Pieces",
+            "file_name": "1200_truck.jpg",
+            "match_key": "1200_truck.jpg",
+            "chosen_legacy_path": "site_small/1200_truck_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 225,
+            "chosen_size_bytes": 36713,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/1200_truck_sm.jpg",
+                    "basename": "1200_truck_sm.jpg",
+                    "width": 400,
+                    "height": 225,
+                    "size_bytes": 36713,
+                    "area": 90000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 165,
+            "name": "1200 Pieces",
+            "file_name": "1200_king_farm.jpg",
+            "match_key": "1200_king_farm.jpg",
+            "chosen_legacy_path": "site_small/1200_king_farm_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 224,
+            "chosen_size_bytes": 33966,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/1200_king_farm_sm.jpg",
+                    "basename": "1200_king_farm_sm.jpg",
+                    "width": 400,
+                    "height": 224,
+                    "size_bytes": 33966,
+                    "area": 89600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 166,
+            "name": "1200 Pieces",
+            "file_name": "1200_autumn.jpg",
+            "match_key": "1200_autumn.jpg",
+            "chosen_legacy_path": "site_small/1200_autumn_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 58336,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/1200_autumn_sm.jpg",
+                    "basename": "1200_autumn_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 58336,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 167,
+            "name": "1200 Pieces",
+            "file_name": "cube.jpg",
+            "match_key": "cube.jpg",
+            "chosen_legacy_path": "site_small/cube_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 97058,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/cube_sm.jpg",
+                    "basename": "cube_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 97058,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 168,
+            "name": "Tendrils",
+            "file_name": "tendrils.jpg",
+            "match_key": "tendrils.jpg",
+            "chosen_legacy_path": "site_small/tendrils_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 307,
+            "chosen_size_bytes": 44406,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/tendrils_sm.jpg",
+                    "basename": "tendrils_sm.jpg",
+                    "width": 400,
+                    "height": 307,
+                    "size_bytes": 44406,
+                    "area": 122800
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 169,
+            "name": "Essence",
+            "file_name": "essence.jpg",
+            "match_key": "essence.jpg",
+            "chosen_legacy_path": "site_small/essence_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 34728,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/essence_sm.jpg",
+                    "basename": "essence_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 34728,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 170,
+            "name": "Bee-Dib",
+            "file_name": "bosind_s.jpg",
+            "match_key": "bosind_s.jpg",
+            "chosen_legacy_path": "site_small/bosind_s_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 265,
+            "chosen_size_bytes": 33085,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bosind_s_sm.jpg",
+                    "basename": "bosind_s_sm.jpg",
+                    "width": 400,
+                    "height": 265,
+                    "size_bytes": 33085,
+                    "area": 106000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 171,
+            "name": "PVC 6",
+            "file_name": "big_pvc.jpg",
+            "match_key": "big_pvc.jpg",
+            "chosen_legacy_path": "site_small/big_pvc_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 77841,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/big_pvc_sm.jpg",
+                    "basename": "big_pvc_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 77841,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 172,
+            "name": "Tendrils",
+            "file_name": "above_tendrils.jpg",
+            "match_key": "above_tendrils.jpg",
+            "chosen_legacy_path": "site_small/above_tendrils_sm.jpg",
+            "chosen_width": 339,
+            "chosen_height": 400,
+            "chosen_size_bytes": 65332,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/above_tendrils_sm.jpg",
+                    "basename": "above_tendrils_sm.jpg",
+                    "width": 339,
+                    "height": 400,
+                    "size_bytes": 65332,
+                    "area": 135600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 173,
+            "name": "Power",
+            "file_name": "power.jpg",
+            "match_key": "power.jpg",
+            "chosen_legacy_path": "site_small/power_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 69117,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/power_sm.jpg",
+                    "basename": "power_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 69117,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 174,
+            "name": "Device Four",
+            "file_name": "pic14.jpg",
+            "match_key": "pic14.jpg",
+            "chosen_legacy_path": "img/pic14.jpg",
+            "chosen_width": 300,
+            "chosen_height": 402,
+            "chosen_size_bytes": 68466,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/pic14.jpg",
+                    "basename": "pic14.jpg",
+                    "width": 300,
+                    "height": 402,
+                    "size_bytes": 68466,
+                    "area": 120600
+                },
+                {
+                    "relative_path": "site_small/pic14_sm.jpg",
+                    "basename": "pic14_sm.jpg",
+                    "width": 298,
+                    "height": 400,
+                    "size_bytes": 24385,
+                    "area": 119200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 175,
+            "name": "Device Seven Scene",
+            "file_name": "IMG_4418.jpg",
+            "match_key": "img_4418.jpg",
+            "chosen_legacy_path": "site_small/IMG_4418_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 41551,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_4418_sm.jpg",
+                    "basename": "img_4418_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 41551,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 176,
+            "name": "Palais Garnier",
+            "file_name": "IMG_3751.jpg",
+            "match_key": "img_3751.jpg",
+            "chosen_legacy_path": "site_small/IMG_3751_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 180,
+            "chosen_size_bytes": 33700,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_3751_sm.jpg",
+                    "basename": "img_3751_sm.jpg",
+                    "width": 400,
+                    "height": 180,
+                    "size_bytes": 33700,
+                    "area": 72000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 177,
+            "name": "Catacombs",
+            "file_name": "IMG_3700.jpg",
+            "match_key": "img_3700.jpg",
+            "chosen_legacy_path": "site_small/IMG_3700_sm.jpg",
+            "chosen_width": 122,
+            "chosen_height": 400,
+            "chosen_size_bytes": 16730,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_3700_sm.jpg",
+                    "basename": "img_3700_sm.jpg",
+                    "width": 122,
+                    "height": 400,
+                    "size_bytes": 16730,
+                    "area": 48800
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 178,
+            "name": "Education Series",
+            "file_name": "education_v2_site_9.jpg",
+            "match_key": "education_v2_site_9.jpg",
+            "chosen_legacy_path": "img/education_v2_site_9.jpg",
+            "chosen_width": 768,
+            "chosen_height": 1024,
+            "chosen_size_bytes": 218775,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/education_v2_site_9.jpg",
+                    "basename": "education_v2_site_9.jpg",
+                    "width": 768,
+                    "height": 1024,
+                    "size_bytes": 218775,
+                    "area": 786432
+                },
+                {
+                    "relative_path": "site_small/education_v2_site_9_sm.jpg",
+                    "basename": "education_v2_site_9_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 39278,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 179,
+            "name": "Education Series",
+            "file_name": "education_v2_site_8.jpg",
+            "match_key": "education_v2_site_8.jpg",
+            "chosen_legacy_path": "img/education_v2_site_8.jpg",
+            "chosen_width": 768,
+            "chosen_height": 1024,
+            "chosen_size_bytes": 334617,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/education_v2_site_8.jpg",
+                    "basename": "education_v2_site_8.jpg",
+                    "width": 768,
+                    "height": 1024,
+                    "size_bytes": 334617,
+                    "area": 786432
+                },
+                {
+                    "relative_path": "site_small/education_v2_site_8_sm.jpg",
+                    "basename": "education_v2_site_8_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 60849,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 180,
+            "name": "Education Series",
+            "file_name": "education_v2_site_7.jpg",
+            "match_key": "education_v2_site_7.jpg",
+            "chosen_legacy_path": "img/education_v2_site_7.jpg",
+            "chosen_width": 768,
+            "chosen_height": 1024,
+            "chosen_size_bytes": 264787,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/education_v2_site_7.jpg",
+                    "basename": "education_v2_site_7.jpg",
+                    "width": 768,
+                    "height": 1024,
+                    "size_bytes": 264787,
+                    "area": 786432
+                },
+                {
+                    "relative_path": "site_small/education_v2_site_7_sm.jpg",
+                    "basename": "education_v2_site_7_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 47052,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 181,
+            "name": "Education Series",
+            "file_name": "education_v2_site_6.jpg",
+            "match_key": "education_v2_site_6.jpg",
+            "chosen_legacy_path": "img/education_v2_site_6.jpg",
+            "chosen_width": 368,
+            "chosen_height": 1024,
+            "chosen_size_bytes": 120009,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/education_v2_site_6.jpg",
+                    "basename": "education_v2_site_6.jpg",
+                    "width": 368,
+                    "height": 1024,
+                    "size_bytes": 120009,
+                    "area": 376832
+                },
+                {
+                    "relative_path": "site_small/education_v2_site_6_sm.jpg",
+                    "basename": "education_v2_site_6_sm.jpg",
+                    "width": 143,
+                    "height": 400,
+                    "size_bytes": 25386,
+                    "area": 57200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 182,
+            "name": "Education Series",
+            "file_name": "education_v2_site_5.jpg",
+            "match_key": "education_v2_site_5.jpg",
+            "chosen_legacy_path": "img/education_v2_site_5.jpg",
+            "chosen_width": 768,
+            "chosen_height": 1024,
+            "chosen_size_bytes": 276670,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/education_v2_site_5.jpg",
+                    "basename": "education_v2_site_5.jpg",
+                    "width": 768,
+                    "height": 1024,
+                    "size_bytes": 276670,
+                    "area": 786432
+                },
+                {
+                    "relative_path": "site_small/education_v2_site_5_sm.jpg",
+                    "basename": "education_v2_site_5_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 54101,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 183,
+            "name": "Education Series",
+            "file_name": "education_v2_site_4.jpg",
+            "match_key": "education_v2_site_4.jpg",
+            "chosen_legacy_path": "img/education_v2_site_4.jpg",
+            "chosen_width": 1024,
+            "chosen_height": 747,
+            "chosen_size_bytes": 321028,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/education_v2_site_4.jpg",
+                    "basename": "education_v2_site_4.jpg",
+                    "width": 1024,
+                    "height": 747,
+                    "size_bytes": 321028,
+                    "area": 764928
+                },
+                {
+                    "relative_path": "site_small/education_v2_site_4_sm.jpg",
+                    "basename": "education_v2_site_4_sm.jpg",
+                    "width": 400,
+                    "height": 291,
+                    "size_bytes": 61050,
+                    "area": 116400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 184,
+            "name": "Education Series",
+            "file_name": "education_v2_site_2.jpg",
+            "match_key": "education_v2_site_2.jpg",
+            "chosen_legacy_path": "img/education_v2_site_2.jpg",
+            "chosen_width": 1024,
+            "chosen_height": 768,
+            "chosen_size_bytes": 272948,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/education_v2_site_2.jpg",
+                    "basename": "education_v2_site_2.jpg",
+                    "width": 1024,
+                    "height": 768,
+                    "size_bytes": 272948,
+                    "area": 786432
+                },
+                {
+                    "relative_path": "site_small/education_v2_site_2_sm.jpg",
+                    "basename": "education_v2_site_2_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 50372,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 185,
+            "name": "Education Series",
+            "file_name": "education_v2_site_10.jpg",
+            "match_key": "education_v2_site_10.jpg",
+            "chosen_legacy_path": "img/education_v2_site_10.jpg",
+            "chosen_width": 768,
+            "chosen_height": 1024,
+            "chosen_size_bytes": 249440,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/education_v2_site_10.jpg",
+                    "basename": "education_v2_site_10.jpg",
+                    "width": 768,
+                    "height": 1024,
+                    "size_bytes": 249440,
+                    "area": 786432
+                },
+                {
+                    "relative_path": "site_small/education_v2_site_10_sm.jpg",
+                    "basename": "education_v2_site_10_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 44333,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 186,
+            "name": "Education Series",
+            "file_name": "education_v2_site_1.jpg",
+            "match_key": "education_v2_site_1.jpg",
+            "chosen_legacy_path": "img/education_v2_site_1.jpg",
+            "chosen_width": 1024,
+            "chosen_height": 851,
+            "chosen_size_bytes": 355922,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/education_v2_site_1.jpg",
+                    "basename": "education_v2_site_1.jpg",
+                    "width": 1024,
+                    "height": 851,
+                    "size_bytes": 355922,
+                    "area": 871424
+                },
+                {
+                    "relative_path": "site_small/education_v2_site_1_sm.jpg",
+                    "basename": "education_v2_site_1_sm.jpg",
+                    "width": 400,
+                    "height": 332,
+                    "size_bytes": 60702,
+                    "area": 132800
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 187,
+            "name": "Device Work",
+            "file_name": "device_work.jpg",
+            "match_key": "device_work.jpg",
+            "chosen_legacy_path": "site_small/device_work_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 40263,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/device_work_sm.jpg",
+                    "basename": "device_work_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 40263,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 188,
+            "name": "Device Four",
+            "file_name": "device_4.jpg",
+            "match_key": "device_4.jpg",
+            "chosen_legacy_path": "site_small/device_4_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 30833,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/device_4_sm.jpg",
+                    "basename": "device_4_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 30833,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 189,
+            "name": "QR Blue",
+            "file_name": "device_3_qr_blue.jpg",
+            "match_key": "device_3_qr_blue.jpg",
+            "chosen_legacy_path": "site_small/device_3_qr_blue_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 400,
+            "chosen_size_bytes": 56141,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/device_3_qr_blue_sm.jpg",
+                    "basename": "device_3_qr_blue_sm.jpg",
+                    "width": 400,
+                    "height": 400,
+                    "size_bytes": 56141,
+                    "area": 160000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 190,
+            "name": "Device Three at the Graveyard",
+            "file_name": "device_3_at_the_graveyard.jpg",
+            "match_key": "device_3_at_the_graveyard.jpg",
+            "chosen_legacy_path": "site_small/device_3_at_the_graveyard_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 31835,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/device_3_at_the_graveyard_sm.jpg",
+                    "basename": "device_3_at_the_graveyard_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 31835,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 191,
+            "name": "Device One Swimmer",
+            "file_name": "device_1_s_swimmer.jpg",
+            "match_key": "device_1_s_swimmer.jpg",
+            "chosen_legacy_path": "site_small/device_1_s_swimmer_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 44163,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/device_1_s_swimmer_sm.jpg",
+                    "basename": "device_1_s_swimmer_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 44163,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 192,
+            "name": "Seven Cards",
+            "file_name": "card_md_4.jpg",
+            "match_key": "card_md_4.jpg",
+            "chosen_legacy_path": "img/card_md_4.jpg",
+            "chosen_width": 1024,
+            "chosen_height": 768,
+            "chosen_size_bytes": 382260,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/card_md_4.jpg",
+                    "basename": "card_md_4.jpg",
+                    "width": 1024,
+                    "height": 768,
+                    "size_bytes": 382260,
+                    "area": 786432
+                },
+                {
+                    "relative_path": "site_small/card_md_4_sm.jpg",
+                    "basename": "card_md_4_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 65763,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 193,
+            "name": "Device Seven Washed",
+            "file_name": "card_md_3.jpg",
+            "match_key": "card_md_3.jpg",
+            "chosen_legacy_path": "img/card_md_3.jpg",
+            "chosen_width": 1024,
+            "chosen_height": 911,
+            "chosen_size_bytes": 336557,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/card_md_3.jpg",
+                    "basename": "card_md_3.jpg",
+                    "width": 1024,
+                    "height": 911,
+                    "size_bytes": 336557,
+                    "area": 932864
+                },
+                {
+                    "relative_path": "site_small/card_md_3_sm.jpg",
+                    "basename": "card_md_3_sm.jpg",
+                    "width": 400,
+                    "height": 355,
+                    "size_bytes": 46385,
+                    "area": 142000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 194,
+            "name": "Device One Study",
+            "file_name": "card_md_2.jpg",
+            "match_key": "card_md_2.jpg",
+            "chosen_legacy_path": "img/card_md_2.jpg",
+            "chosen_width": 768,
+            "chosen_height": 1024,
+            "chosen_size_bytes": 332698,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/card_md_2.jpg",
+                    "basename": "card_md_2.jpg",
+                    "width": 768,
+                    "height": 1024,
+                    "size_bytes": 332698,
+                    "area": 786432
+                },
+                {
+                    "relative_path": "site_small/card_md_2_sm.jpg",
+                    "basename": "card_md_2_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 43211,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 195,
+            "name": "Device One Study",
+            "file_name": "card_md_1.jpg",
+            "match_key": "card_md_1.jpg",
+            "chosen_legacy_path": "img/card_md_1.jpg",
+            "chosen_width": 1024,
+            "chosen_height": 950,
+            "chosen_size_bytes": 325089,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "img/card_md_1.jpg",
+                    "basename": "card_md_1.jpg",
+                    "width": 1024,
+                    "height": 950,
+                    "size_bytes": 325089,
+                    "area": 972800
+                },
+                {
+                    "relative_path": "site_small/card_md_1_sm.jpg",
+                    "basename": "card_md_1_sm.jpg",
+                    "width": 400,
+                    "height": 371,
+                    "size_bytes": 53834,
+                    "area": 148400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 196,
+            "name": "Device Fragment",
+            "file_name": "bxiie_ul_10.jpg",
+            "match_key": "bxiie_ul_10.jpg",
+            "chosen_legacy_path": "site_small/bxiie_ul_10_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 72196,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_ul_10_sm.jpg",
+                    "basename": "bxiie_ul_10_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 72196,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 197,
+            "name": "Lid",
+            "file_name": "bxiie_br_8.jpg",
+            "match_key": "bxiie_br_8.jpg",
+            "chosen_legacy_path": "site_small/bxiie_br_8_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 62241,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_br_8_sm.jpg",
+                    "basename": "bxiie_br_8_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 62241,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 198,
+            "name": "Plastic",
+            "file_name": "bxiie_br_7.jpg",
+            "match_key": "bxiie_br_7.jpg",
+            "chosen_legacy_path": "site_small/bxiie_br_7_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 45637,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_br_7_sm.jpg",
+                    "basename": "bxiie_br_7_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 45637,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 199,
+            "name": "Plastic",
+            "file_name": "bxiie_br_6.jpg",
+            "match_key": "bxiie_br_6.jpg",
+            "chosen_legacy_path": "site_small/bxiie_br_6_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 49519,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_br_6_sm.jpg",
+                    "basename": "bxiie_br_6_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 49519,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 200,
+            "name": "Device Two",
+            "file_name": "bxiie_br_5.jpg",
+            "match_key": "bxiie_br_5.jpg",
+            "chosen_legacy_path": "site_small/bxiie_br_5_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 28463,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_br_5_sm.jpg",
+                    "basename": "bxiie_br_5_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 28463,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 201,
+            "name": "Red Paint Process",
+            "file_name": "bxiie_br_43.jpg",
+            "match_key": "bxiie_br_43.jpg",
+            "chosen_legacy_path": "site_small/bxiie_br_43_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 47831,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_br_43_sm.jpg",
+                    "basename": "bxiie_br_43_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 47831,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 202,
+            "name": "Device One",
+            "file_name": "bxiie_br_4.jpg",
+            "match_key": "bxiie_br_4.jpg",
+            "chosen_legacy_path": "site_small/bxiie_br_4_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 49466,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_br_4_sm.jpg",
+                    "basename": "bxiie_br_4_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 49466,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 203,
+            "name": "In Paint",
+            "file_name": "bxiie_br_34.jpg",
+            "match_key": "bxiie_br_34.jpg",
+            "chosen_legacy_path": "site_small/bxiie_br_34_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 36948,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_br_34_sm.jpg",
+                    "basename": "bxiie_br_34_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 36948,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 204,
+            "name": "Plastic",
+            "file_name": "bxiie_br_30.jpg",
+            "match_key": "bxiie_br_30.jpg",
+            "chosen_legacy_path": "site_small/bxiie_br_30_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 43939,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_br_30_sm.jpg",
+                    "basename": "bxiie_br_30_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 43939,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 205,
+            "name": "Red Fan",
+            "file_name": "bxiie_br_3.jpg",
+            "match_key": "bxiie_br_3.jpg",
+            "chosen_legacy_path": "site_small/bxiie_br_3_sm.jpg",
+            "chosen_width": 184,
+            "chosen_height": 400,
+            "chosen_size_bytes": 30430,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_br_3_sm.jpg",
+                    "basename": "bxiie_br_3_sm.jpg",
+                    "width": 184,
+                    "height": 400,
+                    "size_bytes": 30430,
+                    "area": 73600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 206,
+            "name": "Reflections",
+            "file_name": "bxiie_br_2.jpg",
+            "match_key": "bxiie_br_2.jpg",
+            "chosen_legacy_path": "site_small/bxiie_br_2_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 49574,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_br_2_sm.jpg",
+                    "basename": "bxiie_br_2_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 49574,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 207,
+            "name": "Subite",
+            "file_name": "bxiie_br_1.jpg",
+            "match_key": "bxiie_br_1.jpg",
+            "chosen_legacy_path": "site_small/bxiie_br_1_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 80514,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_br_1_sm.jpg",
+                    "basename": "bxiie_br_1_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 80514,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 208,
+            "name": "Device Three at the Tower",
+            "file_name": "bxiie_8.jpg",
+            "match_key": "bxiie_8.jpg",
+            "chosen_legacy_path": "site_small/bxiie_8_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 297,
+            "chosen_size_bytes": 49837,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_8_sm.jpg",
+                    "basename": "bxiie_8_sm.jpg",
+                    "width": 400,
+                    "height": 297,
+                    "size_bytes": 49837,
+                    "area": 118800
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 209,
+            "name": "Stone Metro",
+            "file_name": "bxiie_3.jpg",
+            "match_key": "bxiie_3.jpg",
+            "chosen_legacy_path": "site_small/bxiie_3_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 40081,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_3_sm.jpg",
+                    "basename": "bxiie_3_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 40081,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 210,
+            "name": "PVC Two",
+            "file_name": "bxiie_2_3.jpg",
+            "match_key": "bxiie_2_3.jpg",
+            "chosen_legacy_path": "site_small/bxiie_2_3_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 69727,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_2_3_sm.jpg",
+                    "basename": "bxiie_2_3_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 69727,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 211,
+            "name": "Reflections",
+            "file_name": "bxiie_2_1.jpg",
+            "match_key": "bxiie_2_1.jpg",
+            "chosen_legacy_path": "site_small/bxiie_2_1_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 34655,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_2_1_sm.jpg",
+                    "basename": "bxiie_2_1_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 34655,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 212,
+            "name": "Amsden Hollow Irene",
+            "file_name": "bxiie_26.jpg",
+            "match_key": "bxiie_26.jpg",
+            "chosen_legacy_path": "site_small/bxiie_26_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 266,
+            "chosen_size_bytes": 35092,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bxiie_26_sm.jpg",
+                    "basename": "bxiie_26_sm.jpg",
+                    "width": 400,
+                    "height": 266,
+                    "size_bytes": 35092,
+                    "area": 106400
+                }
+            ]
+        }
+    ],
+    "matched_sample": [
+        {
+            "spreadsheet_row": 3,
+            "name": "Isolation in Boulder, Colorado",
+            "file_name": "IMG_0149.jpg",
+            "match_key": "img_0149.jpg",
+            "chosen_legacy_path": "site_small/IMG_0149_sm.jpg",
+            "chosen_width": 573,
+            "chosen_height": 400,
+            "chosen_size_bytes": 129681,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0149_sm.jpg",
+                    "basename": "img_0149_sm.jpg",
+                    "width": 573,
+                    "height": 400,
+                    "size_bytes": 129681,
+                    "area": 229200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 4,
+            "name": "Curves V1",
+            "file_name": "IMG_0696.jpg",
+            "match_key": "img_0696.jpg",
+            "chosen_legacy_path": "site_small/IMG_0696_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 58728,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0696_sm.jpg",
+                    "basename": "img_0696_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 58728,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 5,
+            "name": "Black Sea",
+            "file_name": "IMG_0867.jpg",
+            "match_key": "img_0867.jpg",
+            "chosen_legacy_path": "site_small/IMG_0867_sm.jpg",
+            "chosen_width": 781,
+            "chosen_height": 400,
+            "chosen_size_bytes": 107724,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0867_sm.jpg",
+                    "basename": "img_0867_sm.jpg",
+                    "width": 781,
+                    "height": 400,
+                    "size_bytes": 107724,
+                    "area": 312400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 6,
+            "name": "Curves V1 in Sinaia, Romania",
+            "file_name": "IMG_0926.jpg",
+            "match_key": "img_0926.jpg",
+            "chosen_legacy_path": "site_small/IMG_0926_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 52673,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_0926_sm.jpg",
+                    "basename": "img_0926_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 52673,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 7,
+            "name": "Street Intervention in Bucharest, Romania",
+            "file_name": "IMG_1730.jpg",
+            "match_key": "img_1730.jpg",
+            "chosen_legacy_path": "site_small/IMG_1730_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 71554,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_1730_sm.jpg",
+                    "basename": "img_1730_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 71554,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 8,
+            "name": "Inside Out V2 Maquette",
+            "file_name": "IMG_2385.jpg",
+            "match_key": "img_2385.jpg",
+            "chosen_legacy_path": "site_small/IMG_2385_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 96934,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_2385_sm.jpg",
+                    "basename": "img_2385_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 96934,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 9,
+            "name": "Opposition in Watertown, Massachusetts",
+            "file_name": "IMG_2565.jpg",
+            "match_key": "img_2565.jpg",
+            "chosen_legacy_path": "site_small/IMG_2565_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 162630,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_2565_sm.jpg",
+                    "basename": "img_2565_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 162630,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 10,
+            "name": "Curves V2 Detail",
+            "file_name": "IMG_2878.jpg",
+            "match_key": "img_2878.jpg",
+            "chosen_legacy_path": "site_small/IMG_2878_sm.jpg",
+            "chosen_width": 300,
+            "chosen_height": 400,
+            "chosen_size_bytes": 43778,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_2878_sm.jpg",
+                    "basename": "img_2878_sm.jpg",
+                    "width": 300,
+                    "height": 400,
+                    "size_bytes": 43778,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 11,
+            "name": "Inside Out V1",
+            "file_name": "IMG_7953.jpg",
+            "match_key": "img_7953.jpg",
+            "chosen_legacy_path": "site_small/IMG_7953_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 96534,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_7953_sm.jpg",
+                    "basename": "img_7953_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 96534,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 12,
+            "name": "Small Sculpture",
+            "file_name": "IMG_7980.jpg",
+            "match_key": "img_7980.jpg",
+            "chosen_legacy_path": "site_small/IMG_7980_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 66185,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_7980_sm.jpg",
+                    "basename": "img_7980_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 66185,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 13,
+            "name": "Small Sculpture",
+            "file_name": "IMG_8006.jpg",
+            "match_key": "img_8006.jpg",
+            "chosen_legacy_path": "site_small/IMG_8006_sm.jpg",
+            "chosen_width": 533,
+            "chosen_height": 400,
+            "chosen_size_bytes": 71092,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_8006_sm.jpg",
+                    "basename": "img_8006_sm.jpg",
+                    "width": 533,
+                    "height": 400,
+                    "size_bytes": 71092,
+                    "area": 213200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 14,
+            "name": "Reoriented",
+            "file_name": "IMG_9017.jpg",
+            "match_key": "img_9017.jpg",
+            "chosen_legacy_path": "site_small/IMG_9017_sm.jpg",
+            "chosen_width": 384,
+            "chosen_height": 400,
+            "chosen_size_bytes": 96345,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_9017_sm.jpg",
+                    "basename": "img_9017_sm.jpg",
+                    "width": 384,
+                    "height": 400,
+                    "size_bytes": 96345,
+                    "area": 153600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 15,
+            "name": "Small sculpture in Ploie\u0219ti, Romania",
+            "file_name": "bsf_ploisti.jpg",
+            "match_key": "bsf_ploisti.jpg",
+            "chosen_legacy_path": "site_small/bsf_ploisti_sm.jpg",
+            "chosen_width": 306,
+            "chosen_height": 400,
+            "chosen_size_bytes": 58498,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/bsf_ploisti_sm.jpg",
+                    "basename": "bsf_ploisti_sm.jpg",
+                    "width": 306,
+                    "height": 400,
+                    "size_bytes": 58498,
+                    "area": 122400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 16,
+            "name": "Pointy Derivative",
+            "file_name": "pointy_derivative.jpg",
+            "match_key": "pointy_derivative.jpg",
+            "chosen_legacy_path": "site_small/pointy_derivative_sm.jpg",
+            "chosen_width": 479,
+            "chosen_height": 400,
+            "chosen_size_bytes": 77487,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/pointy_derivative_sm.jpg",
+                    "basename": "pointy_derivative_sm.jpg",
+                    "width": 479,
+                    "height": 400,
+                    "size_bytes": 77487,
+                    "area": 191600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 17,
+            "name": "Sticker Ball",
+            "file_name": "sticker_ball.jpg",
+            "match_key": "sticker_ball.jpg",
+            "chosen_legacy_path": "site_small/sticker_ball_sm.jpg",
+            "chosen_width": 508,
+            "chosen_height": 400,
+            "chosen_size_bytes": 72630,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/sticker_ball_sm.jpg",
+                    "basename": "sticker_ball_sm.jpg",
+                    "width": 508,
+                    "height": 400,
+                    "size_bytes": 72630,
+                    "area": 203200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 18,
+            "name": "Opposition in Watertown, Massachusetts",
+            "file_name": "IMG_7413.jpg",
+            "match_key": "img_7413.jpg",
+            "chosen_legacy_path": "site_small/IMG_7413_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 77280,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_7413_sm.jpg",
+                    "basename": "img_7413_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 77280,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 19,
+            "name": "Summers End in 2024",
+            "file_name": "IMG_7723.jpg",
+            "match_key": "img_7723.jpg",
+            "chosen_legacy_path": "site_small/IMG_7723_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 300,
+            "chosen_size_bytes": 81877,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_7723_sm.jpg",
+                    "basename": "img_7723_sm.jpg",
+                    "width": 400,
+                    "height": 300,
+                    "size_bytes": 81877,
+                    "area": 120000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 20,
+            "name": "Looking Up in Bucharest",
+            "file_name": "IMG_8263.jpg",
+            "match_key": "img_8263.jpg",
+            "chosen_legacy_path": "site_small/IMG_8263_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 638,
+            "chosen_size_bytes": 48292,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_8263_sm.jpg",
+                    "basename": "img_8263_sm.jpg",
+                    "width": 400,
+                    "height": 638,
+                    "size_bytes": 48292,
+                    "area": 255200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 21,
+            "name": "Inside Out Maquette",
+            "file_name": "IMG_8657.jpg",
+            "match_key": "img_8657.jpg",
+            "chosen_legacy_path": "site_small/IMG_8657_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 499,
+            "chosen_size_bytes": 74955,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/IMG_8657_sm.jpg",
+                    "basename": "img_8657_sm.jpg",
+                    "width": 400,
+                    "height": 499,
+                    "size_bytes": 74955,
+                    "area": 199600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 22,
+            "name": "Wave Assembly - CAD Study",
+            "file_name": "assembly_1-Recovered.jpg",
+            "match_key": "assembly_1-recovered.jpg",
+            "chosen_legacy_path": "site_small/assembly_1-Recovered_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 482,
+            "chosen_size_bytes": 29160,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/assembly_1-Recovered_sm.jpg",
+                    "basename": "assembly_1-recovered_sm.jpg",
+                    "width": 400,
+                    "height": 482,
+                    "size_bytes": 29160,
+                    "area": 192800
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 23,
+            "name": "Wave Assembly - CAD Study",
+            "file_name": "assembly_2-Recovered.jpg",
+            "match_key": "assembly_2-recovered.jpg",
+            "chosen_legacy_path": "site_small/assembly_2-Recovered_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 518,
+            "chosen_size_bytes": 37553,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/assembly_2-Recovered_sm.jpg",
+                    "basename": "assembly_2-recovered_sm.jpg",
+                    "width": 400,
+                    "height": 518,
+                    "size_bytes": 37553,
+                    "area": 207200
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 24,
+            "name": "Curvy",
+            "file_name": "curvy_qr.jpg",
+            "match_key": "curvy_qr.jpg",
+            "chosen_legacy_path": "site_small/curvy_qr_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 400,
+            "chosen_size_bytes": 76412,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/curvy_qr_sm.jpg",
+                    "basename": "curvy_qr_sm.jpg",
+                    "width": 400,
+                    "height": 400,
+                    "size_bytes": 76412,
+                    "area": 160000
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 25,
+            "name": "Isolation in Evergreen",
+            "file_name": "evergreen_dronie.jpg",
+            "match_key": "evergreen_dronie.jpg",
+            "chosen_legacy_path": "site_small/evergreen_dronie_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 209,
+            "chosen_size_bytes": 54501,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/evergreen_dronie_sm.jpg",
+                    "basename": "evergreen_dronie_sm.jpg",
+                    "width": 400,
+                    "height": 209,
+                    "size_bytes": 54501,
+                    "area": 83600
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 26,
+            "name": "Hedgehog on Edge",
+            "file_name": "hedgehog_2-Recovered.jpg",
+            "match_key": "hedgehog_2-recovered.jpg",
+            "chosen_legacy_path": "site_small/hedgehog_2-Recovered_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 571,
+            "chosen_size_bytes": 59975,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/hedgehog_2-Recovered_sm.jpg",
+                    "basename": "hedgehog_2-recovered_sm.jpg",
+                    "width": 400,
+                    "height": 571,
+                    "size_bytes": 59975,
+                    "area": 228400
+                }
+            ]
+        },
+        {
+            "spreadsheet_row": 27,
+            "name": "Pointy - CAD Study",
+            "file_name": "pointy_v6.jpg",
+            "match_key": "pointy_v6.jpg",
+            "chosen_legacy_path": "site_small/pointy_v6_sm.jpg",
+            "chosen_width": 400,
+            "chosen_height": 179,
+            "chosen_size_bytes": 33736,
+            "all_legacy_matches": [
+                {
+                    "relative_path": "site_small/pointy_v6_sm.jpg",
+                    "basename": "pointy_v6_sm.jpg",
+                    "width": 400,
+                    "height": 179,
+                    "size_bytes": 33736,
+                    "area": 71600
+                }
+            ]
+        }
+    ]
+}
