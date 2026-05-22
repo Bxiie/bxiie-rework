@@ -122,7 +122,7 @@ HTML;
         }
 
         $title = $this->escape((string) $artwork['title']);
-        $description = nl2br($this->escape((string) ($artwork['description'] ?? '')));
+        $description = (string) ($artwork['description'] ?? '');
         $medium = $this->escape((string) ($artwork['medium'] ?? ''));
         $dimensions = $this->escape((string) ($artwork['dimensions'] ?? ''));
         $year = $this->escape((string) ($artwork['year_created'] ?? ''));
