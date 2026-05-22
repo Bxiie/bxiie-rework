@@ -231,6 +231,20 @@ HTML);
         $price = htmlspecialchars((string) ($artwork['price'] ?? ''), ENT_QUOTES, 'UTF-8');
         $status = (string) $artwork['status'];
         $saleStatus = (string) $artwork['sale_status'];
+        $sections = $this->portfolioSections($tenant);
+        $selectedSectionIds = $this->artworkSectionIds($tenant, $id);
+        $sectionOptions = '';
+
+        foreach ($sections as $section) {
+            $sectionId = (int) $section['id'];
+            $sectionName = htmlspecialchars((string) $section['name'], ENT_QUOTES, 'UTF-8');
+            $checked = in_array($sectionId, $selectedSectionIds, true) ? ' checked' : '';
+            $sectionOptions .= "<label style=\"display:block;margin:.25rem 0;\"><input type=\"checkbox\" name=\"section_ids[]\" value=\"{$sectionId}\"{$checked}> {$sectionName}</label>\n";
+        }
+
+        if ($sectionOptions === '') {
+            $sectionOptions = '<p>No portfolio sections exist yet. Create them from Portfolio Sections.</p>';
+        }
 
         $selected = fn (string $a, string $b): string => $a === $b ? ' selected' : '';
 
@@ -270,6 +284,11 @@ HTML);
                 </select>
             </label>
         </p>
+        <fieldset style="margin:1rem 0;padding:1rem;border:1px solid #ccc;">
+            <legend>Portfolio sections</legend>
+            <p>Choose where this artwork appears.</p>
+            {$sectionOptions}
+        </fieldset>
         <p><label>Price<br><input type="text" name="price" value="{$price}"></label></p>
         <button type="submit">Save artwork</button>
     </form>
@@ -430,6 +449,98 @@ HTML);
         }
 
         return $returnTo;
+    }
+
+    /**
+     * @return list<array<string,mixed>>
+     */
+    private function portfolioSections(TenantContext $tenant): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT id, name, slug
+             FROM portfolio_sections
+             WHERE tenant_id = :tenant_id
+               AND status <> 'archived'
+             ORDER BY sort_order ASC, name ASC"
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function artworkSectionIds(TenantContext $tenant, int $artworkId): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT asa.section_id
+             FROM artwork_section_assignments asa
+             JOIN portfolio_sections ps ON ps.id = asa.section_id
+             WHERE asa.artwork_id = :artwork_id
+               AND ps.tenant_id = :tenant_id"
+        );
+        $stmt->execute([
+            'artwork_id' => $artworkId,
+            'tenant_id' => $tenant->tenantId,
+        ]);
+
+        return array_map('intval', array_column($stmt->fetchAll(), 'section_id'));
+    }
+
+    /**
+     * @param mixed $rawSectionIds
+     */
+    private function replaceArtworkSections(TenantContext $tenant, int $artworkId, mixed $rawSectionIds): void
+    {
+        $sectionIds = [];
+
+        if (is_array($rawSectionIds)) {
+            foreach ($rawSectionIds as $sectionId) {
+                $sectionId = (int) $sectionId;
+                if ($sectionId > 0) {
+                    $sectionIds[] = $sectionId;
+                }
+            }
+        }
+
+        $sectionIds = array_values(array_unique($sectionIds));
+
+        $delete = $this->pdo->prepare('DELETE FROM artwork_section_assignments WHERE artwork_id = :artwork_id');
+        $delete->execute(['artwork_id' => $artworkId]);
+
+        if (!$sectionIds) {
+            return;
+        }
+
+        $valid = $this->pdo->prepare(
+            "SELECT id
+             FROM portfolio_sections
+             WHERE tenant_id = :tenant_id
+               AND id = :id
+               AND status <> 'archived'
+             LIMIT 1"
+        );
+        $insert = $this->pdo->prepare(
+            "INSERT INTO artwork_section_assignments (artwork_id, section_id, sort_order, created_at)
+             VALUES (:artwork_id, :section_id, 0, CURRENT_TIMESTAMP)"
+        );
+
+        foreach ($sectionIds as $sectionId) {
+            $valid->execute([
+                'tenant_id' => $tenant->tenantId,
+                'id' => $sectionId,
+            ]);
+
+            if (!$valid->fetch()) {
+                continue;
+            }
+
+            $insert->execute([
+                'artwork_id' => $artworkId,
+                'section_id' => $sectionId,
+            ]);
+        }
     }
 
     private function findArtwork(TenantContext $tenant, int $id): ?array
