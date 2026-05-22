@@ -33,6 +33,16 @@ final class ContentController
         $facebook = htmlspecialchars($this->settings->get($tenant, 'facebook_url', ''), ENT_QUOTES, 'UTF-8');
         $linkedin = htmlspecialchars($this->settings->get($tenant, 'linkedin_url', ''), ENT_QUOTES, 'UTF-8');
 
+        $notice = match ((string) ($_GET['notice'] ?? '')) {
+            'saved' => '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Content saved.</p>',
+            default => '',
+        };
+
+        $error = match ((string) ($_GET['error'] ?? '')) {
+            'csrf' => '<p style="padding:.75rem;background:#fff0f0;border:1px solid #d88;">Security check failed. Please try again.</p>',
+            default => '',
+        };
+
         return Response::html(<<<HTML
 <!doctype html>
 <html>
@@ -41,6 +51,8 @@ final class ContentController
 <main>
 <p><a href="/admin">&larr; Admin</a></p>
 <h1>Content</h1>
+{$notice}
+{$error}
 <form method="post" action="/admin/content">
 <input type="hidden" name="csrf_token" value="{$token}">
 <p><label>About content<br><textarea name="about_content" rows="14" style="width:100%">{$about}</textarea></label></p>
@@ -63,7 +75,7 @@ HTML);
         }
 
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
-            return Response::html('<h1>Invalid request</h1><p>CSRF token failed.</p>', 419);
+            return new Response('', 303, ['Location' => '/admin/content?error=csrf']);
         }
 
         foreach (['about_content', 'contact_details', 'instagram_url', 'facebook_url', 'linkedin_url'] as $key) {
