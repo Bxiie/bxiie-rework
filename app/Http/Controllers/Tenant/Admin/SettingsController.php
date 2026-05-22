@@ -200,10 +200,10 @@ HTML);
             $after[$key] = $value;
         }
 
-        $this->auditAction($request, $tenant, $currentUser, 'tenant.settings.update', (string) $tenant->tenantId, [
-                'before' => $before,
-                'after' => $after,
-            ]);
+        $this->auditAction($request, $tenant, $currentUser, [
+            'before' => $before,
+            'after' => $after,
+        ]);
 
         return new Response('', 303, ['Location' => '/admin/settings?notice=saved']);
     }
