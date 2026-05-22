@@ -407,3 +407,37 @@ input, textarea, select { border: 1px solid var(--admin-line); border-radius: 10
   }
 }
 
+
+/* Email signup admin refinements. */
+.admin-filter-row {
+  display: flex;
+  gap: .75rem;
+  flex-wrap: wrap;
+  align-items: end;
+  margin: 1rem 0 1.25rem;
+}
+
+.admin-filter-row input,
+.admin-filter-row select {
+  min-height: 40px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: .65rem .75rem;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-inline-actions {
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+}

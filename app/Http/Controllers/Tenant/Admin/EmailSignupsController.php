@@ -208,6 +208,51 @@ HTML,
     {
         return AdminLayout::escape($value);
     }
+    public function delete(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->canManage($currentUser, $tenant)) {
+            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+        }
+
+        $id = (int) ($_POST['id'] ?? 0);
+        $mode = (string) ($_POST['mode'] ?? 'soft');
+
+        if ($id <= 0) {
+            return new Response('', 303, ['Location' => '/admin/email-signups?error=invalid']);
+        }
+
+        if ($mode === 'hard') {
+            $stmt = $this->pdo->prepare('DELETE FROM email_signups WHERE id = :id AND tenant_id = :tenant_id');
+            $stmt->execute(['id' => $id, 'tenant_id' => $tenant->tenantId]);
+            return new Response('', 303, ['Location' => $this->returnTo('/admin/email-signups?notice=hard-deleted')]);
+        }
+
+        $stmt = $this->pdo->prepare("UPDATE email_signups SET consent_status = 'unsubscribed', unsubscribed_at = COALESCE(unsubscribed_at, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP WHERE id = :id AND tenant_id = :tenant_id");
+        $stmt->execute(['id' => $id, 'tenant_id' => $tenant->tenantId]);
+
+        return new Response('', 303, ['Location' => $this->returnTo('/admin/email-signups?notice=soft-deleted')]);
+    }
+
+    private function returnTo(string $fallback): string
+    {
+        $returnTo = (string) ($_POST['return_to'] ?? '');
+        if ($returnTo === '' || !str_starts_with($returnTo, '/admin/email-signups')) {
+            return $fallback;
+        }
+
+        $separator = str_contains($returnTo, '?') ? '&' : '?';
+        if (!str_contains($returnTo, 'notice=')) {
+            return $returnTo . $separator . 'notice=saved';
+        }
+
+        return $returnTo;
+    }
+
+    private function canManage(?array $currentUser, TenantContext $tenant): bool
+    {
+        return $this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin']);
+    }
+
 }
 
 // End of file.
