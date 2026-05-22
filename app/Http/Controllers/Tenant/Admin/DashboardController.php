@@ -54,7 +54,6 @@ final class DashboardController
 
         return AdminLayout::render(
             title: 'Tenant Admin',
-            active: 'dashboard',
             body: $html,
         );
     }
