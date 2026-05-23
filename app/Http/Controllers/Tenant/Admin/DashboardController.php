@@ -12,6 +12,11 @@ use App\Platform\Tenancy\TenantContext;
 
 final class DashboardController
 {
+    public function __construct(
+        private readonly TenantSettingsRepository $settings,
+    ) {
+    }
+
     public function index(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         $body = <<<HTML
