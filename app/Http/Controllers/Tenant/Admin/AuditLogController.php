@@ -73,51 +73,7 @@ final class AuditLogController
             . '</p>';
         $tenantName = $this->escape($tenant->name);
 
-        return Response::html(AdminLayout::render(
-            title: 'Tenant Audit Log | ' . $tenantName,
-            body: <<<HTML
-<p><a class="admin-button" href="{$exportUrl}">Export CSV</a></p>
-
-<form class="admin-form" method="get" action="/admin/audit-log">
-    <p>
-        <label>Action<br>
-            <input type="text" name="action" value="{$actionValue}">
-        </label>
-    </p>
-    <p>
-        <label>User ID<br>
-            <input type="number" name="user_id" value="{$userValue}">
-        </label>
-    </p>
-    <button type="submit">Filter</button>
-    <a href="/admin/audit-log">Clear</a>
-</form>
-
-<div class="admin-table-wrap"><table class="admin-table audit-table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>User</th>
-            <th>Action</th>
-            <th>Entity Type</th>
-            <th>Entity ID</th>
-            <th>IP</th>
-            <th>Created</th>
-        </tr>
-    </thead>
-    <tbody>
-        {$rows}
-    </tbody>
-</table></div>
-HTML,
-            nav: [
-                '/admin' => 'Dashboard',
-                '/admin/settings' => 'Settings',
-                '/admin/contact-messages' => 'Contact Messages',
-                '/admin/email-signups' => 'Email Signups',
-                '/admin/audit-log' => 'Audit Log',
-            ],
-        ));
+        return Response::html(AdminLayout::render('Audit Log', $body));
     }
 
     public function export(Request $request, TenantContext $tenant, ?array $currentUser): Response

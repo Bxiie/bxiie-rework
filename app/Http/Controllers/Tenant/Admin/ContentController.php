@@ -104,6 +104,12 @@ HTML;
 
         return new Response('', 303, ['Location' => '/admin/content?notice=saved']);
     }
+    private function canManage(?array $currentUser, TenantContext $tenant): bool
+    {
+        return $this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin']);
+    }
+
+
 }
 
 // End of file.
