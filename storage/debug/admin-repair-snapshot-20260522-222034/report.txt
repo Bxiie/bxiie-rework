@@ -1,0 +1,376 @@
+== git ==
+?? storage/debug/
+dc6faff Add analytics entity linkage for artwork stats
+90a6762 Avoid unsupported analytics entity join in stats
+29c28b0 Use analytics region field in tenant stats
+74eaed3 Fix tenant stats location field
+f0d789d Add tenant stats admin dashboard
+
+== routes ==
+13:use App\Http\Controllers\Platform\Admin\DashboardController as PlatformAdminDashboardController;
+29:use App\Http\Controllers\Tenant\Admin\DashboardController as TenantAdminDashboardController;
+139:        $tenantController = new TenantHomeController(
+179:        $router->get('/admin/contact-messages', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->contacts($request, $tenant, $currentUser));
+180:        $router->post('/admin/contact-messages/delete', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->deleteContact($request, $tenant, $currentUser));
+181:        $router->get('/admin/email-signups', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->subscribers($request, $tenant, $currentUser));
+182:        $router->post('/admin/email-signups/import', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->importSubscribers($request, $tenant, $currentUser));
+189:        $router->get('/admin/content', fn (Request $request): Response => (new TenantAdminContentController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf))->edit($request, $tenant, $currentUser));
+190:        $router->post('/admin/content', fn (Request $request): Response => (new TenantAdminContentController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf))->update($request, $tenant, $currentUser));
+200:        $router->get('/admin', fn (Request $request): Response => (new TenantAdminDashboardController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
+202:        $router->get('/admin/stats', fn (Request $request): Response => (new TenantAdminStatsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->index($request, $tenant, $currentUser));
+203:        $router->get('/admin/audit-log', fn (Request $request): Response => (new TenantAdminAuditLogController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new AuditLogRepository($pdo)))->index($request, $tenant, $currentUser));
+204:        $router->get('/admin/audit-log.csv', fn (Request $request): Response => (new TenantAdminAuditLogController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new AuditLogRepository($pdo)))->export($request, $tenant, $currentUser));
+205:        $router->get('/admin/contact-messages', fn (Request $request): Response => (new TenantAdminContactMessagesController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new ContactMessageRepository($pdo), $csrf, new AuditLogRepository($pdo)))->index($request, $tenant, $currentUser));
+206:        $router->get('/admin/contact-messages.csv', fn (Request $request): Response => (new TenantAdminContactMessagesController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new ContactMessageRepository($pdo), $csrf, new AuditLogRepository($pdo)))->export($request, $tenant, $currentUser));
+207:        $router->post('/admin/contact-messages/status', fn (Request $request): Response => (new TenantAdminContactMessagesController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new ContactMessageRepository($pdo), $csrf, new AuditLogRepository($pdo)))->updateStatus($request, $tenant, $currentUser));
+208:        $router->get('/admin/email-signups', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->index($request, $tenant, $currentUser));
+209:        $router->get('/admin/email-signups.csv', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->export($request, $tenant, $currentUser));
+210:        $router->post('/admin/email-signups/consent', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->updateConsent($request, $tenant, $currentUser));
+211:        $router->post('/admin/email-signups/delete', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->delete($request, $tenant, $currentUser));
+212:        $router->get('/admin/settings', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo)))->edit($request, $tenant, $currentUser));
+213:        $router->post('/admin/settings', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo)))->update($request, $tenant, $currentUser));
+230:    $router->get('/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
+240:    $router->get('/admin/audit-log', fn (Request $request): Response => (new PlatformAdminAuditLogController(new RequirePlatformRole(new MembershipRepository($pdo)), new AuditLogRepository($pdo)))->index($request, $currentUser));
+241:    $router->get('/admin/audit-log.csv', fn (Request $request): Response => (new PlatformAdminAuditLogController(new RequirePlatformRole(new MembershipRepository($pdo)), new AuditLogRepository($pdo)))->export($request, $currentUser));
+
+== public home problem markers ==
+app/Http/Controllers/Tenant/HomeController.php:38:<h2>Stay in the loop</h2>
+app/Http/Controllers/Tenant/HomeController.php:63:            : $this->artworks->latestPublished($tenant, 240);
+app/Http/Controllers/Tenant/Admin/SettingsController.php:47:        $homeIntro = $this->setting($tenant, 'home_intro', 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.');
+app/Http/Controllers/Tenant/Admin/SettingsController.php:95:            <label>Home intro text<textarea name="home_intro" rows="5">{$homeIntro}</textarea></label>
+app/Http/Controllers/Tenant/Admin/SettingsController.php:170:            'home_intro',
+app/Http/Controllers/Tenant/Admin/ContentController.php:33:        $homeIntro = htmlspecialchars($this->settings->get($tenant, 'home_intro', ''), ENT_QUOTES, 'UTF-8');
+app/Http/Controllers/Tenant/Admin/ContentController.php:52:<div class="admin-panel"><h2>Home</h2><p><label>Home page text<br><textarea name="home_intro" rows="6">{$homeIntro}</textarea></label></p></div>
+app/Http/Controllers/Tenant/Admin/ContentController.php:74:        foreach (['home_intro', 'about_content', 'contact_details', 'instagram_url', 'facebook_url', 'linkedin_url'] as $key) {
+
+== admin layout calls ==
+app/Http/Controllers/Tenant/Admin/StatsController.php:131:        return Response::html(AdminLayout::render('Stats', $body));
+app/Http/Controllers/Tenant/Admin/EmailSignupsController.php:80:        return Response::html(AdminLayout::render(
+app/Http/Controllers/Tenant/Admin/AuditLogController.php:76:        return Response::html(AdminLayout::render(
+app/Http/Controllers/Tenant/Admin/ContactMessagesController.php:160:        return Response::html(AdminLayout::render('Contact Messages', $body));
+app/Http/Controllers/Tenant/Admin/DashboardController.php:32:        return Response::html(AdminLayout::render(
+app/Http/Controllers/Tenant/Admin/RoutesController.php:55:        return Response::html(AdminLayout::render(
+app/Http/Controllers/Tenant/Admin/ContactMessagesController.php.bak-contact-admin-v1:88:        return Response::html(AdminLayout::render(
+app/Http/Controllers/Tenant/Admin/ContentController.php:48:        return Response::html(AdminLayout::render($tenant, 'Content', <<<HTML
+
+== dashboard classes ==
+app/Http/View/AdminLayout.php:42:    <main class="admin-shell">
+app/Http/Controllers/Tenant/Admin/DashboardController.php:19:<div class="dashboard-grid">
+app/Http/Controllers/Tenant/Admin/DashboardController.php:20:    <a class="dashboard-card" href="/admin/settings"><h3>Site Settings</h3><p>Branding, tabs, slugs, CSS, homepage text, backgrounds, and SEO.</p></a>
+app/Http/Controllers/Tenant/Admin/DashboardController.php:21:    <a class="dashboard-card" href="/admin/content"><h3>Content</h3><p>About text, contact text, page images, and public content blocks.</p></a>
+app/Http/Controllers/Tenant/Admin/DashboardController.php:22:    <a class="dashboard-card" href="/admin/artworks"><h3>Artworks</h3><p>Upload, edit, publish, archive, sort, filter, and manage artwork metadata.</p></a>
+app/Http/Controllers/Tenant/Admin/DashboardController.php:23:    <a class="dashboard-card" href="/admin/portfolio-sections"><h3>Portfolio Sections</h3><p>Organize artworks and control public portfolio tabs.</p></a>
+app/Http/Controllers/Tenant/Admin/DashboardController.php:24:    <a class="dashboard-card" href="/admin/events"><h3>Events / Exhibitions</h3><p>Edit exhibition history and public presentation.</p></a>
+app/Http/Controllers/Tenant/Admin/DashboardController.php:25:    <a class="dashboard-card" href="/admin/contact-messages"><h3>Contact Messages</h3><p>Review and delete public contact form messages.</p></a>
+app/Http/Controllers/Tenant/Admin/DashboardController.php:26:    <a class="dashboard-card" href="/admin/email-signups"><h3>Email Signups</h3><p>View, import, export, and manage subscribers.</p></a>
+app/Http/Controllers/Tenant/Admin/DashboardController.php:27:    <a class="dashboard-card" href="/admin/stats"><h3>Stats</h3><p>Traffic, artwork views, location rollups, and engagement analytics.</p></a>
+app/Http/Controllers/Tenant/Admin/DashboardController.php:28:    <a class="dashboard-card" href="/admin/audit-log"><h3>Audit Log</h3><p>Review tenant admin activity and security-relevant changes.</p></a>
+app/Http/Controllers/Tenant/Admin/AdminLayout.php:32:<body class="admin-shell">
+app/Http/Controllers/Tenant/Admin/AdminLayout.php:41:    <aside class="admin-sidebar">
+app/Http/Controllers/Tenant/Admin/SettingsController.php:78:<main class="admin-shell">
+public/assets/admin-dashboard.css:1:.admin-shell {
+public/assets/admin-dashboard.css:7:.admin-sidebar {
+public/assets/admin-dashboard.css:14:.admin-sidebar h2 {
+public/assets/admin-dashboard.css:19:.admin-sidebar nav {
+public/assets/admin-dashboard.css:24:.admin-sidebar a {
+public/assets/admin-dashboard.css:32:.admin-sidebar a:hover,
+public/assets/admin-dashboard.css:33:.admin-sidebar a.active {
+public/assets/admin-dashboard.css:42:.dashboard-grid {
+public/assets/admin-dashboard.css:49:.dashboard-card {
+public/assets/admin-dashboard.css:61:.dashboard-card:hover {
+public/assets/admin-dashboard.css:66:.dashboard-card h3 {
+public/assets/admin-dashboard.css:71:.dashboard-card p {
+public/assets/admin-dashboard.css:78:  .admin-shell {
+public/assets/admin-dashboard.css:82:  .admin-sidebar {
+public/assets/admin-dashboard.css:92:.dashboard-grid {
+public/assets/admin-dashboard.css:99:.dashboard-card {
+public/assets/admin-dashboard.css:114:.dashboard-card h3,
+public/assets/admin-dashboard.css:115:.dashboard-card p {
+public/assets/css/admin.css:25:.admin-shell {
+public/assets/css/admin.css:135:    .admin-shell {
+public/assets/admin/admin.css:20:body.admin-shell {
+public/assets/admin/admin.css:71:.admin-sidebar {
+public/assets/admin/admin.css:194:  .admin-sidebar { position: static; }
+public/assets/admin/admin.css:205:.admin-shell {
+public/assets/admin/admin.css:295:.admin-shell {
+public/assets/admin/admin.css:303:.admin-sidebar {
+public/assets/admin/admin.css:310:.admin-sidebar a {
+public/assets/admin/admin.css:338:.admin-hero {
+public/assets/admin/admin.css:342:.admin-hero h1 {
+public/assets/admin/admin.css:348:.admin-hero p {
+public/assets/admin/admin.css:389:  .admin-shell {
+public/assets/admin/admin.css:393:  .admin-sidebar {
+
+== named args still risky ==
+app/Http/Controllers/Tenant/Admin/EmailSignupsController.php:136:                action: 'tenant.email_signup.consent_changed',
+app/Http/Controllers/Tenant/Admin/EmailSignupsController.php:188:            action: $action,
+app/Http/Controllers/Tenant/Admin/AuditLogController.php:42:            action: $action !== '' ? $action : null,
+app/Http/Controllers/Tenant/Admin/AuditLogController.php:134:            action: $action !== '' ? $action : null,
+app/Http/Controllers/Tenant/Admin/ContactMessagesController.php.bak-contact-admin-v1:145:                action: 'tenant.contact_message.status_changed',
+app/Http/Controllers/Tenant/Admin/ContactMessagesController.php.bak-contact-admin-v1:197:            action: $action,
+app/Http/Controllers/Tenant/Admin/ArtworkUploadController.php:137:                    action: 'tenant.artwork.uploaded',
+
+== syntax ==
+No syntax errors detected in app/Tenant/Settings/TenantSettingsRepository.php
+No syntax errors detected in app/Tenant/Contact/ContactMessageRepository.php
+No syntax errors detected in app/Tenant/Contact/ContactMessageService.php
+No syntax errors detected in app/Tenant/Contact/ContactNotificationService.php
+No syntax errors detected in app/Tenant/Artwork/ArtworkRepository.php
+No syntax errors detected in app/Tenant/Artwork/ArtworkUploadService.php
+No syntax errors detected in app/Tenant/Artwork/ArtworkReadRepository.php
+No syntax errors detected in app/Tenant/Signup/EmailSignupRepository.php
+No syntax errors detected in app/Tenant/Signup/EmailSignupService.php
+No syntax errors detected in app/Tenant/Signup/SignupNotificationService.php
+No syntax errors detected in app/Tenant/Portfolio/PortfolioSectionRepository.php
+No syntax errors detected in app/Tenant/Media/MediaAssetService.php
+No syntax errors detected in app/Tenant/Media/MediaAssetRepository.php
+No syntax errors detected in app/Core/Database.php
+No syntax errors detected in app/Core/View.php
+No syntax errors detected in app/Core/Router.php
+No syntax errors detected in app/Platform/Settings/PlatformSettingsRepository.php
+No syntax errors detected in app/Platform/Domains/ApacheVhostRenderer.php
+No syntax errors detected in app/Platform/Domains/ApacheVhostWritePlanner.php
+No syntax errors detected in app/Platform/Domains/DomainAutomationService.php
+No syntax errors detected in app/Platform/Domains/DomainArtifactRepository.php
+No syntax errors detected in app/Platform/Domains/DomainAdminService.php
+No syntax errors detected in app/Platform/Domains/DnsVerifier.php
+No syntax errors detected in app/Platform/Domains/DomainAdminRepository.php
+No syntax errors detected in app/Platform/Identity/PasswordHasher.php
+No syntax errors detected in app/Platform/Identity/UserIdentityRepository.php
+No syntax errors detected in app/Platform/Identity/UserRepository.php
+No syntax errors detected in app/Platform/Security/RateLimiter.php
+No syntax errors detected in app/Platform/Auth/Password/PasswordResetTokenRepository.php
+No syntax errors detected in app/Platform/Auth/Password/PasswordAuthService.php
+No syntax errors detected in app/Platform/Auth/Password/PasswordResetService.php
+No syntax errors detected in app/Platform/Auth/OAuth/BearerTokenService.php
+No syntax errors detected in app/Platform/Auth/OAuth/BearerTokenRepository.php
+No syntax errors detected in app/Platform/Auth/AuthArchitecture.php
+No syntax errors detected in app/Platform/Auth/Email/EmailVerificationService.php
+No syntax errors detected in app/Platform/Auth/Email/EmailVerificationTokenRepository.php
+No syntax errors detected in app/Platform/Auth/Session/SessionRepository.php
+No syntax errors detected in app/Platform/Auth/Session/SessionTokenService.php
+No syntax errors detected in app/Platform/Tenancy/TenantContext.php
+No syntax errors detected in app/Platform/Tenancy/TenantResolver.php
+No syntax errors detected in app/Platform/Tenancy/TenantDomainRepository.php
+No syntax errors detected in app/Platform/Tenancy/TenantStoragePaths.php
+No syntax errors detected in app/Platform/Signup/TenantSignupService.php
+No syntax errors detected in app/Platform/Tenants/TenantAdminRepository.php
+No syntax errors detected in app/Platform/Audit/AuditLogRepository.php
+No syntax errors detected in app/Platform/Workers/WorkerHeartbeatRepository.php
+No syntax errors detected in app/Platform/Jobs/BackgroundJobRepository.php
+No syntax errors detected in app/Platform/Jobs/JobAdminRepository.php
+No syntax errors detected in app/Platform/Jobs/JobAttemptRepository.php
+No syntax errors detected in app/Platform/Jobs/JobAdminService.php
+No syntax errors detected in app/Platform/Jobs/Handlers/RenderVhostJobHandler.php
+No syntax errors detected in app/Platform/Jobs/Handlers/WriteApprovedVhostJobHandler.php
+No syntax errors detected in app/Platform/Jobs/Handlers/VerifyDnsJobHandler.php
+No syntax errors detected in app/Platform/Email/EmailOutboxRepository.php
+No syntax errors detected in app/Platform/Email/DryRunEmailSender.php
+No syntax errors detected in app/Platform/Email/SmtpEmailSender.php
+No syntax errors detected in app/Platform/Email/EmailSenderInterface.php
+No syntax errors detected in app/Platform/Email/TemplateRenderer.php
+No syntax errors detected in app/Platform/Email/LifecycleEmailService.php
+No syntax errors detected in app/Platform/Email/EmailSenderFactory.php
+No syntax errors detected in app/Platform/Membership/Roles.php
+No syntax errors detected in app/Platform/Membership/MembershipRepository.php
+No syntax errors detected in app/Platform/Membership/MembershipService.php
+No syntax errors detected in app/bootstrap.php
+No syntax errors detected in app/Support/Pagination/Pagination.php
+No syntax errors detected in app/Support/AppEnvironment.php
+No syntax errors detected in app/Support/Security/CsrfTokenService.php
+No syntax errors detected in app/Support/Database.php
+No syntax errors detected in app/Support/Uuid.php
+No syntax errors detected in app/Support/Storage/StorageInterface.php
+No syntax errors detected in app/Support/Storage/LocalStorageProvider.php
+No syntax errors detected in app/Support/Flash/FlashMessages.php
+No syntax errors detected in app/Support/Csv/CsvResponse.php
+No syntax errors detected in app/Http/RouteMatch.php
+No syntax errors detected in app/Http/Middleware/BearerTokenAuth.php
+No syntax errors detected in app/Http/Middleware/RequireTenantRole.php
+No syntax errors detected in app/Http/Middleware/RequirePlatformRole.php
+No syntax errors detected in app/Http/Middleware/ResolveTenant.php
+No syntax errors detected in app/Http/Middleware/CurrentUser.php
+No syntax errors detected in app/Http/Middleware/RequireScope.php
+No syntax errors detected in app/Http/Middleware/RequireTenantRoleBrowser.php
+No syntax errors detected in app/Http/Middleware/RequireTenantAccess.php
+No syntax errors detected in app/Http/Response.php
+No syntax errors detected in app/Http/Request.php
+No syntax errors detected in app/Http/View/AdminLayout.php
+No syntax errors detected in app/Http/Router.php
+No syntax errors detected in app/Http/Controllers/Tenant/HomeController.php
+No syntax errors detected in app/Http/Controllers/Tenant/ContactController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/StatsController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/EmailSignupsController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/AuditLogController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/ContactMessagesController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/DashboardController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/RoutesController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/PortfolioSectionsController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/ArtworkUploadController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/ArtworksController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/EventsController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/AdminLayout.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/SettingsController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/ContentController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/EngagementController.php
+No syntax errors detected in app/Http/Controllers/Tenant/Admin/GettingStartedController.php
+No syntax errors detected in app/Http/Controllers/Tenant/MediaController.php
+No syntax errors detected in app/Http/Controllers/Tenant/TenantCssController.php
+No syntax errors detected in app/Http/Controllers/Tenant/SignupController.php
+No syntax errors detected in app/Http/Controllers/Auth/LoginController.php
+No syntax errors detected in app/Http/Controllers/Auth/PasswordAuthController.php
+No syntax errors detected in app/Http/Controllers/Platform/HomeController.php
+No syntax errors detected in app/Http/Controllers/Platform/CaddyAskController.php
+No syntax errors detected in app/Http/Controllers/Platform/Admin/WorkersController.php
+No syntax errors detected in app/Http/Controllers/Platform/Admin/AuditLogController.php
+No syntax errors detected in app/Http/Controllers/Platform/Admin/DomainsController.php
+No syntax errors detected in app/Http/Controllers/Platform/Admin/TenantsController.php
+No syntax errors detected in app/Http/Controllers/Platform/Admin/DashboardController.php
+No syntax errors detected in app/Http/Controllers/Platform/Admin/RoutesController.php
+No syntax errors detected in app/Http/Controllers/Platform/Admin/SettingsController.php
+No syntax errors detected in app/Http/Controllers/Platform/Admin/JobsController.php
+No syntax errors detected in app/Http/Controllers/Platform/Admin/EmailOutboxController.php
+No syntax errors detected in app/Http/Controllers/Platform/SignupController.php
+No syntax errors detected in app/Http/Controllers/Api/TenantMeController.php
+No syntax errors detected in app/Http/Controllers/Api/MeController.php
+No syntax errors detected in app/Controllers/PublicController.php
+No syntax errors detected in app/Controllers/AdminController.php
+No syntax errors detected in app/Controllers/AuthController.php
+No syntax errors detected in app/Views/admin/login.php
+No syntax errors detected in app/Views/admin/dashboard.php
+No syntax errors detected in app/Views/admin/image_edit.php
+No syntax errors detected in app/Views/admin/event_edit.php
+No syntax errors detected in app/Views/admin/events.php
+No syntax errors detected in app/Views/admin/content.php
+No syntax errors detected in app/Views/admin/stats.php
+No syntax errors detected in app/Views/admin/users.php
+No syntax errors detected in app/Views/admin/portfolio_edit.php
+No syntax errors detected in app/Views/admin/_layout.php
+No syntax errors detected in app/Views/admin/portfolio.php
+No syntax errors detected in app/Views/admin/subscribers.php
+No syntax errors detected in app/Views/admin/messages.php
+No syntax errors detected in app/Views/admin/images.php
+No syntax errors detected in app/Views/admin/site.php
+No syntax errors detected in app/Views/public/home.php
+No syntax errors detected in app/Views/public/contact.php
+No syntax errors detected in app/Views/public/layout.php
+No syntax errors detected in app/Views/public/portfolio.php
+No syntax errors detected in app/Views/public/about.php
+No syntax errors detected in app/Views/public/image.php
+No syntax errors detected in app/Services/StatsTracker.php
+No syntax errors detected in app/Services/TenantResolver.php
+No syntax errors detected in app/Services/RecaptchaVerifier.php
+No syntax errors detected in app/Services/ImageService.php
+No syntax errors detected in public/index.php
+No syntax errors detected in scripts/tenant/bootstrap_tenant.php
+No syntax errors detected in scripts/database/check_migration_integrity.php
+No syntax errors detected in scripts/database/migrate.php
+No syntax errors detected in scripts/migrate_stats_reset.php
+No syntax errors detected in scripts/install.php
+No syntax errors detected in scripts/test/job_status.php
+No syntax errors detected in scripts/test/admin_layout.php
+No syntax errors detected in scripts/test/tenant_domains.php
+No syntax errors detected in scripts/test/background_job_cancelled_status.php
+No syntax errors detected in scripts/test/repair_browser_login_global_auth.php
+No syntax errors detected in scripts/test/platform_job_list.php
+No syntax errors detected in scripts/test/background_job_attempts.php
+No syntax errors detected in scripts/test/tenant_settings_audit.php
+No syntax errors detected in scripts/test/email_outbox_status.php
+No syntax errors detected in scripts/test/route_inventory.php
+No syntax errors detected in scripts/test/platform_admin_role.php
+No syntax errors detected in scripts/test/tenant_notifications.php
+No syntax errors detected in scripts/test/require_scope.php
+No syntax errors detected in scripts/test/tenant_role_access.php
+No syntax errors detected in scripts/test/platform_job_action_attempts.php
+No syntax errors detected in scripts/test/domain_artifacts.php
+No syntax errors detected in scripts/test/password_auth.php
+No syntax errors detected in scripts/test/lifecycle_email_queue.php
+No syntax errors detected in scripts/test/password_reset.php
+No syntax errors detected in scripts/test/artwork_upload_pipeline.php
+No syntax errors detected in scripts/test/admin_settings_layouts.php
+No syntax errors detected in scripts/test/csv_response.php
+No syntax errors detected in scripts/test/browser_login_no_tenant_param.php
+No syntax errors detected in scripts/test/rate_limiter.php
+No syntax errors detected in scripts/test/pagination.php
+No syntax errors detected in scripts/test/store_media_asset.php
+No syntax errors detected in scripts/test/tenant_login_context.php
+No syntax errors detected in scripts/test/repair_bxiie_tenant_membership.php
+No syntax errors detected in scripts/test/flash_messages.php
+No syntax errors detected in scripts/test/platform_settings_audit.php
+No syntax errors detected in scripts/test/caddy_ask.php
+No syntax errors detected in scripts/test/platform_job_detail.php
+No syntax errors detected in scripts/test/contact_signup_records.php
+No syntax errors detected in scripts/test/uuid.php
+No syntax errors detected in scripts/test/tenant_getting_started.php
+No syntax errors detected in scripts/test/contact_message_status.php
+No syntax errors detected in scripts/test/tenant_admin_action_audit.php
+No syntax errors detected in scripts/test/create_portfolio_section.php
+No syntax errors detected in scripts/test/platform_signup_redirect.php
+No syntax errors detected in scripts/test/platform_admin_lists.php
+No syntax errors detected in scripts/test/worker_heartbeats.php
+No syntax errors detected in scripts/test/worker_entrypoint_heartbeat.php
+No syntax errors detected in scripts/test/tenant_admin_role.php
+No syntax errors detected in scripts/test/create_dev_bearer_token.php
+No syntax errors detected in scripts/test/platform_domain_actions.php
+No syntax errors detected in scripts/test/resolve_tenant.php
+No syntax errors detected in scripts/test/api_denial_audit.php
+No syntax errors detected in scripts/test/browser_login_constructor.php
+No syntax errors detected in scripts/test/email_verification.php
+No syntax errors detected in scripts/test/create_artwork.php
+No syntax errors detected in scripts/test/tenant_settings_admin.php
+No syntax errors detected in scripts/test/approve_domain_artifact.php
+No syntax errors detected in scripts/test/tenant_admin_layouts.php
+No syntax errors detected in scripts/test/platform_settings.php
+No syntax errors detected in scripts/test/render_vhost.php
+No syntax errors detected in scripts/test/platform_job_actions.php
+No syntax errors detected in scripts/test/auth_audit_log.php
+No syntax errors detected in scripts/test/platform_domain_list.php
+No syntax errors detected in scripts/test/platform_audit_log_list.php
+No syntax errors detected in scripts/test/production_mutation_guard.php
+No syntax errors detected in scripts/test/tenant_admin_lists.php
+No syntax errors detected in scripts/test/create_media_asset.php
+No syntax errors detected in scripts/test/email_outbox.php
+No syntax errors detected in scripts/test/tenant_settings.php
+No syntax errors detected in scripts/test/TestEnvironment.php
+No syntax errors detected in scripts/test/audit_log_search.php
+No syntax errors detected in scripts/test/admin_route_maps.php
+No syntax errors detected in scripts/test/email_signup_consent.php
+No syntax errors detected in scripts/test/analytics_entities_schema.php
+No syntax errors detected in scripts/test/worker_stale_detection.php
+No syntax errors detected in scripts/test/browser_login_route.php
+No syntax errors detected in scripts/test/background_jobs.php
+No syntax errors detected in scripts/test/email_sender_factory.php
+No syntax errors detected in scripts/test/audit_log.php
+No syntax errors detected in scripts/test/platform_admin_layouts.php
+No syntax errors detected in scripts/test/diagnose_bxiie_login.php
+No syntax errors detected in scripts/test/identity_membership.php
+No syntax errors detected in scripts/test/tenant_storage_paths.php
+No syntax errors detected in scripts/test/platform_signup.php
+No syntax errors detected in scripts/test/verify_dns.php
+No syntax errors detected in scripts/test/tenant_audit_log_list.php
+No syntax errors detected in scripts/test/auth_architecture.php
+No syntax errors detected in scripts/test/tenant_login_route.php
+No syntax errors detected in scripts/test/artwork_upload_db_pipeline.php
+No syntax errors detected in scripts/test/app_environment.php
+No syntax errors detected in scripts/test/domain_automation_queue.php
+No syntax errors detected in scripts/test/queue_write_approved_vhost.php
+No syntax errors detected in scripts/test/tenant_bootstrap.php
+No syntax errors detected in scripts/test/admin_dashboard_layouts.php
+No syntax errors detected in scripts/rebuild_images_from_spreadsheet.php
+No syntax errors detected in scripts/import_static_images.php
+No syntax errors detected in scripts/migrate_exhibitions_messages_cleanup.php
+No syntax errors detected in scripts/migrate_portfolio_sections_and_tenant_css.php
+No syntax errors detected in scripts/migrate_feature_batch.php
+No syntax errors detected in scripts/workers/email_run_once.php
+No syntax errors detected in scripts/workers/heartbeat.php
+No syntax errors detected in scripts/workers/run_once.php
+No syntax errors detected in scripts/import_events_from_resume.php
+No syntax errors detected in scripts/migrate_recaptcha_css_stats.php
+No syntax errors detected in scripts/migration/import_bxiie_events.php
+No syntax errors detected in scripts/migration/import_bxiie_site_images.php
+No syntax errors detected in scripts/migration/stage_legacy_bxiie_images.php
+No syntax errors detected in scripts/migration/audit_bxiie_spreadsheet_matches.php
+No syntax errors detected in scripts/migration/inventory_legacy_bxiie.php
+No syntax errors detected in scripts/email/queue_lifecycle_emails.php
+No syntax errors detected in scripts/migrate_mobile_email_stats_tabs_topbar.php
+No syntax errors detected in scripts/populate_tenant_css_from_existing.php

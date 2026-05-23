@@ -65,7 +65,16 @@ final class SettingsController
 
         $selected = fn (string $actual, string $expected): string => $actual === $expected ? ' selected' : '';
 
-        $body = <<<HTML
+        return Response::html(<<<HTML
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Site settings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/admin/admin.css">
+</head>
+<body>
 <main class="admin-shell">
     <p><a href="/admin">&larr; Admin</a></p>
     <h1>Site settings</h1>
@@ -138,9 +147,9 @@ final class SettingsController
         <button type="submit">Save site settings</button>
     </form>
 </main>
-HTML;
-
-        return Response::html(AdminLayout::render('Settings', $body));
+</body>
+</html>
+HTML);
     }
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response

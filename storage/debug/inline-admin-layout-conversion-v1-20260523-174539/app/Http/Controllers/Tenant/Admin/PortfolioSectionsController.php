@@ -10,7 +10,6 @@ use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Security\CsrfTokenService;
 use PDO;
-use App\Http\View\AdminLayout;
 
 /**
  * Tenant admin management for public portfolio sections and top tabs.
@@ -73,7 +72,16 @@ HTML;
             default => '',
         };
 
-        $body = <<<HTML
+        return Response::html(<<<HTML
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Portfolio Sections</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/admin/admin.css">
+</head>
+<body>
 <main class="admin-main" style="max-width:1100px;margin:2rem auto;padding:0 1rem;">
     <p><a href="/admin">&larr; Admin</a></p>
     <h1>Portfolio Sections</h1>
@@ -96,9 +104,9 @@ HTML;
         </tbody>
     </table>
 </main>
-HTML;
-
-        return Response::html(AdminLayout::render('Portfolio Sections', $body));
+</body>
+</html>
+HTML);
     }
 
     public function edit(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -129,7 +137,16 @@ HTML;
             ? '<button type="submit" name="archive" value="1" onclick="return confirm(\'Archive this portfolio section? Existing artwork assignments will remain in the database but this section will no longer appear.\');">Archive section</button>'
             : '';
 
-        $body = <<<HTML
+        return Response::html(<<<HTML
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Edit Portfolio Section</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/admin/admin.css">
+</head>
+<body>
 <main class="admin-main" style="max-width:760px;margin:2rem auto;padding:0 1rem;">
     <p><a href="/admin/portfolio-sections">&larr; Portfolio sections</a></p>
     <h1>Edit Portfolio Section</h1>
@@ -156,9 +173,9 @@ HTML;
         </p>
     </form>
 </main>
-HTML;
-
-        return Response::html(AdminLayout::render('Portfolio Sections', $body));
+</body>
+</html>
+HTML);
     }
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response

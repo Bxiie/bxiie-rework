@@ -10,7 +10,6 @@ use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
 use App\Platform\Audit\AuditLogRepository;
 use PDO;
-use App\Http\View\AdminLayout;
 
 final class ArtworksController
 {
@@ -153,7 +152,15 @@ HTML;
             default => '',
         };
 
-        $body = <<<HTML
+        return Response::html(<<<HTML
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Artworks</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
 <main>
     <p><a href="/admin">&larr; Admin</a></p>
     <h1>Artworks</h1>
@@ -198,9 +205,10 @@ HTML;
 </main>
 
 <script src="/assets/admin/artworks.js"></script>
-HTML;
 
-        return Response::html(AdminLayout::render('Artworks', $body));
+</body>
+</html>
+HTML);
     }
 
     public function edit(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -240,7 +248,15 @@ HTML;
 
         $selected = fn (string $a, string $b): string => $a === $b ? ' selected' : '';
 
-        $body = <<<HTML
+        return Response::html(<<<HTML
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Edit artwork</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
 <main>
     <p><a href="/admin/artworks">&larr; Artworks</a></p>
     <h1>Edit artwork</h1>
@@ -279,9 +295,10 @@ HTML;
 </main>
 
 <script src="/assets/admin/artworks.js"></script>
-HTML;
 
-        return Response::html(AdminLayout::render('Artworks', $body));
+</body>
+</html>
+HTML);
     }
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response

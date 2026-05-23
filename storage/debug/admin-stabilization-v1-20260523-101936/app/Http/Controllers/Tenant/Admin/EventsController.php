@@ -10,7 +10,6 @@ use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Security\CsrfTokenService;
 use PDO;
-use App\Http\View\AdminLayout;
 
 final class EventsController
 {
@@ -44,7 +43,10 @@ final class EventsController
             $rows = '<tr><td colspan="5">No events yet.</td></tr>';
         }
 
-        $body = <<<HTML
+        return Response::html(<<<HTML
+<!doctype html>
+<html><head><title>Events</title><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body>
 <main>
 <p><a href="/admin">&larr; Admin</a></p>
 <h1>Events / Exhibitions</h1>
@@ -54,9 +56,8 @@ final class EventsController
 {$rows}
 </table>
 </main>
-HTML;
-
-        return Response::html(AdminLayout::render('Events', $body));
+</body></html>
+HTML);
     }
 
     public function edit(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -71,7 +72,10 @@ HTML;
         $token = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
         $v = fn (string $key): string => htmlspecialchars((string) ($event[$key] ?? ''), ENT_QUOTES, 'UTF-8');
 
-        $body = <<<HTML
+        return Response::html(<<<HTML
+<!doctype html>
+<html><head><title>Edit event</title><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body>
 <main>
 <p><a href="/admin/events">&larr; Events</a></p>
 <h1>Edit event</h1>
@@ -89,9 +93,8 @@ HTML;
 <button>Save event</button>
 </form>
 </main>
-HTML;
-
-        return Response::html(AdminLayout::render('Events', $body));
+</body></html>
+HTML);
     }
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
