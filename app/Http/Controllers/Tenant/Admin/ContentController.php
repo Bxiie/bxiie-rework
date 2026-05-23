@@ -23,42 +23,69 @@ final class ContentController
 
     public function edit(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
-        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-            return Response::html('<h1>Forbidden</h1>', 403);
+        if (!$this->canManage($currentUser, $tenant)) {
+            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
         }
 
-        $token = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
-        $about = htmlspecialchars($this->settings->get($tenant, 'about_content', ''), ENT_QUOTES, 'UTF-8');
-        $contact = htmlspecialchars($this->settings->get($tenant, 'contact_details', ''), ENT_QUOTES, 'UTF-8');
-        $homeIntro = htmlspecialchars($this->settings->get($tenant, 'home_intro', ''), ENT_QUOTES, 'UTF-8');
-        $instagram = htmlspecialchars($this->settings->get($tenant, 'instagram_url', ''), ENT_QUOTES, 'UTF-8');
-        $facebook = htmlspecialchars($this->settings->get($tenant, 'facebook_url', ''), ENT_QUOTES, 'UTF-8');
-        $linkedin = htmlspecialchars($this->settings->get($tenant, 'linkedin_url', ''), ENT_QUOTES, 'UTF-8');
+        $notice = isset($_GET['notice']) ? '<p class="admin-notice">Content saved.</p>' : '';
 
-        $notice = match ((string) ($_GET['notice'] ?? '')) {
-            'saved' => '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Content saved.</p>',
-            default => '',
-        };
+        $homeIntro = $this->escape($this->settings->get($tenant, 'home_intro', ''));
+        $aboutContent = $this->escape($this->settings->get($tenant, 'about_content', ''));
+        $contactDetails = $this->escape($this->settings->get($tenant, 'contact_details', ''));
+        $instagram = $this->escape($this->settings->get($tenant, 'instagram_url', ''));
+        $facebook = $this->escape($this->settings->get($tenant, 'facebook_url', ''));
+        $linkedin = $this->escape($this->settings->get($tenant, 'linkedin_url', ''));
 
-        $error = match ((string) ($_GET['error'] ?? '')) {
-            'csrf' => '<p style="padding:.75rem;background:#fff0f0;border:1px solid #d88;">Security check failed. Please try again.</p>',
-            default => '',
-        };
+        $csrf = $this->escape($this->csrf->getOrCreate());
 
-        return Response::html(AdminLayout::render($tenant, 'Content', <<<HTML
-<form method="post" action="/admin/content" class="admin-form">
-<input type="hidden" name="csrf_token" value="{$token}">
-<div class="admin-form-grid">
-<div class="admin-panel"><h2>Home</h2><p><label>Home page text<br><textarea name="home_intro" rows="6">{$homeIntro}</textarea></label></p></div>
-<div class="admin-panel"><h2>About</h2><p><label>About content<br><textarea name="about_content" rows="14">{$about}</textarea></label></p></div>
-<div class="admin-panel"><h2>Contact</h2><p><label>Contact details<br><textarea name="contact_details" rows="10">{$contact}</textarea></label></p></div>
-<p><label>Instagram URL<br><input name="instagram_url" value="{$instagram}" style="width:100%"></label></p>
-<p><label>Facebook URL<br><input name="facebook_url" value="{$facebook}" style="width:100%"></label></p>
-<p><label>LinkedIn URL<br><input name="linkedin_url" value="{$linkedin}" style="width:100%"></label></p>
-</div>
-<div class="admin-submit-bar"><button>Save content</button></div>
+        $body = <<<HTML
+{$notice}
+<form method="post" action="/admin/content" class="admin-form admin-wide-form">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+
+    <div class="admin-form-grid">
+        <section class="admin-panel admin-panel-wide">
+            <h2>Home page</h2>
+            <label>Home page text
+                <textarea name="home_intro" rows="7">{$homeIntro}</textarea>
+            </label>
+        </section>
+
+        <section class="admin-panel">
+            <h2>About page</h2>
+            <label>About content HTML
+                <textarea name="about_content" rows="14">{$aboutContent}</textarea>
+            </label>
+        </section>
+
+        <section class="admin-panel">
+            <h2>Contact page</h2>
+            <label>Contact details HTML
+                <textarea name="contact_details" rows="14">{$contactDetails}</textarea>
+            </label>
+        </section>
+
+        <section class="admin-panel admin-panel-wide">
+            <h2>Social links</h2>
+            <div class="admin-form-grid three">
+                <label>Instagram URL
+                    <input type="url" name="instagram_url" value="{$instagram}">
+                </label>
+                <label>Facebook URL
+                    <input type="url" name="facebook_url" value="{$facebook}">
+                </label>
+                <label>LinkedIn URL
+                    <input type="url" name="linkedin_url" value="{$linkedin}">
+                </label>
+            </div>
+        </section>
+    </div>
+
+    <p><button type="submit">Save content</button></p>
 </form>
-HTML, ['active' => 'content']));
+HTML;
+
+        return Response::html(AdminLayout::render('Content', $body));
     }
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response

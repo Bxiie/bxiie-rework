@@ -28,29 +28,53 @@ final class HomeController
     public function home(Request $request, TenantContext $tenant): Response
     {
         $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
-        $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
+        $homeIntro = (string) $this->settings->get(
+            $tenant,
+            'home_intro',
+            'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.'
+        );
+
+        $items = $this->artworks->latestPublished($tenant, 12);
+
+        $body = <<<HTML
+<section class="hero">
+    <h1>{$siteTitle}</h1>
+    <div class="prose">{$homeIntro}</div>
+</section>
+HTML;
+
+        if ($items) {
+            $body .= "<section class=\"grid home-grid\">
+";
+            foreach ($items as $item) {
+                $title = $this->escape((string) $item['title']);
+                $slug = rawurlencode((string) $item['slug']);
+                $meta = $this->escape(trim((string) (($item['medium'] ?? '') . ' ' . ($item['year_created'] ?? ''))));
+                $image = '';
+
+                if (!empty($item['media_uuid'])) {
+                    $src = '/media?uuid=' . rawurlencode((string) $item['media_uuid']);
+                    $alt = $this->escape((string) ($item['media_alt_text'] ?? $item['title']));
+                    $image = "<img src=\"{$src}\" alt=\"{$alt}\" loading=\"lazy\">";
+                }
+
+                $body .= <<<HTML
+<a class="card artwork-card" href="/artwork/{$slug}">
+    {$image}
+    <span>{$title}</span>
+    <small>{$meta}</small>
+</a>
+
+HTML;
+            }
+            $body .= "</section>
+";
+        }
 
         return Response::html($this->layout(
             tenant: $tenant,
             title: $siteTitle,
-            body: <<<HTML
-<h1>{$siteTitle}</h1>
-<h2>Stay in the loop</h2>
-<form method="post" action="/signup">
-    <input type="hidden" name="csrf_token" value="{$csrf}">
-    <p>
-        <label>Name<br>
-            <input type="text" name="name" autocomplete="name">
-        </label>
-    </p>
-    <p>
-        <label>Email<br>
-            <input type="email" name="email" autocomplete="email" required>
-        </label>
-    </p>
-    <button type="submit">Sign up</button>
-</form>
-HTML
+            body: $body,
         ));
     }
 

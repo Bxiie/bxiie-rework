@@ -4,29 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\View;
 
-use App\Support\Flash\FlashMessages;
-
 /**
- * Renders simple shared admin HTML layout.
+ * Shared tenant admin layout.
  */
 final class AdminLayout
 {
-    /**
-     * @param array<string, string> $nav
-     */
-    public static function render(string $title, string $body, array $nav = []): string
+    public static function render(string $title, string $body): string
     {
         $safeTitle = self::escape($title);
-        $navHtml = '';
-        $flashes = FlashMessages::consumeHtml();
-
-        foreach ($nav as $href => $label) {
-            $navHtml .= '<a href="' . self::escape($href) . '">' . self::escape($label) . '</a>';
-        }
-
-        if ($navHtml !== '') {
-            $navHtml = '<nav class="admin-nav">' . $navHtml . '</nav>';
-        }
 
         return <<<HTML
 <!doctype html>
@@ -35,20 +20,39 @@ final class AdminLayout
     <meta charset="utf-8">
     <title>{$safeTitle}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/assets/css/admin.css">
-  <link rel="stylesheet" href="/assets/admin-dashboard.css">
+    <link rel="stylesheet" href="/assets/admin/admin.css">
 </head>
-<body class="admin">
-    <main class="admin-shell">
-        <header class="admin-header">
-            <h1>{$safeTitle}</h1>
-        </header>
-        {$navHtml}
-        {$flashes}
-        <section class="admin-card">
-{$body}
-        </section>
-    </main>
+<body class="tenant-admin">
+    <div class="tenant-admin-shell">
+        <aside class="tenant-admin-sidebar">
+            <a class="tenant-admin-brand" href="/admin">Bxiie</a>
+            <nav>
+                <a href="/admin">Dashboard</a>
+                <a href="/admin/settings">Settings</a>
+                <a href="/admin/content">Content</a>
+                <a href="/admin/artworks">Artworks</a>
+                <a href="/admin/portfolio-sections">Portfolio Sections</a>
+                <a href="/admin/events">Events</a>
+                <a href="/admin/contact-messages">Messages</a>
+                <a href="/admin/email-signups">Email Signups</a>
+                <a href="/admin/stats">Stats</a>
+                <a href="/admin/audit-log">Audit Log</a>
+            </nav>
+            <div class="tenant-admin-sidebar-foot">
+                <a href="/">View site</a>
+                <a href="/logout">Logout</a>
+            </div>
+        </aside>
+        <main class="tenant-admin-main">
+            <header class="tenant-admin-topbar">
+                <a href="/admin">&larr; Admin</a>
+            </header>
+            <section class="tenant-admin-card">
+                <h1>{$safeTitle}</h1>
+                {$body}
+            </section>
+        </main>
+    </div>
 </body>
 </html>
 HTML;

@@ -93,7 +93,7 @@ final class AuditLogController
     <a href="/admin/audit-log">Clear</a>
 </form>
 
-<table class="admin-table">
+<div class="admin-table-wrap"><table class="admin-table audit-table">
     <thead>
         <tr>
             <th>ID</th>
@@ -108,7 +108,7 @@ final class AuditLogController
     <tbody>
         {$rows}
     </tbody>
-</table>
+</table></div>
 HTML,
             nav: [
                 '/admin' => 'Dashboard',
