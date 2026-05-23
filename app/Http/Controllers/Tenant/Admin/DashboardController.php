@@ -6,7 +6,8 @@ namespace App\Http\Controllers\Tenant\Admin;
 
 use App\Http\Request;
 use App\Http\Response;
-use App\Http\View\AdminLayout;
+use App\Http\View\TenantAdminLayout;
+use App\Tenant\Settings\TenantSettingsRepository;
 use App\Platform\Tenancy\TenantContext;
 
 final class DashboardController
@@ -29,10 +30,7 @@ final class DashboardController
 </div>
 HTML;
 
-        return Response::html(AdminLayout::render(
-            'Tenant Admin',
-            $body,
-        ));
+        return Response::html((new TenantAdminLayout($this->settings))->render($tenant, 'Tenant Admin', $body, 'dashboard'));
     }
 }
 
