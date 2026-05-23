@@ -73,6 +73,7 @@ final class AuditLogController
             . '</p>';
         $tenantName = $this->escape($tenant->name);
 
+        $body = isset($html) ? (string) $html : '';
         return Response::html(AdminLayout::render('Audit Log', $body));
     }
 

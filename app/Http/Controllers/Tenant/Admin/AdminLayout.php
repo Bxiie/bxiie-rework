@@ -4,121 +4,96 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant\Admin;
 
-use App\Platform\Tenancy\TenantContext;
-
-/**
- * Shared tenant admin shell for consistent navigation, notices, and styling.
- */
 final class AdminLayout
 {
-    public static function render(TenantContext $tenant, string $title, string $body, array $options = []): string
+    public static function render(...$args): string
     {
-        $pageTitle = self::escape($title);
-        $tenantName = self::escape($tenant->name);
-        $active = (string) ($options['active'] ?? '');
-        $notice = self::noticeHtml((string) ($_GET['notice'] ?? ''));
-        $error = self::errorHtml((string) ($_GET['error'] ?? ''));
-        $nav = self::nav($active);
+        $title = array_key_exists('title', $args) ? (string) $args['title'] : (string) ($args[0] ?? 'Admin');
+        $body = array_key_exists('body', $args) ? (string) ($args['body'] ?? '') : (string) ($args[1] ?? '');
+        if ($body === '' && array_key_exists('content', $args)) {
+            $body = (string) ($args['content'] ?? '');
+        }
+        if ($body === '' && array_key_exists('html', $args)) {
+            $body = (string) ($args['html'] ?? '');
+        }
+        $active = array_key_exists('active', $args) ? (string) $args['active'] : (string) ($args['nav'] ?? 'dashboard');
+
+        return self::renderShell($title, $body, $active);
+    }
+
+    public static function renderShell(string $title, string $body, string $active = 'dashboard'): string
+    {
+        $safeTitle = self::escape($title);
+        $adminNav = self::adminNav($active);
+        $year = date('Y');
 
         return <<<HTML
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>{$pageTitle} | {$tenantName} Admin</title>
+    <title>{$safeTitle} | Bxiie</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/assets/admin/admin.css">
+    <link rel="stylesheet" href="/assets/site.css">
+    <link rel="stylesheet" href="/assets/tenant-admin.css">
 </head>
-<body class="admin-shell">
-<header class="admin-topbar">
-    <a class="admin-brand" href="/admin">{$tenantName}</a>
-    <div class="admin-topbar-actions">
-        <a href="/" target="_blank" rel="noopener">View site</a>
-        <a href="/admin/logout">Logout</a>
-    </div>
+<body class="tenant-admin-page" style="--tenant-topbar-bg:#f7f2e8;--tenant-topbar-text:#111;">
+<header class="site-header tenant-admin-public-header">
+    <a class="brand" href="/">Bxiie</a>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/portfolio">Portfolio</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+    </nav>
 </header>
-<div class="admin-frame">
-    <aside class="admin-sidebar">
-        {$nav}
+<div class="tenant-admin-shell">
+    <aside class="tenant-admin-sidebar" aria-label="Tenant admin navigation">
+        <div class="tenant-admin-sidebar-title"><strong>Admin</strong><span>Bxiie</span></div>
+        {$adminNav}
     </aside>
-    <main class="admin-main">
-        <div id="admin-notices">{$notice}{$error}</div>
-        <h1>{$pageTitle}</h1>
-        {$body}
+    <main class="tenant-admin-main">
+        <div class="tenant-admin-main-header"><a href="/admin">&larr; Admin</a><a href="/">View public site</a></div>
+        <section class="tenant-admin-panel"><h1>{$safeTitle}</h1>{$body}</section>
     </main>
 </div>
+<footer class="site-footer tenant-admin-footer">
+    <span>© {$year} Bxiie</span>
+    <nav><a href="/help">Help</a><a href="/privacy">Privacy</a><a href="https://artsfol.io/contact">Contact artsfol.io</a></nav>
+</footer>
 </body>
 </html>
 HTML;
     }
 
-    private static function nav(string $active): string
+    public static function escape(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+
+    private static function adminNav(string $active): string
     {
         $items = [
             'dashboard' => ['/admin', 'Dashboard'],
-            'site' => ['/admin/settings', 'Site settings'],
+            'settings' => ['/admin/settings', 'Settings'],
             'content' => ['/admin/content', 'Content'],
             'artworks' => ['/admin/artworks', 'Artworks'],
-            'upload' => ['/admin/artwork/upload', 'Upload artwork'],
+            'sections' => ['/admin/portfolio-sections', 'Portfolio Sections'],
             'events' => ['/admin/events', 'Events'],
             'messages' => ['/admin/contact-messages', 'Messages'],
-            'emails' => ['/admin/email-signups', 'Email list'],
+            'email' => ['/admin/email-signups', 'Email Signups'],
             'stats' => ['/admin/stats', 'Stats'],
-            'audit' => ['/admin/audit-log', 'Audit log'],
+            'audit' => ['/admin/audit-log', 'Audit Log'],
         ];
 
-        $html = '<nav class="admin-nav">
-        <a href="/admin">Dashboard</a>
-        <a href="/admin/settings">Site</a>
-        <a href="/admin/content">Content</a>
-        <a href="/admin/artworks">Artworks</a>
-        <a href="/admin/portfolio-sections">Sections</a>
-        <a href="/admin/events">Events</a>
-        <a href="/admin/contact-messages">Messages</a>
-        <a href="/admin/email-signups">Email list</a>
-        <a href="/admin/stats">Stats</a>
-        <a href="/admin/audit-log">Audit log</a>
-    </nav>';
+        $html = '<nav>';
+        foreach ($items as $key => [$href, $label]) {
+            $class = $active === $key ? ' class="active"' : '';
+            $html .= '<a' . $class . ' href="' . self::escape($href) . '">' . self::escape($label) . '</a>';
+        }
+        $html .= '</nav>';
 
         return $html;
-    }
-
-    private static function noticeHtml(string $notice): string
-    {
-        $messages = [
-            'saved' => 'Saved.',
-            'content-saved' => 'Content saved.',
-            'status-updated' => 'Artwork status updated.',
-            'artwork-archived' => 'Artwork archived.',
-            'event-saved' => 'Event saved.',
-            'deleted' => 'Deleted.',
-        ];
-
-        if (!isset($messages[$notice])) {
-            return '';
-        }
-
-        return '<p class="admin-notice success">' . self::escape($messages[$notice]) . '</p>';
-    }
-
-    private static function errorHtml(string $error): string
-    {
-        $messages = [
-            'csrf' => 'Security check failed. Please try again.',
-            'invalid' => 'The submitted data was invalid.',
-            'forbidden' => 'You do not have access to that action.',
-        ];
-
-        if (!isset($messages[$error])) {
-            return '';
-        }
-
-        return '<p class="admin-notice error">' . self::escape($messages[$error]) . '</p>';
-    }
-
-    private static function escape(string $value): string
-    {
-        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
 }
 

@@ -4,20 +4,24 @@ declare(strict_types=1);
 
 namespace App\Http\View;
 
-/**
- * Compatibility tenant-admin layout.
- *
- * This intentionally renders the same shell used by the canonical tenant admin
- * layout, using safe Bxiie defaults when no TenantContext is available.
- */
 final class AdminLayout
 {
-    public static function render(string $title, string $body): string
+    public static function render(...$args): string
     {
-        return self::renderShell($title, $body, 'dashboard');
+        $title = array_key_exists('title', $args) ? (string) $args['title'] : (string) ($args[0] ?? 'Admin');
+        $body = array_key_exists('body', $args) ? (string) ($args['body'] ?? '') : (string) ($args[1] ?? '');
+        if ($body === '' && array_key_exists('content', $args)) {
+            $body = (string) ($args['content'] ?? '');
+        }
+        if ($body === '' && array_key_exists('html', $args)) {
+            $body = (string) ($args['html'] ?? '');
+        }
+        $active = array_key_exists('active', $args) ? (string) $args['active'] : (string) ($args['nav'] ?? 'dashboard');
+
+        return self::renderShell($title, $body, $active);
     }
 
-    public static function renderShell(string $title, string $body, string $active = ''): string
+    public static function renderShell(string $title, string $body, string $active = 'dashboard'): string
     {
         $safeTitle = self::escape($title);
         $adminNav = self::adminNav($active);
@@ -43,35 +47,19 @@ final class AdminLayout
         <a href="/contact">Contact</a>
     </nav>
 </header>
-
 <div class="tenant-admin-shell">
     <aside class="tenant-admin-sidebar" aria-label="Tenant admin navigation">
-        <div class="tenant-admin-sidebar-title">
-            <strong>Admin</strong>
-            <span>Bxiie</span>
-        </div>
+        <div class="tenant-admin-sidebar-title"><strong>Admin</strong><span>Bxiie</span></div>
         {$adminNav}
     </aside>
-
     <main class="tenant-admin-main">
-        <div class="tenant-admin-main-header">
-            <a href="/admin">&larr; Admin</a>
-            <a href="/">View public site</a>
-        </div>
-        <section class="tenant-admin-panel">
-            <h1>{$safeTitle}</h1>
-            {$body}
-        </section>
+        <div class="tenant-admin-main-header"><a href="/admin">&larr; Admin</a><a href="/">View public site</a></div>
+        <section class="tenant-admin-panel"><h1>{$safeTitle}</h1>{$body}</section>
     </main>
 </div>
-
 <footer class="site-footer tenant-admin-footer">
     <span>© {$year} Bxiie</span>
-    <nav>
-        <a href="/help">Help</a>
-        <a href="/privacy">Privacy</a>
-        <a href="https://artsfol.io/contact">Contact artsfol.io</a>
-    </nav>
+    <nav><a href="/help">Help</a><a href="/privacy">Privacy</a><a href="https://artsfol.io/contact">Contact artsfol.io</a></nav>
 </footer>
 </body>
 </html>
