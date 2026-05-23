@@ -35,3 +35,5 @@ storage/imports/bxiie-spreadsheet-match-audit.json
 storage/imports/site_images.xlsx
 
 # End of file.
+
+/storage/debug/
