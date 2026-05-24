@@ -51,6 +51,7 @@ use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Middleware\RequirePlatformRole;
 use App\Http\Request;
 use App\Http\Response;
+use App\Http\View\AuthPage;
 use App\Http\View\ErrorPage;
 use App\Http\Router;
 use App\Platform\Audit\AuditLogRepository;
@@ -200,6 +201,7 @@ if ($tenant) {
         $router->get('/admin/artwork/upload', fn (Request $request): Response => (new TenantAdminArtworkUploadController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), new ArtworkUploadService($pdo), new AuditLogRepository($pdo)))->form($request, $tenant, $currentUser));
         $router->post('/admin/artwork/upload', fn (Request $request): Response => (new TenantAdminArtworkUploadController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), new ArtworkUploadService($pdo), new AuditLogRepository($pdo)))->submit($request, $tenant, $currentUser));
         $router->get('/admin/getting-started', fn (Request $request): Response => (new TenantAdminGettingStartedController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
+        $router->get('/login', fn (Request $request): Response => Response::html(AuthPage::login('/login')));
         $router->get('/admin/login', fn (Request $request): Response => new Response('', 303, ['Location' => '/login']));
         $router->get('/admin', fn (Request $request): Response => (new TenantAdminDashboardController($tenantSettings))->index($request, $tenant, $currentUser));
         $router->get('/admin/platform-discovery', fn (Request $request): Response => (new TenantAdminDiscoverySettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf))->edit($request, $tenant, $currentUser));
