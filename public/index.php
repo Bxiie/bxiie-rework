@@ -51,6 +51,7 @@ use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Middleware\RequirePlatformRole;
 use App\Http\Request;
 use App\Http\Response;
+use App\Http\View\ErrorPage;
 use App\Http\Router;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Email\EmailOutboxRepository;
