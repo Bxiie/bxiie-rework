@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Middleware\CurrentUser;
 use App\Http\Request;
 use App\Http\Response;
+use App\Http\View\AuthPage;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Auth\Password\PasswordAuthService;
 use App\Platform\Auth\Session\SessionRepository;
@@ -29,38 +30,7 @@ final class PasswordAuthController
 
     public function loginForm(Request $request): Response
     {
-        $csrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
-
-        return Response::html(<<<HTML
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Login | ArtsFolio</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-<h1>Login</h1>
-
-<form method="post" action="/login/password">
-    <input type="hidden" name="csrf_token" value="{$csrf}">
-    <p>
-        <label>Email<br>
-            <input type="email" name="email" autocomplete="email" required>
-        </label>
-    </p>
-    <p>
-        <label>Password<br>
-            <input type="password" name="password" autocomplete="current-password" required>
-        </label>
-    </p>
-    <button type="submit">Sign in</button>
-</form>
-
-<p>OAuth/OIDC sign-in buttons will be added here.</p>
-</body>
-</html>
-HTML);
+        return Response::html(AuthPage::login('/login'));
     }
 
     public function loginPassword(Request $request): Response

@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+
+use App\Http\View\AuthPage;
 use App\Core\View;
 use PDO;
 
@@ -19,22 +21,14 @@ final class AuthController
         $this->db = $container['db'];
     }
 
-    public function login(string $method): void
+    public function login(string $method = 'GET'): void
     {
-        $error = null;
-        if ($method === 'POST') {
-            $stmt = $this->db->prepare('SELECT * FROM users WHERE email = :email AND tenant_id = :tenant_id LIMIT 1');
-            $stmt->execute(['email' => $_POST['email'] ?? '', 'tenant_id' => $this->tenant['id']]);
-            $user = $stmt->fetch();
-            if ($user && password_verify($_POST['password'] ?? '', $user['password_hash'])) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['tenant_id'] = $this->tenant['id'];
-                header('Location: /admin');
-                return;
-            }
-            $error = 'Invalid login.';
+        if (strtoupper($method) === 'GET') {
+            echo AuthPage::login('/login');
+            return;
         }
-        View::render('admin/login', ['tenant' => $this->tenant, 'error' => $error]);
+
+        $this->authenticate();
     }
 
     public function logout(): void

@@ -179,73 +179,64 @@ HTML;
 
 
 
+
     public function help(Request $request): Response
     {
         $body = <<<HTML
 <section class="platform-page-heading">
     <p class="eyebrow">Help center</p>
     <h1>ArtsFolio help</h1>
-    <p>Everything a tenant admin needs to understand the public site, admin tools, discovery directory, messages, subscribers, stats, and launch workflow.</p>
+    <p>Guidance for setting up a tenant, publishing a polished artist site, managing inquiries and subscribers, and using discovery, stats, and audit tools.</p>
 </section>
 
 <section class="platform-section docs-section">
     <h2>First-time setup</h2>
     <ol class="flow-list compact">
-        <li><strong>Account</strong><span>Sign in with Google/Facebook SSO or local email/password.</span></li>
-        <li><strong>Tenant</strong><span>Create or receive access to a tenant. The tenant controls one artist/site presence.</span></li>
-        <li><strong>Brand</strong><span>Set site title, artist name, browser title, copyright line, colors, top bar, and public navigation labels.</span></li>
-        <li><strong>Content</strong><span>Add home intro text, about copy, contact copy, exhibitions, social links, and page images.</span></li>
-        <li><strong>Artwork</strong><span>Upload artwork, assign sections, set status, add metadata, and review public artwork pages.</span></li>
+        <li><strong>Sign in</strong><span>Use Google, Facebook, or local email/password.</span></li>
+        <li><strong>Create tenant</strong><span>Choose site title, artist name, and an artsfol.io subdomain.</span></li>
+        <li><strong>Brand the site</strong><span>Set browser title, public labels, copyright, top bar, colors, background, and tenant CSS.</span></li>
+        <li><strong>Add public copy</strong><span>Write home, about, contact, exhibitions, and social/contact content.</span></li>
+        <li><strong>Add artwork</strong><span>Upload images, assign portfolio sections, fill metadata, and publish selected works.</span></li>
     </ol>
 </section>
 
 <section class="platform-section docs-section">
-    <h2>How the public site works</h2>
-    <p>Your tenant site is the public-facing portfolio. Visitors can browse home, portfolio sections, artwork detail pages, about, contact, and exhibitions. Admin-only controls should never appear on public pages.</p>
-    <div class="feature-grid">
-        <article><h3>Home</h3><p>Uses the home intro text, selected artwork/images, and tenant branding. This should tell visitors what the work is and why it matters.</p></article>
-        <article><h3>Portfolio</h3><p>Portfolio sections organize works. Sections can become public tabs when enabled and ordered in admin.</p></article>
-        <article><h3>Artwork detail</h3><p>Each artwork should have a clear title, image, medium, date, dimensions, status, and optional sales/inquiry details.</p></article>
-        <article><h3>About and contact</h3><p>These pages support formatted content and selected page images. Keep them personal, current, and mobile-readable.</p></article>
-    </div>
-</section>
-
-<section class="platform-section docs-section">
-    <h2>Admin areas explained</h2>
-    <div class="feature-grid">
-        <article><h3>Settings</h3><p>Controls branding, slugs, labels, CSS, browser metadata, copyright, background/topbar styling, and public presentation choices.</p></article>
-        <article><h3>Content</h3><p>Controls home, about, contact, social links, and public copy. Some fields may allow safe HTML.</p></article>
-        <article><h3>Artworks</h3><p>Create and edit artwork records, upload images, publish/archive works, and assign portfolio sections.</p></article>
-        <article><h3>Portfolio sections</h3><p>Create named sections, order them, enable tab display, and group related artworks.</p></article>
-        <article><h3>Events</h3><p>Maintain exhibitions, shows, fairs, residencies, and other public chronology entries.</p></article>
-        <article><h3>Messages</h3><p>Review contact messages, update status, archive, hard delete, and export records.</p></article>
-        <article><h3>Email signups</h3><p>Review subscribers, import/export, update consent, unsubscribe, or hard-delete records when appropriate.</p></article>
-        <article><h3>Stats</h3><p>Shows traffic and artwork analytics when event collection is wired and public pages are being visited.</p></article>
-        <article><h3>Audit log</h3><p>Shows admin/security-relevant actions so tenant activity can be reviewed.</p></article>
-        <article><h3>Discovery</h3><p>Controls whether this tenant appears on artsfol.io directory and random front-page image features.</p></article>
-    </div>
-</section>
-
-<section class="platform-section docs-section">
-    <h2>How do I turn on the directory?</h2>
+    <h2>Directory and discovery</h2>
+    <p>Directory visibility is opt-in. Tenants are hidden from the ArtsFolio directory and random front-page image mosaic until an admin enables discovery.</p>
     <ol class="flow-list compact">
-        <li><strong>Open admin</strong><span>Sign in and open your tenant admin dashboard.</span></li>
-        <li><strong>Go to Discovery</strong><span>Use the left admin navigation tab called Discovery.</span></li>
+        <li><strong>Open tenant admin</strong><span>Sign in and go to the tenant admin dashboard.</span></li>
+        <li><strong>Open Discovery</strong><span>Use the left admin navigation tab named Discovery.</span></li>
         <li><strong>Opt in</strong><span>Check “Show this tenant in the public ArtsFolio directory.”</span></li>
-        <li><strong>Add summary</strong><span>Write a short public directory description for the artist/site.</span></li>
-        <li><strong>Save</strong><span>After saving, published public artworks may be eligible for the artsfol.io front-page mosaic.</span></li>
+        <li><strong>Add summary</strong><span>Write a short public description of the artist/site.</span></li>
+        <li><strong>Save</strong><span>Published public artworks may then be eligible for artsfol.io directory and mosaic display.</span></li>
     </ol>
-    <p>Directory visibility is opt-in. Tenants that do not opt in should not appear in the public directory or random image feed.</p>
+</section>
+
+<section class="platform-section docs-section">
+    <h2>Admin sections explained</h2>
+    <div class="feature-grid">
+        <article><h3>Settings</h3><p>Branding, browser metadata, copyright, colors, top bar, tenant CSS, slugs, and public page labels.</p></article>
+        <article><h3>Content</h3><p>Home introduction, about text, contact text, page images, social links, and formatted public copy.</p></article>
+        <article><h3>Artworks</h3><p>Artwork upload, editing, status, metadata, sales fields, and portfolio assignment.</p></article>
+        <article><h3>Portfolio sections</h3><p>Named groupings for artworks. Sections can be ordered and optionally shown as public tabs.</p></article>
+        <article><h3>Events</h3><p>Exhibitions, fairs, residencies, shows, and chronology items shown on public pages.</p></article>
+        <article><h3>Messages</h3><p>Contact submissions with search, status filtering, archive, hard delete, and CSV export.</p></article>
+        <article><h3>Email signups</h3><p>Subscribers, import/export, consent status, unsubscribe, and hard delete tools.</p></article>
+        <article><h3>Stats</h3><p>Traffic, artwork views, day/hour graphs, referrers, and location rollups when analytics is writing events.</p></article>
+        <article><h3>Audit log</h3><p>Security and admin activity trail for important changes.</p></article>
+        <article><h3>Discovery</h3><p>Opt-in controls for public platform directory and random image inclusion.</p></article>
+    </div>
 </section>
 
 <section class="platform-section docs-section">
     <h2>Launch checklist</h2>
     <ol class="flow-list compact">
-        <li><strong>Mobile pass</strong><span>Open home, portfolio, artwork detail, about, and contact on a phone.</span></li>
-        <li><strong>Contact test</strong><span>Submit the contact form and confirm the message appears in admin.</span></li>
-        <li><strong>Email test</strong><span>Subscribe from the public flow and confirm consent status in admin.</span></li>
-        <li><strong>Stats test</strong><span>Visit public pages and confirm analytics events begin appearing in Stats.</span></li>
-        <li><strong>Audit test</strong><span>Save a setting and confirm an audit-log row appears.</span></li>
+        <li><strong>Mobile review</strong><span>Check home, portfolio, artwork detail, about, contact, and events on a phone.</span></li>
+        <li><strong>Image review</strong><span>Confirm images load quickly and are not giant originals on small pages.</span></li>
+        <li><strong>Contact test</strong><span>Submit a contact message and confirm it appears in admin.</span></li>
+        <li><strong>Email test</strong><span>Subscribe publicly and confirm consent status in admin.</span></li>
+        <li><strong>Stats test</strong><span>Visit public pages and confirm events appear in Stats.</span></li>
+        <li><strong>Audit test</strong><span>Save a setting and confirm a corresponding audit row appears.</span></li>
     </ol>
 </section>
 HTML;
@@ -260,51 +251,51 @@ HTML;
 <section class="platform-page-heading">
     <p class="eyebrow">Developer documentation</p>
     <h1>Build against the ArtsFolio platform.</h1>
-    <p>This section is for third-party developers, agencies, integration partners, and technical tenant teams working with ArtsFolio data and platform APIs.</p>
+    <p>This section is for third-party developers, agencies, integration partners, and technical tenant teams working with ArtsFolio APIs and exports.</p>
 </section>
 
 <section class="platform-section docs-section">
-    <h2>API use cases</h2>
+    <h2>API integration overview</h2>
+    <p>ArtsFolio should be treated as a tenant-scoped platform. API clients must authenticate, resolve a tenant context, enforce tenant permissions, and avoid assuming globally unique human-facing slugs.</p>
     <div class="feature-grid">
-        <article><h3>Artwork sync</h3><p>Read or update artwork metadata, inventory status, sales fields, section assignments, and publication state.</p></article>
-        <article><h3>Media workflows</h3><p>Upload optimized artwork images, associate media assets with artworks, and prepare future CDN/object-storage delivery.</p></article>
-        <article><h3>Collector and CRM flow</h3><p>Export or integrate contact messages, artwork inquiries, email signups, consent status, and future collector records.</p></article>
-        <article><h3>Analytics export</h3><p>Pull tenant-scoped traffic, artwork view, day/hour, location, referrer, and campaign events when analytics collection is enabled.</p></article>
-        <article><h3>Custom domains</h3><p>Automate custom-domain verification, vhost artifact generation, and tenant-domain status checks where platform permissions allow it.</p></article>
-        <article><h3>Admin automation</h3><p>Use bearer-token API access for trusted integrations. Browser admin flows remain CSRF-protected and session-based.</p></article>
+        <article><h3>Artwork sync</h3><p>Read or update artwork metadata, publication status, inventory/sales fields, section assignments, and display order.</p></article>
+        <article><h3>Media workflows</h3><p>Upload optimized artwork images, associate assets with artworks, and prepare derivatives for thumbnails, page images, and future CDN delivery.</p></article>
+        <article><h3>Collector flow</h3><p>Integrate contact messages, artwork inquiries, email signups, consent changes, and future collector records with external CRM tools.</p></article>
+        <article><h3>Analytics export</h3><p>Export tenant-scoped events, artwork hits, referrers, locations, and day/hour aggregates when public tracking is enabled.</p></article>
+        <article><h3>Custom domains</h3><p>Verify DNS, check domain status, and monitor generated vhost artifacts using platform-approved automation.</p></article>
+        <article><h3>Background jobs</h3><p>Long-running work should be queued, retried, and observable through job attempts and worker heartbeats.</p></article>
     </div>
 </section>
 
 <section class="platform-section docs-section">
-    <h2>Authentication model</h2>
-    <p>ArtsFolio supports OAuth/OIDC and local email/password for users. API clients should use OAuth2 bearer tokens or scoped platform-issued credentials. Integrations must be tenant-aware and should never assume a global artwork namespace.</p>
+    <h2>Authentication and authorization</h2>
     <ol class="flow-list compact">
-        <li><strong>Tenant scope</strong><span>Every API operation must resolve to one tenant context.</span></li>
-        <li><strong>Role checks</strong><span>Mutating endpoints require owner/admin-level tenant permission or platform permission.</span></li>
-        <li><strong>Audit trail</strong><span>Important writes should produce audit records with actor, action, target, and detail payload.</span></li>
-        <li><strong>Idempotency</strong><span>Bulk imports and external syncs should be designed to retry safely.</span></li>
+        <li><strong>Browser admin</strong><span>Session-based, CSRF-protected, role-checked tenant admin routes.</span></li>
+        <li><strong>API access</strong><span>OAuth2 bearer tokens or platform-issued scoped credentials for integrations.</span></li>
+        <li><strong>Tenant scope</strong><span>Every integration request must resolve to one tenant or an explicit platform-level permission.</span></li>
+        <li><strong>Auditability</strong><span>Mutations should create audit records containing actor, action, entity type, entity ID, IP, and details.</span></li>
     </ol>
 </section>
 
 <section class="platform-section docs-section">
-    <h2>Expected API surface</h2>
+    <h2>Resource model</h2>
     <div class="admin-table-wrap">
         <table class="admin-table">
-            <thead><tr><th>Area</th><th>Likely resources</th><th>Notes</th></tr></thead>
+            <thead><tr><th>Area</th><th>Resources</th><th>Integration notes</th></tr></thead>
             <tbody>
-                <tr><td>Tenants</td><td>tenant profile, domains, settings</td><td>Settings include branding, nav labels, discovery opt-in, and custom CSS.</td></tr>
-                <tr><td>Artwork</td><td>artworks, media assets, portfolio sections</td><td>Use stable IDs/slugs and avoid filename-based identity.</td></tr>
-                <tr><td>Engagement</td><td>messages, email signups, consent status</td><td>Consent changes should be preserved and auditable.</td></tr>
-                <tr><td>Analytics</td><td>events, artwork hits, location/day/hour aggregates</td><td>Analytics depends on public-page event collection being enabled.</td></tr>
-                <tr><td>Jobs</td><td>background jobs, attempts, heartbeats</td><td>Long-running work should be queued and observable.</td></tr>
+                <tr><td>Tenant</td><td>tenant profile, settings, domains</td><td>Use tenant IDs for internal identity; slugs/domains are routing affordances.</td></tr>
+                <tr><td>Artwork</td><td>artworks, media assets, sections</td><td>Imports should preserve source IDs and be safe to rerun.</td></tr>
+                <tr><td>Engagement</td><td>messages, subscribers, consent</td><td>Never overwrite consent history blindly.</td></tr>
+                <tr><td>Analytics</td><td>events, views, location aggregates</td><td>Events must be written before dashboards can show useful graphs.</td></tr>
+                <tr><td>Operations</td><td>jobs, attempts, heartbeats, audit logs</td><td>Operational visibility matters as much as happy-path API responses.</td></tr>
             </tbody>
         </table>
     </div>
 </section>
 
 <section class="platform-section docs-section">
-    <h2>Integration rules of the road</h2>
-    <p>Do not scrape tenant admin pages. Use API endpoints or agreed exports. Do not bypass tenant permissions. Do not store access tokens in client-side code. For imports, keep source IDs and produce repeatable, rollback-friendly scripts.</p>
+    <h2>Rules for third-party developers</h2>
+    <p>Do not scrape admin pages. Do not put secrets in browser code. Do not bypass tenant permissions. Prefer idempotent imports, explicit dry runs, structured logs, and small reversible batches. If an integration changes public content, make the change traceable.</p>
 </section>
 HTML;
 
