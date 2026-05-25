@@ -819,13 +819,3 @@
 - Admin and help logo sizing was reduced to avoid oversized header branding.
 
 <!-- End of file. -->
-
-## 2026-05-25 help/directory route hotfix
-
-- Restored `/help` and `/help/{article}` routing on both platform and tenant hosts through `App\Http\Controllers\Platform\HelpController`.
-- Added both `topic()` and `article()` methods to the help controller to tolerate older route wiring.
-- Added canonical tenant directory opt-in routes at `/admin/directory` with `/admin/platform-discovery` retained as a compatibility redirect/action alias.
-- Tenant admin navigation now labels the tenant discovery control as `Directory`.
-- Tenant directory opt-in values remain `platform_directory_opt_in` and `platform_directory_summary` in `tenant_settings`.
-
-<!-- End of file. -->

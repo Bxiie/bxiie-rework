@@ -8,11 +8,7 @@ use App\Http\Request;
 use App\Http\Response;
 
 /**
- * Renders the combined ArtsFolio help and developer reference section.
- *
- * The controller intentionally supports both topic() and article() because
- * older route bundles used different method names.  Keeping both avoids a
- * production white-screen when one route variant survives in public/index.php.
+ * Combined public Help and logged-in Developer reference.
  */
 final class HelpController
 {
@@ -24,54 +20,44 @@ final class HelpController
         $this->articles = [
             'getting-started' => [
                 'title' => 'Getting started',
-                'body' => '<p>ArtsFolio turns an artist site into a managed portfolio, contact, event, sales-readiness, and discovery platform. Start by signing in, opening the tenant admin, setting branding, and publishing a first artwork.</p><ol class="flow-list compact"><li><strong>Open admin</strong><span>Use the Admin link after login.</span></li><li><strong>Brand the site</strong><span>Set artist name, public labels, colors, images, and CSS.</span></li><li><strong>Add artwork</strong><span>Upload artwork and assign portfolio sections.</span></li><li><strong>Turn on discovery</strong><span>Use Admin → Directory when the artist is ready to appear publicly.</span></li></ol>',
+                'body' => '<p>Start by signing in, creating or opening a tenant, setting the public artist name, and adding a first artwork record. Then publish home, about, contact, and portfolio content from tenant admin.</p><ol class="flow-list compact"><li><strong>Sign in</strong><span>Use email/password, Google, or Facebook when configured.</span></li><li><strong>Open admin</strong><span>Use the Admin link after login.</span></li><li><strong>Brand the site</strong><span>Set artist name, site title, navigation labels, colors, logo, and CSS.</span></li><li><strong>Add work</strong><span>Upload artworks, assign sections, and publish selected records.</span></li></ol>',
             ],
             'branding' => [
                 'title' => 'Branding and CSS',
-                'body' => '<p>Tenant admins manage artist-site colors, copy, page labels, CSS, logos, and navigation from tenant admin. Platform admins manage the public ArtsFolio look and feel separately from tenant branding.</p>',
+                'body' => '<p>Tenant admins manage artist-site colors, images, page labels, CSS, and navigation from tenant Settings. Platform admins manage ArtsFolio-wide branding and platform CSS from Platform Settings.</p>',
             ],
             'artworks' => [
                 'title' => 'Artwork management',
-                'body' => '<p>Use Artworks to upload images, add title, medium, dimensions, price/status notes, and assign portfolio sections. Published artwork appears on public tenant pages and may be eligible for directory features when the tenant opts in.</p>',
+                'body' => '<p>Use Artworks to upload images, add titles, medium, dimensions, sale status, and public notes. Assign each artwork to one or more portfolio sections so public pages remain navigable.</p>',
             ],
             'events' => [
                 'title' => 'Events and exhibitions',
-                'body' => '<p>Use Events for exhibitions, fairs, talks, residencies, open studios, and other date-based history. Filtering and ordering keep long CV-style histories readable.</p>',
+                'body' => '<p>Use Events for exhibitions, fairs, talks, studio visits, and other date-based history. Admin filtering and ordering help keep long histories readable.</p>',
             ],
             'directory' => [
                 'title' => 'Artist directory',
-                'body' => '<p>The directory has two gates. Platform admins enable the directory globally. Tenant admins opt the individual artist into the directory from <strong>Admin → Directory</strong>. Tenants stay hidden until both gates are open.</p><ol class="flow-list compact"><li><strong>Tenant admin</strong><span>Go to /admin/directory on the tenant domain.</span></li><li><strong>Enable listing</strong><span>Check “Show this tenant in the public ArtsFolio directory.”</span></li><li><strong>Add summary</strong><span>Write a short public description for directory cards.</span></li><li><strong>Save</strong><span>The artist can then appear on artsfol.io/directory when the platform directory is enabled.</span></li></ol>',
+                'body' => '<p>The public directory requires two switches: platform admins must enable the directory globally, and tenant admins must opt their tenant into discovery. Tenant opt-in lives under tenant Discovery settings.</p>',
             ],
             'stats' => [
                 'title' => 'Stats',
-                'body' => '<p>Tenant stats show tenant traffic and content engagement. Platform stats show platform-wide traffic and operational totals. Empty stats usually mean analytics events are not being written or the route is being reached through the wrong host.</p>',
+                'body' => '<p>Tenant stats show tenant traffic. Platform stats show platform-level traffic and operational totals. If stats are empty, verify that analytics events are being written and that the route is being reached through the correct host.</p>',
             ],
             'audit' => [
                 'title' => 'Audit log',
-                'body' => '<p>Audit entries record login, security, and administrative changes. Tenant audit pages should show tenant-scoped admin actions. Platform audit pages show platform administration and authentication events.</p>',
+                'body' => '<p>Audit entries record security and administrative changes. Tenant audit pages should show tenant-scoped admin actions. Platform audit pages show platform administration and authentication events.</p>',
             ],
         ];
     }
 
     public function index(Request $request, ?array $currentUser = null): Response
     {
-        return $this->topic($request, 'getting-started', $currentUser);
-    }
-
-    public function topic(Request $request, string|array $slug = 'getting-started', ?array $currentUser = null): Response
-    {
-        return $this->article($request, $slug, $currentUser);
+        return $this->article($request, 'getting-started', $currentUser);
     }
 
     public function article(Request $request, string|array $slug = 'getting-started', ?array $currentUser = null): Response
     {
         if (is_array($slug)) {
-            $slug = (string) ($slug['article'] ?? $slug['topic'] ?? $slug['slug'] ?? 'getting-started');
-        }
-
-        $slug = trim($slug, '/');
-        if ($slug === '') {
-            $slug = 'getting-started';
+            $slug = (string) ($slug['article'] ?? 'getting-started');
         }
 
         if ($slug === 'developer') {
@@ -94,33 +80,41 @@ final class HelpController
 
         $body = <<<HTML
 <p class="admin-muted">Developer information is visible only after login. It is written as a practical route map for a junior developer implementing against ArtsFolio.</p>
-<h2>Browser authentication</h2>
+<h2>Browser auth</h2>
 <table class="admin-table"><thead><tr><th>Method</th><th>Route</th><th>Use</th></tr></thead><tbody>
 <tr><td>GET</td><td><code>/login</code></td><td>Render branded login.</td></tr>
-<tr><td>POST</td><td><code>/login</code></td><td>Submit email/password login from the branded form.</td></tr>
-<tr><td>POST</td><td><code>/login/password</code></td><td>Backward-compatible password-login endpoint.</td></tr>
-<tr><td>POST</td><td><code>/logout</code></td><td>Clear browser authorization and return to login.</td></tr>
+<tr><td>POST</td><td><code>/login</code></td><td>Submit email/password login.</td></tr>
+<tr><td>POST</td><td><code>/login/password</code></td><td>Backward-compatible password login endpoint.</td></tr>
+<tr><td>POST</td><td><code>/logout</code></td><td>Clear the browser session and redirect to login.</td></tr>
 </tbody></table>
-<h2>Platform public routes</h2>
+<h2>Platform routes</h2>
 <table class="admin-table"><thead><tr><th>Method</th><th>Route</th><th>Use</th></tr></thead><tbody>
-<tr><td>GET</td><td><code>/</code></td><td>ArtsFolio landing page.</td></tr>
-<tr><td>GET</td><td><code>/pricing</code></td><td>Plan comparison and signup call to action.</td></tr>
+<tr><td>GET</td><td><code>/</code></td><td>Platform landing page.</td></tr>
+<tr><td>GET</td><td><code>/pricing</code></td><td>Professional plan comparison.</td></tr>
 <tr><td>GET</td><td><code>/signup</code></td><td>Tenant signup form.</td></tr>
-<tr><td>POST</td><td><code>/signup</code></td><td>Create the tenant and initial user.</td></tr>
-<tr><td>GET</td><td><code>/directory</code></td><td>Opted-in artist directory.</td></tr>
-<tr><td>GET</td><td><code>/help</code></td><td>Help landing article.</td></tr>
-<tr><td>GET</td><td><code>/help/{article}</code></td><td>Help article or developer reference.</td></tr>
+<tr><td>POST</td><td><code>/signup</code></td><td>Create tenant/user.</td></tr>
+<tr><td>GET</td><td><code>/directory</code></td><td>Artist directory.</td></tr>
+<tr><td>GET</td><td><code>/help/{article}</code></td><td>Help and developer article shell.</td></tr>
 </tbody></table>
-<h2>Tenant routes</h2>
+<h2>Platform admin routes</h2>
+<table class="admin-table"><thead><tr><th>Method</th><th>Route</th><th>Use</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/admin</code></td><td>Admin dashboard cards.</td></tr>
+<tr><td>GET</td><td><code>/admin/platform-settings</code></td><td>Platform name, support email, CSS, directory, auth duration.</td></tr>
+<tr><td>GET</td><td><code>/admin/stats</code></td><td>Platform analytics.</td></tr>
+<tr><td>GET</td><td><code>/admin/audit-log</code></td><td>Platform audit entries.</td></tr>
+<tr><td>GET</td><td><code>/admin/tenants</code></td><td>Tenant inventory.</td></tr>
+<tr><td>GET</td><td><code>/admin/domains</code></td><td>Custom domains.</td></tr>
+<tr><td>GET</td><td><code>/admin/jobs</code></td><td>Background jobs.</td></tr>
+</tbody></table>
+<h2>Tenant admin routes</h2>
 <table class="admin-table"><thead><tr><th>Method</th><th>Route</th><th>Use</th></tr></thead><tbody>
 <tr><td>GET</td><td><code>/admin</code></td><td>Tenant dashboard.</td></tr>
 <tr><td>GET</td><td><code>/admin/settings</code></td><td>Tenant settings and CSS.</td></tr>
-<tr><td>GET</td><td><code>/admin/directory</code></td><td>Tenant directory opt-in.</td></tr>
-<tr><td>POST</td><td><code>/admin/directory</code></td><td>Save tenant directory opt-in.</td></tr>
 <tr><td>GET</td><td><code>/admin/artworks</code></td><td>Artwork inventory.</td></tr>
 <tr><td>GET</td><td><code>/admin/events</code></td><td>Events and exhibitions.</td></tr>
 <tr><td>GET</td><td><code>/admin/stats</code></td><td>Tenant stats.</td></tr>
 <tr><td>GET</td><td><code>/admin/audit-log</code></td><td>Tenant audit entries.</td></tr>
+<tr><td>GET</td><td><code>/api/me</code></td><td>Bearer-token identity check.</td></tr>
 </tbody></table>
 HTML;
 

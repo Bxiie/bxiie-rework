@@ -1,4 +1,11 @@
 ## Now
+- No route was found for No route for GET /help.
+- https://artsfol.io/help/directory: Application error
+Call to undefined method App\Http\Controllers\Platform\HelpController::topic()
+- No way for the tenant to opt-in to directory
+
+
+
 
 - https://bxiie.com/logout - No route was found for No route for POST /logout.
 - https://bxiie.com/help; Application error

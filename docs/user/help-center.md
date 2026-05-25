@@ -1,18 +1,18 @@
-# ArtsFolio Help Center
+# ArtsFolio help center
 
-The public help section now uses an admin-style shell with sidebar article links. Developer reference is part of Help at `/help/developer`, but it requires login.
+The public help center is available at `/help` and each article is available under `/help/{article}`.
 
-Primary help routes:
+## Main articles
 
-- `/help`
-- `/help/branding`
-- `/help/artworks`
-- `/help/events`
-- `/help/directory`
-- `/help/stats`
-- `/help/audit`
-- `/help/developer`
+- `/help` - getting started.
+- `/help/branding` - branding and CSS.
+- `/help/artworks` - artwork management.
+- `/help/events` - events and exhibitions.
+- `/help/directory` - artist directory opt-in.
+- `/help/stats` - analytics and stats.
+- `/help/audit` - audit log behavior.
+- `/help/developer` - logged-in developer reference.
 
-Every help page includes navigation back to the platform home, pricing, directory, and admin areas.
+Developer information is intentionally login-gated.
 
 <!-- End of file. -->

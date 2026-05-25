@@ -112,7 +112,7 @@ HTML;
             'messages' => ['/admin/contact-messages', 'Messages'],
             'email' => ['/admin/email-signups', 'Email Signups'],
             'billing' => ['/admin/billing', 'Billing'],
-            'directory' => ['/admin/directory', 'Directory'],
+            'discovery' => ['/admin/platform-discovery', 'Discovery'],
             'stats' => ['/admin/stats', 'Stats'],
             'audit' => ['/admin/audit-log', 'Audit Log'],
         ];
