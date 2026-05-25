@@ -354,3 +354,5 @@ h2 {
 /* End of file. */
 
 .docs-section h2{margin-bottom:1rem}.legal-copy h2{font-size:clamp(1.8rem,4vw,3rem)}
+
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}.pricing-card{padding:1.5rem;border:1px solid var(--line);border-radius:1.5rem;background:rgba(255,255,255,.78)}.pricing-card.featured{background:#151515;color:#fff}.pricing-card h2{font-size:clamp(3rem,7vw,5rem)}.pricing-card ul{padding-left:1.2rem;line-height:1.7}.price-period{font-weight:900}.pricing-card.featured .button.primary{background:#fff;color:#151515}
