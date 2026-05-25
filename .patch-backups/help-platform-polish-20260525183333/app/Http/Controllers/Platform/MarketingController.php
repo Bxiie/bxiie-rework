@@ -337,7 +337,6 @@ HTML;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="ArtsFolio is an artist portfolio and sales platform for working artists.">
     <link rel="stylesheet" href="/assets/platform.css">
-    <link rel="stylesheet" href="/assets/platform-custom.css">
 </head>
 <body>
 <header class="platform-header">
@@ -447,10 +446,6 @@ HTML;
 
     private function optedInTenants(int $limit): array
     {
-        if (!$this->platformDirectoryEnabled()) {
-            return [];
-        }
-
         try {
             $settingsTable = $this->settingsTable();
             if ($settingsTable === null) {
@@ -498,10 +493,6 @@ HTML;
 
     private function optedInImages(int $limit): array
     {
-        if (!$this->platformDirectoryEnabled()) {
-            return [];
-        }
-
         try {
             $settingsTable = $this->settingsTable();
             if ($settingsTable === null) {
@@ -555,23 +546,6 @@ HTML;
             return $images;
         } catch (Throwable) {
             return [];
-        }
-    }
-
-
-    private function platformDirectoryEnabled(): bool
-    {
-        try {
-            $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'platform_directory_enabled' LIMIT 1");
-            $stmt->execute();
-            $value = $stmt->fetchColumn();
-            if ($value === false) {
-                return true;
-            }
-
-            return in_array(strtolower((string) $value), ['1', 'true', 'yes', 'on'], true);
-        } catch (Throwable) {
-            return true;
         }
     }
 

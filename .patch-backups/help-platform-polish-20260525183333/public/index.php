@@ -26,8 +26,6 @@ use App\Http\Controllers\Platform\Admin\StatsController as PlatformAdminStatsCon
 use App\Http\Controllers\Platform\Admin\ContactMessagesController as PlatformAdminContactMessagesController;
 use App\Http\Controllers\Platform\HomeController as PlatformHomeController;
 use App\Http\Controllers\Platform\MarketingController;
-use App\Http\Controllers\Platform\HelpController;
-use App\Http\Controllers\Platform\PlatformCssController;
 use App\Http\Controllers\Platform\CaddyAskController;
 use App\Http\Controllers\Platform\SignupController as PlatformSignupController;
 use App\Http\Controllers\Tenant\HomeController as TenantHomeController;
@@ -174,7 +172,6 @@ if ($tenant) {
         );
 
         $router = new Router();
-    $router->get('/assets/platform-custom.css', fn (Request $request): Response => (new PlatformCssController(new PlatformSettingsRepository($pdo)))->show($request));
         $router->get('/tenant.css', fn (Request $request): Response => (new TenantCssController($tenantSettings))->show($request, $tenant));
         $router->get('/', fn (Request $request): Response => $tenantController->home($request, $tenant));
         $router->get('/' . $portfolioSlug, fn (Request $request): Response => $tenantController->portfolio($request, $tenant));
@@ -258,7 +255,7 @@ if ($tenant) {
     $router->post('/contact', fn (Request $request): Response => $marketingController->contact($request));
     $router->get('/help', fn (Request $request): Response => $helpController->index($request));
     $router->get('/help/{topic}', fn (Request $request, array $params): Response => $helpController->topic($request, (string) $params['topic']));
-    $router->get('/developer', fn (Request $request): Response => (new HelpController())->developer($request, $currentUser));
+    $router->get('/developer', fn (Request $request): Response => $marketingController->developer($request));
     $router->get('/privacy', fn (Request $request): Response => $marketingController->privacy($request));
 
     $router->get('/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));

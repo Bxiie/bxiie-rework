@@ -798,13 +798,3 @@
 - Tenant audit-log rendering was repaired so scoped audit rows are visible instead of an empty panel.
 
 # End of file.
-
-## Help platform polish bundle
-
-- `/help` is now the combined Help and Developer section with an admin-style sidebar article layout.
-- `/help/developer` and `/developer` require a logged-in browser session and describe core routes/endpoints for implementers.
-- Platform admin layout uses `public/assets/logo_2.png` and ArtsFolio platform branding instead of tenant/Bxiie branding.
-- Platform settings can manage support email, expected DNS IPv4, persistent login days, global artist-directory enablement, and platform custom CSS served from `/assets/platform-custom.css`.
-- `/pricing` is a branded plan-comparison page.
-
-# End of file.

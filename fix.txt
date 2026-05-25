@@ -1,5 +1,25 @@
 ## Now
 
+- https://bxiie.com/logout - No route was found for No route for POST /logout.
+- https://bxiie.com/help; Application error
+Call to a member function index() on null
+- The platform admin home page should have boxes in the middle with explanations of the functions, like the tenant adm9in page does.
+
+
+
+
+- help and developer sections should be combined.  The help section should have a layout similar to admin, with the sidebar linking to help articles.
+- The logo on the help pages is way too big and does not include the other artsfolio color, look, and feel
+- The platform admin should be able to update css for the platform site pages
+- The pricing page does not include branding and has very little information.  Make this a professional page comparing and conmtrasting the available plans.
+- There is no way to get back from the help pages
+- Developer information should only be available when logged in.  Should include a descritpion of all endpoints, routes, and usages suitable for a junior developer to use to implement calls against Artsfol.io.
+- The logo should be larger on the admin pages.
+
+
+
+
+
 - Allow ordering a filtering of events on the admin events page.
 - Wire the google and facebook logins/tenant creation
 - Expand help.  Each bullet should link to a page explaining and walking through the functionality.

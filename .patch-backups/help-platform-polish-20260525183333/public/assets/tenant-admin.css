@@ -34,18 +34,3 @@ body.tenant-admin-page{margin:0;min-height:100vh;background:#f4efe7;color:#17171
 .tenant-admin-main-header:empty{display:none!important}.tenant-admin-main-header{justify-content:flex-end!important}
 
 .admin-billing-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:1rem}.billing-price{font-size:2rem;font-weight:950;margin:.25rem 0 1rem}.admin-button{display:inline-flex;padding:.75rem 1rem;border-radius:999px;background:#111;color:#fff;text-decoration:none;font-weight:900}
-
-/* Larger admin logos and platform/help shell adjustments. */
-.platform-admin-header .platform-admin-logo,
-.platform-help-header .platform-help-logo {
-  display: inline-flex;
-  align-items: center;
-  text-decoration: none;
-}
-
-.platform-admin-page .tenant-admin-panel,
-.platform-help-page .tenant-admin-panel {
-  max-width: 1240px;
-}
-
-/* End larger admin logos and platform/help shell adjustments. */
