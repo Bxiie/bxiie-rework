@@ -1,6 +1,11 @@
 ## Now
 
 - Allow ordering a filtering of events on the admin events page.
+- Wire the google and facebook logins/tenant creation
+- Expand help.  Each bullet should link to a page explaining and walking through the functionality.
+- https://artsfol.io/signup - Page not branded.
+- Logging in through home landing page signin link: No route was found for No route for POST /login.:Wq
+
 
 
 

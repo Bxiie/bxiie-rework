@@ -30,7 +30,7 @@ final class PasswordAuthController
 
     public function loginForm(Request $request): Response
     {
-        return Response::html(AuthPage::login('/login'));
+        return Response::html(AuthPage::login('/login/password', '', $this->csrf->getOrCreate()));
     }
 
     public function loginPassword(Request $request): Response

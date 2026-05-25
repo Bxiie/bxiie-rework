@@ -9,10 +9,11 @@ namespace App\Http\View;
  */
 final class AuthPage
 {
-    public static function login(string $action = '/login', string $message = ''): string
+    public static function login(string $action = '/login/password', string $message = '', string $csrfToken = ''): string
     {
         $safeAction = self::escape($action);
         $notice = $message !== '' ? '<p class="auth-notice">' . self::escape($message) . '</p>' : '';
+        $csrf = $csrfToken !== '' ? '<input type="hidden" name="csrf_token" value="' . self::escape($csrfToken) . '">' : '';
 
         return self::page('Sign in', <<<HTML
 <p class="auth-eyebrow">Welcome back</p>
@@ -25,6 +26,7 @@ final class AuthPage
 </div>
 <div class="divider"><span>or use email</span></div>
 <form method="post" action="{$safeAction}" class="auth-form">
+    {$csrf}
     <label>Email<input type="email" name="email" autocomplete="email" required></label>
     <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
     <button type="submit">Sign in</button>
@@ -33,9 +35,10 @@ final class AuthPage
 HTML);
     }
 
-    public static function register(string $action = '/register'): string
+    public static function register(string $action = '/register', string $csrfToken = ''): string
     {
         $safeAction = self::escape($action);
+        $csrf = $csrfToken !== '' ? '<input type="hidden" name="csrf_token" value="' . self::escape($csrfToken) . '">' : '';
 
         return self::page('Create account', <<<HTML
 <p class="auth-eyebrow">Start your site</p>
@@ -47,6 +50,7 @@ HTML);
 </div>
 <div class="divider"><span>or use email</span></div>
 <form method="post" action="{$safeAction}" class="auth-form">
+    {$csrf}
     <label>Name<input name="name" autocomplete="name"></label>
     <label>Email<input type="email" name="email" autocomplete="email" required></label>
     <label>Password<input type="password" name="password" autocomplete="new-password" required></label>

@@ -763,3 +763,11 @@
 - Added scripts/test/production_mutation_guard.php.
 - Updated preflight to verify mutating tests include the production guard.
 - Documented that production preflight must not mutate live tenant data.
+## 2026-05-25 admin events, signup branding, and auth route patch
+
+- Tenant admin events now support search, type/status filtering, sortable columns, ascending/descending order, editable `sort_order`, and editable event status.
+- Platform `/signup` now renders the branded tenant-creation form instead of the unstyled raw form; the duplicate marketing signup route was removed from routing.
+- Platform local login now accepts both `POST /login/password` and compatibility `POST /login` to prevent landing-page sign-in forms from throwing `No route for POST /login`.
+- Google and Facebook auth start/callback routes are mounted, with explicit runtime configuration requirements for `ARTSFOLIO_GOOGLE_CLIENT_ID`, `ARTSFOLIO_GOOGLE_CLIENT_SECRET`, `ARTSFOLIO_FACEBOOK_CLIENT_ID`, and `ARTSFOLIO_FACEBOOK_CLIENT_SECRET`. Callback token exchange remains an open completion item and currently fails closed.
+
+# End of file.
