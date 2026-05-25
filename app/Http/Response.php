@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+
+use App\Http\View\ErrorPage;
 /**
  * Builds and sends HTTP responses.
  */
@@ -34,9 +36,9 @@ final class Response
         );
     }
 
-    public static function notFound(string $message = 'Not found'): self
+    public static function notFound(string $message = 'Page not found'): self
     {
-        return self::html("<h1>404</h1>\n<p>" . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . "</p>\n", 404);
+        return self::html(ErrorPage::notFound($message), 404);
     }
 
     public function send(): void

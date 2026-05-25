@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+
+use App\Http\View\ErrorPage;
 /**
  * Minimal HTTP router supporting exact routes and simple {parameter} path segments.
  */

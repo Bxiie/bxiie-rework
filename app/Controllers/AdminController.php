@@ -1,13 +1,11 @@
 <?php
-use App\Http\View\ErrorPage;
-/**
- * Tenant-scoped admin controller.
- */
 
 declare(strict_types=1);
 
 namespace App\Controllers;
 
+
+use App\Http\View\ErrorPage;
 use App\Core\View;
 use App\Services\ImageService;
 use PDO;
