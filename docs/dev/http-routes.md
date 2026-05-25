@@ -1,7 +1,20 @@
 # ArtsFolio HTTP Routes
 
-The in-app developer reference at `/help/developer` is the user-facing route guide for implementers. It documents public platform routes, browser authentication routes, platform admin routes, tenant admin routes, and the tenant `/api/me` bearer-token check.
+Developer route documentation is available in the application at `/help/developer` after login.
 
-Keep this file aligned when changing route behavior in `public/index.php`.
+This hotfix specifically verifies these browser routes:
 
-# End of file.
+- `GET /help`
+- `GET /help/{article}`
+- `GET /developer`
+- `GET /pricing`
+- `GET /directory`
+- `POST /logout`
+- `POST /login`
+- `POST /login/password`
+
+The public pricing page is served by `App\\Http\\Controllers\\Platform\\PricingController`.
+The public directory page is served by `App\\Http\\Controllers\\Platform\\DirectoryController`.
+The combined help/developer section is served by `App\\Http\\Controllers\\Platform\\HelpController`.
+
+<!-- End of file. -->

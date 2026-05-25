@@ -453,32 +453,3 @@ h2 {
 }
 
 /* End help, pricing, and platform polish. */
-
-/* Route/UI hotfix: keep platform/help logos useful instead of billboard-sized. */
-.platform-header .logo-brand img,
-.platform-help-header .logo-brand img,
-.platform-help-logo img,
-.compact-logo img {
-    max-height: 54px;
-    width: auto;
-}
-
-.platform-help-page .platform-header {
-    background: linear-gradient(135deg, #f7f1e8 0%, #e8f0ff 100%);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.09);
-}
-
-.pricing-hero.compact {
-    padding-top: 3rem;
-    padding-bottom: 2rem;
-}
-
-.professional-pricing {
-    align-items: stretch;
-}
-
-.comparison-section {
-    overflow-x: auto;
-}
-
-/* End of file. */

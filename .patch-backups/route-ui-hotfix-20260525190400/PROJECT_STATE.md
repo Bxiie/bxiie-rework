@@ -808,14 +808,3 @@
 - `/pricing` is a branded plan-comparison page.
 
 # End of file.
-
-## Route/UI hotfix
-
-- Help and Developer documentation are combined under `/help`; `/help/developer` requires login.
-- Platform pricing is served by a dedicated branded pricing controller with plan comparison content.
-- Platform directory is served by a dedicated directory controller with a useful empty state instead of a launch-placeholder message.
-- Tenant and platform routers expose Help routes, and tenant domains accept `POST /logout`.
-- Platform admin dashboard uses explanatory cards similar to the tenant admin dashboard.
-- Admin and help logo sizing was reduced to avoid oversized header branding.
-
-<!-- End of file. -->

@@ -26,8 +26,6 @@ use App\Http\Controllers\Platform\Admin\StatsController as PlatformAdminStatsCon
 use App\Http\Controllers\Platform\Admin\ContactMessagesController as PlatformAdminContactMessagesController;
 use App\Http\Controllers\Platform\HomeController as PlatformHomeController;
 use App\Http\Controllers\Platform\MarketingController;
-use App\Http\Controllers\Platform\DirectoryController;
-use App\Http\Controllers\Platform\PricingController;
 use App\Http\Controllers\Platform\HelpController;
 use App\Http\Controllers\Platform\PlatformCssController;
 use App\Http\Controllers\Platform\CaddyAskController;
@@ -114,7 +112,6 @@ try {
     $sessionRepository = new SessionRepository($pdo);
     $sessionTokens = new SessionTokenService();
     $currentUser = (new CurrentUser($sessionRepository, $sessionTokens))->resolve($request);
-    $helpController = new HelpController();
 
     $passwordAuthController = new PasswordAuthController(
         new PasswordAuthService(
@@ -177,12 +174,6 @@ if ($tenant) {
         );
 
         $router = new Router();
-    $router->get('/help', fn (Request $request): Response => $helpController->index($request, $currentUser));
-    $router->get('/help/{article}', fn (Request $request, array $params): Response => $helpController->article($request, (string) ($params['article'] ?? 'getting-started'), $currentUser));
-    $router->get('/developer', fn (Request $request): Response => $helpController->developer($request, $currentUser));
-        $router->get('/help', fn (Request $request): Response => $helpController->index($request, $currentUser));
-        $router->get('/help/{article}', fn (Request $request, array $params): Response => $helpController->article($request, (string) ($params['article'] ?? 'getting-started'), $currentUser));
-        $router->get('/developer', fn (Request $request): Response => $helpController->developer($request, $currentUser));
     $router->get('/assets/platform-custom.css', fn (Request $request): Response => (new PlatformCssController(new PlatformSettingsRepository($pdo)))->show($request));
         $router->get('/tenant.css', fn (Request $request): Response => (new TenantCssController($tenantSettings))->show($request, $tenant));
         $router->get('/', fn (Request $request): Response => $tenantController->home($request, $tenant));
@@ -195,7 +186,6 @@ if ($tenant) {
         $router->get('/caddy/ask', fn (Request $request): Response => (new CaddyAskController($pdo))->ask($request));
         $router->post('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->login($request));
         $router->get('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->logout($request));
-        $router->post('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->logout($request));
         $router->get('/admin/media', fn (Request $request): Response => (new TenantMediaController($pdo, new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->admin($request, $tenant, $currentUser));
         $router->get('/admin/contact-messages', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->contacts($request, $tenant, $currentUser));
         $router->post('/admin/contact-messages/delete', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->deleteContact($request, $tenant, $currentUser));
@@ -220,7 +210,9 @@ if ($tenant) {
         $router->post('/admin/artwork/upload', fn (Request $request): Response => (new TenantAdminArtworkUploadController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), new ArtworkUploadService($pdo), new AuditLogRepository($pdo)))->submit($request, $tenant, $currentUser));
         $router->get('/admin/getting-started', fn (Request $request): Response => (new TenantAdminGettingStartedController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
         $router->get('/login', fn (Request $request): Response => Response::html(AuthPage::login('/login', csrfToken: $csrf->getOrCreate(), brandName: $tenantSettings->get($tenant, 'artist_name', $tenantSettings->get($tenant, 'site_title', $tenant->name)), heading: 'Sign in to ' . $tenantSettings->get($tenant, 'artist_name', $tenantSettings->get($tenant, 'site_title', $tenant->name)))));
+        $router->get('/help', fn (Request $request): Response => $helpController->index($request));
         $router->get('/help/{topic}', fn (Request $request, array $params): Response => $helpController->topic($request, (string) $params['topic']));
+        $router->get('/developer', fn (Request $request): Response => (new MarketingController($pdo))->developer($request));
         $router->get('/admin/login', fn (Request $request): Response => new Response('', 303, ['Location' => '/login']));
         $router->get('/login', fn (Request $request): Response => Response::html(AuthPage::login('/login', csrfToken: $csrf->getOrCreate(), brandName: $tenantSettings->get($tenant, 'artist_name', $tenantSettings->get($tenant, 'site_title', $tenant->name)), heading: 'Sign in to ' . $tenantSettings->get($tenant, 'artist_name', $tenantSettings->get($tenant, 'site_title', $tenant->name)))));
     $router->get('/register', fn (Request $request): Response => Response::html(AuthPage::register('/register')));
@@ -256,15 +248,17 @@ if ($tenant) {
     $helpController = new PlatformHelpController();
 
     $router = new Router();
-    $router->get('/pricing', fn (Request $request): Response => (new PricingController())->index($request));
+    $router->get('/pricing', fn (Request $request): Response => $platformController->pricing($request));
     $router->get('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService()))->show($request));
     $router->post('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService()))->submit($request));
     $router->get('/', fn (Request $request): Response => $marketingController->home($request));
-    $router->get('/directory', fn (Request $request): Response => (new DirectoryController($pdo))->index($request));
+    $router->get('/directory', fn (Request $request): Response => $marketingController->directory($request));
     $router->get('/signup', fn (Request $request): Response => $marketingController->signup($request));
     $router->get('/contact', fn (Request $request): Response => $marketingController->contact($request));
     $router->post('/contact', fn (Request $request): Response => $marketingController->contact($request));
+    $router->get('/help', fn (Request $request): Response => $helpController->index($request));
     $router->get('/help/{topic}', fn (Request $request, array $params): Response => $helpController->topic($request, (string) $params['topic']));
+    $router->get('/developer', fn (Request $request): Response => (new HelpController())->developer($request, $currentUser));
     $router->get('/privacy', fn (Request $request): Response => $marketingController->privacy($request));
 
     $router->get('/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));

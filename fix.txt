@@ -4,6 +4,12 @@
 - https://bxiie.com/help; Application error
 Call to a member function index() on null
 - The platform admin home page should have boxes in the middle with explanations of the functions, like the tenant adm9in page does.
+- The pricing page only contains a huge logo and no pricing details
+- Admin page logo should be about 50% as large as it is
+- Directory page still says 'Directory opening soon
+Opted-in artists will appear here as the platform grows.'
+- Platfprm help: Application error
+Too few arguments to function App\Http\Controllers\Platform\HelpController::index(), 1 passed in /var/www/artsfolio/public/index.php on line 259 and exactly 2 expected
 
 
 
