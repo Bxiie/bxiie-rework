@@ -352,3 +352,5 @@ h2 {
 }
 
 /* End of file. */
+
+.docs-section h2{margin-bottom:1rem}.legal-copy h2{font-size:clamp(1.8rem,4vw,3rem)}

@@ -70,7 +70,7 @@ final class TenantAdminLayout
 
     <main class="tenant-admin-main">
         <div class="tenant-admin-main-header">
-            <a href="/admin">&larr; Admin</a>
+            
             <a href="/">View public site</a>
         </div>
         <section class="tenant-admin-panel">

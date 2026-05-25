@@ -53,7 +53,7 @@ final class AdminLayout
         {$adminNav}
     </aside>
     <main class="tenant-admin-main">
-        <div class="tenant-admin-main-header"><a href="/admin">&larr; Admin</a><a href="/">View public site</a></div>
+        <div class="tenant-admin-main-header"><a href="/">View public site</a></div>
         <section class="tenant-admin-panel"><h1>{$safeTitle}</h1>{$body}</section>
     </main>
 </div>

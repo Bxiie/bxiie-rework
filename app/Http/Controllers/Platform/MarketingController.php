@@ -177,24 +177,95 @@ HTML;
         return $this->page('Contact | ArtsFolio', $body, 'contact');
     }
 
+
     public function help(Request $request): Response
     {
         $body = <<<HTML
 <section class="platform-page-heading">
-    <p class="eyebrow">Help</p>
-    <h1>ArtsFolio help</h1>
-    <p>Useful starting points for artists setting up or managing their portfolio.</p>
+    <p class="eyebrow">Help center</p>
+    <h1>Run your artist site without fighting it.</h1>
+    <p>Practical guidance for setting up an ArtsFolio tenant, publishing artwork, and using the platform well.</p>
 </section>
-<div class="feature-grid">
-    <article><h3>Getting started</h3><p>Create an account, name your site, upload your first artworks, and publish your public pages.</p></article>
-    <article><h3>Artwork management</h3><p>Use portfolio sections, image metadata, public/private status, and page images to shape the public site.</p></article>
-    <article><h3>Discovery opt-in</h3><p>Tenant admins can choose whether their site appears in the public ArtsFolio directory and image mosaic.</p></article>
-    <article><h3>Custom domains</h3><p>Higher tiers can connect a custom domain after DNS verification and platform approval.</p></article>
-</div>
+
+<section class="platform-section docs-section">
+    <h2>Getting started</h2>
+    <ol class="flow-list compact">
+        <li><strong>Sign in</strong><span>Use Google, Facebook, or local email/password.</span></li>
+        <li><strong>Create tenant</strong><span>Choose your display name, site title, and artsfol.io subdomain.</span></li>
+        <li><strong>Add artwork</strong><span>Upload images, title, medium, date, dimensions, price/status, and portfolio sections.</span></li>
+        <li><strong>Edit pages</strong><span>Fill in home, about, contact, exhibitions, page images, and navigation labels.</span></li>
+        <li><strong>Publish</strong><span>Review public pages on mobile and desktop, then share your URL.</span></li>
+    </ol>
+</section>
+
+<section class="platform-section docs-section">
+    <h2>Admin areas</h2>
+    <div class="feature-grid">
+        <article><h3>Settings</h3><p>Branding, browser title, copyright, colors, top bar, tenant CSS, slugs, and public page labels.</p></article>
+        <article><h3>Content</h3><p>Home introduction, about text, contact text, page images, and reusable public content blocks.</p></article>
+        <article><h3>Artworks</h3><p>Artwork upload, editing, status, medium/date metadata, sales information, and portfolio assignment.</p></article>
+        <article><h3>Portfolio sections</h3><p>Create tabs, order sections, decide which sections appear as public tabs, and group works.</p></article>
+        <article><h3>Messages</h3><p>Review contact submissions, mark status, archive, delete, and export.</p></article>
+        <article><h3>Email signups</h3><p>Review subscribers, import/export lists, manage consent status, and remove addresses.</p></article>
+        <article><h3>Stats</h3><p>View traffic, artwork hits, day/hour charts, referrers, and location rollups when analytics events are present.</p></article>
+        <article><h3>Discovery</h3><p>Opt in to the public ArtsFolio directory and random image mosaic on artsfol.io.</p></article>
+    </div>
+</section>
+
+<section class="platform-section docs-section">
+    <h2>Launch checklist</h2>
+    <ol class="flow-list compact">
+        <li><strong>Mobile pass</strong><span>Open home, portfolio, artwork detail, about, and contact on a phone.</span></li>
+        <li><strong>SEO basics</strong><span>Set browser title, site description, artwork titles, and meaningful slugs.</span></li>
+        <li><strong>Contact test</strong><span>Submit the contact form and confirm the admin message appears.</span></li>
+        <li><strong>Email test</strong><span>Subscribe from contact/modal flow and confirm consent status.</span></li>
+        <li><strong>Analytics test</strong><span>Visit public pages and confirm stats events begin appearing.</span></li>
+    </ol>
+</section>
 HTML;
 
         return $this->page('Help | ArtsFolio', $body, 'help');
     }
+
+    public function developer(Request $request): Response
+    {
+        $body = <<<HTML
+<section class="platform-page-heading">
+    <p class="eyebrow">Developer notes</p>
+    <h1>Build with ArtsFolio</h1>
+    <p>ArtsFolio is a tenant-isolated artist operating platform for portfolios, sales readiness, discovery, and collector engagement.</p>
+</section>
+
+<section class="platform-section docs-section">
+    <h2>Architecture principles</h2>
+    <div class="feature-grid">
+        <article><h3>Tenant isolation</h3><p>Each tenant owns its settings, artwork, media, messages, signups, stats, and admin roles.</p></article>
+        <article><h3>Public-first pages</h3><p>Tenant sites should render fast, clean, mobile-friendly pages for visitors and collectors.</p></article>
+        <article><h3>OAuth plus local login</h3><p>SSO is the fast path, while local email/password remains available for direct account control.</p></article>
+        <article><h3>Auditable operations</h3><p>Admin mutations should be logged with tenant, user, action, target entity, IP address, and structured details.</p></article>
+    </div>
+</section>
+
+<section class="platform-section docs-section">
+    <h2>Integration roadmap</h2>
+    <ol class="flow-list compact">
+        <li><strong>Identity</strong><span>OAuth/OIDC sign-in, local password auth, sessions, and role-aware tenant access.</span></li>
+        <li><strong>Media</strong><span>Optimized artwork images, page images, thumbnails, and future object storage/CDN support.</span></li>
+        <li><strong>Commerce</strong><span>Availability, inquiry capture, checkout, invoices, shipping workflows, and collector CRM hooks.</span></li>
+        <li><strong>Analytics</strong><span>Page views, artwork views, location rollups, referrers, and tenant-visible dashboards.</span></li>
+        <li><strong>Domains</strong><span>Subdomain-by-default, custom-domain verification, generated vhost artifacts, and controlled deployment.</span></li>
+    </ol>
+</section>
+
+<section class="platform-section docs-section">
+    <h2>Operational expectations</h2>
+    <p>Production changes should flow through Git, migration integrity checks, syntax checks, route smoke tests, and deploy scripts. Direct production edits are emergency surgery and should be backported immediately.</p>
+</section>
+HTML;
+
+        return $this->page('Developers | ArtsFolio', $body, 'developer');
+    }
+
 
     public function privacy(Request $request): Response
     {
@@ -238,6 +309,7 @@ HTML;
         <a{$activeClass('home')} href="/">Home</a>
         <a{$activeClass('directory')} href="/directory">Artists</a>
         <a{$activeClass('help')} href="/help">Help</a>
+        <a{$activeClass('developer')} href="/developer">Developers</a>
         <a{$activeClass('contact')} href="/contact">Contact</a>
         <a class="login-link" href="/login">Sign in</a>
     </nav>
@@ -246,9 +318,10 @@ HTML;
 {$body}
 </main>
 <footer class="platform-footer">
-    <span>© {$this->escape(date('Y'))} artsfol.io</span>
+    <span>{$this->platformCopyrightLine()}</span>
     <nav>
         <a href="/help">Help</a>
+        <a href="/developer">Developers</a>
         <a href="/privacy">Privacy</a>
         <a href="/contact">Contact</a>
     </nav>
@@ -258,6 +331,31 @@ HTML;
 HTML;
 
         return Response::html($html);
+    }
+
+
+    private function platformCopyrightLine(): string
+    {
+        try {
+            $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'platform_footer_copyright_html' LIMIT 1");
+            $stmt->execute();
+            $value = trim((string) ($stmt->fetchColumn() ?: ''));
+            if ($value !== '') {
+                return $this->allowSafeInlineHtml($value);
+            }
+        } catch (Throwable) {
+        }
+
+        return '© ' . $this->escape(date('Y')) . ' artsfol.io';
+    }
+
+    private function allowSafeInlineHtml(string $html): string
+    {
+        $html = strip_tags($html, '<a><strong><em><span><br>');
+        $html = preg_replace('/\s+on[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $html) ?? $html;
+        $html = preg_replace('/href\s*=\s*([\'"])javascript:[^\'"]*\1/i', 'href="#"', $html) ?? $html;
+
+        return $html;
     }
 
     private function tenantCards(int $limit): string

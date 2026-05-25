@@ -241,6 +241,7 @@ if ($tenant) {
     $router->get('/contact', fn (Request $request): Response => $marketingController->contact($request));
     $router->post('/contact', fn (Request $request): Response => $marketingController->contact($request));
     $router->get('/help', fn (Request $request): Response => $marketingController->help($request));
+    $router->get('/developer', fn (Request $request): Response => $marketingController->developer($request));
     $router->get('/privacy', fn (Request $request): Response => $marketingController->privacy($request));
 
     $router->get('/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
