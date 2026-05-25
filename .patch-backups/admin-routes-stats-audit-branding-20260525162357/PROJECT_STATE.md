@@ -763,38 +763,11 @@
 - Added scripts/test/production_mutation_guard.php.
 - Updated preflight to verify mutating tests include the production guard.
 - Documented that production preflight must not mutate live tenant data.
+## 2026-05-25 admin events, signup branding, and auth route patch
 
-## 2026-05-25 admin route and analytics repair
-
-- Tenant login GET `/login` now renders the branded auth page with the tenant artist/site name and posts to `/login` with a CSRF token.
-- Platform login still accepts `/login/password`; `/login` POST is also accepted for compatibility with branded forms and older templates.
-- Platform `/me` is now a branded account-purpose page. It explains that tenant administration lives on the tenant domain under `/admin`, while platform administration lives on `artsfol.io/admin` for platform staff.
-- Platform admin routes now include `/admin/stats` and `/admin/contact-messages` so platform staff do not hit router 404s on the platform host.
-- Tenant audit log rendering was repaired; `/admin/audit-log` now builds and displays the table body instead of returning an empty page.
-- Tenant public page handlers now write `analytics_events` rows for public page, portfolio, contact, about, and artwork/image views. The tenant and platform stats pages read from `analytics_events`, so this aligns tracking with reporting.
-
-# End of file.
-
-## 2026-05-25 current complaints repair
-
-- Platform admin layout now uses ArtsFolio `logo_2.png` branding instead of hardcoded Bxiie branding.
-- Platform admin sidebar routes include stats, contact messages, pricing, settings, email outbox, jobs, workers, audit log, and routes.
-- `/admin/settings` is a compatibility redirect to `/admin/platform-settings`.
-- Platform `/login` accepts POST in addition to `/login/password` to match the home-page sign-in form path.
-- Tenant `/login` renders a branded AuthPage using tenant `artist_name` or `site_title`.
-- Tenant events admin supports search, status filtering, sorting, manual order editing, and archived events.
-- New tenant creation seeds `tenant_settings.custom_css` from platform CSS files.
-- The apply script seeds existing Bxiie tenant `custom_css` when blank.
-- OAuth Google/Facebook redirect routes are mounted. Callback routes fail closed with HTTP 501 until provider credentials and tested token exchange are configured.
-
-# End of file.
-
-## admin-session-help-stats-audit update
-- Platform admin pages use the platform admin shell with `/assets/logo_2.png` branding and platform-specific navigation.
-- Help is routed through linkable `/help/{topic}` pages so each help bullet can be opened as a walk-through.
-- Login forms include `keep_me_logged_in`; unchecked cookies are browser-session cookies, checked cookies persist for the configured persistent-login period.
-- Platform admin settings include persistent-login days and pricing fields.
-- Platform stats are exposed at `/admin/stats`; tenant stats remain at tenant `/admin/stats`.
-- Tenant audit-log rendering was repaired so scoped audit rows are visible instead of an empty panel.
+- Tenant admin events now support search, type/status filtering, sortable columns, ascending/descending order, editable `sort_order`, and editable event status.
+- Platform `/signup` now renders the branded tenant-creation form instead of the unstyled raw form; the duplicate marketing signup route was removed from routing.
+- Platform local login now accepts both `POST /login/password` and compatibility `POST /login` to prevent landing-page sign-in forms from throwing `No route for POST /login`.
+- Google and Facebook auth start/callback routes are mounted, with explicit runtime configuration requirements for `ARTSFOLIO_GOOGLE_CLIENT_ID`, `ARTSFOLIO_GOOGLE_CLIENT_SECRET`, `ARTSFOLIO_FACEBOOK_CLIENT_ID`, and `ARTSFOLIO_FACEBOOK_CLIENT_SECRET`. Callback token exchange remains an open completion item and currently fails closed.
 
 # End of file.

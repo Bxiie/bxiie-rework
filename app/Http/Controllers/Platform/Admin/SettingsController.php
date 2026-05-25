@@ -39,6 +39,10 @@ final class SettingsController
         $platformName = $this->escape($this->settings->get('platform_name', 'ArtsFolio'));
         $supportEmail = $this->escape($this->settings->get('support_email', ''));
         $expectedIpv4 = $this->escape($this->settings->get('expected_ipv4', getenv('ARTSFOLIO_EXPECTED_IPV4') ?: ''));
+        $persistentSessionDays = $this->escape($this->settings->get('persistent_session_days', '30'));
+        $starterPrice = $this->escape($this->settings->get('starter_price', '9'));
+        $professionalPrice = $this->escape($this->settings->get('professional_price', '19'));
+        $customDomainPrice = $this->escape($this->settings->get('custom_domain_price', '10'));
 
         return Response::html(AdminLayout::render(
             title: 'Platform Settings | ArtsFolio',
@@ -55,11 +59,11 @@ final class SettingsController
             <input type="email" name="support_email" value="{$supportEmail}">
         </label>
     </p>
-    <p>
-        <label>Expected IPv4 for custom domain DNS checks<br>
-            <input type="text" name="expected_ipv4" value="{$expectedIpv4}">
-        </label>
-    </p>
+    <p><label>Expected IPv4 for custom domain DNS checks<br><input type="text" name="expected_ipv4" value="{$expectedIpv4}"></label></p>
+    <p><label>Persistent login days<br><input type="number" min="1" max="365" name="persistent_session_days" value="{$persistentSessionDays}"></label></p>
+    <p><label>Starter monthly price<br><input type="number" min="0" step="0.01" name="starter_price" value="{$starterPrice}"></label></p>
+    <p><label>Professional monthly price<br><input type="number" min="0" step="0.01" name="professional_price" value="{$professionalPrice}"></label></p>
+    <p><label>Custom domain add-on monthly price<br><input type="number" min="0" step="0.01" name="custom_domain_price" value="{$customDomainPrice}"></label></p>
     <button type="submit">Save platform settings</button>
 </form>
 HTML,
@@ -86,6 +90,10 @@ HTML,
         $platformName = trim((string) ($_POST['platform_name'] ?? ''));
         $supportEmail = trim((string) ($_POST['support_email'] ?? ''));
         $expectedIpv4 = trim((string) ($_POST['expected_ipv4'] ?? ''));
+        $persistentSessionDays = (string) max(1, min(365, (int) ($_POST['persistent_session_days'] ?? 30)));
+        $starterPrice = trim((string) ($_POST['starter_price'] ?? '9'));
+        $professionalPrice = trim((string) ($_POST['professional_price'] ?? '19'));
+        $customDomainPrice = trim((string) ($_POST['custom_domain_price'] ?? '10'));
 
         if ($platformName === '') {
             return Response::html('<h1>Platform name is required</h1>', 422);
@@ -108,6 +116,10 @@ HTML,
         $this->settings->set('platform_name', $platformName);
         $this->settings->set('support_email', $supportEmail);
         $this->settings->set('expected_ipv4', $expectedIpv4);
+        $this->settings->set('persistent_session_days', $persistentSessionDays);
+        $this->settings->set('starter_price', $starterPrice);
+        $this->settings->set('professional_price', $professionalPrice);
+        $this->settings->set('custom_domain_price', $customDomainPrice);
         FlashMessages::success('Platform settings saved.');
 
         $this->auditAction(

@@ -30,13 +30,16 @@ final class PasswordAuthController
 
     public function loginForm(Request $request): Response
     {
-        return Response::html(AuthPage::login('/login', '', 'ArtsFolio', '/', $this->csrf->getOrCreate()));
+        return Response::html(AuthPage::login('/login/password', '', $this->csrf->getOrCreate()));
     }
 
     public function loginPassword(Request $request): Response
     {
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
-            $this->auditAuth($request, 'auth.password_login.denied.invalid_csrf', null, ['email' => (string) ($_POST['email'] ?? '')]);
+            $this->auditAuth($request, 'auth.password_login.denied.invalid_csrf', null, [
+                'email' => (string) ($_POST['email'] ?? ''),
+            ]);
+
             return Response::html('<h1>Invalid CSRF token</h1>', 419);
         }
 
@@ -50,18 +53,23 @@ final class PasswordAuthController
                 tenantId: null,
                 ipAddress: $request->server('REMOTE_ADDR'),
                 userAgent: $request->server('HTTP_USER_AGENT'),
-                ttlSeconds: !empty($_POST['keep_me_logged_in']) ? 2592000 : 86400,
             );
         } catch (\Throwable $e) {
-            $this->auditAuth($request, 'auth.password_login.failed', null, ['email' => $email]);
+            $this->auditAuth($request, 'auth.password_login.failed', null, [
+                'email' => $email,
+            ]);
+
             return Response::html('<h1>Login failed</h1><p>Invalid email or password.</p>', 401);
         }
 
-        $this->auditAuth($request, 'auth.password_login.succeeded', (int) $login['user_id'], ['email' => $login['email'], 'session_id' => $login['session_id']]);
+        $this->auditAuth($request, 'auth.password_login.succeeded', (int) $login['user_id'], [
+            'email' => $login['email'],
+            'session_id' => $login['session_id'],
+        ]);
 
         return new Response('', 302, [
             'Location' => '/me',
-            'Set-Cookie' => $this->makeSessionCookie($login['session_token'], !empty($_POST['keep_me_logged_in'])),
+            'Set-Cookie' => $this->makeSessionCookie($login['session_token']),
         ]);
     }
 
@@ -80,16 +88,17 @@ final class PasswordAuthController
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>My ArtsFolio account</title>
+    <title>Current User | ArtsFolio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/assets/platform.css">
 </head>
-<body class="platform-page">
-<header class="platform-header"><a class="platform-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a><nav><a href="/admin">Platform admin</a><a href="/directory">Directory</a><a href="/help">Help</a></nav></header>
-<main class="platform-main">
-<section class="platform-page-heading"><p class="eyebrow">Account</p><h1>My ArtsFolio account</h1><p>This page confirms the active browser session and gives you a clean launch point into platform or tenant administration.</p></section>
-<section class="platform-section docs-section"><h2>Signed in as</h2><p><strong>Email:</strong> {$email}</p><p><strong>Display name:</strong> {$displayName}</p><p><a class="button primary" href="/admin">Open platform admin</a> <a class="button secondary" href="/help/getting-started">Read setup help</a></p><form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{$csrf}"><button type="submit">Logout</button></form></section>
-</main>
+<body>
+<h1>Current User</h1>
+<p>Email: {$email}</p>
+<p>Display name: {$displayName}</p>
+<form method="post" action="/logout">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <button type="submit">Logout</button>
+</form>
 </body>
 </html>
 HTML);
@@ -99,25 +108,38 @@ HTML);
     {
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
             $this->auditAuth($request, 'auth.logout.denied.invalid_csrf');
+
             return Response::html('<h1>Invalid CSRF token</h1>', 419);
         }
 
         $rawToken = $_COOKIE[CurrentUser::COOKIE_NAME] ?? null;
         $session = null;
+
         if (is_string($rawToken) && $rawToken !== '') {
             $sessionHash = $this->tokens->hashToken($rawToken);
             $session = $this->sessions->findActiveByHash($sessionHash);
             $this->sessions->revokeByHash($sessionHash);
         }
 
-        $this->auditAuth($request, 'auth.logout.succeeded', $session && isset($session['user_id']) ? (int) $session['user_id'] : null, ['session_id' => $session['id'] ?? null]);
+        $this->auditAuth(
+            request: $request,
+            action: 'auth.logout.succeeded',
+            userId: $session && isset($session['user_id']) ? (int) $session['user_id'] : null,
+            details: [
+                'session_id' => $session['id'] ?? null,
+            ],
+        );
 
-        return new Response('', 302, ['Location' => '/login', 'Set-Cookie' => $this->expireSessionCookie()]);
+        return new Response('', 302, [
+            'Location' => '/login',
+            'Set-Cookie' => $this->expireSessionCookie(),
+        ]);
     }
 
     private function makeSessionCookie(string $token): string
     {
-        return CurrentUser::COOKIE_NAME . '=' . rawurlencode($token) . '; Path=/; HttpOnly; SameSite=Lax; Max-Age=1209600';
+        return CurrentUser::COOKIE_NAME . '=' . rawurlencode($token)
+            . '; Path=/; HttpOnly; SameSite=Lax; Max-Age=1209600';
     }
 
     private function expireSessionCookie(): string
@@ -125,13 +147,24 @@ HTML);
         return CurrentUser::COOKIE_NAME . '=deleted; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
     }
 
-    private function auditAuth(Request $request, string $action, ?int $userId = null, array $details = []): void
-    {
+    private function auditAuth(
+        Request $request,
+        string $action,
+        ?int $userId = null,
+        array $details = [],
+    ): void {
         if (!$this->auditLog) {
             return;
         }
 
-        $this->auditLog->record(action: $action, userId: $userId, entityType: 'auth', entityId: 'local_password', details: $details, ipAddress: $request->server('REMOTE_ADDR'));
+        $this->auditLog->record(
+            action: $action,
+            userId: $userId,
+            entityType: 'auth',
+            entityId: 'local_password',
+            details: $details,
+            ipAddress: $request->server('REMOTE_ADDR'),
+        );
     }
 }
 

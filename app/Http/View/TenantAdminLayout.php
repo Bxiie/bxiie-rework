@@ -37,6 +37,7 @@ final class TenantAdminLayout
         $topbarBackground = self::escape($this->settings->get($tenant, 'topbar_background_color', '#f7f2e8'));
         $topbarText = self::escape($this->settings->get($tenant, 'topbar_text_color', '#111111'));
         $adminNav = $this->adminNav($active);
+        $csrf = self::escape($_SESSION['csrf_token'] ?? '');
 
         return <<<HTML
 <!doctype html>
@@ -56,6 +57,7 @@ final class TenantAdminLayout
         <a href="/{$portfolioSlug}">{$portfolioLabel}</a>
         <a href="/{$aboutSlug}">{$aboutLabel}</a>
         <a href="/{$contactSlug}">{$contactLabel}</a>
+        <form method="post" action="/logout" style="display:inline"><input type="hidden" name="csrf_token" value="{$csrf}"><button type="submit" class="link-button">Log out</button></form>
     </nav>
 </header>
 

@@ -6,15 +6,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Request;
 use App\Http\Response;
-use App\Http\View\AuthPage;
 use App\Platform\Auth\Password\PasswordAuthService;
-use App\Platform\Tenancy\TenantContext;
 use App\Support\Flash\FlashMessages;
 use App\Support\Security\CsrfTokenService;
-use App\Tenant\Settings\TenantSettingsRepository;
 
 /**
- * Browser login/logout controller for tenant domains.
+ * Minimal browser login/logout controller for local email/password auth.
  */
 final class LoginController
 {
@@ -23,18 +20,34 @@ final class LoginController
     public function __construct(
         private readonly PasswordAuthService $passwordAuth,
         private readonly CsrfTokenService $csrf,
-        private readonly ?TenantSettingsRepository $settings = null,
     ) {
     }
 
-    public function show(Request $request, ?TenantContext $tenant = null): Response
+    public function show(Request $request): Response
     {
-        $brand = 'ArtsFolio';
-        if ($tenant !== null && $this->settings !== null) {
-            $brand = $this->settings->get($tenant, 'artist_name', $this->settings->get($tenant, 'site_title', $tenant->name));
-        }
+        $csrfToken = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
 
-        return Response::html(AuthPage::login('/login', '', $brand, '/', $this->csrf->getOrCreate()));
+        return Response::html(<<<HTML
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Sign in | ArtsFolio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<main>
+    <h1>Sign in</h1>
+    <form method="post" action="/login">
+        <input type="hidden" name="csrf_token" value="{$csrfToken}">
+        <p><label>Email<br><input type="email" name="email" autocomplete="email" required></label></p>
+        <p><label>Password<br><input type="password" name="password" autocomplete="current-password" required></label></p>
+        <button type="submit">Sign in</button>
+    </form>
+</main>
+</body>
+</html>
+HTML);
     }
 
     public function login(Request $request): Response
@@ -55,6 +68,7 @@ final class LoginController
         }
 
         $token = $this->extractSessionToken($result);
+
         if ($token === '') {
             return Response::html('<h1>Login failed</h1><p>No session token was returned.</p>', 500);
         }

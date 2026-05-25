@@ -59,6 +59,7 @@ final class TenantSignupService
             $this->createOrUpdatePasswordIdentity($userId, $adminEmail, $passwordHash);
             $this->createTenantDomain($tenantId, $domain, true);
             $this->createTenantMembership($tenantId, $userId);
+            $this->seedTenantCss($tenantId);
             $this->assignTenantAdminRole($tenantId, $userId);
             $this->queueProvisioningJobs($tenantId, $domain);
             $this->queueLifecycleEmail($tenantId, $userId, $adminEmail, $adminName, $slug);
@@ -331,6 +332,50 @@ final class TenantSignupService
                 'updated_at' => $this->now(),
             ]);
         }
+    }
+
+
+    private function seedTenantCss(int $tenantId): void
+    {
+        if (!$this->tableExists('tenant_settings')) {
+            return;
+        }
+
+        $css = $this->defaultTenantCss();
+        if ($css === '') {
+            return;
+        }
+
+        $stmt = $this->pdo->prepare("SELECT id FROM tenant_settings WHERE tenant_id = :tenant_id AND setting_key = 'custom_css' LIMIT 1");
+        $stmt->execute(['tenant_id' => $tenantId]);
+        $existingId = $stmt->fetchColumn();
+
+        if ($existingId !== false) {
+            $this->updateKnown('tenant_settings', (int) $existingId, ['setting_value' => $css, 'updated_at' => $this->now()]);
+            return;
+        }
+
+        $this->insertKnown('tenant_settings', [
+            'tenant_id' => $tenantId,
+            'setting_key' => 'custom_css',
+            'setting_value' => $css,
+            'created_at' => $this->now(),
+            'updated_at' => $this->now(),
+        ]);
+    }
+
+    private function defaultTenantCss(): string
+    {
+        $root = dirname(__DIR__, 3);
+        $parts = [];
+        foreach (['public/assets/site.css', 'public/assets/platform.css'] as $relativePath) {
+            $path = $root . '/' . $relativePath;
+            if (is_file($path)) {
+                $parts[] = "/* Seeded from {$relativePath}. */\n" . trim((string) file_get_contents($path));
+            }
+        }
+
+        return trim(implode("\n\n", $parts));
     }
 
     private function findRoleId(array $roleNames): ?int

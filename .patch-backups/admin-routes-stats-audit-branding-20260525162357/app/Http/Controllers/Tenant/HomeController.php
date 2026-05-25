@@ -11,7 +11,6 @@ use App\Support\Security\CsrfTokenService;
 use App\Tenant\Artwork\ArtworkReadRepository;
 use App\Tenant\Settings\TenantSettingsRepository;
 use PDO;
-use Throwable;
 
 /**
  * Handles tenant public site routes.
@@ -28,7 +27,6 @@ final class HomeController
 
     public function home(Request $request, TenantContext $tenant): Response
     {
-        $this->track($request, $tenant, 'page_view');
         $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
         $homeIntro = (string) $this->settings->get(
             $tenant,
@@ -82,7 +80,6 @@ HTML;
 
     public function portfolio(Request $request, TenantContext $tenant): Response
     {
-        $this->track($request, $tenant, 'portfolio_view');
         $sectionSlug = trim((string) ($_GET['section'] ?? ''));
         $sections = $this->artworks->activeSections($tenant);
         $items = $sectionSlug !== ''
@@ -147,8 +144,6 @@ HTML;
             return Response::notFound("Artwork not found: {$slug}");
         }
 
-        $this->track($request, $tenant, 'image_view', 'artwork', (int) $artwork['id']);
-
         $title = $this->escape((string) $artwork['title']);
         $description = (string) ($artwork['description'] ?? '');
         $medium = $this->escape((string) ($artwork['medium'] ?? ''));
@@ -177,7 +172,6 @@ HTML;
 
     public function about(Request $request, TenantContext $tenant): Response
     {
-        $this->track($request, $tenant, 'about_view');
         $about = $this->settings->get($tenant, 'about_content', '');
         $events = $this->events($tenant);
         $body = "<h1>About</h1>\n<article class=\"prose\">{$about}</article>\n";
@@ -195,7 +189,6 @@ HTML;
 
     public function contact(Request $request, TenantContext $tenant): Response
     {
-        $this->track($request, $tenant, 'contact_view');
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
 
         return Response::html($this->layout(
@@ -230,66 +223,6 @@ HTML;
 </form>
 HTML
         ));
-    }
-
-    private function track(Request $request, TenantContext $tenant, string $eventType, ?string $entityType = null, ?int $entityId = null): void
-    {
-        try {
-            $stmt = $this->pdo->prepare(
-                'INSERT INTO analytics_events (
-                    tenant_id,
-                    event_type,
-                    path,
-                    referrer,
-                    ip_hash,
-                    user_agent,
-                    entity_type,
-                    entity_id,
-                    created_at
-                ) VALUES (
-                    :tenant_id,
-                    :event_type,
-                    :path,
-                    :referrer,
-                    :ip_hash,
-                    :user_agent,
-                    :entity_type,
-                    :entity_id,
-                    NOW()
-                )'
-            );
-
-            $ip = $this->requestIp($request);
-            $stmt->execute([
-                'tenant_id' => $tenant->tenantId,
-                'event_type' => $eventType,
-                'path' => $request->path(),
-                'referrer' => mb_substr((string) $request->server('HTTP_REFERER', ''), 0, 1000),
-                'ip_hash' => hash('sha256', $ip . '|artsfolio-analytics'),
-                'user_agent' => mb_substr((string) $request->server('HTTP_USER_AGENT', ''), 0, 1000),
-                'entity_type' => $entityType,
-                'entity_id' => $entityId,
-            ]);
-        } catch (Throwable) {
-            // Analytics must never break the public tenant site.
-        }
-    }
-
-    private function requestIp(Request $request): string
-    {
-        foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {
-            $value = trim((string) $request->server($key, ''));
-            if ($value === '') {
-                continue;
-            }
-
-            $first = trim(explode(',', $value)[0]);
-            if (filter_var($first, FILTER_VALIDATE_IP)) {
-                return $first;
-            }
-        }
-
-        return '';
     }
 
     private function layout(TenantContext $tenant, string $title, string $body): string

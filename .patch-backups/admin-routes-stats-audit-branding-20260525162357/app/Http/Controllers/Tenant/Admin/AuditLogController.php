@@ -76,24 +76,9 @@ final class AuditLogController
             . '<a class="admin-button" href="' . $this->escape($nextUrl) . '">Next</a>'
             . '</p>';
         $tenantName = $this->escape($tenant->name);
-        $body = <<<HTML
-<p class="admin-muted">Audit events for {$tenantName}.</p>
-<p><a class="admin-button" href="{$exportUrl}">Export CSV</a></p>
-<form class="admin-filter-bar" method="get" action="/admin/audit-log">
-    <label>Action<br><input type="text" name="action" value="{$actionValue}"></label>
-    <label>User ID<br><input type="number" name="user_id" value="{$userValue}"></label>
-    <input type="hidden" name="limit" value="{$limit}">
-    <button type="submit">Filter</button>
-    <a href="/admin/audit-log">Clear</a>
-</form>
-<table class="admin-table">
-    <thead><tr><th>ID</th><th>User</th><th>Action</th><th>Entity Type</th><th>Entity ID</th><th>IP</th><th>Created</th></tr></thead>
-    <tbody>{$rows}</tbody>
-</table>
-{$pager}
-HTML;
 
-        return Response::html(AdminLayout::render('Audit Log', $body, 'audit'));
+        $body = isset($html) ? (string) $html : '';
+        return Response::html(AdminLayout::render('Audit Log', $body));
     }
 
     public function export(Request $request, TenantContext $tenant, ?array $currentUser): Response

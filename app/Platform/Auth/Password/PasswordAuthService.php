@@ -53,6 +53,7 @@ final class PasswordAuthService
         ?int $tenantId = null,
         ?string $ipAddress = null,
         ?string $userAgent = null,
+        int $ttlSeconds = 1209600,
     ): array {
         $user = $this->users->findByEmail($email);
 
@@ -73,6 +74,7 @@ final class PasswordAuthService
             tenantId: $tenantId,
             ipAddress: $ipAddress,
             userAgent: $userAgent,
+            ttlSeconds: $ttlSeconds,
         );
 
         return [

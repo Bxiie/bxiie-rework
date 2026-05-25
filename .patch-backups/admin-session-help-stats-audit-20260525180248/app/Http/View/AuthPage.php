@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\View;
 
 /**
- * Branded authentication pages shared by platform and tenant domains.
+ * Branded authentication pages for platform and tenant domains.
  */
 final class AuthPage
 {
@@ -23,12 +23,15 @@ final class AuthPage
 <h1>Sign in to {$safeBrand}</h1>
 <p class="auth-copy">Manage artwork, content, messages, subscribers, analytics, and settings.</p>
 {$notice}
-<div class="sso-row"><a href="/auth/google">Continue with Google</a><a href="/auth/facebook">Continue with Facebook</a></div>
+<div class="sso-row">
+    <a href="/auth/google">Continue with Google</a>
+    <a href="/auth/facebook">Continue with Facebook</a>
+</div>
+<div class="divider"><span>or use email</span></div>
 <form method="post" action="{$safeAction}" class="auth-form">
     {$csrf}
     <label>Email<input type="email" name="email" autocomplete="email" required></label>
     <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
-    <label class="auth-checkbox"><input type="checkbox" name="keep_me_logged_in" value="1"> Keep me logged in</label>
     <button type="submit">Sign in</button>
 </form>
 <p class="auth-links"><a href="/password/forgot">Forgot password?</a><a href="/signup">Create an account</a><a href="/help">Need help?</a></p>
@@ -40,11 +43,16 @@ HTML, $safeBrand, $safeHome);
         $safeAction = self::escape($action);
         $safeCsrf = self::escape($csrfToken);
         $csrf = $safeCsrf !== '' ? '<input type="hidden" name="csrf_token" value="' . $safeCsrf . '">' : '';
+
         return self::page('Create account', <<<HTML
 <p class="auth-eyebrow">Start your site</p>
 <h1>Create your ArtsFolio account</h1>
-<p class="auth-copy">Create a tenant workspace with editable branding, tenant CSS, and admin tools.</p>
-<div class="sso-row"><a href="/auth/google">Continue with Google</a><a href="/auth/facebook">Continue with Facebook</a></div>
+<p class="auth-copy">Create a tenant workspace, choose an artsfol.io subdomain, and begin with editable branding and CSS.</p>
+<div class="sso-row">
+    <a href="/auth/google">Continue with Google</a>
+    <a href="/auth/facebook">Continue with Facebook</a>
+</div>
+<div class="divider"><span>or use email</span></div>
 <form method="post" action="{$safeAction}" class="auth-form">
     {$csrf}
     <label>Site name<input type="text" name="site_name" required></label>
@@ -63,9 +71,16 @@ HTML);
         $safeAction = self::escape($action);
         $safeCsrf = self::escape($csrfToken);
         $csrf = $safeCsrf !== '' ? '<input type="hidden" name="csrf_token" value="' . $safeCsrf . '">' : '';
+
         return self::page('Reset password', <<<HTML
-<p class="auth-eyebrow">Password reset</p><h1>Reset your password</h1>
-<form method="post" action="{$safeAction}" class="auth-form">{$csrf}<label>Email<input type="email" name="email" autocomplete="email" required></label><button type="submit">Send reset link</button></form>
+<p class="auth-eyebrow">Password reset</p>
+<h1>Reset your password</h1>
+<p class="auth-copy">Enter your email address and we will send reset instructions if an account exists for that address.</p>
+<form method="post" action="{$safeAction}" class="auth-form">
+    {$csrf}
+    <label>Email<input type="email" name="email" autocomplete="email" required></label>
+    <button type="submit">Send reset link</button>
+</form>
 <p class="auth-links"><a href="/login">Back to login</a></p>
 HTML);
     }
@@ -75,9 +90,27 @@ HTML);
         $safeTitle = self::escape($title);
         $safeBrand = self::escape($brandName);
         $safeHome = self::escape($homeUrl);
+
         return <<<HTML
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>{$safeTitle} | {$safeBrand}</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/auth.css"></head>
-<body><main class="auth-page"><section class="auth-card"><a href="{$safeHome}" class="auth-logo-link"><img src="/assets/logo_2.png" alt="ArtsFolio" class="auth-logo"></a>{$body}</section></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{$safeTitle} | {$safeBrand}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/auth.css">
+</head>
+<body>
+<main class="auth-page">
+    <section class="auth-card">
+        <a href="{$safeHome}" class="auth-logo-link" aria-label="{$safeBrand} home">
+            <img src="/assets/logo_2.png" alt="ArtsFolio" class="auth-logo">
+        </a>
+        {$body}
+    </section>
+</main>
+</body>
+</html>
 HTML;
     }
 
