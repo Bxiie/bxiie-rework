@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant\Admin;
 
+
+use App\Http\View\ErrorPage;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
@@ -24,7 +26,7 @@ final class ArtworksController
     public function index(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         $q = trim((string) ($_GET['q'] ?? ''));
@@ -206,7 +208,7 @@ HTML;
     public function edit(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         $id = (int) ($_GET['id'] ?? 0);
@@ -287,7 +289,7 @@ HTML;
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         $id = (int) ($_POST['id'] ?? 0);
@@ -339,7 +341,7 @@ HTML;
     public function updateStatus(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         $id = (int) ($_POST['id'] ?? 0);
@@ -382,7 +384,7 @@ HTML;
     public function delete(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         $id = (int) ($_POST['id'] ?? 0);

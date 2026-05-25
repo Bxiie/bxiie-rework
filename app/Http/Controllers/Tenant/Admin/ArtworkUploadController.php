@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant\Admin;
 
+
+use App\Http\View\ErrorPage;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
@@ -28,7 +30,7 @@ final class ArtworkUploadController
     public function form(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         $csrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
@@ -111,7 +113,7 @@ HTML);
     public function submit(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant\Admin;
 
+
+use App\Http\View\ErrorPage;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
@@ -24,7 +26,7 @@ final class EventsController
     public function index(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-            return Response::html('<h1>Forbidden</h1>', 403);
+            return Response::html(ErrorPage::unauthorized('/login'), 403);
         }
 
         $stmt = $this->pdo->prepare("SELECT * FROM exhibitions WHERE tenant_id = :tenant_id AND status <> 'archived' ORDER BY sort_order ASC, id DESC");
@@ -62,7 +64,7 @@ HTML;
     public function edit(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-            return Response::html('<h1>Forbidden</h1>', 403);
+            return Response::html(ErrorPage::unauthorized('/login'), 403);
         }
 
         $id = (int) ($_GET['id'] ?? 0);
@@ -97,7 +99,7 @@ HTML;
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-            return Response::html('<h1>Forbidden</h1>', 403);
+            return Response::html(ErrorPage::unauthorized('/login'), 403);
         }
 
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {

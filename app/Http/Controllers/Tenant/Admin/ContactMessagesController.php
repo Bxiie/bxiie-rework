@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant\Admin;
 
+
+use App\Http\View\ErrorPage;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
@@ -38,7 +40,7 @@ final class ContactMessagesController
     public function index(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->canManage($currentUser, $tenant)) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         $q = trim((string) ($_GET['q'] ?? ''));
@@ -163,7 +165,7 @@ HTML;
     public function export(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->canManage($currentUser, $tenant)) {
-            return Response::html('<h1>Forbidden</h1>', 403);
+            return Response::html(ErrorPage::unauthorized('/login'), 403);
         }
 
         $stmt = $this->pdo->prepare('SELECT * FROM contact_messages WHERE tenant_id = :tenant_id ORDER BY created_at DESC, id DESC');
@@ -194,7 +196,7 @@ HTML;
     public function updateStatus(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->canManage($currentUser, $tenant)) {
-            return Response::html('<h1>Forbidden</h1>', 403);
+            return Response::html(ErrorPage::unauthorized('/login'), 403);
         }
 
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
@@ -215,7 +217,7 @@ HTML;
     public function delete(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->canManage($currentUser, $tenant)) {
-            return Response::html('<h1>Forbidden</h1>', 403);
+            return Response::html(ErrorPage::unauthorized('/login'), 403);
         }
 
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {

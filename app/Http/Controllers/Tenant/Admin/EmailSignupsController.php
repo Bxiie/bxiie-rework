@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant\Admin;
 
+
+use App\Http\View\ErrorPage;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
@@ -33,7 +35,7 @@ final class EmailSignupsController
     public function index(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->canView($currentUser, $tenant)) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         $rows = '';
@@ -112,7 +114,7 @@ HTML,
     public function updateConsent(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->canView($currentUser, $tenant)) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         if (!$this->csrf || !$this->csrf->validate($_POST['csrf_token'] ?? null)) {
@@ -147,7 +149,7 @@ HTML,
     public function export(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->canView($currentUser, $tenant)) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         $rows = [];
@@ -211,7 +213,7 @@ HTML,
     public function delete(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->canManage($currentUser, $tenant)) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         $id = (int) ($_POST['id'] ?? 0);

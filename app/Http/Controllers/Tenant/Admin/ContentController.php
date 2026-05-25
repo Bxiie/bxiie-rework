@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant\Admin;
 
+
+use App\Http\View\ErrorPage;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
@@ -24,7 +26,7 @@ final class ContentController
     public function edit(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->canManage($currentUser, $tenant)) {
-            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         $notice = isset($_GET['notice']) ? '<p class="admin-notice">Content saved.</p>' : '';
@@ -91,7 +93,7 @@ HTML;
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-            return Response::html('<h1>Forbidden</h1>', 403);
+            return Response::html(ErrorPage::unauthorized('/login'), 403);
         }
 
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {

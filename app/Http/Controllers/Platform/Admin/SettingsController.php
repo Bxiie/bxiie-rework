@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Platform\Admin;
 
+
+use App\Http\View\ErrorPage;
 use App\Http\Middleware\RequirePlatformRole;
 use App\Http\Request;
 use App\Http\Response;
@@ -30,7 +32,7 @@ final class SettingsController
     public function edit(Request $request, ?array $currentUser): Response
     {
         if (!$this->canManageSettings($currentUser)) {
-            return Response::html('<h1>Forbidden</h1><p>Platform admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
         }
 
         $csrf = $this->escape($this->csrf->getOrCreate());
@@ -74,7 +76,7 @@ HTML,
     public function update(Request $request, ?array $currentUser): Response
     {
         if (!$this->canManageSettings($currentUser)) {
-            return Response::html('<h1>Forbidden</h1><p>Platform admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
         }
 
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {

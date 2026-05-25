@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant\Admin;
 
+
+use App\Http\View\ErrorPage;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
@@ -26,7 +28,7 @@ final class EngagementController
     public function contacts(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->allowed($currentUser, $tenant)) {
-            return Response::html('<h1>Forbidden</h1>', 403);
+            return Response::html(ErrorPage::unauthorized('/login'), 403);
         }
 
         $notice = ($_GET['notice'] ?? '') === 'deleted'
@@ -76,7 +78,7 @@ HTML;
     public function deleteContact(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->allowed($currentUser, $tenant)) {
-            return Response::html('<h1>Forbidden</h1>', 403);
+            return Response::html(ErrorPage::unauthorized('/login'), 403);
         }
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
             return Response::html('<h1>Invalid request</h1>', 419);
@@ -94,7 +96,7 @@ HTML;
     public function subscribers(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->allowed($currentUser, $tenant)) {
-            return Response::html('<h1>Forbidden</h1>', 403);
+            return Response::html(ErrorPage::unauthorized('/login'), 403);
         }
 
         $notice = match ((string) ($_GET['notice'] ?? '')) {
@@ -148,7 +150,7 @@ HTML;
     public function importSubscribers(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->allowed($currentUser, $tenant)) {
-            return Response::html('<h1>Forbidden</h1>', 403);
+            return Response::html(ErrorPage::unauthorized('/login'), 403);
         }
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
             return Response::html('<h1>Invalid request</h1>', 419);

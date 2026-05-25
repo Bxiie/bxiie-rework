@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\View;
 
-/**
- * Branded public error pages.
- */
 final class ErrorPage
 {
     public static function notFound(string $path = ''): string
@@ -21,30 +18,29 @@ final class ErrorPage
         ]);
     }
 
-    public static function unauthorized(string $loginPath = '/login'): string
+    public static function unauthorized(string $loginPath = '/login', string $message = 'Please sign in to continue.'): string
     {
-        return self::page('Sign in required', 'Unauthorized', 'You need to sign in.', 'Please sign in to continue.', [
+        return self::page('Sign in required', 'Unauthorized', 'You need to sign in.', self::escape($message), [
             [$loginPath, 'Sign in'],
             ['/', 'Go home'],
             ['/help', 'Help'],
-        ], $loginPath);
+        ]);
     }
 
-    public static function forbidden(): string
+    public static function forbidden(string $message = 'You do not have access to this page.'): string
     {
-        return self::page('Access denied', '403', 'Not enough keys for this door.', 'You do not have access to this page.', [
-            ['/login', 'Sign in as another user'],
+        return self::page('Access denied', '403', 'Not enough keys for this door.', self::escape($message), [
+            ['/login', 'Sign in'],
             ['/', 'Go home'],
             ['/contact', 'Contact'],
         ]);
     }
 
-    private static function page(string $title, string $eyebrow, string $heading, string $message, array $actions, ?string $redirectPath = null): string
+    private static function page(string $title, string $eyebrow, string $heading, string $message, array $actions): string
     {
         $safeTitle = self::escape($title);
         $safeEyebrow = self::escape($eyebrow);
         $safeHeading = self::escape($heading);
-        $refresh = $redirectPath ? '<meta http-equiv="refresh" content="2;url=' . self::escape($redirectPath) . '">' : '';
 
         $links = '';
         foreach ($actions as [$href, $label]) {
@@ -58,7 +54,6 @@ final class ErrorPage
     <meta charset="utf-8">
     <title>{$safeTitle} | ArtsFolio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {$refresh}
     <link rel="stylesheet" href="/assets/error.css">
 </head>
 <body>

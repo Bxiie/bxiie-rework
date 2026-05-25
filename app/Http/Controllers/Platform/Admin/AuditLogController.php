@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Platform\Admin;
 
+
+use App\Http\View\ErrorPage;
 use App\Http\Middleware\RequirePlatformRole;
 use App\Http\Request;
 use App\Http\Response;
@@ -27,7 +29,7 @@ final class AuditLogController
     public function index(Request $request, ?array $currentUser): Response
     {
         if (!$this->canView($currentUser)) {
-            return Response::html('<h1>Forbidden</h1><p>Platform admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
         }
 
         $action = trim((string) ($_GET['action'] ?? ''));
@@ -131,7 +133,7 @@ HTML,
     public function export(Request $request, ?array $currentUser): Response
     {
         if (!$this->canView($currentUser)) {
-            return Response::html('<h1>Forbidden</h1><p>Platform admin access required.</p>', 403);
+            return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
         }
 
         $action = trim((string) ($_GET['action'] ?? ''));
