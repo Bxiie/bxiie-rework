@@ -85,18 +85,14 @@ HTML;
         $this->settings->set($tenant, 'platform_directory_summary', $summary);
 
         if ($this->auditLog) {
-            // AuditLogRepository::record() accepts positional arguments, not
-            // the structured array shape used by some newer controller drafts.
-            // Keep the write tenant-scoped so /admin/audit-log shows the entry.
-            $this->auditLog->record(
-                'tenant.directory_settings.updated',
-                $tenant->tenantId,
-                isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
-                'tenant_settings',
-                (string) $tenant->tenantId,
-                ['platform_directory_opt_in' => $optIn],
-                $request->server('REMOTE_ADDR')
-            );
+            $this->auditLog->record([
+                'tenant_id' => $tenant->tenantId,
+                'actor_user_id' => $currentUser['user_id'] ?? null,
+                'action' => 'tenant.directory_settings.updated',
+                'entity_type' => 'tenant',
+                'entity_id' => $tenant->tenantId,
+                'metadata' => ['platform_directory_opt_in' => $optIn],
+            ]);
         }
 
         return new Response('', 303, ['Location' => '/admin/directory?notice=saved']);

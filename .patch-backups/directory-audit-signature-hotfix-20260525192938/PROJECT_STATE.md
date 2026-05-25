@@ -829,11 +829,3 @@
 - Tenant directory opt-in values remain `platform_directory_opt_in` and `platform_directory_summary` in `tenant_settings`.
 
 <!-- End of file. -->
-
-## 2026-05-25 tenant directory audit signature hotfix
-
-- Fixed tenant directory opt-in audit writes to call `AuditLogRepository::record()` with positional arguments.
-- The previous controller draft passed an array as the first argument, causing `POST /admin/directory` to fail before redirecting.
-- Directory opt-in changes now write tenant-scoped `tenant.directory_settings.updated` entries for `/admin/audit-log`.
-
-<!-- End of file. -->
