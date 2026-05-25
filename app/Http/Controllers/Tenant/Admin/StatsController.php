@@ -12,6 +12,8 @@ use App\Platform\Tenancy\TenantContext;
 use PDO;
 
 /**
+ * Stats wiring: reads analytics_events scoped by tenant_id; public page tracking must write events before charts show data.
+ *
  * Tenant-scoped usage statistics dashboard.
  */
 final class StatsController

@@ -71,7 +71,7 @@ final class TenantAdminLayout
     <main class="tenant-admin-main">
         <div class="tenant-admin-main-header">
             
-            <a href="/">View public site</a>
+            
         </div>
         <section class="tenant-admin-panel">
             <h1>{$this->escape($title)}</h1>

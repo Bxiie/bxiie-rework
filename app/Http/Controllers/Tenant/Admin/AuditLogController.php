@@ -15,6 +15,8 @@ use App\Support\Csv\CsvResponse;
 use App\Support\Pagination\Pagination;
 
 /**
+ * Audit wiring: reads audit log repository scoped by tenant and records admin/security-relevant actions.
+ *
  * Handles tenant-admin audit log list and export screens.
  */
 final class AuditLogController
