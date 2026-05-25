@@ -1,4 +1,5 @@
 <?php
+use App\Http\View\ErrorPage;
 /**
  * Tenant-scoped admin controller.
  */
@@ -483,7 +484,7 @@ final class AdminController
     public function notFound(): void
     {
         http_response_code(404);
-        echo 'Admin page not found.';
+        echo ErrorPage::notFound($_SERVER['REQUEST_METHOD'] . ' ' . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
     }
 
     private function saveEvent(?int $id): void
