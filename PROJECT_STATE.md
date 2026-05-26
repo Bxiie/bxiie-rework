@@ -852,3 +852,7 @@
 - Public `/directory` now reads the same tenant setting keys written by Tenant Admin → Directory: `platform_directory_opt_in` and `platform_directory_summary`.
 - Directory rendering supports both the current MariaDB schema (`tenants.name`, `tenant_domains.hostname`, `tenant_settings`) and the older SQLite development schema (`tenants.display_name`, `tenant_domains.domain`, `settings`).
 - `scripts/debug/check_directory_contract.php` reports the platform directory switch, detected schema contract, tenant opt-in values, domains, and directory eligibility.
+
+## Directory thumbnail selection
+
+Tenant admins choose the public directory thumbnail from Admin → Directory. The selected published artwork ID is stored in `tenant_settings.platform_directory_thumbnail_artwork_id`; the public platform directory resolves that artwork through `artworks.primary_media_id` and `media_assets.uuid` and renders the thumbnail via the tenant site's `/media?uuid=...` endpoint. Diagnostic: `php scripts/debug/check_directory_thumbnail_contract.php`.

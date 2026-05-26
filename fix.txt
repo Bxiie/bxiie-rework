@@ -1,4 +1,11 @@
 ## Now
+
+- developer api demands authentication even though I'm logged in.
+
+
+
+
+
 - No route was found for No route for GET /help.
 - https://artsfol.io/help/directory: Application error
 Call to undefined method App\Http\Controllers\Platform\HelpController::topic()

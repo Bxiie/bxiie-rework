@@ -10,8 +10,8 @@ use PDO;
 use Throwable;
 
 /**
- * Renders the public artist directory from the same tenant_settings keys that
- * tenant admins update from /admin/directory.
+ * Public artist directory. Reads the same tenant settings written by tenant
+ * admin: opt-in flag, summary, and selected thumbnail artwork.
  */
 final class DirectoryController
 {
@@ -25,16 +25,15 @@ final class DirectoryController
             $body = <<<HTML
 <section class="platform-page-heading">
     <p class="eyebrow">Artist directory</p>
-    <h1>The ArtsFolio directory is currently off</h1>
-    <p>A platform admin can enable the public artist directory from Platform Settings.</p>
+    <h1>Artist directory is currently off</h1>
+    <p>The ArtsFolio directory is disabled by platform settings. Platform admins can turn it on from Platform Admin → Platform Settings.</p>
 </section>
-<article class="tenant-card empty"><h3>Directory disabled</h3><p>The global directory switch is off. Tenant opt-in settings are preserved and will be used again when the directory is re-enabled.</p></article>
 HTML;
             return Response::html($this->layout('Artist Directory | ArtsFolio', $body));
         }
 
         $cards = $this->cards();
-        $empty = $cards === '' ? '<article class="tenant-card empty"><h3>No artists are currently listed</h3><p>The directory is active, but no active tenant has opted in with <code>platform_directory_opt_in</code>. Tenant admins can enable this from <strong>Admin → Directory</strong>.</p><p><a class="button secondary" href="/help/directory">Read directory setup help</a></p></article>' : '';
+        $empty = $cards === '' ? '<article class="tenant-card empty"><h3>No artists are currently listed</h3><p>The directory is active, but no tenants have opted in with a valid published thumbnail artwork yet. Tenant admins can enable discovery from Admin → Directory.</p><p><a class="button secondary" href="/help/directory">Read directory setup help</a></p></article>' : '';
         $body = <<<HTML
 <section class="platform-page-heading">
     <p class="eyebrow">Artist directory</p>
@@ -55,66 +54,75 @@ HTML;
         foreach ($rows as $row) {
             $name = self::escape((string) ($row['display_name'] ?: $row['slug'] ?: 'Artist site'));
             $summary = self::escape((string) ($row['summary'] ?: 'Artist portfolio on ArtsFolio.'));
-            $domain = trim((string) ($row['domain'] ?? ''));
-            $slug = trim((string) ($row['slug'] ?? ''));
-            $host = $domain !== '' ? $domain : ($slug !== '' ? $slug . '.artsfol.io' : 'artsfol.io');
-            $href = str_starts_with($host, 'http://') || str_starts_with($host, 'https://') ? $host : 'https://' . $host;
-            $html .= '<a class="tenant-card" href="' . self::escape($href) . '"><h3>' . $name . '</h3><p>' . $summary . '</p><span>Visit site</span></a>';
+            $domain = (string) ($row['domain'] ?? '#');
+            $href = str_starts_with($domain, 'http') ? $domain : 'https://' . $domain;
+            $thumbnail = '';
+
+            if (!empty($row['media_uuid'])) {
+                $base = rtrim($href, '/');
+                $src = self::escape($base . '/media?uuid=' . rawurlencode((string) $row['media_uuid']));
+                $alt = self::escape((string) ($row['artwork_title'] ?: $row['display_name'] ?: 'Directory artwork'));
+                $thumbnail = '<div class="directory-card-thumb"><img src="' . $src . '" alt="' . $alt . '" loading="lazy"></div>';
+            }
+
+            $html .= '<a class="tenant-card directory-card" href="' . self::escape($href) . '">' . $thumbnail . '<div><h3>' . $name . '</h3><p>' . $summary . '</p><span>Visit site</span></div></a>';
         }
 
         return $html;
     }
 
     /**
-     * Query directory rows across the current MariaDB schema and the older
-     * SQLite development schema. The important contract is the setting key:
-     * tenant admins write platform_directory_opt_in to tenant_settings.
+     * Uses runtime column detection because older patches used display_name/domain
+     * while the current MariaDB schema uses name/hostname. This keeps the public
+     * directory alive across the in-flight refactor.
      */
     private function directoryRows(): array
     {
         try {
-            $tenantsNameColumn = $this->columnExists('tenants', 'name') ? 'name' : 'display_name';
-            $settingsTable = $this->tableExists('tenant_settings') ? 'tenant_settings' : 'settings';
-            $domainColumn = $this->columnExists('tenant_domains', 'hostname') ? 'hostname' : 'domain';
-            $hasPrimary = $this->columnExists('tenant_domains', 'is_primary');
-            $hasDomainStatus = $this->columnExists('tenant_domains', 'status');
-
-            $domainJoinFilters = [];
-            if ($hasPrimary) {
-                $domainJoinFilters[] = 'domain.is_primary = 1';
-            }
-            if ($hasDomainStatus) {
-                $domainJoinFilters[] = "domain.status IN ('active', 'dns_verified', 'vhost_pending', 'cert_pending')";
-            }
-            $domainJoinSql = $domainJoinFilters === [] ? '' : ' AND ' . implode(' AND ', $domainJoinFilters);
+            $tenantNameColumn = $this->columnExists('tenants', 'display_name') ? 'display_name' : 'name';
+            $domainColumn = $this->columnExists('tenant_domains', 'domain') ? 'domain' : 'hostname';
+            $domainStatusPredicate = $this->columnExists('tenant_domains', 'status') ? " AND domain.status = 'active'" : '';
+            $domainPrimaryPredicate = $this->columnExists('tenant_domains', 'is_primary') ? ' AND domain.is_primary = TRUE' : '';
 
             $sql = "
                 SELECT
                     t.id,
                     t.slug,
-                    t.{$tenantsNameColumn} AS display_name,
+                    t.{$tenantNameColumn} AS display_name,
                     COALESCE(summary.setting_value, '') AS summary,
-                    COALESCE(domain.{$domainColumn}, CONCAT(t.slug, '.artsfol.io')) AS domain
+                    COALESCE(domain.{$domainColumn}, CONCAT(t.slug, '.artsfol.io')) AS domain,
+                    a.title AS artwork_title,
+                    m.uuid AS media_uuid
                 FROM tenants t
-                INNER JOIN {$settingsTable} opt
+                INNER JOIN tenant_settings opt
                     ON opt.tenant_id = t.id
                    AND opt.setting_key = 'platform_directory_opt_in'
-                   AND LOWER(TRIM(COALESCE(opt.setting_value, ''))) IN ('1', 'true', 'yes', 'on')
-                LEFT JOIN {$settingsTable} summary
+                   AND LOWER(TRIM(opt.setting_value)) IN ('1', 'true', 'yes', 'on')
+                LEFT JOIN tenant_settings summary
                     ON summary.tenant_id = t.id
                    AND summary.setting_key = 'platform_directory_summary'
+                LEFT JOIN tenant_settings thumb
+                    ON thumb.tenant_id = t.id
+                   AND thumb.setting_key = 'platform_directory_thumbnail_artwork_id'
+                LEFT JOIN artworks a
+                    ON a.tenant_id = t.id
+                   AND a.id = CAST(NULLIF(thumb.setting_value, '') AS UNSIGNED)
+                   AND a.status = 'published'
+                LEFT JOIN media_assets m
+                    ON m.id = a.primary_media_id
                 LEFT JOIN tenant_domains domain
-                    ON domain.tenant_id = t.id{$domainJoinSql}
-                WHERE t.status IN ('active', 'trial')
-                GROUP BY t.id, t.slug, t.{$tenantsNameColumn}, summary.setting_value, domain.{$domainColumn}
-                ORDER BY t.{$tenantsNameColumn} ASC
+                    ON domain.tenant_id = t.id
+                   {$domainPrimaryPredicate}
+                   {$domainStatusPredicate}
+                WHERE t.status = 'active'
+                ORDER BY t.{$tenantNameColumn} ASC
                 LIMIT 100
             ";
 
             $stmt = $this->pdo->query($sql);
             return $stmt ? ($stmt->fetchAll(PDO::FETCH_ASSOC) ?: []) : [];
         } catch (Throwable $e) {
-            error_log('ArtsFolio directory query failed: ' . $e->getMessage());
+            error_log('ArtsFolio directory tenant query failed: ' . $e->getMessage());
             return [];
         }
     }
@@ -122,59 +130,39 @@ HTML;
     private function platformDirectoryEnabled(): bool
     {
         try {
-            if (!$this->tableExists('platform_settings')) {
-                return true;
-            }
-
             $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'platform_directory_enabled' LIMIT 1");
             $stmt->execute();
             $value = $stmt->fetchColumn();
-            if ($value === false || $value === null || trim((string) $value) === '') {
+
+            if ($value === false || $value === null || $value === '') {
                 return true;
             }
 
             return in_array(strtolower(trim((string) $value)), ['1', 'true', 'yes', 'on'], true);
-        } catch (Throwable $e) {
-            error_log('ArtsFolio directory setting check failed: ' . $e->getMessage());
-            return true;
-        }
-    }
-
-    private function tableExists(string $table): bool
-    {
-        try {
-            $stmt = $this->pdo->query('SHOW TABLES LIKE ' . $this->pdo->quote($table));
-            return $stmt !== false && $stmt->fetchColumn() !== false;
         } catch (Throwable) {
-            try {
-                $stmt = $this->pdo->prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = :name LIMIT 1");
-                $stmt->execute(['name' => $table]);
-                return $stmt->fetchColumn() !== false;
-            } catch (Throwable) {
-                return false;
-            }
+            return true;
         }
     }
 
     private function columnExists(string $table, string $column): bool
     {
         try {
-            $stmt = $this->pdo->query('SHOW COLUMNS FROM `' . str_replace('`', '``', $table) . '` LIKE ' . $this->pdo->quote($column));
-            return $stmt !== false && $stmt->fetchColumn() !== false;
-        } catch (Throwable) {
-            try {
-                $stmt = $this->pdo->query('PRAGMA table_info(' . str_replace(')', '', $table) . ')');
-                foreach ($stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [] as $row) {
-                    if (($row['name'] ?? '') === $column) {
-                        return true;
-                    }
-                }
-            } catch (Throwable) {
-                return false;
-            }
-        }
+            $stmt = $this->pdo->prepare(
+                "SELECT COUNT(*)
+                 FROM information_schema.columns
+                 WHERE table_schema = DATABASE()
+                   AND table_name = :table_name
+                   AND column_name = :column_name"
+            );
+            $stmt->execute([
+                'table_name' => $table,
+                'column_name' => $column,
+            ]);
 
-        return false;
+            return (int) $stmt->fetchColumn() > 0;
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     private function layout(string $title, string $body): string
@@ -182,7 +170,7 @@ HTML;
         return <<<HTML
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>{$title}</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/platform.css"><link rel="stylesheet" href="/assets/platform-custom.css"><link rel="stylesheet" href="/assets/tenant-admin.css"></head>
+<head><meta charset="utf-8"><title>{$title}</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/platform.css"><link rel="stylesheet" href="/assets/platform-custom.css"><link rel="stylesheet" href="/assets/tenant-admin.css"><style>.directory-card{overflow:hidden;padding:0}.directory-card>div:not(.directory-card-thumb){padding:1rem}.directory-card-thumb{aspect-ratio:4/3;background:#f3efe7;overflow:hidden}.directory-card-thumb img{width:100%;height:100%;object-fit:cover;display:block}</style></head>
 <body><header class="platform-header"><a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a><nav><a href="/pricing">Pricing</a><a class="active" href="/directory">Artists</a><a href="/help">Help</a><a href="/login">Sign in</a></nav></header><main>{$body}</main><footer class="platform-footer"><span>© ArtsFolio</span><nav><a href="/help">Help</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer></body></html>
 HTML;
     }
