@@ -882,11 +882,3 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant directory settings live at `/admin/directory` and include opt-in, summary, and a directory thumbnail artwork selector backed by `tenant_settings.platform_directory_thumbnail_artwork_id`.
 - Platform admin visual treatment uses the dark/gold control-plane shell in `public/assets/admin-shell-refactor.css`.
 
-
-
-## Analytics location tracking update
-
-- Tenant public analytics now writes coarse `country`, `region`, and `city` values to `analytics_events` when available.
-- Location is resolved from trusted proxy headers first, then the `analytics_ip_locations` cache, then a short public-IP lookup for public addresses.
-- Raw IP addresses are not stored; cached location rows are keyed by the existing anonymized analytics IP hash.
-- Diagnostic: `php scripts/debug/check_analytics_location_contract.php`.

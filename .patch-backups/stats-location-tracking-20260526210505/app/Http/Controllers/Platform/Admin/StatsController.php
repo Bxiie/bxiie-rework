@@ -31,10 +31,9 @@ final class StatsController
         $tenantRows=$this->rows("SELECT COALESCE(t.name, CONCAT('Tenant ', ae.tenant_id)) AS label, COUNT(*) AS total FROM analytics_events ae LEFT JOIN tenants t ON t.id=ae.tenant_id WHERE ae.created_at >= {$since} GROUP BY label ORDER BY total DESC LIMIT 25");
         $dayRows=$this->rows("SELECT DAYNAME(created_at) AS label, COUNT(*) AS total FROM analytics_events WHERE created_at >= {$since} GROUP BY DAYOFWEEK(created_at), label ORDER BY DAYOFWEEK(created_at)");
         $hourRows=$this->rows("SELECT HOUR(created_at) AS label, COUNT(*) AS total FROM analytics_events WHERE created_at >= {$since} GROUP BY label ORDER BY label");
-        $locationRows=$this->rows("SELECT CONCAT_WS(', ', NULLIF(city, ''), NULLIF(region, ''), NULLIF(country, '')) AS label, COUNT(*) AS total FROM analytics_events WHERE created_at >= {$since} AND (COALESCE(country, '') <> '' OR COALESCE(region, '') <> '' OR COALESCE(city, '') <> '') GROUP BY country, region, city ORDER BY total DESC LIMIT 25");
         $body='<form class="admin-filter-bar" method="get"><label>Range days<br><input type="number" min="1" max="365" name="days" value="'.$days.'"></label><button>Apply</button></form>'
             .'<div class="admin-summary-grid"><div class="admin-summary-card"><strong>'.$total.'</strong><span>Total events</span></div><div class="admin-summary-card"><strong>'.$tenants.'</strong><span>Active tenants</span></div><div class="admin-summary-card"><strong>'.$ips.'</strong><span>Unique IP hashes</span></div></div>'
-            .'<section class="admin-panel"><h2>By tenant</h2>'.$this->table($tenantRows,'Tenant').'</section><section class="admin-panel"><h2>By location</h2>'.$this->table($locationRows ?? [],'Location').'</section><section class="admin-panel"><h2>By day</h2>'.$this->table($dayRows,'Day').'</section><section class="admin-panel"><h2>By hour</h2>'.$this->table($hourRows,'Hour').'</section>';
+            .'<section class="admin-panel"><h2>By tenant</h2>'.$this->table($tenantRows,'Tenant').'</section><section class="admin-panel"><h2>By day</h2>'.$this->table($dayRows,'Day').'</section><section class="admin-panel"><h2>By hour</h2>'.$this->table($hourRows,'Hour').'</section>';
         return Response::html(AdminLayout::render(title:'Platform Stats', body:$body, active:'stats'));
     }
 
