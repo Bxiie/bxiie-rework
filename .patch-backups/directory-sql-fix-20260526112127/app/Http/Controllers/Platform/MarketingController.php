@@ -457,38 +457,29 @@ HTML;
                 return [];
             }
 
-            // Keep this query schema-aligned with the MariaDB migrations:
-            // tenants.name, tenant_domains.hostname, and artworks.primary_media_id.
-            // Do not place aliases inside GROUP BY; MariaDB rejects that syntax.
             $sql = "
                 SELECT
                     t.id,
                     t.slug,
                     t.name AS display_name,
                     COALESCE(summary.setting_value, '') AS summary,
-                    COALESCE(primary_domain.hostname, fallback_domain.hostname, CONCAT(t.slug, '.artsfol.io')) AS domain
+                    COALESCE(domain.hostname, CONCAT(t.slug, '.artsfol.io')) AS domain
                 FROM tenants t
                 INNER JOIN {$settingsTable} opt
                     ON opt.tenant_id = t.id
                    AND opt.setting_key = 'platform_directory_opt_in'
-                   AND LOWER(TRIM(opt.setting_value)) IN ('1', 'true', 'yes', 'on')
+                   AND opt.setting_value IN ('1', 'true', 'yes', 'on')
                 LEFT JOIN {$settingsTable} summary
                     ON summary.tenant_id = t.id
                    AND summary.setting_key = 'platform_directory_summary'
-                LEFT JOIN tenant_domains primary_domain
-                    ON primary_domain.tenant_id = t.id
-                   AND primary_domain.is_primary = TRUE
-                   AND primary_domain.status = 'active'
-                LEFT JOIN tenant_domains fallback_domain
-                    ON fallback_domain.id = (
-                        SELECT td.id
-                        FROM tenant_domains td
-                        WHERE td.tenant_id = t.id
-                          AND td.status = 'active'
-                        ORDER BY td.is_primary DESC, td.id ASC
-                        LIMIT 1
-                    )
+                LEFT JOIN tenant_domains domain
+                    ON domain.tenant_id = t.id
+                   AND domain.is_primary = TRUE
+                   AND domain.status = 'active'
+                   AND domain.is_primary = TRUE
+                   AND domain.status = 'active'
                 WHERE t.status = 'active'
+                GROUP BY t.id, t.slug, t.name AS display_name, summary.setting_value, domain.domain
                 ORDER BY t.name ASC
                 LIMIT :limit
             ";
@@ -527,31 +518,23 @@ HTML;
                     a.slug AS artwork_slug,
                     a.title,
                     m.uuid AS media_uuid,
-                    COALESCE(primary_domain.hostname, fallback_domain.hostname, CONCAT(t.slug, '.artsfol.io')) AS domain
+                    COALESCE(domain.hostname, CONCAT(t.slug, '.artsfol.io')) AS domain
                 FROM tenants t
                 INNER JOIN {$settingsTable} opt
                     ON opt.tenant_id = t.id
                    AND opt.setting_key = 'platform_directory_opt_in'
-                   AND LOWER(TRIM(opt.setting_value)) IN ('1', 'true', 'yes', 'on')
+                   AND opt.setting_value IN ('1', 'true', 'yes', 'on')
                 INNER JOIN artworks a
                     ON a.tenant_id = t.id
                    AND a.status = 'published'
                 INNER JOIN media_assets m
-                    ON m.id = a.primary_media_id
-                   AND m.is_private = 0
-                LEFT JOIN tenant_domains primary_domain
-                    ON primary_domain.tenant_id = t.id
-                   AND primary_domain.is_primary = TRUE
-                   AND primary_domain.status = 'active'
-                LEFT JOIN tenant_domains fallback_domain
-                    ON fallback_domain.id = (
-                        SELECT td.id
-                        FROM tenant_domains td
-                        WHERE td.tenant_id = t.id
-                          AND td.status = 'active'
-                        ORDER BY td.is_primary DESC, td.id ASC
-                        LIMIT 1
-                    )
+                    ON m.id = a.primary_media_asset_id
+                LEFT JOIN tenant_domains domain
+                    ON domain.tenant_id = t.id
+                   AND domain.is_primary = TRUE
+                   AND domain.status = 'active'
+                   AND domain.is_primary = TRUE
+                   AND domain.status = 'active'
                 WHERE t.status = 'active'
                 ORDER BY RAND()
                 LIMIT :limit
@@ -579,11 +562,11 @@ HTML;
             }
 
             return $images;
-        } catch (Throwable $e) {
-            error_log('ArtsFolio directory image query failed: ' . $e->getMessage());
+        } catch (Throwable) {
             return [];
         }
     }
+
 
     private function platformDirectoryEnabled(): bool
     {

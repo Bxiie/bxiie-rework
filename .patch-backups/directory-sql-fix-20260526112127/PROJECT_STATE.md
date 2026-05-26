@@ -856,9 +856,3 @@
 ## Directory thumbnail selection
 
 Tenant admins choose the public directory thumbnail from Admin → Directory. The selected published artwork ID is stored in `tenant_settings.platform_directory_thumbnail_artwork_id`; the public platform directory resolves that artwork through `artworks.primary_media_id` and `media_assets.uuid` and renders the thumbnail via the tenant site's `/media?uuid=...` endpoint. Diagnostic: `php scripts/debug/check_directory_thumbnail_contract.php`.
-
-## Directory SQL schema fix
-- Public directory tenant queries use MariaDB migration column names: `tenants.name`, `tenant_domains.hostname`, and `artworks.primary_media_id`.
-- Directory card thumbnails are selected by tenant admins through `tenant_settings.platform_directory_thumbnail_artwork_id` and rendered only when the selected artwork is published and has a non-private primary media asset.
-- Marketing-page directory cards and image mosaic use the same opt-in setting contract as `/directory`.
-- Diagnostic script: `php scripts/debug/check_directory_thumbnail_contract.php`.
