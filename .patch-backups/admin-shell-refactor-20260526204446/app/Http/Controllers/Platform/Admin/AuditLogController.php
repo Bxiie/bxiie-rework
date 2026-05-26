@@ -99,7 +99,7 @@ final class AuditLogController
         </label>
     </p>
     <button type="submit">Filter</button>
-    <a href="/platform/admin/audit-log">Clear</a>
+    <a href="/admin/audit-log">Clear</a>
 </form>
 
 <table class="admin-table">

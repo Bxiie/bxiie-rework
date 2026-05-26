@@ -81,7 +81,7 @@ final class JobsController
             . '<h2>Last Error</h2><pre>' . AdminLayout::escape((string) ($job['last_error'] ?? '')) . '</pre>'
             . '<h2>Attempt History</h2>'
             . '<table class="admin-table"><thead><tr><th>ID</th><th>Status</th><th>Message</th><th>Started</th><th>Finished</th><th>Created</th></tr></thead><tbody>' . $attemptRows . '</tbody></table>'
-            . '<p><a class="admin-button" href="/platform/admin/jobs">Back to jobs</a></p>';
+            . '<p><a class="admin-button" href="/admin/jobs">Back to jobs</a></p>';
 
         return Response::html(AdminLayout::render(
             title: 'Background Job #' . $jobId,
@@ -128,7 +128,7 @@ final class JobsController
             return Response::html('<h1>Invalid job action</h1>', 422);
         }
 
-        return new Response('', 302, ['Location' => '/platform/admin/jobs']);
+        return new Response('', 302, ['Location' => '/admin/jobs']);
     }
 
     public function index(Request $request, ?array $currentUser): Response
@@ -172,7 +172,7 @@ final class JobsController
 HTML;
 
             $rows .= '<tr>'
-                . '<td><a href="/platform/admin/jobs/' . $jobId . '">' . AdminLayout::escape((string) $job['id']) . '</a></td>'
+                . '<td><a href="/admin/jobs/' . $jobId . '">' . AdminLayout::escape((string) $job['id']) . '</a></td>'
                 . '<td>' . AdminLayout::escape((string) ($job['tenant_slug'] ?? $job['tenant_id'] ?? '')) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $job['job_type']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $job['status']) . '</td>'
@@ -216,7 +216,7 @@ HTML;
         </label>
     </p>
     <button type="submit">Filter</button>
-    <a class="admin-button" href="/platform/admin/jobs">Clear</a>
+    <a class="admin-button" href="/admin/jobs">Clear</a>
 </form>
 
 <table class="admin-table">

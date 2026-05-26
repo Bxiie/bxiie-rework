@@ -16,8 +16,7 @@ use App\Tenant\Settings\TenantSettingsRepository;
 use PDO;
 
 /**
- * Lets tenant admins opt the tenant into the public ArtsFolio directory and
- * choose the artwork thumbnail used by the platform directory card.
+ * Lets tenant admins control the public ArtsFolio directory listing.
  */
 final class DiscoverySettingsController
 {
@@ -25,6 +24,7 @@ final class DiscoverySettingsController
         private readonly RequireTenantRoleBrowser $roles,
         private readonly TenantSettingsRepository $settings,
         private readonly CsrfTokenService $csrf,
+        private readonly PDO $pdo,
         private readonly ?AuditLogRepository $auditLog = null,
     ) {
     }
@@ -40,9 +40,8 @@ final class DiscoverySettingsController
         $checked = $this->truthy($this->settings->get($tenant, 'platform_directory_opt_in', '0') ?? '0') ? ' checked' : '';
         $summary = $this->escape($this->settings->get($tenant, 'platform_directory_summary', '') ?? '');
         $selectedArtworkId = (int) ($this->settings->get($tenant, 'platform_directory_thumbnail_artwork_id', '0') ?? '0');
-        $notice = isset($_GET['notice']) ? '<p class="notice">Directory settings saved. The public directory will use the selected published artwork thumbnail.</p>' : '';
-        $artworkOptions = $this->artworkOptions($tenant, $selectedArtworkId);
-        $preview = $this->thumbnailPreview($tenant, $selectedArtworkId);
+        $notice = isset($_GET['notice']) ? '<p class="notice">Directory settings saved.</p>' : '';
+        $thumbnailChoices = $this->thumbnailChoicesHtml($tenant, $selectedArtworkId);
 
         $body = <<<HTML
 {$notice}
@@ -60,16 +59,11 @@ final class DiscoverySettingsController
     </fieldset>
 
     <fieldset>
-        <legend>Directory thumbnail artwork</legend>
-        <p class="admin-muted">Select a published artwork with a primary image. This thumbnail appears on the public ArtsFolio directory card.</p>
-        <label>Directory thumbnail
-            <select name="platform_directory_thumbnail_artwork_id">
-                <option value="0">Use automatic fallback</option>
-                {$artworkOptions}
-            </select>
-        </label>
-        {$preview}
-        <p><a href="/admin/artworks">Manage artworks</a></p>
+        <legend>Directory thumbnail</legend>
+        <p class="admin-muted">Choose one published artwork image to represent this artist in the public directory. If nothing is selected, the directory card uses a text-only fallback.</p>
+        <div class="directory-thumbnail-picker">
+            {$thumbnailChoices}
+        </div>
     </fieldset>
 
     <fieldset>
@@ -99,7 +93,11 @@ HTML;
 
         $optIn = isset($_POST['platform_directory_opt_in']) ? '1' : '0';
         $summary = trim((string) ($_POST['platform_directory_summary'] ?? ''));
-        $thumbnailArtworkId = $this->validArtworkId($tenant, (int) ($_POST['platform_directory_thumbnail_artwork_id'] ?? 0));
+        $thumbnailArtworkId = (int) ($_POST['platform_directory_thumbnail_artwork_id'] ?? 0);
+
+        if ($thumbnailArtworkId > 0 && !$this->thumbnailArtworkExists($tenant, $thumbnailArtworkId)) {
+            return Response::html('<h1>Invalid thumbnail</h1><p>Select a published artwork that belongs to this tenant.</p>', 422);
+        }
 
         $this->settings->set($tenant, 'platform_directory_opt_in', $optIn);
         $this->settings->set($tenant, 'platform_directory_summary', $summary);
@@ -114,7 +112,7 @@ HTML;
                 (string) $tenant->tenantId,
                 [
                     'platform_directory_opt_in' => $optIn,
-                    'platform_directory_thumbnail_artwork_id' => $thumbnailArtworkId,
+                    'platform_directory_thumbnail_artwork_id' => $thumbnailArtworkId > 0 ? $thumbnailArtworkId : null,
                 ],
                 $request->server('REMOTE_ADDR')
             );
@@ -123,98 +121,71 @@ HTML;
         return new Response('', 303, ['Location' => '/admin/directory?notice=saved']);
     }
 
-    private function artworkOptions(TenantContext $tenant, int $selectedArtworkId): string
+    private function thumbnailChoicesHtml(TenantContext $tenant, int $selectedArtworkId): string
     {
-        $pdo = $this->pdo();
-        $stmt = $pdo->prepare(
-            "SELECT a.id, a.title, m.uuid AS media_uuid
+        $stmt = $this->pdo->prepare(
+            "SELECT a.id, a.title, a.year_created, m.uuid AS media_uuid
              FROM artworks a
-             JOIN media_assets m ON m.id = a.primary_media_id AND m.tenant_id = a.tenant_id
+             INNER JOIN media_assets m ON m.id = a.primary_media_id
              WHERE a.tenant_id = :tenant_id
                AND a.status = 'published'
-               AND a.primary_media_id IS NOT NULL
-             ORDER BY a.title ASC, a.id DESC
-             LIMIT 500"
+               AND m.is_private = 0
+             ORDER BY a.sort_order ASC, a.title ASC, a.id DESC
+             LIMIT 200"
         );
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
+        $rows = $stmt->fetchAll();
 
-        $html = '';
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $noneChecked = $selectedArtworkId === 0 ? ' checked' : '';
+        $html = <<<HTML
+<label class="directory-thumbnail-option directory-thumbnail-option-none">
+    <input type="radio" name="platform_directory_thumbnail_artwork_id" value="0"{$noneChecked}>
+    <span>No thumbnail</span>
+</label>
+HTML;
+
+        foreach ($rows as $row) {
             $id = (int) $row['id'];
-            $selected = $id === $selectedArtworkId ? ' selected' : '';
-            $label = ((string) $row['title']) !== '' ? (string) $row['title'] : 'Artwork #' . $id;
-            $html .= '<option value="' . $id . '"' . $selected . '>' . $this->escape($label) . '</option>';
+            $checked = $id === $selectedArtworkId ? ' checked' : '';
+            $title = $this->escape((string) $row['title']);
+            $year = $this->escape((string) ($row['year_created'] ?? ''));
+            $src = '/admin/media?uuid=' . rawurlencode((string) $row['media_uuid']);
+            $src = $this->escape($src);
+            $meta = $year !== '' ? '<small>' . $year . '</small>' : '<small>Published artwork</small>';
+            $html .= <<<HTML
+<label class="directory-thumbnail-option">
+    <input type="radio" name="platform_directory_thumbnail_artwork_id" value="{$id}"{$checked}>
+    <img src="{$src}" alt="{$title}">
+    <span><strong>{$title}</strong>{$meta}</span>
+</label>
+HTML;
         }
 
-        if ($html === '') {
-            return '<option value="0">No published artworks with primary images are available</option>';
+        if (count($rows) === 0) {
+            $html .= '<p class="admin-muted">No eligible thumbnail images yet. Publish an artwork with a primary image, then return here.</p>';
         }
 
         return $html;
     }
 
-    private function thumbnailPreview(TenantContext $tenant, int $selectedArtworkId): string
+    private function thumbnailArtworkExists(TenantContext $tenant, int $artworkId): bool
     {
-        if ($selectedArtworkId <= 0) {
-            return '<p class="admin-muted">No artwork selected. The public directory will use its automatic fallback.</p>';
-        }
-
-        $pdo = $this->pdo();
-        $stmt = $pdo->prepare(
-            "SELECT a.title, m.uuid AS media_uuid
-             FROM artworks a
-             JOIN media_assets m ON m.id = a.primary_media_id AND m.tenant_id = a.tenant_id
-             WHERE a.tenant_id = :tenant_id
-               AND a.id = :artwork_id
-               AND a.status = 'published'
-             LIMIT 1"
-        );
-        $stmt->execute(['tenant_id' => $tenant->tenantId, 'artwork_id' => $selectedArtworkId]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$row) {
-            return '<p class="admin-error">The previously selected artwork is no longer available. Choose a published artwork with a primary image.</p>';
-        }
-
-        $title = $this->escape((string) $row['title']);
-        $uuid = rawurlencode((string) $row['media_uuid']);
-
-        return <<<HTML
-<div class="directory-thumbnail-preview">
-    <img src="/media?uuid={$uuid}" alt="">
-    <div><strong>Current directory thumbnail</strong><p>{$title}</p></div>
-</div>
-HTML;
-    }
-
-    private function validArtworkId(TenantContext $tenant, int $artworkId): int
-    {
-        if ($artworkId <= 0) {
-            return 0;
-        }
-
-        $stmt = $this->pdo()->prepare(
+        $stmt = $this->pdo->prepare(
             "SELECT a.id
              FROM artworks a
-             JOIN media_assets m ON m.id = a.primary_media_id AND m.tenant_id = a.tenant_id
+             INNER JOIN media_assets m ON m.id = a.primary_media_id
              WHERE a.tenant_id = :tenant_id
                AND a.id = :artwork_id
                AND a.status = 'published'
+               AND m.is_private = 0
              LIMIT 1"
         );
-        $stmt->execute(['tenant_id' => $tenant->tenantId, 'artwork_id' => $artworkId]);
+        $stmt->execute([
+            'tenant_id' => $tenant->tenantId,
+            'artwork_id' => $artworkId,
+        ]);
 
-        return $stmt->fetchColumn() ? $artworkId : 0;
-    }
-
-    private function pdo(): PDO
-    {
-        $property = new \ReflectionProperty(TenantSettingsRepository::class, 'pdo');
-        $property->setAccessible(true);
-        /** @var PDO $pdo */
-        $pdo = $property->getValue($this->settings);
-
-        return $pdo;
+        return (bool) $stmt->fetch();
     }
 
     private function truthy(string $value): bool

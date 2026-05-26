@@ -159,7 +159,7 @@ HTML,
             FlashMessages::error('Domain action failed: ' . $e->getMessage());
         }
 
-        return new Response('', 302, ['Location' => '/platform/admin/domains']);
+        return new Response('', 302, ['Location' => '/admin/domains']);
     }
 
     private function auditAction(Request $request, ?array $currentUser, string $action, string $entityId, array $details = []): void

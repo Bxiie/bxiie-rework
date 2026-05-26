@@ -9,9 +9,6 @@ use App\Tenant\Settings\TenantSettingsRepository;
 
 /**
  * Canonical tenant admin layout.
- *
- * Tenant admin pages must only show tenant-scoped functions. Platform-control
- * links belong exclusively in App\Http\View\AdminLayout.
  */
 final class TenantAdminLayout
 {
@@ -24,7 +21,7 @@ final class TenantAdminLayout
     {
         $siteTitle = self::escape($this->settings->get($tenant, 'site_title', $tenant->name));
         $artistName = self::escape($this->settings->get($tenant, 'artist_name', $siteTitle));
-        $browserTitle = self::escape($title . ' | ' . $siteTitle . ' Admin');
+        $browserTitle = self::escape($title . ' | ' . $siteTitle);
         $copyrightName = $this->settings->get($tenant, 'copyright_name', $siteTitle);
         $year = date('Y');
 
@@ -51,17 +48,15 @@ final class TenantAdminLayout
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/assets/site.css">
     <link rel="stylesheet" href="/assets/tenant-admin.css">
-    <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
 </head>
 <body class="tenant-admin-page" style="--tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText};">
 <header class="site-header tenant-admin-public-header">
-    <a class="brand tenant-admin-brand" href="/"><strong>{$siteTitle}</strong><span>Tenant Admin</span></a>
+    <a class="brand" href="/">{$siteTitle}</a>
     <nav>
         <a href="/">{$homeLabel}</a>
         <a href="/{$portfolioSlug}">{$portfolioLabel}</a>
         <a href="/{$aboutSlug}">{$aboutLabel}</a>
         <a href="/{$contactSlug}">{$contactLabel}</a>
-        <a href="/help">Help</a>
         <form method="post" action="/logout" style="display:inline"><input type="hidden" name="csrf_token" value="{$csrf}"><button type="submit" class="link-button">Log out</button></form>
     </nav>
 </header>
@@ -69,14 +64,17 @@ final class TenantAdminLayout
 <div class="tenant-admin-shell">
     <aside class="tenant-admin-sidebar" aria-label="Tenant admin navigation">
         <div class="tenant-admin-sidebar-title">
-            <strong>{$siteTitle}</strong>
-            <span>Tenant Admin · {$artistName}</span>
+            <strong>Admin</strong>
+            <span>{$artistName}</span>
         </div>
         {$adminNav}
-        <div class="tenant-admin-sidebar-foot"><a href="/" target="_blank" rel="noopener">View Site</a></div>
     </aside>
 
     <main class="tenant-admin-main">
+        <div class="tenant-admin-main-header">
+            
+            
+        </div>
         <section class="tenant-admin-panel">
             <h1>{$this->escape($title)}</h1>
             {$body}
@@ -117,7 +115,6 @@ HTML;
             'directory' => ['/admin/directory', 'Directory'],
             'stats' => ['/admin/stats', 'Stats'],
             'audit' => ['/admin/audit-log', 'Audit Log'],
-            'routes' => ['/admin/routes', 'Tenant Routes'],
         ];
 
         $html = '<nav>';

@@ -872,13 +872,3 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant admin directory controls remain tenant-scoped; platform admins only control global directory availability.
 
 # End of file.
-
-## 2026-05-26 admin shell refactor
-
-- Platform admin is canonical under `/platform/admin/*`; platform `/admin/*` routes are compatibility redirects only on platform hosts.
-- Tenant admin remains canonical under `/admin/*` on tenant domains.
-- `App\Http\View\AdminLayout` is platform-only and has a safety fallback that delegates tenant-host `/admin/*` requests to `TenantAdminLayout` so older tenant controllers cannot leak platform navigation.
-- `App\Http\View\TenantAdminLayout` contains tenant-only navigation and no platform operations links.
-- Tenant directory settings live at `/admin/directory` and include opt-in, summary, and a directory thumbnail artwork selector backed by `tenant_settings.platform_directory_thumbnail_artwork_id`.
-- Platform admin visual treatment uses the dark/gold control-plane shell in `public/assets/admin-shell-refactor.css`.
-

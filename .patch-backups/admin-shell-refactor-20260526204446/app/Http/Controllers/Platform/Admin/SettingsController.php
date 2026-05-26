@@ -120,7 +120,7 @@ HTML,
             ],
         ]);
 
-        return new Response('', 302, ['Location' => '/platform/admin/platform-settings']);
+        return new Response('', 302, ['Location' => '/admin/platform-settings']);
     }
 
     private function auditAction(Request $request, ?array $currentUser, array $details = []): void

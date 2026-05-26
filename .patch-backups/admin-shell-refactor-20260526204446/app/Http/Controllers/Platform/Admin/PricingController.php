@@ -38,7 +38,7 @@ final class PricingController
         return Response::html(AdminLayout::render(title: 'Platform Pricing', body: <<<HTML
 <p>Plan data is read from the <code>plans</code> table. Editing is intentionally deferred until billing writes are fully protected by audit and payment-provider reconciliation.</p>
 <table class="admin-table"><thead><tr><th>Slug</th><th>Name</th><th>Monthly</th><th>Custom domain</th><th>Status</th></tr></thead><tbody>{$rows}</tbody></table>
-<p><a class="admin-button" href="/pricing">View public pricing page</a> <a class="admin-button" href="/platform/admin/platform-settings">Platform settings</a></p>
+<p><a class="admin-button" href="/pricing">View public pricing page</a> <a class="admin-button" href="/admin/platform-settings">Platform settings</a></p>
 HTML, active: 'pricing'));
     }
 
