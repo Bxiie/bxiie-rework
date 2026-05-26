@@ -2,21 +2,39 @@
 
 Tenant admins control public directory participation from `/admin/directory` on the tenant domain.
 
-## Behavior
+## Storage contract
 
-- Tenants are hidden from the public ArtsFolio directory by default.
-- Tenant admins must check **Show this tenant in the public ArtsFolio directory**.
-- Platform admins must also enable the platform-wide directory setting before public directory listings appear.
-- Directory summaries are stored in tenant settings under `platform_directory_summary`.
-- Opt-in state is stored in tenant settings under `platform_directory_opt_in`.
+The tenant admin form and public platform directory must use the same keys in `tenant_settings`:
+
+- `platform_directory_opt_in` - `1`, `true`, `yes`, or `on` means the tenant opted in.
+- `platform_directory_summary` - short public text shown on directory cards.
+
+The public directory joins:
+
+- `tenants.name` for the public display name.
+- `tenant_domains.hostname` for the tenant URL.
+- active, primary `tenant_domains` rows when available.
+
+This matters because the current schema does **not** have `tenants.display_name` or `tenant_domains.domain`. Queries using those old names fail and make the public directory look empty.
 
 ## Verification
 
-1. Sign into the tenant domain as a tenant admin.
-2. Open `/admin/directory`.
-3. Enable the directory listing and add a short summary.
-4. Save.
-5. Confirm redirect to `/admin/directory?notice=saved`.
-6. Confirm the tenant can appear on `https://artsfol.io/directory` when the platform directory is enabled.
+```bash
+php scripts/debug/check_directory_contract.php
+```
+
+Then confirm the opted-in tenant row has:
+
+```text
+directory_opt_in = 1
+primary_hostname = bxiie.com
+primary_domain_status = active
+```
+
+Finally open:
+
+```text
+https://artsfol.io/directory
+```
 
 <!-- End of file. -->

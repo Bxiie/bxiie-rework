@@ -846,9 +846,3 @@
 - Tenant directory settings remain stored in `tenant_settings` as `platform_directory_opt_in` and `platform_directory_summary`.
 
 <!-- End of file. -->
-
-## Directory final hotfix
-
-- Public `/directory` now reads the same tenant setting keys written by Tenant Admin → Directory: `platform_directory_opt_in` and `platform_directory_summary`.
-- Directory rendering supports both the current MariaDB schema (`tenants.name`, `tenant_domains.hostname`, `tenant_settings`) and the older SQLite development schema (`tenants.display_name`, `tenant_domains.domain`, `settings`).
-- `scripts/debug/check_directory_contract.php` reports the platform directory switch, detected schema contract, tenant opt-in values, domains, and directory eligibility.

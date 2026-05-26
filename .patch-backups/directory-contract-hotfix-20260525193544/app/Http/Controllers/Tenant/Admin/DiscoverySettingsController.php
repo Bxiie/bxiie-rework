@@ -37,7 +37,7 @@ final class DiscoverySettingsController
         $token = $this->escape($this->csrf->getOrCreate());
         $checked = $this->truthy($this->settings->get($tenant, 'platform_directory_opt_in', '0') ?? '0') ? ' checked' : '';
         $summary = $this->escape($this->settings->get($tenant, 'platform_directory_summary', '') ?? '');
-        $notice = isset($_GET['notice']) ? '<p class="notice">Directory settings saved. The public directory reads platform_directory_opt_in and platform_directory_summary from this tenant.</p>' : '';
+        $notice = isset($_GET['notice']) ? '<p class="notice">Directory settings saved.</p>' : '';
 
         $body = <<<HTML
 {$notice}

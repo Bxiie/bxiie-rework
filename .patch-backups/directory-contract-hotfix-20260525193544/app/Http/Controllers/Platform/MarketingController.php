@@ -461,9 +461,9 @@ HTML;
                 SELECT
                     t.id,
                     t.slug,
-                    t.name AS display_name,
+                    t.display_name,
                     COALESCE(summary.setting_value, '') AS summary,
-                    COALESCE(domain.hostname, CONCAT(t.slug, '.artsfol.io')) AS domain
+                    COALESCE(domain.domain, CONCAT(t.slug, '.artsfol.io')) AS domain
                 FROM tenants t
                 INNER JOIN {$settingsTable} opt
                     ON opt.tenant_id = t.id
@@ -474,13 +474,9 @@ HTML;
                    AND summary.setting_key = 'platform_directory_summary'
                 LEFT JOIN tenant_domains domain
                     ON domain.tenant_id = t.id
-                   AND domain.is_primary = TRUE
-                   AND domain.status = 'active'
-                   AND domain.is_primary = TRUE
-                   AND domain.status = 'active'
                 WHERE t.status = 'active'
-                GROUP BY t.id, t.slug, t.name AS display_name, summary.setting_value, domain.domain
-                ORDER BY t.name ASC
+                GROUP BY t.id, t.slug, t.display_name, summary.setting_value, domain.domain
+                ORDER BY t.display_name ASC
                 LIMIT :limit
             ";
 
@@ -495,8 +491,7 @@ HTML;
             }
 
             return $rows;
-        } catch (Throwable $e) {
-            error_log('ArtsFolio directory tenant query failed: ' . $e->getMessage());
+        } catch (Throwable) {
             return [];
         }
     }
@@ -518,7 +513,7 @@ HTML;
                     a.slug AS artwork_slug,
                     a.title,
                     m.uuid AS media_uuid,
-                    COALESCE(domain.hostname, CONCAT(t.slug, '.artsfol.io')) AS domain
+                    COALESCE(domain.domain, CONCAT(t.slug, '.artsfol.io')) AS domain
                 FROM tenants t
                 INNER JOIN {$settingsTable} opt
                     ON opt.tenant_id = t.id
@@ -531,10 +526,6 @@ HTML;
                     ON m.id = a.primary_media_asset_id
                 LEFT JOIN tenant_domains domain
                     ON domain.tenant_id = t.id
-                   AND domain.is_primary = TRUE
-                   AND domain.status = 'active'
-                   AND domain.is_primary = TRUE
-                   AND domain.status = 'active'
                 WHERE t.status = 'active'
                 ORDER BY RAND()
                 LIMIT :limit
