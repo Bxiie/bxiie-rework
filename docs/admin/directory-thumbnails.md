@@ -1,19 +1,16 @@
 # Directory thumbnails
 
-Tenant admins choose the public ArtsFolio directory thumbnail from **Admin → Directory**.
+Tenant admins choose the public directory image from **Tenant Admin → Directory**.
 
-The selector only lists artworks that are:
+The selector only shows artworks that meet all of these conditions:
 
-1. owned by the current tenant,
-2. published,
-3. connected to a primary media image.
+1. The artwork belongs to the current tenant.
+2. The artwork status is `published`.
+3. The artwork has a primary media asset.
+4. The media asset is not private.
 
-The selected artwork ID is stored in `tenant_settings.platform_directory_thumbnail_artwork_id`. The public directory reads that setting and renders the corresponding `media_assets.uuid` through the tenant domain using `/media?uuid=...`.
+The selected artwork id is stored in `tenant_settings` using the key `platform_directory_thumbnail_artwork_id`.
 
-Run this check after changing directory settings:
-
-```bash
-php scripts/debug/check_directory_thumbnail_contract.php
-```
+Platform admins control whether the public directory is globally available from **Platform Admin → Platform Settings**. Tenant opt-in and tenant thumbnail selection remain tenant-owned controls.
 
 # End of file.

@@ -7,9 +7,8 @@ namespace App\Http\View;
 /**
  * Shared platform admin shell.
  *
- * This layout is platform-only. Tenant admin pages must use TenantAdminLayout
- * so platform operations and tenant operations do not visually or navigationally
- * bleed into each other.
+ * Platform admin intentionally uses ArtsFolio branding and platform-specific
+ * navigation rather than tenant/Bxiie labels.
  */
 final class AdminLayout
 {
@@ -33,7 +32,6 @@ final class AdminLayout
         $safeTitle = self::escape($title);
         $adminNav = self::adminNav($active);
         $year = date('Y');
-        $csrf = self::escape($_SESSION['csrf_token'] ?? '');
 
         return <<<HTML
 <!doctype html>
@@ -47,31 +45,29 @@ final class AdminLayout
     <link rel="stylesheet" href="/assets/platform-custom.css">
     <link rel="stylesheet" href="/assets/tenant-admin.css">
 </head>
-<body class="tenant-admin-page platform-admin-page">
+<body class="tenant-admin-page platform-admin-page" style="--tenant-topbar-bg:#f7f1e8;--tenant-topbar-text:#151515;">
 <header class="site-header tenant-admin-public-header platform-admin-header">
     <a class="platform-admin-logo" href="/admin"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>
-    <div class="platform-admin-context">
-        <strong>Platform Admin</strong>
-        <span>Global ArtsFolio operations, not a tenant site</span>
-    </div>
-    <nav aria-label="Platform admin actions">
-        <a href="/admin">Platform dashboard</a>
-        <a href="/help/developer">Developer reference</a>
-        <form method="post" action="/logout" class="inline-form"><input type="hidden" name="csrf_token" value="{$csrf}"><button type="submit" class="link-button">Log out</button></form>
+    <nav>
+        <a href="/">Platform home</a>
+        <a href="/pricing">Pricing</a>
+        <a href="/directory">Directory</a>
+        <a href="/help">Help</a>
+        <form method="post" action="/logout"><button type="submit">Log out</button></form>
     </nav>
 </header>
-<div class="tenant-admin-shell platform-admin-shell">
-    <aside class="tenant-admin-sidebar platform-admin-sidebar" aria-label="Platform admin navigation">
-        <div class="tenant-admin-sidebar-title"><strong>Platform</strong><span>System controls</span></div>
+<div class="tenant-admin-shell">
+    <aside class="tenant-admin-sidebar" aria-label="Platform admin navigation">
+        <div class="tenant-admin-sidebar-title"><strong>Platform Admin</strong><span>ArtsFolio operations</span></div>
         {$adminNav}
     </aside>
     <main class="tenant-admin-main">
-        <section class="tenant-admin-panel platform-admin-panel"><h1>{$safeTitle}</h1>{$body}</section>
+        <section class="tenant-admin-panel"><h1>{$safeTitle}</h1>{$body}</section>
     </main>
 </div>
-<footer class="site-footer tenant-admin-footer platform-admin-footer">
-    <span>© {$year} artsfol.io platform administration</span>
-    <nav><a href="/admin">Platform Admin</a><a href="/admin/platform-settings">Platform Settings</a><a href="/admin/routes">Routes</a></nav>
+<footer class="site-footer tenant-admin-footer">
+    <span>© {$year} artsfol.io</span>
+    <nav><a href="/help">Help</a><a href="/help/developer">Developer reference</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav>
 </footer>
 </body>
 </html>
@@ -92,9 +88,9 @@ HTML;
             'jobs' => ['/admin/jobs', 'Jobs'],
             'workers' => ['/admin/workers', 'Workers'],
             'email' => ['/admin/email-outbox', 'Email Outbox'],
-            'stats' => ['/admin/stats', 'Platform Stats'],
-            'audit' => ['/admin/audit-log', 'Platform Audit Log'],
-            'routes' => ['/admin/routes', 'Platform Routes'],
+            'stats' => ['/admin/stats', 'Stats'],
+            'audit' => ['/admin/audit-log', 'Audit Log'],
+            'routes' => ['/admin/routes', 'Routes'],
             'settings' => ['/admin/platform-settings', 'Platform Settings'],
         ];
 
