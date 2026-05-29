@@ -321,6 +321,7 @@ HTML
         $portfolioSlug = $this->escape($this->settings->get($tenant, 'portfolio_slug', 'portfolio'));
         $aboutSlug = $this->escape($this->settings->get($tenant, 'about_slug', 'about'));
         $contactSlug = $this->escape($this->settings->get($tenant, 'contact_slug', 'contact'));
+        $backgroundStyle = $this->backgroundCssVariables($tenant);
 
         return <<<HTML
 <!doctype html>
@@ -333,7 +334,7 @@ HTML
     <link rel="stylesheet" href="/assets/site.css">
     <link rel="stylesheet" href="/tenant.css">
 </head>
-<body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};">
+<body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};{$backgroundStyle}">
 <header class="site-header">
     <a class="brand" href="/">{$siteTitle}</a>
     <nav>
@@ -350,6 +351,56 @@ HTML
 </body>
 </html>
 HTML;
+    }
+
+
+    /**
+     * Returns inline CSS variables used by site.css for tenant background images.
+     */
+    private function backgroundCssVariables(TenantContext $tenant): string
+    {
+        $uuid = strtolower(trim((string) $this->settings->get($tenant, 'background_media_uuid', '')));
+
+        if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid)) {
+            return '';
+        }
+
+        $mode = (string) $this->settings->get($tenant, 'background_mode', 'single');
+        $tileSize = $this->safeCssSize((string) $this->settings->get($tenant, 'background_tile_size', '360px'), '360px');
+        $opacity = $this->safeOpacity((string) $this->settings->get($tenant, 'background_opacity', '0.12'));
+        $imageUrl = '/media?uuid=' . rawurlencode($uuid);
+        $repeat = $mode === 'tile' ? 'repeat' : 'no-repeat';
+        $size = $mode === 'tile' ? $tileSize : 'cover';
+
+        return "--site-bg-image:url('{$this->escape($imageUrl)}');"
+            . '--site-bg-repeat:' . $repeat . ';'
+            . '--site-bg-size:' . $this->escape($size) . ';'
+            . '--site-bg-opacity:' . $opacity . ';';
+    }
+
+    /**
+     * Allows simple CSS size values while rejecting characters that could break style attributes.
+     */
+    private function safeCssSize(string $value, string $default): string
+    {
+        $value = trim($value);
+
+        if (preg_match('/^(auto|cover|contain|[0-9.]+(px|rem|em|%|vw|vh))$/', $value)) {
+            return $value;
+        }
+
+        return $default;
+    }
+
+    /**
+     * Clamps tenant-provided opacity to the supported CSS range.
+     */
+    private function safeOpacity(string $value): string
+    {
+        $opacity = is_numeric($value) ? (float) $value : 0.12;
+        $opacity = max(0.0, min(1.0, $opacity));
+
+        return rtrim(rtrim(sprintf('%.2F', $opacity), '0'), '.');
     }
 
     private function events(TenantContext $tenant): string

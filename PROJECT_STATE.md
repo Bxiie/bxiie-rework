@@ -818,7 +818,6 @@
 - Platform admin dashboard uses explanatory cards similar to the tenant admin dashboard.
 - Admin and help logo sizing was reduced to avoid oversized header branding.
 
-<!-- End of file. -->
 
 ## 2026-05-25 help/directory route hotfix
 
@@ -828,7 +827,6 @@
 - Tenant admin navigation now labels the tenant discovery control as `Directory`.
 - Tenant directory opt-in values remain `platform_directory_opt_in` and `platform_directory_summary` in `tenant_settings`.
 
-<!-- End of file. -->
 
 ## 2026-05-25 tenant directory audit signature hotfix
 
@@ -836,7 +834,6 @@
 - The previous controller draft passed an array as the first argument, causing `POST /admin/directory` to fail before redirecting.
 - Directory opt-in changes now write tenant-scoped `tenant.directory_settings.updated` entries for `/admin/audit-log`.
 
-<!-- End of file. -->
 
 ## 2026-05-25 directory read/write contract hotfix
 
@@ -845,7 +842,6 @@
 - Added `scripts/debug/check_directory_contract.php` to print tenant directory opt-in state, summary, and primary hostname from the same tables used by the public directory.
 - Tenant directory settings remain stored in `tenant_settings` as `platform_directory_opt_in` and `platform_directory_summary`.
 
-<!-- End of file. -->
 
 ## Directory final hotfix
 
@@ -890,3 +886,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Location is resolved from trusted proxy headers first, then the `analytics_ip_locations` cache, then a short public-IP lookup for public addresses.
 - Raw IP addresses are not stored; cached location rows are keyed by the existing anonymized analytics IP hash.
 - Diagnostic: `php scripts/debug/check_analytics_location_contract.php`.
+
+## Tenant background image setting
+
+- Tenant admins can select a public-site background image from `/admin/settings`.
+- The selected media UUID is stored in `tenant_settings.setting_key = background_media_uuid`; no schema migration is required.
+- The picker lists only non-private media attached to published artwork so `/media?uuid=...` can serve the selected image through the existing public media safety gate.
+- Public rendering uses CSS variables consumed by `public/assets/site.css`: `--site-bg-image`, `--site-bg-repeat`, `--site-bg-size`, and `--site-bg-opacity`.
+
+<!-- End of file. -->

@@ -16,6 +16,7 @@ use App\Platform\Tenancy\TenantContext;
 use App\Support\Flash\FlashMessages;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Settings\TenantSettingsRepository;
+use PDO;
 
 /**
  * Handles tenant-admin editable client settings.
@@ -27,6 +28,7 @@ final class SettingsController
         private readonly TenantSettingsRepository $settings,
         private readonly CsrfTokenService $csrf,
         private readonly ?AuditLogRepository $auditLog = null,
+        private readonly ?PDO $pdo = null,
     ) {
     }
 
@@ -63,6 +65,8 @@ final class SettingsController
         $backgroundMode = $this->settings->get($tenant, 'background_mode', 'single');
         $backgroundTileSize = $this->setting($tenant, 'background_tile_size', '360px');
         $backgroundOpacity = $this->setting($tenant, 'background_opacity', '0.12');
+        $backgroundMediaUuid = (string) $this->settings->get($tenant, 'background_media_uuid', '');
+        $backgroundOptions = $this->backgroundMediaOptions($tenant, $backgroundMediaUuid);
         $tenantCss = htmlspecialchars($this->settings->get($tenant, 'tenant_css', ''), ENT_QUOTES, 'UTF-8');
 
         $selected = fn (string $actual, string $expected): string => $actual === $expected ? ' selected' : '';
@@ -108,6 +112,11 @@ final class SettingsController
                 <label>Accent color<input name="accent_color" value="{$accentColor}"></label>
                 <label>Page background color<input name="background_color" value="{$backgroundColor}"></label>
                 <label>Top bar background color<input name="topbar_background_color" value="{$topbarBackgroundColor}"></label>
+                <label>Background image
+                    <select name="background_media_uuid">
+                        {$backgroundOptions}
+                    </select>
+                </label>
                 <label>Background mode
                     <select name="background_mode">
                         <option value="single"{$selected($backgroundMode, 'single')}>Single image</option>
@@ -117,7 +126,7 @@ final class SettingsController
                 <label>Background tile size<input name="background_tile_size" value="{$backgroundTileSize}"></label>
                 <label>Background opacity<input name="background_opacity" value="{$backgroundOpacity}"></label>
             </div>
-            <p class="admin-help">Background image selection will be wired from the artwork/media picker next.</p>
+            <p class="admin-help">Background images are selected from published artwork so the public media route can serve them safely. Use opacity between 0 and 1; tile size accepts CSS values like 240px or 18rem.</p>
         </fieldset>
 
         <fieldset>
@@ -172,6 +181,7 @@ HTML;
             'accent_color',
             'background_color',
             'topbar_background_color',
+            'background_media_uuid',
             'background_mode',
             'background_tile_size',
             'background_opacity',
@@ -186,6 +196,9 @@ HTML;
         foreach ($keys as $key) {
             $before[$key] = $this->settings->get($tenant, $key, '');
             $value = trim((string) ($_POST[$key] ?? ''));
+            if ($key === 'background_media_uuid') {
+                $value = $this->safeBackgroundMediaUuid($tenant, $value);
+            }
             if (str_ends_with($key, '_slug')) {
                 $value = $this->safeSlug($value, str_replace('_slug', '', $key));
             }
@@ -199,6 +212,88 @@ HTML;
         ]);
 
         return new Response('', 303, ['Location' => '/admin/settings?notice=saved']);
+    }
+
+
+    /**
+     * Builds a tenant-scoped picker of published artwork media for public-safe backgrounds.
+     */
+    private function backgroundMediaOptions(TenantContext $tenant, string $selectedUuid): string
+    {
+        $options = '<option value="">None</option>';
+
+        if ($this->pdo === null) {
+            return $options;
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT DISTINCT
+                m.uuid,
+                COALESCE(NULLIF(m.title, ''), NULLIF(a.title, ''), m.original_filename) AS label,
+                a.year_created
+             FROM media_assets m
+             INNER JOIN artworks a
+                ON a.primary_media_id = m.id
+               AND a.tenant_id = m.tenant_id
+               AND a.status = 'published'
+             WHERE m.tenant_id = :tenant_id
+               AND m.is_private = 0
+               AND (m.mime_type LIKE 'image/%' OR m.mime_type IS NULL)
+             ORDER BY label ASC
+             LIMIT 300"
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+
+        foreach ($stmt->fetchAll() as $row) {
+            $uuid = (string) $row['uuid'];
+            $label = (string) $row['label'];
+            if (!empty($row['year_created'])) {
+                $label .= ' · ' . (string) $row['year_created'];
+            }
+
+            $safeUuid = htmlspecialchars($uuid, ENT_QUOTES, 'UTF-8');
+            $safeLabel = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
+            $selected = $uuid === $selectedUuid ? ' selected' : '';
+            $options .= "<option value=\"{$safeUuid}\"{$selected}>{$safeLabel}</option>";
+        }
+
+        return $options;
+    }
+
+    /**
+     * Normalizes background media IDs so arbitrary form values cannot be persisted.
+     */
+    private function safeBackgroundMediaUuid(TenantContext $tenant, string $value): string
+    {
+        $value = strtolower(trim($value));
+
+        if ($value === '') {
+            return '';
+        }
+
+        if (!preg_match('/^[a-f0-9-]{36}$/', $value) || $this->pdo === null) {
+            return '';
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT m.uuid
+             FROM media_assets m
+             INNER JOIN artworks a
+                ON a.primary_media_id = m.id
+               AND a.tenant_id = m.tenant_id
+               AND a.status = 'published'
+             WHERE m.tenant_id = :tenant_id
+               AND m.uuid = :media_uuid
+               AND m.is_private = 0
+               AND (m.mime_type LIKE 'image/%' OR m.mime_type IS NULL)
+             LIMIT 1"
+        );
+        $stmt->execute([
+            'tenant_id' => $tenant->tenantId,
+            'media_uuid' => $value,
+        ]);
+
+        return $stmt->fetch() ? $value : '';
     }
 
     private function safeSlug(string $value, string $default): string
