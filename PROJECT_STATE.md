@@ -1000,3 +1000,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Initial OAuth2-protected administrative API routes live under `/api/admin/*` and cover tenant creation, tenant settings, and tenant-admin-visible content collections.
 
 # End of file.
+
+
+## 2026-05-30 tenant login cookie loop fix
+- Fixed tenant-domain browser login/logout in `app/Http/Controllers/Auth/LoginController.php` so the `artsfolio_session` `Set-Cookie` header is returned with successful login and expired on logout.
+- Added `scripts/test/browser_login_sets_session_cookie.php` to prevent a regression where login succeeds but `/admin/*` redirects back to `/login?notice=admin-login-required` because the browser never received the session cookie.

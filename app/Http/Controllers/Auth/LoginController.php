@@ -60,20 +60,26 @@ final class LoginController
             return Response::html('<h1>Login failed</h1><p>No session token was returned.</p>', 500);
         }
 
-        SessionCookie::issueSetCookie($token, true);
+        $cookie = SessionCookie::issueSetCookie($token, true);
 
         FlashMessages::success('Signed in.');
 
-        return new Response('', 302, ['Location' => '/admin']);
+        return new Response('', 302, [
+            'Location' => '/admin',
+            'Set-Cookie' => $cookie,
+        ]);
     }
 
     public function logout(Request $request): Response
     {
-        SessionCookie::expireSetCookie();
+        $cookie = SessionCookie::expireSetCookie();
 
         FlashMessages::success('Signed out.');
 
-        return new Response('', 302, ['Location' => '/login']);
+        return new Response('', 302, [
+            'Location' => '/login',
+            'Set-Cookie' => $cookie,
+        ]);
     }
 
     private function extractSessionToken(mixed $result): string
