@@ -297,8 +297,4 @@ issue certificates
 touch production infrastructure
 ```
 
-## Caddy on-demand TLS note
-
-Current ArtsFolio production uses Caddy on-demand TLS. DNS verification is the active domain automation path. A successful `custom_domain.verify_dns` job marks the tenant domain `active`; Caddy then authorizes the hostname through `/caddy/ask`. The old Apache `custom_domain.render_vhost` flow is deprecated and should not be exposed as a normal admin action.
-
 <!-- End of file. -->

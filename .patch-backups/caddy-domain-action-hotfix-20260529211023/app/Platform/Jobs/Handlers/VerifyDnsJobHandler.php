@@ -9,11 +9,7 @@ use App\Platform\Jobs\BackgroundJobRepository;
 use App\Platform\Tenancy\TenantDomainRepository;
 
 /**
- * Handles DNS verification jobs for tenant custom domains.
- *
- * With Caddy on-demand TLS there is no Apache vhost artifact to render. Once
- * the expected A record is present, the domain is marked active so the tenant
- * resolver and Caddy ask endpoint can authorize the hostname.
+ * Handles read-only DNS verification jobs for tenant custom domains.
  */
 final class VerifyDnsJobHandler
 {
@@ -35,12 +31,18 @@ final class VerifyDnsJobHandler
         $result = $this->verifier->verifyARecord($hostname);
 
         if ($result['verified'] === true) {
-            $this->domains->setStatus($hostname, 'active');
-            $result['domain_status'] = 'active';
-            $result['tls_mode'] = 'caddy_on_demand';
+            $this->domains->setStatus($hostname, 'dns_verified');
+
+            $this->jobs->enqueue(
+                jobType: 'custom_domain.render_vhost',
+                payload: [
+                    'hostname' => $hostname,
+                    'document_root' => '/var/www/artsfolio/public',
+                ],
+                tenantId: $tenantId,
+            );
         } else {
             $this->domains->setStatus($hostname, 'pending_dns');
-            $result['domain_status'] = 'pending_dns';
         }
 
         return json_encode($result, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR);

@@ -11,8 +11,8 @@ use App\Platform\Tenancy\TenantDomainRepository;
 /**
  * Coordinates custom-domain automation requests.
  *
- * The production deployment uses Caddy on-demand TLS. This service queues DNS
- * verification and intentionally avoids creating Apache vhost render jobs.
+ * This service queues background jobs only. It does not mutate Apache,
+ * reload services, or request TLS certificates directly.
  */
 final class DomainAutomationService
 {
@@ -48,12 +48,13 @@ final class DomainAutomationService
 
     public function queueVhostRender(TenantContext $tenant, string $hostname): int
     {
-        $this->domains->setStatus($hostname, 'active');
+        $this->domains->setStatus($hostname, 'vhost_pending');
 
         return $this->jobs->enqueue(
-            jobType: 'custom_domain.verify_dns',
+            jobType: 'custom_domain.render_vhost',
             payload: [
                 'hostname' => $hostname,
+                'document_root' => '/var/www/artsfolio/public',
             ],
             tenantId: $tenant->tenantId,
         );

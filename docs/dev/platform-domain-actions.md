@@ -1,34 +1,33 @@
-# Platform Custom Domain Actions
+# Platform Domain Action Contract
 
-## Scope
+The canonical platform admin endpoint is:
 
-Platform admins can queue maintenance jobs from the custom domain list.
+```text
+POST /platform/admin/domains/action
+```
 
-## Route
+A compatibility route also accepts:
 
 ```text
 POST /admin/domains/action
 ```
 
-## Actions
+The compatibility route exists because older rendered admin pages posted to `/admin/domains/action`. New forms must post to `/platform/admin/domains/action`.
 
-```text
-verify_dns
-render_vhost
-```
+## Supported actions
 
-## Jobs queued
+### verify_dns
 
-```text
-custom_domain.verify_dns
-custom_domain.render_vhost
-```
+Queues `custom_domain.verify_dns`.
 
-## Manual verification
+The worker checks the hostname A record against `ARTSFOLIO_EXPECTED_IPV4`. On success it sets `tenant_domains.status = 'active'`, which allows both tenant resolution and Caddy on-demand TLS authorization.
 
-```bash
-cd /Users/bxiie/Dropbox/tcdev/artsfolio
-php scripts/test/platform_domain_actions.php
-```
+### render_vhost
+
+Deprecated. Accepted only to avoid hard failures from stale forms. The action does not queue an Apache vhost job.
+
+## Caddy behavior
+
+Caddy uses `/caddy/ask` to approve domains. The ask endpoint approves active tenant domain rows. Apache vhost artifact generation is obsolete unless the deployment moves back to Apache-managed virtual hosts.
 
 <!-- End of file. -->

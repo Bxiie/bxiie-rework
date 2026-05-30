@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Platform\Admin;
 
+
+use App\Http\View\ErrorPage;
 use App\Http\Middleware\RequirePlatformRole;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\View\AdminLayout;
-use App\Http\View\ErrorPage;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Domains\DomainAdminRepository;
 use App\Platform\Domains\DomainAdminService;
@@ -18,13 +19,7 @@ use App\Support\Pagination\Pagination;
 use App\Support\Security\CsrfTokenService;
 
 /**
- * Handles platform-admin custom-domain list and safe domain actions.
- *
- * ArtsFolio now uses Caddy on-demand TLS. DNS verification is still useful,
- * because it confirms the custom hostname points at this deployment before the
- * Caddy ask endpoint authorizes certificate issuance. Apache vhost rendering is
- * intentionally not exposed in the UI because it is obsolete for the Caddy
- * deployment model and can leave confusing stale artifacts behind.
+ * Handles platform-admin custom domain list and actions.
  */
 final class DomainsController
 {
@@ -52,26 +47,25 @@ final class DomainsController
 
         foreach ($this->domains->latest($limit, $offset) as $domain) {
             $domainId = (int) $domain['id'];
-            $status = (string) $domain['status'];
             $actions = <<<HTML
-<form class="admin-inline-form" method="post" action="/platform/admin/domains/action">
+<form class="admin-inline-form" method="post" action="/admin/domains/action">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <input type="hidden" name="domain_id" value="{$domainId}">
     <input type="hidden" name="custom_domain_action" value="verify_dns">
     <button type="submit">Verify DNS</button>
 </form>
+<form class="admin-inline-form" method="post" action="/admin/domains/action">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <input type="hidden" name="domain_id" value="{$domainId}">
+    <input type="hidden" name="custom_domain_action" value="render_vhost">
+    <button type="submit">Render vhost</button>
+</form>
 HTML;
-
-            if ($status === 'active') {
-                $actions .= '<p class="admin-muted">Caddy can serve this domain. No vhost render is required.</p>';
-            } else {
-                $actions .= '<p class="admin-muted">Caddy activation happens after DNS verifies.</p>';
-            }
 
             $rows .= '<tr>'
                 . '<td>' . AdminLayout::escape((string) $domain['id']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $domain['hostname']) . '</td>'
-                . '<td>' . AdminLayout::escape($status) . '</td>'
+                . '<td>' . AdminLayout::escape((string) $domain['status']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $domain['tenant_slug']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $domain['tenant_name']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $domain['created_at']) . '</td>'
@@ -85,8 +79,8 @@ HTML;
         }
 
         $query = ['limit' => $limit];
-        $prevUrl = Pagination::previousPageUrl('/platform/admin/domains', $query, $page);
-        $nextUrl = Pagination::nextPageUrl('/platform/admin/domains', $query, $page);
+        $prevUrl = Pagination::previousPageUrl('/admin/domains', $query, $page);
+        $nextUrl = Pagination::nextPageUrl('/admin/domains', $query, $page);
         $pager = '<p>'
             . ($prevUrl ? '<a class="admin-button" href="' . AdminLayout::escape($prevUrl) . '">Previous</a> ' : '')
             . '<span class="admin-muted">Page ' . $page . '</span> '
@@ -96,10 +90,6 @@ HTML;
         return Response::html(AdminLayout::render(
             title: 'Custom Domains | Platform Admin',
             body: <<<HTML
-<section class="admin-card">
-    <h2>Custom domains</h2>
-    <p>Verify DNS for custom domains. This deployment uses Caddy on-demand TLS, so verified domains are activated for Caddy instead of rendering Apache vhost files.</p>
-</section>
 <table class="admin-table">
     <thead>
         <tr>
@@ -119,7 +109,15 @@ HTML;
 </table>
 {$pager}
 HTML,
-            active: 'domains',
+            nav: [
+                '/admin' => 'Dashboard',
+                '/admin/tenants' => 'Tenants',
+                '/admin/domains' => 'Domains',
+                '/admin/email-outbox' => 'Email Outbox',
+                '/admin/audit-log' => 'Audit Log',
+                '/admin/platform-settings' => 'Settings',
+                '/admin/routes' => 'Routes',
+            ],
         ));
     }
 
@@ -147,11 +145,13 @@ HTML,
         try {
             if ($action === 'verify_dns') {
                 $jobId = $this->service->queueDnsVerification($domainId);
-                FlashMessages::success("Queued DNS verification job {$jobId}. Caddy will serve the domain after verification marks it active.");
+                FlashMessages::success("Queued DNS verification job {$jobId}.");
                 $this->auditAction($request, $currentUser, 'platform.custom_domain.verify_dns_queued', (string) $domainId, ['job_id' => $jobId]);
             } elseif ($action === 'render_vhost') {
-                FlashMessages::success('Render vhost is no longer required because ArtsFolio uses Caddy on-demand TLS. Verify DNS instead.');
-                $this->auditAction($request, $currentUser, 'platform.custom_domain.render_vhost_skipped_caddy', (string) $domainId);
+                $documentRoot = getenv('ARTSFOLIO_PUBLIC_ROOT') ?: '/var/www/artsfolio/public';
+                $jobId = $this->service->queueVhostRender($domainId, $documentRoot);
+                FlashMessages::success("Queued vhost render job {$jobId}.");
+                $this->auditAction($request, $currentUser, 'platform.custom_domain.render_vhost_queued', (string) $domainId, ['job_id' => $jobId]);
             } else {
                 return Response::html('<h1>Invalid domain action</h1>', 422);
             }

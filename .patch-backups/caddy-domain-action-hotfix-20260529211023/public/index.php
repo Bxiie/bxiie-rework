@@ -339,7 +339,6 @@ if ($tenant) {
     $router->get('/admin/stats', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/stats']));
     $router->get('/admin/contact-messages', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/contact-messages']));
     $router->get('/admin/domains', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/domains']));
-    $router->post('/admin/domains/action', fn (Request $request): Response => (new PlatformAdminDomainsController(new RequirePlatformRole(new MembershipRepository($pdo)), new DomainAdminRepository($pdo), new DomainAdminService($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->action($request, $currentUser));
     $router->get('/admin/jobs', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/jobs']));
     $router->get('/admin/workers', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/workers']));
     $router->get('/admin/email-outbox', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/email-outbox']));
