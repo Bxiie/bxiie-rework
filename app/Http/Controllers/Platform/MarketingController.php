@@ -37,11 +37,6 @@ final class MarketingController
             <a class="button primary" href="/signup">Start your portfolio</a>
             <a class="button secondary" href="/directory">Explore artists</a>
         </div>
-        <div class="sso-row" aria-label="Single sign-on options">
-            <a href="/auth/google">Continue with Google</a>
-            <a href="/auth/facebook">Continue with Facebook</a>
-            <a href="/login">Use email instead</a>
-        </div>
     </div>
     <div class="hero-mosaic">
         {$imageMosaic}
@@ -348,6 +343,7 @@ HTML;
         <a{$activeClass('help')} href="/help">Help</a>
         <a{$activeClass('developer')} href="/developer">Developers</a>
         <a{$activeClass('contact')} href="/contact">Contact</a>
+        {$platformAdminLink}
         <a class="login-link" href="/login">Sign in</a>
     </nav>
 </header>

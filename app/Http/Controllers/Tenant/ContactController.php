@@ -8,6 +8,9 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
 use App\Platform\Security\RateLimiter;
+use App\Services\RecaptchaVerifier;
+use PDO;
+use Throwable;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Contact\ContactMessageService;
 
@@ -20,6 +23,7 @@ final class ContactController
         private readonly ContactMessageService $messages,
         private readonly CsrfTokenService $csrf,
         private readonly ?RateLimiter $rateLimiter = null,
+        private readonly ?PDO $pdo = null,
     ) {
     }
 
@@ -27,6 +31,11 @@ final class ContactController
     {
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
             return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+
+        if (!RecaptchaVerifier::verify($this->recaptchaSecret($tenant), $_POST['g-recaptcha-response'] ?? null, $request->server('REMOTE_ADDR'))) {
+            return Response::html('<h1>reCAPTCHA verification failed</h1><p>Please try again.</p>', 422);
         }
 
         if ($this->rateLimiter && !$this->rateLimiter->allow($this->rateKey($request, $tenant), 5, 300)) {
@@ -72,6 +81,31 @@ final class ContactController
 </html>
 HTML);
     }
+    /**
+     * Tenant-specific reCAPTCHA secret wins; platform secret is fallback.
+     */
+    private function recaptchaSecret(TenantContext $tenant): string
+    {
+        if ($this->pdo === null) {
+            return '';
+        }
+
+        try {
+            $stmt = $this->pdo->prepare("SELECT setting_value FROM tenant_settings WHERE tenant_id = :tenant_id AND setting_key = 'recaptcha_secret_key' LIMIT 1");
+            $stmt->execute(['tenant_id' => $tenant->tenantId]);
+            $tenantSecret = trim((string) ($stmt->fetchColumn() ?: ''));
+            if ($tenantSecret !== '') {
+                return $tenantSecret;
+            }
+
+            $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'recaptcha_secret_key' LIMIT 1");
+            $stmt->execute();
+            return trim((string) ($stmt->fetchColumn() ?: ''));
+        } catch (Throwable) {
+            return '';
+        }
+    }
+
     private function rateKey(Request $request, TenantContext $tenant): string
     {
         $ip = $request->server('REMOTE_ADDR', 'unknown');

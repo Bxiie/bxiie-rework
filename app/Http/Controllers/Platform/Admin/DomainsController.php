@@ -62,11 +62,6 @@ final class DomainsController
 </form>
 HTML;
 
-            if ($status === 'active') {
-                $actions .= '<p class="admin-muted">Caddy can serve this domain. No vhost render is required.</p>';
-            } else {
-                $actions .= '<p class="admin-muted">Caddy activation happens after DNS verifies.</p>';
-            }
 
             $rows .= '<tr>'
                 . '<td>' . AdminLayout::escape((string) $domain['id']) . '</td>'
@@ -87,6 +82,7 @@ HTML;
         $query = ['limit' => $limit];
         $prevUrl = Pagination::previousPageUrl('/platform/admin/domains', $query, $page);
         $nextUrl = Pagination::nextPageUrl('/platform/admin/domains', $query, $page);
+        $notice = ((string) ($_GET['notice'] ?? '')) === 'domain-action-queued' ? '<p class="admin-notice admin-notice-success">Domain action queued. Check Jobs for execution details.</p>' : '';
         $pager = '<p>'
             . ($prevUrl ? '<a class="admin-button" href="' . AdminLayout::escape($prevUrl) . '">Previous</a> ' : '')
             . '<span class="admin-muted">Page ' . $page . '</span> '
@@ -98,7 +94,8 @@ HTML;
             body: <<<HTML
 <section class="admin-card">
     <h2>Custom domains</h2>
-    <p>Verify DNS for custom domains. This deployment uses Caddy on-demand TLS, so verified domains are activated for Caddy instead of rendering Apache vhost files.</p>
+    {$notice}
+    <p>Verify DNS for custom domains. Verification queues a background job and returns a visible confirmation.</p>
 </section>
 <table class="admin-table">
     <thead>
@@ -159,7 +156,7 @@ HTML,
             FlashMessages::error('Domain action failed: ' . $e->getMessage());
         }
 
-        return new Response('', 302, ['Location' => '/platform/admin/domains']);
+        return new Response('', 303, ['Location' => '/platform/admin/domains?notice=domain-action-queued']);
     }
 
     private function auditAction(Request $request, ?array $currentUser, string $action, string $entityId, array $details = []): void

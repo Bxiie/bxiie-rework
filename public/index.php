@@ -159,7 +159,6 @@ if ($tenant) {
             new ArtworkReadRepository($pdo),
             $pdo,
             $csrf,
-            new RateLimiter($pdo),
         );
 
         $contactController = new ContactController(
@@ -169,6 +168,7 @@ if ($tenant) {
             ),
             $csrf,
             new RateLimiter($pdo),
+            $pdo,
         );
 
         $signupController = new SignupController(
@@ -178,6 +178,7 @@ if ($tenant) {
             ),
             $csrf,
             new RateLimiter($pdo),
+            $pdo,
         );
 
         $router = new Router();
@@ -216,6 +217,7 @@ if ($tenant) {
         $router->get('/help', fn (Request $request): Response => (new HelpController())->index($request, $currentUser));
         $router->get('/help/{article}', fn (Request $request, array $params): Response => (new HelpController())->topic($request, $params, $currentUser));
         $router->get('/developer', fn (Request $request): Response => (new HelpController())->developer($request, $currentUser));
+    $router->get('/help/developer', fn (Request $request): Response => (new HelpController())->developer($request, $currentUser));
 
         $router->post('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->logout($request));
         $router->get('/admin/media', fn (Request $request): Response => (new TenantMediaController($pdo, new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->admin($request, $tenant, $currentUser));
@@ -358,6 +360,7 @@ if ($tenant) {
     $router->get('/help', fn (Request $request): Response => (new HelpController())->index($request, $currentUser));
     $router->get('/help/{article}', fn (Request $request, array $params): Response => (new HelpController())->topic($request, $params, $currentUser));
     $router->get('/developer', fn (Request $request): Response => (new HelpController())->developer($request, $currentUser));
+    $router->get('/help/developer', fn (Request $request): Response => (new HelpController())->developer($request, $currentUser));
     $router->get('/privacy', fn (Request $request): Response => $marketingController->privacy($request));
 
     $router->get('/platform/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));

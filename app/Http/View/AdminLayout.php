@@ -50,6 +50,8 @@ final class AdminLayout
         $year = date('Y');
         $csrf = self::escape(self::csrfToken());
         $identity = self::platformIdentity();
+        $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
+        $platformCopyright = \App\Http\View\PlatformChrome::copyrightLine();
 
         return <<<HTML
 <!doctype html>
@@ -62,7 +64,9 @@ final class AdminLayout
     <link rel="stylesheet" href="/assets/platform.css">
     <link rel="stylesheet" href="/assets/platform-custom.css">
     <link rel="stylesheet" href="/assets/tenant-admin.css">
+    <script defer src="/assets/admin-color-fields.js"></script>
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
+    <script defer src="/assets/admin-color-fields.js"></script>
 </head>
 <body class="platform-admin-page">
 <header class="platform-admin-topbar" aria-label="Platform admin header">
@@ -74,6 +78,7 @@ final class AdminLayout
         <a href="/directory">Directory</a>
         <a href="/help">Help</a>
         <a href="/help/developer">Developer Reference</a>
+        {$platformAdminLink}
         <form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{$csrf}"><button type="submit">Log out</button></form>
     </nav>
 </header>
@@ -87,7 +92,7 @@ final class AdminLayout
     </main>
 </div>
 <footer class="site-footer platform-admin-footer">
-    <span>© {$year} artsfol.io platform operations</span>
+    <span>{$platformCopyright}</span>
     <nav><a href="/help">Help</a><a href="/help/developer">Developer reference</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav>
 </footer>
 </body>

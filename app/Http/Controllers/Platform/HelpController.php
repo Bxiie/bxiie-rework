@@ -131,6 +131,7 @@ HTML;
     {
         $safeTitle = self::escape($title);
         $nav = $this->nav($active, $currentUser !== null);
+        $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
         $auth = $currentUser
             ? '<form method="post" action="/logout" class="inline-form"><button type="submit">Log out</button></form>'
             : '<a href="/login">Sign in</a>';
@@ -149,7 +150,7 @@ HTML;
 <body class="tenant-admin-page platform-help-page">
 <header class="platform-header platform-help-header">
     <a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>
-    <nav><a href="/">Home</a><a href="/pricing">Pricing</a><a href="/directory">Artists</a><a href="/admin">Admin</a>{$auth}</nav>
+    <nav><a href="/">Home</a><a href="/pricing">Pricing</a><a href="/directory">Artists</a>{$platformAdminLink}{$auth}</nav>
 </header>
 <div class="tenant-admin-shell">
     <aside class="tenant-admin-sidebar" aria-label="Help navigation">
@@ -160,6 +161,7 @@ HTML;
         <section class="tenant-admin-panel help-article"><h1>{$safeTitle}</h1>{$body}</section>
     </main>
 </div>
+<footer class="platform-footer"><span>{\App\Http\View\PlatformChrome::copyrightLine()}</span></footer>
 </body>
 </html>
 HTML;

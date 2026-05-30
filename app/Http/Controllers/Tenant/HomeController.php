@@ -85,9 +85,10 @@ HTML;
         $this->track($request, $tenant, 'portfolio_view');
         $sectionSlug = trim((string) ($_GET['section'] ?? ''));
         $sections = $this->artworks->activeSections($tenant);
+        $displayOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
         $items = $sectionSlug !== ''
-            ? $this->artworks->publishedForSection($tenant, $sectionSlug, 240)
-            : $this->artworks->latestPublished($tenant, 240);
+            ? $this->artworks->publishedForSection($tenant, $sectionSlug, 240, $displayOrder)
+            : $this->artworks->publishedOrdered($tenant, 240, $displayOrder);
 
         $body = "<h1>Portfolio</h1>\n";
         $body .= "<nav style=\"display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 2rem;\">\n";
@@ -197,12 +198,14 @@ HTML;
     {
         $this->track($request, $tenant, 'contact_view');
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
+        $recaptcha = $this->recaptchaWidget($tenant);
 
         return Response::html($this->layout(
             tenant: $tenant,
             title: "{$this->escape($tenant->name)} | Contact",
             body: <<<HTML
 <h1>Contact</h1>
+<p><a href="mailto:info@artsfol.io">info@artsfol.io</a></p>
 <article class="prose">{$this->settings->get($tenant, 'contact_details', '')}</article>
 <form method="post" action="/contact">
     <input type="hidden" name="csrf_token" value="{$csrf}">
@@ -226,10 +229,51 @@ HTML;
             <textarea name="message" rows="8" required></textarea>
         </label>
     </p>
+    {$recaptcha}
     <button type="submit">Send message</button>
 </form>
 HTML
         ));
+    }
+
+    /**
+     * Renders the public reCAPTCHA widget when a tenant or platform key is configured.
+     */
+    private function recaptchaWidget(TenantContext $tenant): string
+    {
+        $siteKey = $this->recaptchaSiteKey($tenant);
+        if ($siteKey === '') {
+            return '';
+        }
+
+        return '<div class="g-recaptcha" data-sitekey="' . $this->escape($siteKey) . '"></div>';
+    }
+
+    /**
+     * Loads Google reCAPTCHA only when needed.
+     */
+    private function recaptchaScript(TenantContext $tenant): string
+    {
+        return $this->recaptchaSiteKey($tenant) !== '' ? '<script src="https://www.google.com/recaptcha/api.js" async defer></script>' : '';
+    }
+
+    /**
+     * Tenant-specific key wins; platform setting is the shared fallback.
+     */
+    private function recaptchaSiteKey(TenantContext $tenant): string
+    {
+        $tenantKey = trim((string) $this->settings->get($tenant, 'recaptcha_site_key', ''));
+        if ($tenantKey !== '') {
+            return $tenantKey;
+        }
+
+        try {
+            $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'recaptcha_site_key' LIMIT 1");
+            $stmt->execute();
+            return trim((string) ($stmt->fetchColumn() ?: ''));
+        } catch (Throwable) {
+            return '';
+        }
     }
 
     private function track(Request $request, TenantContext $tenant, string $eventType, ?string $entityType = null, ?int $entityId = null): void
@@ -322,6 +366,7 @@ HTML
         $aboutSlug = $this->escape($this->settings->get($tenant, 'about_slug', 'about'));
         $contactSlug = $this->escape($this->settings->get($tenant, 'contact_slug', 'contact'));
         $backgroundStyle = $this->backgroundCssVariables($tenant);
+        $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
 
         return <<<HTML
 <!doctype html>
@@ -333,6 +378,7 @@ HTML
     <meta name="description" content="Artist portfolio">
     <link rel="stylesheet" href="/assets/site.css">
     <link rel="stylesheet" href="/tenant.css">
+    {$this->recaptchaScript($tenant)}
 </head>
 <body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};{$backgroundStyle}">
 <header class="site-header">
@@ -342,6 +388,7 @@ HTML
         <a href="/{$portfolioSlug}">{$portfolioTab}</a>
         <a href="/{$aboutSlug}">{$aboutTab}</a>
         <a href="/{$contactSlug}">{$contactTab}</a>
+        {$platformAdminLink}
     </nav>
 </header>
 <main class="site-main">

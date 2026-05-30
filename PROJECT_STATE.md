@@ -921,3 +921,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Changed DNS verification success behavior to mark tenant domains `active`, allowing tenant resolution and `/caddy/ask` authorization.
 - Documented that `custom_domain.render_vhost` is deprecated under the Caddy deployment model.
 
+## 2026-05-30 platform UI/admin polish
+- Platform footer copyright is now stored in `platform_settings.platform_footer_copyright_html` and reused by platform public/admin chrome.
+- Platform settings now include directory thumbnail size, Google/Facebook OAuth config fields, and shared reCAPTCHA keys.
+- Tenant settings now include artwork display ordering and optional tenant reCAPTCHA override keys.
+- Public contact/signup submissions verify reCAPTCHA when a tenant or platform secret is configured.
+- Platform stats now include day/hour bar graphs and location drilldown with unique IP hashes and access counts.
+- Admin color fields are progressively enhanced with color pickers and live swatches via `/assets/admin-color-fields.js`.
+
+# End of file.

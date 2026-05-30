@@ -50,6 +50,8 @@ HTML;
     private function layout(string $title, string $body): string
     {
         $safeTitle = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
+        $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
+        $platformCopyright = \App\Http\View\PlatformChrome::copyrightLine();
 
         return <<<HTML
 <!doctype html>
@@ -62,9 +64,9 @@ HTML;
     <link rel="stylesheet" href="/assets/platform-custom.css">
 </head>
 <body>
-<header class="platform-header"><a class="platform-brand logo-brand" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a><nav><a href="/pricing">Pricing</a><a href="/directory">Artists</a><a href="/help">Help</a><a href="/login">Sign in</a></nav></header>
+<header class="platform-header"><a class="platform-brand logo-brand" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a><nav><a href="/pricing">Pricing</a><a href="/directory">Artists</a><a href="/help">Help</a>{$platformAdminLink}<a href="/login">Sign in</a></nav></header>
 <main>{$body}</main>
-<footer class="platform-footer"><span>© artsfol.io</span><nav><a href="/help">Help</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer>
+<footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer>
 </body>
 </html>
 HTML;

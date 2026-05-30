@@ -56,7 +56,9 @@ final class TenantAdminLayout
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/assets/site.css">
     <link rel="stylesheet" href="/assets/tenant-admin.css">
+    <script defer src="/assets/admin-color-fields.js"></script>
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
+    <script defer src="/assets/admin-color-fields.js"></script>
 </head>
 <body class="tenant-admin-page" style="--tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText};">
 <header class="site-header tenant-admin-public-header">

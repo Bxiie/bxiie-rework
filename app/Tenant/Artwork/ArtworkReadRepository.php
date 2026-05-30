@@ -12,10 +12,7 @@ use PDO;
  */
 final class ArtworkReadRepository
 {
-    public function __construct(
-        private readonly PDO $pdo,
-    ) {
-    }
+    public function __construct(private readonly PDO $pdo) {}
 
     public function findPublishedBySlug(TenantContext $tenant, string $slug): ?array
     {
@@ -29,15 +26,37 @@ final class ArtworkReadRepository
                AND a.status = 'published'
              LIMIT 1"
         );
-
-        $stmt->execute([
-            'tenant_id' => $tenant->tenantId,
-            'slug' => $slug,
-        ]);
-
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'slug' => $slug]);
         $row = $stmt->fetch();
 
         return $row ?: null;
+    }
+
+    public function latestPublished(TenantContext $tenant, int $limit = 12): array
+    {
+        return $this->publishedOrdered($tenant, $limit, 'manual');
+    }
+
+    /**
+     * Returns published artwork using the tenant-selected display ordering.
+     */
+    public function publishedOrdered(TenantContext $tenant, int $limit = 240, string $order = 'date_desc'): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT a.id, a.uuid, a.title, a.slug, a.medium, a.dimensions, a.year_created, a.status,
+                    m.uuid AS media_uuid, m.alt_text AS media_alt_text
+             FROM artworks a
+             LEFT JOIN media_assets m ON m.id = a.primary_media_id
+             WHERE a.tenant_id = :tenant_id
+               AND a.status = 'published'
+             ORDER BY " . $this->orderSql($order) . "
+             LIMIT :limit_count"
+        );
+        $stmt->bindValue('tenant_id', $tenant->tenantId, PDO::PARAM_INT);
+        $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
     }
 
     public function activeSections(TenantContext $tenant): array
@@ -50,14 +69,14 @@ final class ArtworkReadRepository
                AND show_as_tab = 1
              ORDER BY sort_order ASC, name ASC"
         );
-
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
 
         return $stmt->fetchAll();
     }
 
-    public function publishedForSection(TenantContext $tenant, string $sectionSlug, int $limit = 240): array
+    public function publishedForSection(TenantContext $tenant, string $sectionSlug, int $limit = 240, string $order = 'manual'): array
     {
+        $manualDefault = 'asa.sort_order ASC, a.sort_order ASC, a.id DESC';
         $stmt = $this->pdo->prepare(
             "SELECT a.id, a.uuid, a.title, a.slug, a.medium, a.dimensions, a.year_created, a.status,
                     m.uuid AS media_uuid, m.alt_text AS media_alt_text
@@ -70,10 +89,9 @@ final class ArtworkReadRepository
                AND ps.tenant_id = a.tenant_id
                AND ps.slug = :section_slug
                AND ps.status = 'active'
-             ORDER BY asa.sort_order ASC, a.sort_order ASC, a.id DESC
+             ORDER BY " . $this->orderSql($order, $manualDefault) . "
              LIMIT :limit_count"
         );
-
         $stmt->bindValue('tenant_id', $tenant->tenantId, PDO::PARAM_INT);
         $stmt->bindValue('section_slug', $sectionSlug);
         $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
@@ -82,24 +100,19 @@ final class ArtworkReadRepository
         return $stmt->fetchAll();
     }
 
-    public function latestPublished(TenantContext $tenant, int $limit = 12): array
+    /**
+     * Maps tenant artwork display preferences to safe SQL fragments.
+     */
+    private function orderSql(string $order, string $manualDefault = 'a.sort_order ASC, a.id DESC'): string
     {
-        $stmt = $this->pdo->prepare(
-            "SELECT a.id, a.uuid, a.title, a.slug, a.medium, a.dimensions, a.year_created, a.status,
-                    m.uuid AS media_uuid, m.alt_text AS media_alt_text
-             FROM artworks a
-             LEFT JOIN media_assets m ON m.id = a.primary_media_id
-             WHERE a.tenant_id = :tenant_id
-               AND a.status = 'published'
-             ORDER BY a.sort_order ASC, a.id DESC
-             LIMIT :limit_count"
-        );
-
-        $stmt->bindValue('tenant_id', $tenant->tenantId, PDO::PARAM_INT);
-        $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
-        $stmt->execute();
-
-        return $stmt->fetchAll();
+        return match ($order) {
+            'name' => 'a.title ASC, a.id ASC',
+            'date' => "CAST(NULLIF(a.year_created, '') AS UNSIGNED) ASC, a.title ASC, a.id ASC",
+            'date_desc' => "CAST(NULLIF(a.year_created, '') AS UNSIGNED) DESC, a.title ASC, a.id ASC",
+            'medium' => 'a.medium ASC, a.title ASC, a.id ASC',
+            'manual' => $manualDefault,
+            default => 'a.created_at DESC, a.id DESC',
+        };
     }
 }
 

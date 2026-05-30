@@ -68,7 +68,13 @@ final class SettingsController
         $backgroundOpacity = $this->setting($tenant, 'background_opacity', '0.12');
         $backgroundMediaUuid = (string) $this->settings->get($tenant, 'background_media_uuid', '');
         $backgroundOptions = $this->backgroundMediaOptions($tenant, $backgroundMediaUuid);
-        $tenantCss = htmlspecialchars($this->settings->get($tenant, 'tenant_css', ''), ENT_QUOTES, 'UTF-8');
+        $tenantCss = htmlspecialchars($this->settings->get($tenant, 'tenant_css',
+            'artwork_display_order',
+            'recaptcha_site_key',
+            'recaptcha_secret_key', ''), ENT_QUOTES, 'UTF-8');
+        $artworkDisplayOrder = $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
+        $recaptchaSiteKey = $this->setting($tenant, 'recaptcha_site_key', '');
+        $recaptchaSecretKey = $this->setting($tenant, 'recaptcha_secret_key', '');
 
         $selected = fn (string $actual, string $expected): string => $actual === $expected ? ' selected' : '';
 
@@ -132,6 +138,28 @@ final class SettingsController
         </fieldset>
 
         <fieldset>
+            <legend>Artwork display</legend>
+            <label>Default artwork order
+                <select name="artwork_display_order">
+                    <option value="name"{$selected($artworkDisplayOrder, 'name')}>Name</option>
+                    <option value="date"{$selected($artworkDisplayOrder, 'date')}>Date ascending</option>
+                    <option value="date_desc"{$selected($artworkDisplayOrder, 'date_desc')}>Date descending</option>
+                    <option value="medium"{$selected($artworkDisplayOrder, 'medium')}>Medium</option>
+                    <option value="manual"{$selected($artworkDisplayOrder, 'manual')}>Manual ordering</option>
+                </select>
+            </label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Spam protection</legend>
+            <div class="admin-grid-2">
+                <label>reCAPTCHA site key<input name="recaptcha_site_key" value="{$recaptchaSiteKey}"></label>
+                <label>reCAPTCHA secret key<input type="password" name="recaptcha_secret_key" value="{$recaptchaSecretKey}"></label>
+            </div>
+            <p class="admin-help">Blank values inherit platform reCAPTCHA settings.</p>
+        </fieldset>
+
+        <fieldset>
             <legend>Exhibitions</legend>
             <label>Exhibitions heading<input name="exhibitions_heading" value="{$exhibitionsHeading}"></label>
             <label>Exhibitions display mode
@@ -191,6 +219,9 @@ HTML;
             'exhibitions_heading',
             'exhibitions_display_mode',
             'tenant_css',
+            'artwork_display_order',
+            'recaptcha_site_key',
+            'recaptcha_secret_key',
         ];
 
         $before = [];
