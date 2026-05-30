@@ -237,7 +237,7 @@ HTML;
         }
 
         if ($sectionOptions === '') {
-            $sectionOptions = '<p>No portfolio sections exist yet. Create them from Portfolio Sections.</p>';
+            $sectionOptions = '<p>No portfolio sections exist yet. Create them from <a href="/admin/portfolio-sections">Portfolio Sections</a>.</p>';
         }
 
         $selected = fn (string $a, string $b): string => $a === $b ? ' selected' : '';

@@ -24,6 +24,7 @@ final class TenantAdminNav
             'messages' => ['/admin/contact-messages', 'Messages'],
             'email' => ['/admin/email-signups', 'Email Signups'],
             'billing' => ['/admin/billing', 'Billing'],
+            'users' => ['/admin/users', 'Users'],
             'directory' => ['/admin/directory', 'Directory'],
             'stats' => ['/admin/stats', 'Stats'],
             'audit' => ['/admin/audit-log', 'Audit Log'],

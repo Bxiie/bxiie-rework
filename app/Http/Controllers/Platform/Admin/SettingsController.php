@@ -37,6 +37,16 @@ final class SettingsController
         $csrf = $this->escape($this->csrf->getOrCreate());
         $platformName = $this->escape($this->settings->get('platform_name', 'ArtsFolio'));
         $supportEmail = $this->escape($this->settings->get('support_email', ''));
+        $smtpHost = $this->escape($this->settings->get('smtp_host', ''));
+        $smtpPort = $this->escape($this->settings->get('smtp_port', '587'));
+        $smtpUsername = $this->escape($this->settings->get('smtp_username', ''));
+        $smtpPassword = $this->escape($this->settings->get('smtp_password', ''));
+        $smtpEncryption = $this->escape($this->settings->get('smtp_encryption', 'tls'));
+        $mailFromEmail = $this->escape($this->settings->get('mail_from_email', ''));
+        $mailFromName = $this->escape($this->settings->get('mail_from_name', 'ArtsFolio'));
+        $stripePublishableKey = $this->escape($this->settings->get('stripe_publishable_key', ''));
+        $stripeSecretKey = $this->escape($this->settings->get('stripe_secret_key', ''));
+        $stripeWebhookSecret = $this->escape($this->settings->get('stripe_webhook_secret', ''));
         $expectedIpv4 = $this->escape($this->settings->get('expected_ipv4', getenv('ARTSFOLIO_EXPECTED_IPV4') ?: ''));
         $persistentLoginDays = $this->escape($this->settings->get('persistent_login_days', '30'));
         $platformCustomCss = $this->escape($this->settings->get('platform_custom_css', ''));
@@ -54,6 +64,8 @@ final class SettingsController
         <fieldset><legend>Directory</legend><label><span><input type="checkbox" name="platform_directory_enabled" value="1"{$directoryEnabled}> Enable public artist directory</span></label><p class="admin-muted">Tenant opt-in still applies. This switch controls whether the platform directory is available at all.</p></fieldset>
         <fieldset><legend>Domains</legend><label>Expected IPv4 for custom domain DNS checks<input type="text" name="expected_ipv4" value="{$expectedIpv4}"></label></fieldset>
     </div>
+    <fieldset><legend>Email delivery</legend><div class="admin-form-grid"><label>SMTP host<input type="text" name="smtp_host" value="{$smtpHost}"></label><label>SMTP port<input type="number" name="smtp_port" value="{$smtpPort}" min="1" max="65535"></label><label>SMTP username<input type="text" name="smtp_username" value="{$smtpUsername}"></label><label>SMTP password<input type="password" name="smtp_password" value="{$smtpPassword}"></label><label>SMTP encryption<input type="text" name="smtp_encryption" value="{$smtpEncryption}" placeholder="tls, ssl, or none"></label><label>From email<input type="email" name="mail_from_email" value="{$mailFromEmail}"></label><label>From name<input type="text" name="mail_from_name" value="{$mailFromName}"></label></div><p class="admin-muted">These values are stored in <code>platform_settings</code>. Keep production backups and database access restricted because SMTP and ecommerce secrets are sensitive.</p></fieldset>
+    <fieldset><legend>Ecommerce</legend><div class="admin-form-grid"><label>Stripe publishable key<input type="text" name="stripe_publishable_key" value="{$stripePublishableKey}"></label><label>Stripe secret key<input type="password" name="stripe_secret_key" value="{$stripeSecretKey}"></label><label>Stripe webhook secret<input type="password" name="stripe_webhook_secret" value="{$stripeWebhookSecret}"></label></div></fieldset>
     <fieldset class="admin-panel-wide"><legend>Platform custom CSS</legend><p class="admin-muted">Applied to platform marketing, pricing, help, and platform admin pages through <code>/assets/platform-custom.css</code>.</p><textarea name="platform_custom_css" rows="18" spellcheck="false">{$platformCustomCss}</textarea></fieldset>
     <button type="submit">Save platform settings</button>
 </form>
@@ -76,6 +88,16 @@ HTML,
         $expectedIpv4 = trim((string) ($_POST['expected_ipv4'] ?? ''));
         $persistentLoginDays = (int) ($_POST['persistent_login_days'] ?? 30);
         $platformCustomCss = (string) ($_POST['platform_custom_css'] ?? '');
+        $smtpHost = trim((string) ($_POST['smtp_host'] ?? ''));
+        $smtpPort = (int) ($_POST['smtp_port'] ?? 587);
+        $smtpUsername = trim((string) ($_POST['smtp_username'] ?? ''));
+        $smtpPassword = (string) ($_POST['smtp_password'] ?? '');
+        $smtpEncryption = trim((string) ($_POST['smtp_encryption'] ?? 'tls'));
+        $mailFromEmail = trim((string) ($_POST['mail_from_email'] ?? ''));
+        $mailFromName = trim((string) ($_POST['mail_from_name'] ?? 'ArtsFolio'));
+        $stripePublishableKey = trim((string) ($_POST['stripe_publishable_key'] ?? ''));
+        $stripeSecretKey = (string) ($_POST['stripe_secret_key'] ?? '');
+        $stripeWebhookSecret = (string) ($_POST['stripe_webhook_secret'] ?? '');
         $directoryEnabled = isset($_POST['platform_directory_enabled']) ? '1' : '0';
 
         if ($platformName === '') {
@@ -86,6 +108,12 @@ HTML,
         }
         if ($expectedIpv4 !== '' && !filter_var($expectedIpv4, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             return Response::html('<h1>Invalid expected IPv4</h1>', 422);
+        }
+        if ($mailFromEmail !== '' && !filter_var($mailFromEmail, FILTER_VALIDATE_EMAIL)) {
+            return Response::html('<h1>Invalid from email</h1>', 422);
+        }
+        if ($smtpPort < 1 || $smtpPort > 65535) {
+            return Response::html('<h1>Invalid SMTP port</h1>', 422);
         }
         if ($persistentLoginDays < 1 || $persistentLoginDays > 365) {
             return Response::html('<h1>Persistent login days must be between 1 and 365</h1>', 422);
@@ -98,6 +126,9 @@ HTML,
             'persistent_login_days' => $this->settings->get('persistent_login_days', '30'),
             'platform_directory_enabled' => $this->settings->get('platform_directory_enabled', '1'),
             'platform_custom_css_sha1' => sha1((string) $this->settings->get('platform_custom_css', '')),
+            'smtp_host' => $this->settings->get('smtp_host', ''),
+            'mail_from_email' => $this->settings->get('mail_from_email', ''),
+            'stripe_publishable_key' => $this->settings->get('stripe_publishable_key', ''),
         ];
 
         $this->settings->set('platform_name', $platformName);
@@ -106,6 +137,16 @@ HTML,
         $this->settings->set('persistent_login_days', (string) $persistentLoginDays);
         $this->settings->set('platform_directory_enabled', $directoryEnabled);
         $this->settings->set('platform_custom_css', $platformCustomCss);
+        $this->settings->set('smtp_host', $smtpHost);
+        $this->settings->set('smtp_port', (string) $smtpPort);
+        $this->settings->set('smtp_username', $smtpUsername);
+        $this->settings->set('smtp_password', $smtpPassword);
+        $this->settings->set('smtp_encryption', $smtpEncryption);
+        $this->settings->set('mail_from_email', $mailFromEmail);
+        $this->settings->set('mail_from_name', $mailFromName);
+        $this->settings->set('stripe_publishable_key', $stripePublishableKey);
+        $this->settings->set('stripe_secret_key', $stripeSecretKey);
+        $this->settings->set('stripe_webhook_secret', $stripeWebhookSecret);
         FlashMessages::success('Platform settings saved.');
 
         $this->auditAction($request, $currentUser, [
@@ -117,6 +158,9 @@ HTML,
                 'persistent_login_days' => $persistentLoginDays,
                 'platform_directory_enabled' => $directoryEnabled,
                 'platform_custom_css_sha1' => sha1($platformCustomCss),
+                'smtp_host' => $smtpHost,
+                'mail_from_email' => $mailFromEmail,
+                'stripe_publishable_key' => $stripePublishableKey,
             ],
         ]);
 

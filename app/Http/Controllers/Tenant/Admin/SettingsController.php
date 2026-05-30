@@ -47,6 +47,7 @@ final class SettingsController
         $siteTitle = $this->setting($tenant, 'site_title', $tenant->name);
         $artistName = $this->setting($tenant, 'artist_name', $tenant->name);
         $browserTitle = $this->setting($tenant, 'browser_title', $siteTitle);
+        $siteAdminEmail = $this->setting($tenant, 'site_admin_email', '');
         $copyrightName = $this->setting($tenant, 'copyright_name', $artistName);
         $homeIntro = $this->setting($tenant, 'home_intro', 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.');
         $homeTab = $this->setting($tenant, 'home_tab', 'Home');
@@ -85,6 +86,7 @@ final class SettingsController
             <label>Artist name<input name="artist_name" value="{$artistName}"></label>
             <label>Browser tab title<input name="browser_title" value="{$browserTitle}"></label>
             <label>Copyright name<input name="copyright_name" value="{$copyrightName}"></label>
+            <label>Site admin notification email<input type="email" name="site_admin_email" value="{$siteAdminEmail}"></label>
         </fieldset>
 
         <fieldset>
@@ -169,6 +171,7 @@ HTML;
             'artist_name',
             'browser_title',
             'copyright_name',
+            'site_admin_email',
             'home_intro',
             'home_tab',
             'portfolio_tab',

@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\View;
 
+use App\Platform\Membership\MembershipRepository;
 use App\Platform\Tenancy\TenantResolver;
 use App\Support\Database;
+use App\Support\Security\CsrfTokenService;
 use App\Tenant\Settings\TenantSettingsRepository;
 use Throwable;
 
 /**
  * Platform admin shell.
  *
- * This class is intentionally platform-specific. For safety during the
- * admin-shell refactor, render() detects tenant-host /admin requests and
- * delegates them to TenantAdminLayout. That prevents older tenant controllers
- * that still import AdminLayout from leaking platform navigation into tenant
- * pages while those controllers are gradually cleaned up.
+ * This class is intentionally platform-specific. Tenant-host /admin requests
+ * are delegated to TenantAdminLayout to prevent platform navigation from
+ * leaking into tenant pages while legacy controllers are retired.
  */
 final class AdminLayout
 {
@@ -31,6 +31,9 @@ final class AdminLayout
             $body = (string) ($args['html'] ?? '');
         }
         $active = array_key_exists('active', $args) ? (string) $args['active'] : (string) ($args[2] ?? ($args['nav'] ?? 'dashboard'));
+        if (is_array($active)) {
+            $active = 'dashboard';
+        }
 
         $tenantHtml = self::tenantFallback($title, $body, $active);
         if ($tenantHtml !== null) {
@@ -45,6 +48,8 @@ final class AdminLayout
         $safeTitle = self::escape($title);
         $adminNav = self::adminNav($active);
         $year = date('Y');
+        $csrf = self::escape(self::csrfToken());
+        $identity = self::platformIdentity();
 
         return <<<HTML
 <!doctype html>
@@ -62,14 +67,14 @@ final class AdminLayout
 <body class="platform-admin-page">
 <header class="platform-admin-topbar" aria-label="Platform admin header">
     <a class="platform-admin-logo" href="/platform/admin" aria-label="ArtsFolio platform admin"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>
-    <div class="platform-admin-identity"><strong>Platform Admin</strong><span>Global ArtsFolio operations, not a tenant site</span></div>
+    <div class="platform-admin-identity"><strong>Platform Admin</strong><span>Global ArtsFolio operations, not a tenant site</span><span>{$identity}</span></div>
     <nav>
         <a href="/">Platform home</a>
         <a href="/pricing">Pricing</a>
         <a href="/directory">Directory</a>
         <a href="/help">Help</a>
         <a href="/help/developer">Developer Reference</a>
-        <form method="post" action="/logout"><button type="submit">Log out</button></form>
+        <form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{$csrf}"><button type="submit">Log out</button></form>
     </nav>
 </header>
 <div class="platform-admin-shell">
@@ -93,6 +98,42 @@ HTML;
     public static function escape(string $value): string
     {
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+
+    private static function csrfToken(): string
+    {
+        try {
+            return (new CsrfTokenService())->getOrCreate();
+        } catch (Throwable) {
+            return '';
+        }
+    }
+
+    private static function platformIdentity(): string
+    {
+        $currentUser = $GLOBALS['artsfolio_current_user'] ?? null;
+        if (!is_array($currentUser)) {
+            return 'Not signed in';
+        }
+
+        $email = self::escape((string) ($currentUser['email'] ?? 'Unknown user'));
+        $name = self::escape((string) ($currentUser['display_name'] ?? ''));
+        $roles = 'no platform role';
+
+        try {
+            $pdo = Database::connect(dirname(__DIR__, 3));
+            $roleList = (new MembershipRepository($pdo))->platformRolesForUser((int) ($currentUser['user_id'] ?? 0));
+            if ($roleList !== []) {
+                $roles = implode(', ', $roleList);
+            }
+        } catch (Throwable) {
+            $roles = 'role lookup unavailable';
+        }
+
+        $safeRoles = self::escape($roles);
+        $namePart = $name !== '' ? "{$name} · " : '';
+
+        return "Signed in as {$namePart}{$email} · {$safeRoles}";
     }
 
     private static function tenantFallback(string $title, string $body, string $active): ?string
@@ -139,6 +180,7 @@ HTML;
             str_contains($path, '/admin/contact-messages') => 'messages',
             str_contains($path, '/admin/email-signups') => 'email',
             str_contains($path, '/admin/billing') => 'billing',
+            str_contains($path, '/admin/users') => 'users',
             str_contains($path, '/admin/directory') || str_contains($path, '/admin/platform-discovery') => 'directory',
             str_contains($path, '/admin/stats') => 'stats',
             str_contains($path, '/admin/audit-log') => 'audit',
@@ -160,6 +202,7 @@ HTML;
         $items = [
             'dashboard' => ['/platform/admin', 'Dashboard'],
             'tenants' => ['/platform/admin/tenants', 'Tenants'],
+            'users' => ['/platform/admin/users', 'Users'],
             'domains' => ['/platform/admin/domains', 'Domains'],
             'pricing' => ['/platform/admin/pricing', 'Plans & Billing'],
             'jobs' => ['/platform/admin/jobs', 'Jobs'],

@@ -895,3 +895,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Public rendering uses CSS variables consumed by `public/assets/site.css`: `--site-bg-image`, `--site-bg-repeat`, `--site-bg-size`, and `--site-bg-opacity`.
 
 <!-- End of file. -->
+
+## 2026-05-29 admin user/config/email repair
+
+- Platform admin shell logout now includes a CSRF token generated from `CsrfTokenService`.
+- Platform and tenant admin shells show the logged-in user email/display name and current role context.
+- Added platform user management at `/platform/admin/users` with password rotation for platform-scoped users.
+- Added platform tenant drill-in at `/platform/admin/tenants/{id}` with tenant user details and tenant-user password rotation.
+- Added tenant user management at `/admin/users` with tenant-user password rotation.
+- Platform settings now include SMTP and Stripe/ecommerce keys in `platform_settings`.
+- Tenant settings now include `site_admin_email`; contact and signup notification queueing uses this value.
+- Portfolio section empty-state link in tenant artwork edit now points to `/admin/portfolio-sections`.

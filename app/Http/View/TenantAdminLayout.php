@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Http\View;
 
 use App\Platform\Tenancy\TenantContext;
+use App\Platform\Membership\MembershipRepository;
+use App\Support\Database;
+use App\Support\Security\CsrfTokenService;
 use App\Tenant\Settings\TenantSettingsRepository;
+use Throwable;
 
 /**
  * Canonical tenant admin layout.
@@ -40,7 +44,8 @@ final class TenantAdminLayout
         $topbarBackground = self::escape($this->settings->get($tenant, 'topbar_background_color', '#f7f2e8'));
         $topbarText = self::escape($this->settings->get($tenant, 'topbar_text_color', '#111111'));
         $adminNav = TenantAdminNav::render($active);
-        $csrf = self::escape($_SESSION['csrf_token'] ?? '');
+        $csrf = self::escape(self::csrfToken());
+        $identity = self::tenantIdentity($tenant);
 
         return <<<HTML
 <!doctype html>
@@ -70,7 +75,7 @@ final class TenantAdminLayout
     <aside class="tenant-admin-sidebar" aria-label="Tenant admin navigation">
         <div class="tenant-admin-sidebar-title">
             <strong>{$siteTitle}</strong>
-            <span>Tenant Admin · {$artistName}</span>
+            <span>Tenant Admin · {$artistName}</span><span>{$identity}</span>
         </div>
         {$adminNav}
         <div class="tenant-admin-sidebar-foot"><a href="/" target="_blank" rel="noopener">View Site</a></div>
@@ -100,6 +105,42 @@ HTML;
     public static function escape(string $value): string
     {
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+
+    private static function csrfToken(): string
+    {
+        try {
+            return (new CsrfTokenService())->getOrCreate();
+        } catch (Throwable) {
+            return '';
+        }
+    }
+
+    private static function tenantIdentity(TenantContext $tenant): string
+    {
+        $currentUser = $GLOBALS['artsfolio_current_user'] ?? null;
+        if (!is_array($currentUser)) {
+            return 'Not signed in';
+        }
+
+        $email = self::escape((string) ($currentUser['email'] ?? 'Unknown user'));
+        $name = self::escape((string) ($currentUser['display_name'] ?? ''));
+        $roles = 'no tenant role';
+
+        try {
+            $pdo = Database::connect(dirname(__DIR__, 3));
+            $roleList = (new MembershipRepository($pdo))->tenantRolesForUser($tenant->tenantId, (int) ($currentUser['user_id'] ?? 0));
+            if ($roleList !== []) {
+                $roles = implode(', ', $roleList);
+            }
+        } catch (Throwable) {
+            $roles = 'role lookup unavailable';
+        }
+
+        $safeRoles = self::escape($roles);
+        $namePart = $name !== '' ? "{$name} · " : '';
+
+        return "Signed in as {$namePart}{$email} · {$safeRoles}";
     }
 
     private static function slug(string $value, string $fallback): string
