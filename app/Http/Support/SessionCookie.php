@@ -39,6 +39,15 @@ final class SessionCookie
         return implode('; ', $parts);
     }
 
+    /**
+     * Backward-compatible alias for controllers that still call the older
+     * cookie helper method name.
+     */
+    public static function issueSetCookie(string $token, bool $persistent = true): string
+    {
+        return self::issueHeader($token, $persistent);
+    }
+
     public static function expireHeader(): string
     {
         $parts = [
@@ -59,6 +68,15 @@ final class SessionCookie
         }
 
         return implode('; ', $parts);
+    }
+
+    /**
+     * Backward-compatible alias for controllers that still call the older
+     * cookie helper method name.
+     */
+    public static function expireSetCookie(): string
+    {
+        return self::expireHeader();
     }
 
     private static function cookieDomain(): string
