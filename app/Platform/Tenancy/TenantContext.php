@@ -17,7 +17,13 @@ final class TenantContext
         public readonly string $hostname,
         public readonly string $domainType,
         public readonly bool $isPrimaryDomain,
+        public readonly string $status = 'active',
     ) {
+    }
+
+    public function isSuspended(): bool
+    {
+        return in_array($this->status, ['suspended', 'deleted'], true);
     }
 }
 

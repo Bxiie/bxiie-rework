@@ -989,3 +989,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Background job execution requires `artsfolio-background-worker.service`; the unit file lives at `scripts/systemd/artsfolio-background-worker.service` and wraps `scripts/workers/run_once.php` through `scripts/workers/run_forever.php`.
 
 # End of file.
+
+## 2026-05-30 stats/auth/API/admin lifecycle patch
+
+- Browser session cookies are centralized through `App\Http\Support\SessionCookie` and default to `.artsfol.io` on the platform host and ArtsFolio subdomains.
+- Direct cookie sharing between custom tenant domains and `artsfol.io` is not possible in browsers; custom-domain-to-subdomain seamless auth requires OAuth/OIDC or a signed one-time handoff flow.
+- Platform stats now render day/hour bar graphs and a Unique IP detail dialog. New platform analytics rows store `analytics_events.ip_address`; older rows may only show IP hash prefixes.
+- Platform admin tenant list includes an external link to the tenant ArtsFolio subdomain.
+- Platform admins can suspend/delete users and tenants with confirmation prompts. Tenant deletion is soft deletion by status. Suspended tenants display an ArtsFolio-branded unavailable page.
+- Initial OAuth2-protected administrative API routes live under `/api/admin/*` and cover tenant creation, tenant settings, and tenant-admin-visible content collections.
+
+# End of file.

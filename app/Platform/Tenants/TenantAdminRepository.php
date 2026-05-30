@@ -58,6 +58,35 @@ final class TenantAdminRepository
         );
         $stmt->execute(['status' => $status, 'tenant_id' => $tenantId]);
     }
+
+    /**
+     * Returns the preferred artsfol.io subdomain for a tenant.
+     */
+    public function subdomainForTenant(int $tenantId): ?string
+    {
+        $stmt = $this->pdo->prepare("SELECT hostname FROM tenant_domains WHERE tenant_id = :tenant_id AND hostname LIKE '%.artsfol.io' ORDER BY is_primary DESC, id ASC LIMIT 1");
+        $stmt->execute(['tenant_id' => $tenantId]);
+        $host = $stmt->fetchColumn();
+        return $host ? (string) $host : null;
+    }
+
+    /**
+     * Suspends tenant content without deleting data.
+     */
+    public function suspendTenant(int $tenantId): void
+    {
+        $stmt = $this->pdo->prepare("UPDATE tenants SET status = 'suspended', suspended_at = CURRENT_TIMESTAMP WHERE id = :tenant_id");
+        $stmt->execute(['tenant_id' => $tenantId]);
+    }
+
+    /**
+     * Soft-deletes a tenant.
+     */
+    public function deleteTenant(int $tenantId): void
+    {
+        $stmt = $this->pdo->prepare("UPDATE tenants SET status = 'deleted', deleted_at = CURRENT_TIMESTAMP WHERE id = :tenant_id");
+        $stmt->execute(['tenant_id' => $tenantId]);
+    }
 }
 
 // End of file.

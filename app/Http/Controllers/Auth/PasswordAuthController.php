@@ -9,6 +9,7 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Http\Support\SessionCookie;
 use App\Http\View\AuthPage;
+use App\Http\Support\SessionCookie;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Auth\Password\PasswordAuthService;
 use App\Platform\Auth\Session\SessionRepository;
@@ -62,7 +63,7 @@ final class PasswordAuthController
 
         return new Response('', 302, [
             'Location' => '/platform/admin',
-            'Set-Cookie' => $this->makeSessionCookie($login['session_token'], !empty($_POST['keep_me_logged_in'])),
+            'Set-Cookie' => SessionCookie::issueHeader($login['session_token'], !empty($_POST['keep_me_logged_in'])),
         ]);
     }
 
@@ -113,7 +114,7 @@ HTML);
 
         $this->auditAuth($request, 'auth.logout.succeeded', $session && isset($session['user_id']) ? (int) $session['user_id'] : null, ['session_id' => $session['id'] ?? null]);
 
-        return new Response('', 302, ['Location' => '/login', 'Set-Cookie' => $this->expireSessionCookie()]);
+        return new Response('', 302, ['Location' => '/login', 'Set-Cookie' => SessionCookie::expireHeader()]);
     }
 
     private function makeSessionCookie(string $token): string

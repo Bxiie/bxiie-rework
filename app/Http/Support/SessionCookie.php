@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Shared browser-session cookie helper.
+ * Shared browser session cookie helper.
  */
 
 declare(strict_types=1);
@@ -11,8 +11,9 @@ namespace App\Http\Support;
 use App\Http\Middleware\CurrentUser;
 
 /**
- * Builds the session cookie consistently for platform, tenant subdomain, and
- * tenant custom-domain login flows.
+ * Issues browser-session cookies consistently for platform and artsfol.io
+ * subdomain flows. Custom domains cannot share cookies with artsfol.io; those
+ * flows must go through OAuth/redirect based sign-in handoff.
  */
 final class SessionCookie
 {
@@ -29,11 +30,7 @@ final class SessionCookie
             $parts[] = 'Secure';
         }
 
-        $maxAge = self::maxAge($persistent);
-        if ($maxAge > 0) {
-            $parts[] = 'Max-Age=' . $maxAge;
-        }
-
+        $parts[] = 'Max-Age=' . ($persistent ? 1209600 : 86400);
         $domain = self::cookieDomain();
         if ($domain !== '') {
             $parts[] = 'Domain=' . $domain;
@@ -64,64 +61,15 @@ final class SessionCookie
         return implode('; ', $parts);
     }
 
-    public static function issueSetCookie(string $token, bool $persistent = true): void
-    {
-        $options = [
-            'expires' => time() + self::maxAge($persistent),
-            'path' => '/',
-            'secure' => self::isSecure(),
-            'httponly' => true,
-            'samesite' => 'Lax',
-        ];
-
-        $domain = self::cookieDomain();
-        if ($domain !== '') {
-            $options['domain'] = $domain;
-        }
-
-        setcookie(CurrentUser::COOKIE_NAME, $token, $options);
-    }
-
-    public static function expireSetCookie(): void
-    {
-        $options = [
-            'expires' => time() - 3600,
-            'path' => '/',
-            'secure' => self::isSecure(),
-            'httponly' => true,
-            'samesite' => 'Lax',
-        ];
-
-        $domain = self::cookieDomain();
-        if ($domain !== '') {
-            $options['domain'] = $domain;
-        }
-
-        setcookie(CurrentUser::COOKIE_NAME, '', $options);
-    }
-
-    private static function maxAge(bool $persistent): int
-    {
-        if (!$persistent) {
-            return 86400;
-        }
-
-        $days = (int) (getenv('ARTSFOLIO_PERSISTENT_LOGIN_DAYS') ?: getenv('PERSISTENT_LOGIN_DAYS') ?: 14);
-        $days = max(1, min(365, $days));
-
-        return $days * 86400;
-    }
-
     private static function cookieDomain(): string
     {
-        $configured = trim((string) (getenv('ARTSFOLIO_SESSION_COOKIE_DOMAIN') ?: getenv('SESSION_COOKIE_DOMAIN') ?: ''));
+        $configured = trim((string) (getenv('ARTSFOLIO_SESSION_COOKIE_DOMAIN') ?: ''));
         if ($configured !== '') {
             return $configured;
         }
 
-        $host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+        $host = strtolower(trim((string) ($_SERVER['HTTP_HOST'] ?? '')));
         $host = explode(':', $host, 2)[0];
-
         if ($host === 'artsfol.io' || str_ends_with($host, '.artsfol.io')) {
             return '.artsfol.io';
         }

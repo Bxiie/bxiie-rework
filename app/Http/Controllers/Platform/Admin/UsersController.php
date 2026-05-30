@@ -80,9 +80,10 @@ HTML;
 {$notice}
 <p class="admin-muted">This screen lists users with platform-scoped roles and allows platform admins to rotate local passwords. It does not edit roles.</p>
 <table class="admin-table">
-    <thead><tr><th>ID</th><th>User</th><th>Roles</th><th>Last log on</th><th>Created</th><th>Password</th></tr></thead>
+    <thead><tr><th>ID</th><th>User</th><th>Roles</th><th>Last log on</th><th>Created</th><th>Password</th><th>Lifecycle</th></tr></thead>
     <tbody>{$rows}</tbody>
 </table>
+<script>document.querySelectorAll('.confirm-platform-user-action').forEach(function(form){form.addEventListener('submit',function(event){var action=form.getAttribute('data-action')||'update';if(!confirm('Confirm '+action+' for this user. This affects access immediately.')){event.preventDefault();}});});</script>
 HTML,
         ));
     }
@@ -148,6 +149,38 @@ HTML,
         }
 
         return $buttons;
+    }
+
+    public function suspend(Request $request, ?array $currentUser): Response
+    {
+        return $this->lifecycle($request, $currentUser, 'suspend');
+    }
+
+    public function delete(Request $request, ?array $currentUser): Response
+    {
+        return $this->lifecycle($request, $currentUser, 'delete');
+    }
+
+    private function lifecycle(Request $request, ?array $currentUser, string $action): Response
+    {
+        if (!$this->canManageUsers($currentUser)) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+        $userId = (int) ($_POST['user_id'] ?? 0);
+        if ($userId < 1 || !$this->users->userIsPlatformUser($userId)) {
+            return Response::html('<h1>Invalid user lifecycle request</h1>', 422);
+        }
+        if ($action === 'delete') {
+            $this->users->deleteUser($userId);
+        } else {
+            $this->users->suspendUser($userId);
+        }
+        $this->auditLog?->record('platform.user.' . $action, null, (int) ($currentUser['user_id'] ?? 0), 'user', (string) $userId, [], $request->server('REMOTE_ADDR'));
+        FlashMessages::success('Platform user ' . $action . 'd.');
+        return new Response('', 303, ['Location' => '/platform/admin/users?notice=' . $action]);
     }
 
     private function canManageUsers(?array $currentUser): bool

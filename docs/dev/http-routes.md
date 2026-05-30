@@ -1,156 +1,130 @@
-# ArtsFolio HTTP and API Route Reference
+# ArtsFolio HTTP and API route reference
 
-This developer reference describes the practical browser and HTTP endpoints currently exposed by ArtsFolio. Use it as an implementation map for integrations, test scripts, and admin troubleshooting.
+Developer reference is available in the application at `/help/developer` after login. External integrations must use OAuth 2.0 bearer tokens and send `Authorization: Bearer <token>`.
 
 ## Authentication
 
-### GET `/login`
-Renders the ArtsFolio login form. On tenant domains this is branded with the tenant name when possible.
+### GET /login
+Render the local login form. Browser-only.
 
 ```bash
 curl -i https://artsfol.io/login
-curl -i https://bxiie.com/login
 ```
 
-### POST `/login`
-Submits local email/password credentials. The response sets the `artsfolio_session` browser cookie. On `artsfol.io` and `*.artsfol.io`, the cookie is scoped to `.artsfol.io` so platform and tenant subdomains share the login. Custom domains still receive a host-scoped cookie because browsers cannot share cookies across unrelated registrable domains.
+### POST /login
+Submit email/password login. The response sets `artsfolio_session` for `artsfol.io` and `*.artsfol.io` when served from those hosts.
 
 ```bash
 curl -i -X POST https://artsfol.io/login \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
-  --data 'csrf_token=TOKEN&email=admin@example.com&password=correct-horse-battery-staple'
+  -d 'csrf_token=TOKEN_FROM_FORM' \
+  -d 'email=admin@example.com' \
+  -d 'password=correct-horse-battery-staple'
 ```
 
-### POST `/logout`
-Revokes the current session and expires the browser cookie.
+## Platform API
+
+### GET /api/admin/tenants
+List tenants. Requires OAuth scope `platform:write` or `*`.
 
 ```bash
-curl -i -X POST https://artsfol.io/logout \
-  -H 'Cookie: artsfolio_session=SESSION' \
-  --data 'csrf_token=TOKEN'
+curl -s https://artsfol.io/api/admin/tenants \
+  -H 'Authorization: Bearer ACCESS_TOKEN'
 ```
 
-## Platform public routes
-
-### GET `/`
-Shows the ArtsFolio platform landing page. Signed-in users should see admin/account navigation rather than a sign-in button.
+### POST /api/admin/tenants
+Create a tenant and initial admin. Requires `platform:write` or `*`.
 
 ```bash
-curl -i https://artsfol.io/
+curl -s -X POST https://artsfol.io/api/admin/tenants \
+  -H 'Authorization: Bearer ACCESS_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"slug":"demo","name":"Demo Artist","admin_email":"admin@example.com","admin_name":"Demo Admin","password":"change-this-long-password"}'
 ```
 
-### GET `/directory`
-Shows opted-in public tenant directory cards.
+### GET /api/admin/tenants/{id}
+Fetch one tenant.
 
 ```bash
-curl -i https://artsfol.io/directory
+curl -s https://artsfol.io/api/admin/tenants/1 \
+  -H 'Authorization: Bearer ACCESS_TOKEN'
 ```
 
-### GET `/developer` and `/help/developer`
-Shows the developer reference for logged-in users. Anonymous users are redirected to login.
+### POST /api/admin/tenants/{id}
+Update tenant name or status.
 
 ```bash
-curl -i -H 'Cookie: artsfolio_session=SESSION' https://artsfol.io/developer
-curl -i -H 'Cookie: artsfolio_session=SESSION' https://artsfol.io/help/developer
+curl -s -X POST https://artsfol.io/api/admin/tenants/1 \
+  -H 'Authorization: Bearer ACCESS_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Updated Artist","status":"active"}'
 ```
 
-## Platform admin routes
+## Tenant configuration API
 
-### GET `/platform/admin/users`
-Lists platform users, roles, login timestamps, and lifecycle state. Platform admins can rotate passwords, suspend, reactivate, or soft-delete users.
+### GET /api/admin/tenants/{id}/settings
+Read all tenant settings visible through tenant admin settings/content screens. Requires `tenant:write` or `*`.
 
 ```bash
-curl -i -H 'Cookie: artsfolio_session=SESSION' https://artsfol.io/platform/admin/users
+curl -s https://artsfol.io/api/admin/tenants/1/settings \
+  -H 'Authorization: Bearer ACCESS_TOKEN'
 ```
 
-### POST `/platform/admin/users/status`
-Changes a user's lifecycle state. `suspended` and `deleted` immediately revoke active browser sessions.
+### POST /api/admin/tenants/{id}/settings
+Set tenant settings.
 
 ```bash
-curl -i -X POST https://artsfol.io/platform/admin/users/status \
-  -H 'Cookie: artsfolio_session=SESSION' \
-  --data 'csrf_token=TOKEN&user_id=123&status=suspended'
+curl -s -X POST https://artsfol.io/api/admin/tenants/1/settings \
+  -H 'Authorization: Bearer ACCESS_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"settings":{"site_title":"Demo Artist","primary_color":"#111111","portfolio_sort":"manual"}}'
 ```
 
-### GET `/platform/admin/tenants`
-Lists tenants and current tenant lifecycle state.
+## Tenant content API
+
+The collection routes below support `artworks`, `events`, `portfolio-sections`, `contact-messages`, and `email-signups`. They expose data that is otherwise managed through tenant admin UI screens.
+
+### GET /api/admin/tenants/{id}/{entity}
+List entity records for the tenant.
 
 ```bash
-curl -i -H 'Cookie: artsfolio_session=SESSION' https://artsfol.io/platform/admin/tenants
+curl -s https://artsfol.io/api/admin/tenants/1/artworks \
+  -H 'Authorization: Bearer ACCESS_TOKEN'
 ```
 
-### POST `/platform/admin/tenants/status`
-Changes tenant lifecycle state. Use `suspended` to temporarily hide tenant content and `archived` as the soft-delete state.
+### POST /api/admin/tenants/{id}/{entity}
+Create an entity record using JSON fields allowed for that entity.
 
 ```bash
-curl -i -X POST https://artsfol.io/platform/admin/tenants/status \
-  -H 'Cookie: artsfolio_session=SESSION' \
-  --data 'csrf_token=TOKEN&tenant_id=7&status=suspended'
+curl -s -X POST https://artsfol.io/api/admin/tenants/1/events \
+  -H 'Authorization: Bearer ACCESS_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"title":"Open Studio","event_date":"2026-06-15","location":"Bucharest","event_type":"open_studio"}'
 ```
 
-### GET `/platform/admin/jobs`
-Lists queued, running, completed, failed, and cancelled background jobs. If jobs stay queued, check `artsfolio-background-worker.service`.
+### POST /api/admin/tenants/{id}/{entity}/{item_id}
+Update one entity record.
 
 ```bash
-curl -i -H 'Cookie: artsfolio_session=SESSION' 'https://artsfol.io/platform/admin/jobs?status=queued'
+curl -s -X POST https://artsfol.io/api/admin/tenants/1/artworks/42 \
+  -H 'Authorization: Bearer ACCESS_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"title":"New title","status":"published","sort_order":10}'
 ```
 
-### POST `/platform/admin/jobs/action`
-Requeues or cancels a background job.
+### DELETE /api/admin/tenants/{id}/{entity}/{item_id}
+Delete one entity record.
 
 ```bash
-curl -i -X POST https://artsfol.io/platform/admin/jobs/action \
-  -H 'Cookie: artsfolio_session=SESSION' \
-  --data 'csrf_token=TOKEN&job_id=42&job_admin_action=requeue'
+curl -s -X DELETE https://artsfol.io/api/admin/tenants/1/portfolio-sections/7 \
+  -H 'Authorization: Bearer ACCESS_TOKEN'
 ```
 
-## Tenant public routes
+## Browser admin flows
 
-### GET `/`
-Shows the tenant home page for an active tenant domain.
+Platform admins manage users, tenants, jobs, stats, settings, routes, domains, audit logs, and email outbox under `/platform/admin/*`. User and tenant suspend/delete operations require JavaScript confirmation and CSRF tokens. Suspended tenant public resources render an ArtsFolio-branded unavailable page.
 
-```bash
-curl -i https://bxiie.com/
-curl -i https://bxiie.artsfol.io/
-```
+## Known auth limitation
 
-### GET `/portfolio`, `/about`, `/contact`
-Shows standard tenant content pages. Custom tenant slugs may also be configured.
-
-```bash
-curl -i https://bxiie.com/portfolio
-curl -i https://bxiie.com/about
-curl -i https://bxiie.com/contact
-```
-
-### Suspended tenant request
-Visitors hitting a suspended or archived tenant domain receive an ArtsFolio-branded unavailable page with HTTP 503.
-
-```bash
-curl -i https://suspended-tenant.example/
-```
-
-## Tenant admin routes
-
-### GET `/admin`
-Shows the tenant admin dashboard. Requires an active session and tenant admin/owner role.
-
-```bash
-curl -i -H 'Cookie: artsfolio_session=SESSION' https://bxiie.com/admin
-```
-
-### GET `/admin/settings`
-Shows tenant settings and CSS controls.
-
-```bash
-curl -i -H 'Cookie: artsfolio_session=SESSION' https://bxiie.com/admin/settings
-```
-
-### GET `/admin/stats`
-Shows tenant analytics.
-
-```bash
-curl -i -H 'Cookie: artsfolio_session=SESSION' https://bxiie.com/admin/stats
-```
+Cookies cannot be shared directly between unrelated domains such as `bxiie.com` and `artsfol.io`. The patch normalizes sessions across `artsfol.io` and `*.artsfol.io`. Seamless movement from a tenant custom domain to `tenant.artsfol.io` requires an OAuth/OIDC or one-time signed handoff flow.
 
 # End of file.

@@ -65,6 +65,7 @@ final class TenantsController
     <thead><tr><th>ID</th><th>Slug</th><th>Name</th><th>Status</th><th>Domains</th><th>Created</th><th>Actions</th></tr></thead>
     <tbody>{$rows}</tbody>
 </table>
+<script>document.querySelectorAll('.confirm-platform-tenant-action').forEach(function(form){form.addEventListener('submit',function(event){var action=form.getAttribute('data-action')||'update';if(!confirm('Confirm '+action+' for this tenant. Suspended tenant resources will show the ArtsFolio unavailable page.')){event.preventDefault();}});});</script>
 HTML,
         ));
     }
@@ -183,6 +184,38 @@ HTML,
         }
 
         return $html;
+    }
+
+    public function suspend(Request $request, ?array $currentUser): Response
+    {
+        return $this->tenantLifecycle($request, $currentUser, 'suspend');
+    }
+
+    public function delete(Request $request, ?array $currentUser): Response
+    {
+        return $this->tenantLifecycle($request, $currentUser, 'delete');
+    }
+
+    private function tenantLifecycle(Request $request, ?array $currentUser, string $action): Response
+    {
+        if (!$this->canManageTenants($currentUser) || !$this->csrf) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+        $tenantId = (int) ($_POST['tenant_id'] ?? 0);
+        if ($tenantId < 1) {
+            return Response::html('<h1>Invalid tenant lifecycle request</h1>', 422);
+        }
+        if ($action === 'delete') {
+            $this->tenants->deleteTenant($tenantId);
+        } else {
+            $this->tenants->suspendTenant($tenantId);
+        }
+        $this->auditLog?->record('platform.tenant.' . $action, null, (int) ($currentUser['user_id'] ?? 0), 'tenant', (string) $tenantId, [], $request->server('REMOTE_ADDR'));
+        FlashMessages::success('Tenant ' . $action . 'd.');
+        return new Response('', 303, ['Location' => '/platform/admin/tenants?notice=' . $action]);
     }
 
     private function findTenant(int $tenantId): ?array

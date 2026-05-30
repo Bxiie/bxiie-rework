@@ -138,6 +138,24 @@ final class AdminUserRepository
         );
         $stmt->execute(['user_id' => $userId]);
     }
+
+    /**
+     * Suspends a user without deleting audit history.
+     */
+    public function suspendUser(int $userId): void
+    {
+        $stmt = $this->pdo->prepare("UPDATE users SET status = 'suspended', suspended_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = :user_id");
+        $stmt->execute(['user_id' => $userId]);
+    }
+
+    /**
+     * Soft-deletes a user. Historical records are retained.
+     */
+    public function deleteUser(int $userId): void
+    {
+        $stmt = $this->pdo->prepare("UPDATE users SET status = 'deleted', deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = :user_id");
+        $stmt->execute(['user_id' => $userId]);
+    }
 }
 
 // End of file.

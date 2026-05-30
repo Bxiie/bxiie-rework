@@ -7,6 +7,7 @@ declare(strict_types=1);
  */
 
 use App\Http\Controllers\Api\MeController;
+use App\Http\Controllers\Api\AdminApiController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Api\TenantMeController;
 use App\Http\Controllers\Auth\PasswordAuthController;
@@ -113,6 +114,11 @@ try {
     $pdo = Database::connect($root);
     $tenantResolver = new TenantResolver($pdo);
     $tenant = (new ResolveTenant($tenantResolver))->handle($request);
+
+    if ($tenant && method_exists($tenant, 'isSuspended') && $tenant->isSuspended()) {
+        Response::html('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Content unavailable | ArtsFolio</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/platform.css"></head><body class="platform-page"><main class="platform-main"><section class="platform-page-heading"><p class="eyebrow">ArtsFolio</p><h1>We are sorry, this content cannot be shown right now.</h1><p>This artist site is temporarily unavailable. Please check back later or contact ArtsFolio support.</p><p><a class="button primary" href="https://artsfol.io/">Return to ArtsFolio</a></p></section></main></body></html>', 403)->send();
+        exit;
+    }
 
     $sessionRepository = new SessionRepository($pdo);
     $sessionTokens = new SessionTokenService();
@@ -305,14 +311,15 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
             $ipHash = hash('sha256', $ip . '|artsfolio-analytics');
             $location = (new \App\Platform\Analytics\AnalyticsLocationResolver($pdo))->resolve($request, $ip, $ipHash);
             $stmt = $pdo->prepare(
-                'INSERT INTO analytics_events (tenant_id, event_type, path, referrer, ip_hash, user_agent, country, region, city, created_at)
-                 VALUES (NULL, :event_type, :path, :referrer, :ip_hash, :user_agent, :country, :region, :city, NOW())'
+                'INSERT INTO analytics_events (tenant_id, event_type, path, referrer, ip_hash, ip_address, user_agent, country, region, city, created_at)
+                 VALUES (NULL, :event_type, :path, :referrer, :ip_hash, :ip_address, :user_agent, :country, :region, :city, NOW())'
             );
             $stmt->execute([
                 'event_type' => str_starts_with($path, '/platform/admin') ? 'platform_admin_page_view' : 'platform_page_view',
                 'path' => $path,
                 'referrer' => mb_substr((string) $request->server('HTTP_REFERER', ''), 0, 1000),
                 'ip_hash' => $ipHash,
+                'ip_address' => mb_substr($ip, 0, 64),
                 'user_agent' => mb_substr((string) $request->server('HTTP_USER_AGENT', ''), 0, 1000),
                 'country' => $location['country'],
                 'region' => $location['region'],
@@ -377,6 +384,11 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->get('/platform/admin/tenants', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
     $router->get('/platform/admin/tenants/{id}', fn (Request $request, array $params): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->show($request, $currentUser, (int) ($params['id'] ?? 0)));
     $router->post('/platform/admin/tenants/users/password', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->updateTenantUserPassword($request, $currentUser));
+    $router->post('/platform/admin/users/suspend', fn (Request $request): Response => (new PlatformAdminUsersController(new RequirePlatformRole(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->suspend($request, $currentUser));
+    $router->post('/platform/admin/users/delete', fn (Request $request): Response => (new PlatformAdminUsersController(new RequirePlatformRole(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->delete($request, $currentUser));
+    $router->post('/platform/admin/tenants/suspend', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->suspend($request, $currentUser));
+    $router->post('/platform/admin/tenants/delete', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->delete($request, $currentUser));
+
         $router->post('/platform/admin/tenants/status', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->updateTenantStatus($request, $currentUser));
     $router->get('/platform/admin/users', fn (Request $request): Response => (new PlatformAdminUsersController(new RequirePlatformRole(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
     $router->post('/platform/admin/users/password', fn (Request $request): Response => (new PlatformAdminUsersController(new RequirePlatformRole(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->updatePassword($request, $currentUser));
@@ -403,6 +415,16 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->post('/login', fn (Request $request): Response => $passwordAuthController->loginPassword($request));
     $router->get('/me', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin']));
     $router->post('/logout', fn (Request $request): Response => $passwordAuthController->logout($request));
+    $router->get('/api/admin/tenants', fn (Request $request): Response => (new AdminApiController($pdo, $bearerToken))->tenants($request));
+    $router->post('/api/admin/tenants', fn (Request $request): Response => (new AdminApiController($pdo, $bearerToken))->tenants($request));
+    $router->get('/api/admin/tenants/{id}', fn (Request $request, array $params): Response => (new AdminApiController($pdo, $bearerToken))->tenant($request, (int) ($params['id'] ?? 0)));
+    $router->post('/api/admin/tenants/{id}', fn (Request $request, array $params): Response => (new AdminApiController($pdo, $bearerToken))->tenant($request, (int) ($params['id'] ?? 0)));
+    $router->get('/api/admin/tenants/{id}/settings', fn (Request $request, array $params): Response => (new AdminApiController($pdo, $bearerToken))->tenantSettings($request, (int) ($params['id'] ?? 0)));
+    $router->post('/api/admin/tenants/{id}/settings', fn (Request $request, array $params): Response => (new AdminApiController($pdo, $bearerToken))->tenantSettings($request, (int) ($params['id'] ?? 0)));
+    $router->get('/api/admin/tenants/{id}/{entity}', fn (Request $request, array $params): Response => (new AdminApiController($pdo, $bearerToken))->collection($request, (int) ($params['id'] ?? 0), (string) ($params['entity'] ?? '')));
+    $router->post('/api/admin/tenants/{id}/{entity}', fn (Request $request, array $params): Response => (new AdminApiController($pdo, $bearerToken))->collection($request, (int) ($params['id'] ?? 0), (string) ($params['entity'] ?? '')));
+    $router->post('/api/admin/tenants/{id}/{entity}/{item_id}', fn (Request $request, array $params): Response => (new AdminApiController($pdo, $bearerToken))->item($request, (int) ($params['id'] ?? 0), (string) ($params['entity'] ?? ''), (int) ($params['item_id'] ?? 0)));
+    $router->add('DELETE', '/api/admin/tenants/{id}/{entity}/{item_id}', fn (Request $request, array $params): Response => (new AdminApiController($pdo, $bearerToken))->item($request, (int) ($params['id'] ?? 0), (string) ($params['entity'] ?? ''), (int) ($params['item_id'] ?? 0)));
     $router->get('/api/me', fn (Request $request): Response => (new MeController())->show($request, $bearerToken));
 
     $router->dispatch($request)->send();

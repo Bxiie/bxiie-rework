@@ -37,6 +37,7 @@ final class TenantResolver
                 t.uuid AS tenant_uuid,
                 t.slug,
                 t.name,
+                t.status,
                 d.hostname,
                 d.domain_type,
                 d.is_primary
@@ -44,7 +45,7 @@ final class TenantResolver
              JOIN tenants t ON t.id = d.tenant_id
              WHERE d.hostname = :hostname
                AND d.status = 'active'
-               AND t.status IN ('trial', 'active')
+               AND t.status <> 'deleted'
              LIMIT 1"
         );
 
@@ -63,6 +64,7 @@ final class TenantResolver
             hostname: (string) $row['hostname'],
             domainType: (string) $row['domain_type'],
             isPrimaryDomain: (bool) $row['is_primary'],
+            status: (string) $row['status'],
         );
     }
 
