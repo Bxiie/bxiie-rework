@@ -906,3 +906,9 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform settings now include SMTP and Stripe/ecommerce keys in `platform_settings`.
 - Tenant settings now include `site_admin_email`; contact and signup notification queueing uses this value.
 - Portfolio section empty-state link in tenant artwork edit now points to `/admin/portfolio-sections`.
+
+
+## 2026-05-29 admin user-management hotfix
+- Added missing admin user-management classes required by `/platform/admin/users`, `/platform/admin/tenants/{id}`, and `/admin/users`.
+- Deduplicated displayed platform and tenant role labels so legacy duplicate role rows do not flood admin headers.
+- Password-rotation audit events use the audit_log column order correctly: tenant_id, user_id, action, entity_type, entity_id, details, ip_address.

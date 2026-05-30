@@ -54,7 +54,7 @@ final class MembershipRepository
     public function tenantRolesForUser(int $tenantId, int $userId): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT r.slug FROM role_assignments ra
+            "SELECT DISTINCT r.slug FROM role_assignments ra
              JOIN roles r ON r.id = ra.role_id
              WHERE ra.user_id = :user_id AND ra.tenant_id = :tenant_id AND r.scope = 'tenant'
              ORDER BY r.slug"
@@ -69,7 +69,7 @@ final class MembershipRepository
     public function platformRolesForUser(int $userId): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT r.slug
+            "SELECT DISTINCT r.slug
              FROM role_assignments ra
              JOIN roles r ON r.id = ra.role_id
              WHERE ra.user_id = :user_id

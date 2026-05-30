@@ -1,9 +1,24 @@
 ## Now
 
+- https://artsfol.io/platform/admin/users: Class "App\Http\Controllers\Platform\Admin\UsersController" not found
+- https://artsfol.io/platform/admin/tenants: Class "App\Platform\Identity\AdminUserRepository" not found
+- https://artsfol.io/platform/admin: ArtsFolio Platform Admin
+Global ArtsFolio operations, not a tenant site
+Signed in as James O Payne Jr · password-auth-test@example.test · admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin
+
+
+
+
+##
+
 - Trying to log out from platform - Invalid CSRF token
 - On the admin pages, show the username of the logvged-in user and their privilege level.
 - The site should email site admin on contact message or email signup
 - email and ecommerce keys, credentials, and configuration details should be configurable from the platform admin page
+- From the platform admin tenants tab, a platform admin should be able to drill into the tenants and see the tenant users' details including email address, last log on, name, etc.  The platform admin should be able to change the tenant user's password.
+- The platform admin should also be able to see other platform admins in a users tab, and be able to change their passwords.
+- The tenant admin should also be able to see other tenant admins in a users tab, and be able to change their passwords.
+- The portfolio sections tab is inactive from the artworks tab.
 
 ##
 

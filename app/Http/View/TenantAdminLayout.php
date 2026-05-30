@@ -129,7 +129,7 @@ HTML;
 
         try {
             $pdo = Database::connect(dirname(__DIR__, 3));
-            $roleList = (new MembershipRepository($pdo))->tenantRolesForUser($tenant->tenantId, (int) ($currentUser['user_id'] ?? 0));
+            $roleList = array_values(array_unique((new MembershipRepository($pdo))->tenantRolesForUser($tenant->tenantId, (int) ($currentUser['user_id'] ?? 0))));
             if ($roleList !== []) {
                 $roles = implode(', ', $roleList);
             }
