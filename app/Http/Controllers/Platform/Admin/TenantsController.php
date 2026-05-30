@@ -48,11 +48,12 @@ final class TenantsController
                 . '<td>' . $this->escape((string) $tenant['status']) . '</td>'
                 . '<td>' . $this->escape((string) $tenant['domain_count']) . '</td>'
                 . '<td>' . $this->escape((string) $tenant['created_at']) . '</td>'
+                . '<td>' . ($this->csrf ? $this->tenantStatusActions($id, (string) $tenant['status'], $this->escape($this->csrf->getOrCreate())) : '') . '</td>'
                 . '</tr>';
         }
 
         if ($rows === '') {
-            $rows = '<tr><td colspan="6">No tenants found.</td></tr>';
+            $rows = '<tr><td colspan="7">No tenants found.</td></tr>';
         }
 
         return Response::html(AdminLayout::render(
@@ -61,7 +62,7 @@ final class TenantsController
             body: <<<HTML
 <p class="admin-muted">Open a tenant to review tenant users, email addresses, names, roles, membership status, and last log on timestamps.</p>
 <table class="admin-table">
-    <thead><tr><th>ID</th><th>Slug</th><th>Name</th><th>Status</th><th>Domains</th><th>Created</th></tr></thead>
+    <thead><tr><th>ID</th><th>Slug</th><th>Name</th><th>Status</th><th>Domains</th><th>Created</th><th>Actions</th></tr></thead>
     <tbody>{$rows}</tbody>
 </table>
 HTML,
@@ -140,6 +141,48 @@ HTML,
         FlashMessages::success('Tenant user password updated.');
 
         return new Response('', 303, ['Location' => '/platform/admin/tenants/' . $tenantId . '?notice=password-updated']);
+    }
+
+
+    public function updateTenantStatus(Request $request, ?array $currentUser): Response
+    {
+        if (!$this->canManageTenants($currentUser) || !$this->csrf) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+        $tenantId = (int) ($_POST['tenant_id'] ?? 0);
+        $status = (string) ($_POST['status'] ?? '');
+        if ($tenantId < 1 || !in_array($status, ['trial', 'active', 'suspended', 'archived'], true)) {
+            return Response::html('<h1>Invalid tenant status request</h1>', 422);
+        }
+
+        $this->tenants->setStatus($tenantId, $status);
+        $this->auditLog?->record('platform.tenant.status_changed', (int) ($currentUser['user_id'] ?? 0), 'tenant', (string) $tenantId, ['status' => $status], $request->server('REMOTE_ADDR'));
+        FlashMessages::success("Tenant {$tenantId} status changed to {$status}.");
+
+        return new Response('', 303, ['Location' => '/platform/admin/tenants?notice=status-updated']);
+    }
+
+    private function tenantStatusActions(int $tenantId, string $status, string $csrf): string
+    {
+        $targets = ['active' => 'Activate', 'suspended' => 'Suspend', 'archived' => 'Delete'];
+        $html = '';
+        foreach ($targets as $target => $label) {
+            if ($target === $status) {
+                continue;
+            }
+            $html .= '<form method="post" action="/platform/admin/tenants/status" class="admin-inline-form">'
+                . '<input type="hidden" name="csrf_token" value="' . $csrf . '">'
+                . '<input type="hidden" name="tenant_id" value="' . $tenantId . '">'
+                . '<input type="hidden" name="status" value="' . $this->escape($target) . '">'
+                . '<button type="submit">' . $this->escape($label) . '</button>'
+                . '</form>';
+        }
+
+        return $html;
     }
 
     private function findTenant(int $tenantId): ?array

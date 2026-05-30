@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Platform and tenant user-management repository.
+ */
+
 declare(strict_types=1);
 
 namespace App\Platform\Identity;
@@ -8,9 +12,6 @@ use PDO;
 
 /**
  * Read/write helpers for admin user-management screens.
- *
- * Role assignment remains outside this repository. These screens are for
- * visibility and password rotation, not entitlement editing.
  */
 final class AdminUserRepository
 {
@@ -18,9 +19,6 @@ final class AdminUserRepository
     {
     }
 
-    /**
-     * Returns tenant users with tenant role, membership, and last browser-session use.
-     */
     public function tenantUsers(int $tenantId): array
     {
         $stmt = $this->pdo->prepare(
@@ -29,6 +27,7 @@ final class AdminUserRepository
                 u.uuid,
                 u.email,
                 u.display_name,
+                COALESCE(u.status, 'active') AS user_status,
                 u.created_at,
                 tm.status AS membership_status,
                 GROUP_CONCAT(DISTINCT r.slug ORDER BY r.slug SEPARATOR ', ') AS roles,
@@ -39,7 +38,7 @@ final class AdminUserRepository
              LEFT JOIN roles r ON r.id = ra.role_id AND r.scope = 'tenant'
              LEFT JOIN user_sessions us ON us.user_id = u.id
              WHERE tm.tenant_id = :tenant_id
-             GROUP BY u.id, u.uuid, u.email, u.display_name, u.created_at, tm.status
+             GROUP BY u.id, u.uuid, u.email, u.display_name, u.status, u.created_at, tm.status
              ORDER BY u.email"
         );
 
@@ -48,9 +47,6 @@ final class AdminUserRepository
         return $stmt->fetchAll();
     }
 
-    /**
-     * Returns platform-scoped users with at least one platform role.
-     */
     public function platformUsers(): array
     {
         $stmt = $this->pdo->query(
@@ -59,6 +55,7 @@ final class AdminUserRepository
                 u.uuid,
                 u.email,
                 u.display_name,
+                COALESCE(u.status, 'active') AS user_status,
                 u.created_at,
                 GROUP_CONCAT(DISTINCT r.slug ORDER BY r.slug SEPARATOR ', ') AS roles,
                 MAX(us.created_at) AS last_login_at
@@ -66,16 +63,13 @@ final class AdminUserRepository
              JOIN role_assignments ra ON ra.user_id = u.id AND ra.tenant_id IS NULL
              JOIN roles r ON r.id = ra.role_id AND r.scope = 'platform'
              LEFT JOIN user_sessions us ON us.user_id = u.id
-             GROUP BY u.id, u.uuid, u.email, u.display_name, u.created_at
+             GROUP BY u.id, u.uuid, u.email, u.display_name, u.status, u.created_at
              ORDER BY u.email"
         );
 
         return $stmt->fetchAll();
     }
 
-    /**
-     * Updates a local password hash for an existing user.
-     */
     public function updatePasswordHash(int $userId, string $passwordHash): void
     {
         $stmt = $this->pdo->prepare(
@@ -88,9 +82,25 @@ final class AdminUserRepository
         $stmt->execute(['password_hash' => $passwordHash, 'user_id' => $userId]);
     }
 
-    /**
-     * Confirms that a user belongs to the tenant before tenant-admin mutation.
-     */
+    public function setUserStatus(int $userId, string $status): void
+    {
+        if (!in_array($status, ['active', 'suspended', 'deleted'], true)) {
+            throw new \InvalidArgumentException('Invalid user status.');
+        }
+
+        $stmt = $this->pdo->prepare(
+            "UPDATE users
+             SET status = :status,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = :user_id"
+        );
+        $stmt->execute(['status' => $status, 'user_id' => $userId]);
+
+        if ($status !== 'active') {
+            $this->revokeUserSessions($userId);
+        }
+    }
+
     public function userBelongsToTenant(int $tenantId, int $userId): bool
     {
         $stmt = $this->pdo->prepare(
@@ -104,9 +114,6 @@ final class AdminUserRepository
         return (bool) $stmt->fetchColumn();
     }
 
-    /**
-     * Confirms that a user has at least one platform-scoped role.
-     */
     public function userIsPlatformUser(int $userId): bool
     {
         $stmt = $this->pdo->prepare(
@@ -119,6 +126,17 @@ final class AdminUserRepository
         $stmt->execute(['user_id' => $userId]);
 
         return (bool) $stmt->fetchColumn();
+    }
+
+    private function revokeUserSessions(int $userId): void
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE user_sessions
+             SET revoked_at = CURRENT_TIMESTAMP
+             WHERE user_id = :user_id
+               AND revoked_at IS NULL"
+        );
+        $stmt->execute(['user_id' => $userId]);
     }
 }
 

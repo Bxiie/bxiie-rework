@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Request;
 use App\Http\Response;
+use App\Http\Support\SessionCookie;
 use App\Http\View\AuthPage;
 use App\Platform\Auth\Password\PasswordAuthService;
 use App\Platform\Tenancy\TenantContext;
@@ -59,13 +60,7 @@ final class LoginController
             return Response::html('<h1>Login failed</h1><p>No session token was returned.</p>', 500);
         }
 
-        setcookie(self::COOKIE_NAME, $token, [
-            'expires' => time() + 86400 * 14,
-            'path' => '/',
-            'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
-            'httponly' => true,
-            'samesite' => 'Lax',
-        ]);
+        SessionCookie::issueSetCookie($token, true);
 
         FlashMessages::success('Signed in.');
 
@@ -74,13 +69,7 @@ final class LoginController
 
     public function logout(Request $request): Response
     {
-        setcookie(self::COOKIE_NAME, '', [
-            'expires' => time() - 3600,
-            'path' => '/',
-            'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
-            'httponly' => true,
-            'samesite' => 'Lax',
-        ]);
+        SessionCookie::expireSetCookie();
 
         FlashMessages::success('Signed out.');
 

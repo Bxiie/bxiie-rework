@@ -17,6 +17,11 @@ systemctl is-active --quiet caddy
 systemctl is-active --quiet php8.4-fpm
 systemctl is-active --quiet mariadb
 systemctl is-active --quiet artsfolio-email-worker.service
+if systemctl list-unit-files | grep -q "^artsfolio-background-worker.service"; then
+  systemctl is-active --quiet artsfolio-background-worker.service
+else
+  echo "WARNING: artsfolio-background-worker.service is not installed. Background jobs may remain queued." >&2
+fi
 
 echo "Service checks passed."
 

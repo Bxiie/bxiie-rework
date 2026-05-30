@@ -323,6 +323,7 @@ HTML;
     {
         $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
         $activeClass = static fn (string $key): string => $active === $key ? ' class="active"' : '';
+        $authLink = $this->currentUser() ? '' : '<a class="login-link" href="/login">Sign in</a>';
 
         $html = <<<HTML
 <!doctype html>
@@ -345,7 +346,7 @@ HTML;
         <a{$activeClass('developer')} href="/developer">Developers</a>
         <a{$activeClass('contact')} href="/contact">Contact</a>
         {$platformAdminLink}
-        <a class="login-link" href="/login">Sign in</a>
+        {$authLink}
     </nav>
 </header>
 <main>
@@ -618,6 +619,14 @@ HTML;
     {
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
+
+    private function currentUser(): ?array
+    {
+        return isset($GLOBALS['artsfolio_current_user']) && is_array($GLOBALS['artsfolio_current_user'])
+            ? $GLOBALS['artsfolio_current_user']
+            : null;
+    }
 }
 
 // End of file.
+

@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Browser session persistence.
+ */
+
 declare(strict_types=1);
 
 namespace App\Platform\Auth\Session;
@@ -57,10 +61,11 @@ final class SessionRepository
     public function findActiveByHash(string $sessionHash): ?array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT s.*, u.email, u.display_name
+            "SELECT s.*, u.email, u.display_name, COALESCE(u.status, 'active') AS user_status
              FROM user_sessions s
              JOIN users u ON u.id = s.user_id
              WHERE s.session_hash = :session_hash
+               AND COALESCE(u.status, 'active') = 'active'
                AND s.revoked_at IS NULL
                AND s.expires_at > CURRENT_TIMESTAMP
              LIMIT 1"
@@ -82,6 +87,18 @@ final class SessionRepository
         );
 
         $stmt->execute(['session_hash' => $sessionHash]);
+    }
+
+    public function revokeByUserId(int $userId): void
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE user_sessions
+             SET revoked_at = CURRENT_TIMESTAMP
+             WHERE user_id = :user_id
+               AND revoked_at IS NULL"
+        );
+
+        $stmt->execute(['user_id' => $userId]);
     }
 }
 

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Middleware\CurrentUser;
 use App\Http\Request;
 use App\Http\Response;
+use App\Http\Support\SessionCookie;
 use App\Http\View\AuthPage;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Auth\Password\PasswordAuthService;
@@ -117,12 +118,12 @@ HTML);
 
     private function makeSessionCookie(string $token): string
     {
-        return CurrentUser::COOKIE_NAME . '=' . rawurlencode($token) . '; Path=/; HttpOnly; SameSite=Lax; Max-Age=1209600';
+        return SessionCookie::issueHeader($token, true);
     }
 
     private function expireSessionCookie(): string
     {
-        return CurrentUser::COOKIE_NAME . '=deleted; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
+        return SessionCookie::expireHeader();
     }
 
     private function auditAuth(Request $request, string $action, ?int $userId = null, array $details = []): void

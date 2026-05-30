@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Platform tenant-management repository.
+ */
+
 declare(strict_types=1);
 
 namespace App\Platform\Tenants;
@@ -7,7 +11,7 @@ namespace App\Platform\Tenants;
 use PDO;
 
 /**
- * Read-side repository for platform-admin tenant management screens.
+ * Read/write repository for platform-admin tenant management screens.
  */
 final class TenantAdminRepository
 {
@@ -38,6 +42,21 @@ final class TenantAdminRepository
         $stmt->execute();
 
         return $stmt->fetchAll();
+    }
+
+    public function setStatus(int $tenantId, string $status): void
+    {
+        if (!in_array($status, ['trial', 'active', 'suspended', 'archived'], true)) {
+            throw new \InvalidArgumentException('Invalid tenant status.');
+        }
+
+        $stmt = $this->pdo->prepare(
+            "UPDATE tenants
+             SET status = :status,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = :tenant_id"
+        );
+        $stmt->execute(['status' => $status, 'tenant_id' => $tenantId]);
     }
 }
 

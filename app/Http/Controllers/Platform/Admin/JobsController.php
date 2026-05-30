@@ -157,13 +157,13 @@ final class JobsController
             $errorPreview = mb_substr((string) ($job['last_error'] ?? ''), 0, 180);
 
             $actions = <<<HTML
-<form class="admin-inline-form" method="post" action="/admin/jobs/action">
+<form class="admin-inline-form" method="post" action="/platform/admin/jobs/action">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <input type="hidden" name="job_id" value="{$jobId}">
     <input type="hidden" name="job_admin_action" value="requeue">
     <button type="submit">Requeue</button>
 </form>
-<form class="admin-inline-form" method="post" action="/admin/jobs/action">
+<form class="admin-inline-form" method="post" action="/platform/admin/jobs/action">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <input type="hidden" name="job_id" value="{$jobId}">
     <input type="hidden" name="job_admin_action" value="cancel">
@@ -193,8 +193,8 @@ HTML;
         $jobTypeValue = AdminLayout::escape($jobType);
         $query = ['status' => $status, 'job_type' => $jobType, 'limit' => $limit];
 
-        $prevUrl = Pagination::previousPageUrl('/admin/jobs', $query, $page);
-        $nextUrl = Pagination::nextPageUrl('/admin/jobs', $query, $page);
+        $prevUrl = Pagination::previousPageUrl('/platform/admin/jobs', $query, $page);
+        $nextUrl = Pagination::nextPageUrl('/platform/admin/jobs', $query, $page);
         $pager = '<p>'
             . ($prevUrl ? '<a class="admin-button" href="' . AdminLayout::escape($prevUrl) . '">Previous</a> ' : '')
             . '<span class="admin-muted">Page ' . $page . '</span> '
@@ -204,7 +204,8 @@ HTML;
         return Response::html(AdminLayout::render(
             title: 'Background Jobs | Platform Admin',
             body: <<<HTML
-<form class="admin-form" method="get" action="/admin/jobs">
+<p class="admin-notice admin-notice-warning"><strong>Queued jobs require the background worker.</strong> Production deploy now checks <code>artsfolio-background-worker.service</code>. If every row stays queued, run <code>systemctl status artsfolio-background-worker.service</code> and <code>ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env php /var/www/artsfolio/scripts/workers/run_once.php</code> on the server.</p>
+<form class="admin-form" method="get" action="/platform/admin/jobs">
     <p>
         <label>Status<br>
             <input type="text" name="status" value="{$statusValue}">

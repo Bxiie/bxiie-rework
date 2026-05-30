@@ -88,6 +88,10 @@ final class HelpController
 
     public function developer(Request $request, ?array $currentUser = null): Response
     {
+        if (!$currentUser && isset($GLOBALS['artsfolio_current_user']) && is_array($GLOBALS['artsfolio_current_user'])) {
+            $currentUser = $GLOBALS['artsfolio_current_user'];
+        }
+
         if (!$currentUser) {
             return new Response('', 302, ['Location' => '/login?next=/help/developer']);
         }

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Request;
 use App\Http\Response;
+use App\Http\Support\SessionCookie;
 use App\Platform\Identity\PasswordHasher;
 use App\Platform\Auth\Session\SessionRepository;
 use App\Platform\Auth\Session\SessionTokenService;
@@ -113,13 +114,7 @@ HTML);
         $sessionToken = $this->createBrowserSession((int) $result['user_id']);
 
         if ($sessionToken !== '') {
-            setcookie(LoginController::COOKIE_NAME, $sessionToken, [
-                'expires' => time() + 86400 * 14,
-                'path' => '/',
-                'secure' => $this->isSecureCookie(),
-                'httponly' => true,
-                'samesite' => 'Lax',
-            ]);
+            SessionCookie::issueSetCookie($sessionToken, true);
         }
 
         return new Response('', 302, ['Location' => $this->gettingStartedUrl((string) $result['domain'])]);

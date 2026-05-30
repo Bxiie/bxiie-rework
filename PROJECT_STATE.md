@@ -978,3 +978,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
 
 # End of file.
+
+## 2026-05-30 access, lifecycle, developer reference, and jobs patch
+
+- Browser session cookies now use `App\Http\Support\SessionCookie` so `artsfol.io` and `*.artsfol.io` can share a session cookie via `.artsfol.io`; unrelated custom domains remain host-scoped by browser security rules.
+- Added `users.status` lifecycle state with `active`, `suspended`, and `deleted`; suspended/deleted users cannot resolve active sessions and their existing sessions are revoked on status change.
+- Platform admins can change platform user status and tenant status from platform admin screens. Tenant deletion is implemented as soft-delete/archive by setting tenant status to `archived`.
+- Suspended or archived tenant domains return an ArtsFolio-branded unavailable page with HTTP 503.
+- Developer route reference is expanded in `docs/dev/http-routes.md` and `/developer` falls back to the global current user when routed through legacy route wiring.
+- Background job execution requires `artsfolio-background-worker.service`; the unit file lives at `scripts/systemd/artsfolio-background-worker.service` and wraps `scripts/workers/run_once.php` through `scripts/workers/run_forever.php`.
+
+# End of file.

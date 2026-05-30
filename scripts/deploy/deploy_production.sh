@@ -48,6 +48,11 @@ echo "== Restart services =="
 sudo systemctl restart php8.4-fpm
 sudo systemctl restart caddy
 sudo systemctl restart artsfolio-email-worker.service
+if systemctl list-unit-files | grep -q "^artsfolio-background-worker.service"; then
+  sudo systemctl restart artsfolio-background-worker.service
+else
+  echo "WARNING: artsfolio-background-worker.service is not installed. Queued background_jobs will not execute until it is installed." >&2
+fi
 
 echo
 echo "== Health check =="

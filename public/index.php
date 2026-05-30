@@ -144,7 +144,14 @@ try {
     exit;
 }
 
-if ($tenant) {
+$suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTTP_HOST') ?? '');
+    if (!$tenant && $suspendedTenant) {
+        $tenantName = htmlspecialchars((string) ($suspendedTenant['name'] ?? 'this artist site'), ENT_QUOTES, 'UTF-8');
+        Response::html("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>Content unavailable | ArtsFolio</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><link rel=\"stylesheet\" href=\"/assets/platform.css\"></head><body class=\"platform-page\"><header class=\"platform-header\"><a class=\"platform-logo\" href=\"https://artsfol.io/\"><img src=\"/assets/logo_2.png\" alt=\"ArtsFolio\"></a></header><main class=\"platform-main\"><section class=\"platform-hero\"><p class=\"eyebrow\">ArtsFolio</p><h1>We’re sorry, this content can’t be shown.</h1><p>The site for {$tenantName} is not currently available. Please check back later or contact the artist directly if you have an existing relationship.</p><p><a class=\"button primary\" href=\"https://artsfol.io/\">Return to ArtsFolio</a></p></section></main></body></html>", 503)->send();
+        exit;
+    }
+
+    if ($tenant) {
 // Tenant login is intentionally mounted at /login on each tenant domain; the tenant root remains public content.
         $tenantSettings = new TenantSettingsRepository($pdo);
         $emailOutbox = new EmailOutboxRepository($pdo);
@@ -370,8 +377,10 @@ if ($tenant) {
     $router->get('/platform/admin/tenants', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
     $router->get('/platform/admin/tenants/{id}', fn (Request $request, array $params): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->show($request, $currentUser, (int) ($params['id'] ?? 0)));
     $router->post('/platform/admin/tenants/users/password', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->updateTenantUserPassword($request, $currentUser));
+        $router->post('/platform/admin/tenants/status', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->updateTenantStatus($request, $currentUser));
     $router->get('/platform/admin/users', fn (Request $request): Response => (new PlatformAdminUsersController(new RequirePlatformRole(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
     $router->post('/platform/admin/users/password', fn (Request $request): Response => (new PlatformAdminUsersController(new RequirePlatformRole(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->updatePassword($request, $currentUser));
+        $router->post('/platform/admin/users/status', fn (Request $request): Response => (new PlatformAdminUsersController(new RequirePlatformRole(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->updateStatus($request, $currentUser));
     $router->get('/platform/admin/stats', fn (Request $request): Response => (new PlatformAdminStatsController(new RequirePlatformRole(new MembershipRepository($pdo)), $pdo))->index($request, $currentUser));
     $router->get('/platform/admin/contact-messages', fn (Request $request): Response => (new PlatformAdminContactMessagesController(new RequirePlatformRole(new MembershipRepository($pdo)), $pdo))->index($request, $currentUser));
     $router->get('/platform/admin/domains', fn (Request $request): Response => (new PlatformAdminDomainsController(new RequirePlatformRole(new MembershipRepository($pdo)), new DomainAdminRepository($pdo), new DomainAdminService($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));

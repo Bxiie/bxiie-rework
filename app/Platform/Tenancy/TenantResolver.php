@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Tenant host resolver.
+ */
+
 declare(strict_types=1);
 
 namespace App\Platform\Tenancy;
@@ -60,6 +64,25 @@ final class TenantResolver
             domainType: (string) $row['domain_type'],
             isPrimaryDomain: (bool) $row['is_primary'],
         );
+    }
+
+    public function suspendedTenantForHost(string $host): ?array
+    {
+        $hostname = $this->normalizeHost($host);
+
+        $stmt = $this->pdo->prepare(
+            "SELECT t.id, t.slug, t.name, t.status, d.hostname
+             FROM tenant_domains d
+             JOIN tenants t ON t.id = d.tenant_id
+             WHERE d.hostname = :hostname
+               AND d.status = 'active'
+               AND t.status IN ('suspended', 'archived')
+             LIMIT 1"
+        );
+        $stmt->execute(['hostname' => $hostname]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
     }
 
     private function normalizeHost(string $host): string
