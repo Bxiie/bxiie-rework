@@ -22,7 +22,7 @@ final class MediaController
 
     public function public(Request $request, TenantContext $tenant): Response
     {
-        return $this->serve($tenant, requirePublishedArtwork: true);
+        return $this->serve($tenant, requirePublishedArtwork: true, allowSelectedBackground: true);
     }
 
     public function admin(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -34,7 +34,7 @@ final class MediaController
         return $this->serve($tenant, requirePublishedArtwork: false);
     }
 
-    private function serve(TenantContext $tenant, bool $requirePublishedArtwork): Response
+    private function serve(TenantContext $tenant, bool $requirePublishedArtwork, bool $allowSelectedBackground = false): Response
     {
         $mediaUuid = strtolower(trim((string) ($_GET['uuid'] ?? '')));
 
@@ -65,6 +65,22 @@ final class MediaController
 
         $media = $stmt->fetch();
 
+        if (!$media && $allowSelectedBackground && $this->isSelectedBackground($tenant, $mediaUuid)) {
+            $stmt = $this->pdo->prepare(
+                "SELECT m.*
+                   FROM media_assets m
+                  WHERE m.tenant_id = :tenant_id
+                    AND m.uuid = :media_uuid
+                    AND m.is_private = 0
+                  LIMIT 1"
+            );
+            $stmt->execute([
+                'tenant_id' => $tenant->tenantId,
+                'media_uuid' => $mediaUuid,
+            ]);
+            $media = $stmt->fetch();
+        }
+
         if (!$media) {
             return Response::html('<h1>404</h1><p>Media not found.</p>', 404);
         }
@@ -80,6 +96,23 @@ final class MediaController
         header('Cache-Control: public, max-age=86400');
         readfile($absolute);
         exit;
+    }
+    private function isSelectedBackground(TenantContext $tenant, string $mediaUuid): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare(
+                "SELECT setting_value
+                   FROM tenant_settings
+                  WHERE tenant_id = :tenant_id
+                    AND setting_key = 'background_media_uuid'
+                  LIMIT 1"
+            );
+            $stmt->execute(['tenant_id' => $tenant->tenantId]);
+
+            return hash_equals((string) ($stmt->fetchColumn() ?: ''), $mediaUuid);
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }
 

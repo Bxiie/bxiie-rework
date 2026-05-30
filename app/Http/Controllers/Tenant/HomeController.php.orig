@@ -403,36 +403,6 @@ HTML;
         return rtrim(rtrim(sprintf('%.2F', $opacity), '0'), '.');
     }
 
-
-    private function backgroundStyle(TenantContext $tenant): string
-    {
-        $mediaUuid = trim((string) $this->settings->get($tenant, 'background_media_uuid', ''));
-        if ($mediaUuid === '') {
-            return '';
-        }
-
-        $mode = $this->settings->get($tenant, 'background_mode', 'single') === 'tile' ? 'repeat' : 'no-repeat';
-        $size = $this->settings->get($tenant, 'background_mode', 'single') === 'tile'
-            ? $this->settings->get($tenant, 'background_tile_size', '360px')
-            : 'cover';
-        $opacity = $this->cssNumber($this->settings->get($tenant, 'background_opacity', '0.12'), '0.12');
-        $url = '/media?uuid=' . rawurlencode($mediaUuid);
-
-        return '--background-image:url(' . $url . ');--background-repeat:' . $mode . ';--background-size:' . $this->cssToken($size, 'cover') . ';--background-opacity:' . $opacity . ';';
-    }
-
-    private function cssNumber(?string $value, string $fallback): string
-    {
-        $value = trim((string) $value);
-        return preg_match('/^(?:0(?:\.\d+)?|1(?:\.0+)?)$/', $value) ? $value : $fallback;
-    }
-
-    private function cssToken(?string $value, string $fallback): string
-    {
-        $value = trim((string) $value);
-        return preg_match('/^[a-zA-Z0-9 .%_\-()]+$/', $value) ? $value : $fallback;
-    }
-
     private function events(TenantContext $tenant): string
     {
         $stmt = $this->pdo->prepare(

@@ -60,7 +60,7 @@ final class PasswordAuthController
         $this->auditAuth($request, 'auth.password_login.succeeded', (int) $login['user_id'], ['email' => $login['email'], 'session_id' => $login['session_id']]);
 
         return new Response('', 302, [
-            'Location' => '/me',
+            'Location' => '/platform/admin',
             'Set-Cookie' => $this->makeSessionCookie($login['session_token'], !empty($_POST['keep_me_logged_in'])),
         ]);
     }

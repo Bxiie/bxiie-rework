@@ -296,26 +296,6 @@ HTML;
         return $stmt->fetch() ? $value : '';
     }
 
-private function backgroundPreview(string $mediaUuid): string
-    {
-        if ($mediaUuid === '') {
-            return '<p class="admin-help">No background image is currently selected.</p>';
-        }
-
-        $src = '/media?uuid=' . rawurlencode($mediaUuid);
-
-        return '<div class="admin-media-preview"><strong>Current background image</strong><br><img src="' . $this->escape($src) . '" alt="Selected background image preview" style="max-width:260px;max-height:160px;object-fit:contain;background:#fff;border:1px solid #ddd;padding:.5rem;"></div>';
-    }
-
-    private function settingsPdo(): \PDO
-    {
-        $reflection = new \ReflectionObject($this->settings);
-        $property = $reflection->getProperty('pdo');
-        $property->setAccessible(true);
-
-        return $property->getValue($this->settings);
-    }
-
     private function safeSlug(string $value, string $default): string
     {
         $value = strtolower(trim($value));

@@ -39,7 +39,7 @@ final class TenantAdminLayout
 
         $topbarBackground = self::escape($this->settings->get($tenant, 'topbar_background_color', '#f7f2e8'));
         $topbarText = self::escape($this->settings->get($tenant, 'topbar_text_color', '#111111'));
-        $adminNav = $this->adminNav($active);
+        $adminNav = TenantAdminNav::render($active);
         $csrf = self::escape($_SESSION['csrf_token'] ?? '');
 
         return <<<HTML
@@ -100,34 +100,6 @@ HTML;
     public static function escape(string $value): string
     {
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-    }
-
-    private function adminNav(string $active): string
-    {
-        $items = [
-            'dashboard' => ['/admin', 'Dashboard'],
-            'settings' => ['/admin/settings', 'Settings'],
-            'content' => ['/admin/content', 'Content'],
-            'artworks' => ['/admin/artworks', 'Artworks'],
-            'sections' => ['/admin/portfolio-sections', 'Portfolio Sections'],
-            'events' => ['/admin/events', 'Events'],
-            'messages' => ['/admin/contact-messages', 'Messages'],
-            'email' => ['/admin/email-signups', 'Email Signups'],
-            'billing' => ['/admin/billing', 'Billing'],
-            'directory' => ['/admin/directory', 'Directory'],
-            'stats' => ['/admin/stats', 'Stats'],
-            'audit' => ['/admin/audit-log', 'Audit Log'],
-            'routes' => ['/admin/routes', 'Tenant Routes'],
-        ];
-
-        $html = '<nav>';
-        foreach ($items as $key => [$href, $label]) {
-            $class = $active === $key ? ' class="active"' : '';
-            $html .= '<a' . $class . ' href="' . self::escape($href) . '">' . self::escape($label) . '</a>';
-        }
-        $html .= '</nav>';
-
-        return $html;
     }
 
     private static function slug(string $value, string $fallback): string

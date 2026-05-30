@@ -1,18 +1,31 @@
 ## Now
 
+- Trying to log out from platform - Invalid CSRF token
+- On the admin pages, show the username of the logvged-in user and their privilege level.
+- The site should email site admin on contact message or email signup
+- email and ecommerce keys, credentials, and configuration details should be configurable from the platform admin page
+
+##
+
+- Where do you select the background image?
 - developer api demands authentication even though I'm logged in.
+- from tenant admin artwork, at least content and setting tabs do not work
+- tenant admin messages does not have correct page layout and menus
+- tenant admin email signups does not have correct page layout and menus
+- tenant admin billing - No route was found for No route for GET /admin/billing
+- The tenant admin directory tab sometimes reads 'Discover'.  The menu should be an external file that is included in the tenant admin template, right?
+- Non-logged-in users should not be able to access the admin page or any subpages.  If a user attepts to access an admin page and is not logged in, they should be redirected to the tenant or platform login page depending on which admin page was attempted for access. with an appropriate message
+- Remove the me page.  A platform admin logging in should be redirected to platform admin on login.  A tenant admin should be redirected to the tenant admin page.
+- Platform stats should include platform pages.
 
-
-
-
+##
 
 - No route was found for No route for GET /help.
 - https://artsfol.io/help/directory: Application error
 Call to undefined method App\Http\Controllers\Platform\HelpController::topic()
 - No way for the tenant to opt-in to directory
 
-
-
+##
 
 - https://bxiie.com/logout - No route was found for No route for POST /logout.
 - https://bxiie.com/help; Application error
@@ -25,8 +38,7 @@ Opted-in artists will appear here as the platform grows.'
 - Platfprm help: Application error
 Too few arguments to function App\Http\Controllers\Platform\HelpController::index(), 1 passed in /var/www/artsfolio/public/index.php on line 259 and exactly 2 expected
 
-
-
+##
 
 - help and developer sections should be combined.  The help section should have a layout similar to admin, with the sidebar linking to help articles.
 - The logo on the help pages is way too big and does not include the other artsfolio color, look, and feel
@@ -36,9 +48,7 @@ Too few arguments to function App\Http\Controllers\Platform\HelpController::inde
 - Developer information should only be available when logged in.  Should include a descritpion of all endpoints, routes, and usages suitable for a junior developer to use to implement calls against Artsfol.io.
 - The logo should be larger on the admin pages.
 
-
-
-
+##
 
 - Allow ordering a filtering of events on the admin events page.
 - Wire the google and facebook logins/tenant creation
@@ -46,10 +56,8 @@ Too few arguments to function App\Http\Controllers\Platform\HelpController::inde
 - https://artsfol.io/signup - Page not branded.
 - Logging in through home landing page signin link: No route was found for No route for POST /login.:Wq
 
-
-
-
 ##
+
 - Show aggregated hit graphs for days of the week and hours of the day for selected range on stats page in tenant admin
 - Allow showing portfolio sections as tabs at the top
 - Allow ordering of tabs
@@ -79,6 +87,5 @@ Too few arguments to function App\Http\Controllers\Platform\HelpController::inde
 - Allow editing of home page text 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.' text on home page from admin section.
 
 # later
-- The site should email site admin on contact message or email signup
 
 ## End of file.

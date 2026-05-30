@@ -45,12 +45,12 @@ use App\Http\Controllers\Tenant\Admin\ArtworksController as TenantAdminArtworksC
 use App\Http\Controllers\Tenant\Admin\ContentController as TenantAdminContentController;
 use App\Http\Controllers\Tenant\Admin\EventsController as TenantAdminEventsController;
 use App\Http\Controllers\Tenant\Admin\PortfolioSectionsController as TenantAdminPortfolioSectionsController;
+use App\Http\Controllers\Tenant\Admin\EngagementController as TenantAdminEngagementController;
 use App\Http\Controllers\Tenant\Admin\SettingsController as TenantAdminSettingsController;
 use App\Http\Controllers\Tenant\Admin\RoutesController as TenantAdminRoutesController;
 use App\Http\Controllers\Tenant\Admin\EmailSignupsController as TenantAdminEmailSignupsController;
 use App\Http\Controllers\Tenant\Admin\AuditLogController as TenantAdminAuditLogController;
 use App\Http\Controllers\Tenant\Admin\ContactMessagesController as TenantAdminContactMessagesController;
-use App\Http\Controllers\Tenant\Admin\BillingController as TenantAdminBillingController;
 use App\Http\Controllers\Tenant\ContactController;
 use App\Http\Middleware\BearerTokenAuth;
 use App\Http\Middleware\CurrentUser;
@@ -177,20 +177,6 @@ if ($tenant) {
         );
 
         $router = new Router();
-
-        // Protect every tenant-admin route before route dispatch so unauthenticated
-        // users get a login redirect instead of a raw forbidden page.
-        if (str_starts_with($request->path(), '/admin') && !in_array($request->path(), ['/admin/login'], true)) {
-            $tenantRoleGuard = new RequireTenantRoleBrowser(new MembershipRepository($pdo));
-            if (!$currentUser) {
-                (new Response('', 303, ['Location' => '/login?notice=admin-login-required']))->send();
-                exit;
-            }
-            if (!$tenantRoleGuard->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
-                Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403)->send();
-                exit;
-            }
-        }
     $router->get('/help', fn (Request $request): Response => $helpController->index($request, $currentUser));
     $router->get('/help/{article}', fn (Request $request, array $params): Response => $helpController->article($request, (string) ($params['article'] ?? 'getting-started'), $currentUser));
     $router->get('/developer', fn (Request $request): Response => $helpController->developer($request, $currentUser));
@@ -215,6 +201,10 @@ if ($tenant) {
 
         $router->post('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService()))->logout($request));
         $router->get('/admin/media', fn (Request $request): Response => (new TenantMediaController($pdo, new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->admin($request, $tenant, $currentUser));
+        $router->get('/admin/contact-messages', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->contacts($request, $tenant, $currentUser));
+        $router->post('/admin/contact-messages/delete', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->deleteContact($request, $tenant, $currentUser));
+        $router->get('/admin/email-signups', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->subscribers($request, $tenant, $currentUser));
+        $router->post('/admin/email-signups/import', fn (Request $request): Response => (new TenantAdminEngagementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->importSubscribers($request, $tenant, $currentUser));
         $router->get('/admin/portfolio-sections', fn (Request $request): Response => (new TenantAdminPortfolioSectionsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->index($request, $tenant, $currentUser));
         $router->get('/admin/portfolio-sections/edit', fn (Request $request): Response => (new TenantAdminPortfolioSectionsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->edit($request, $tenant, $currentUser));
         $router->post('/admin/portfolio-sections/edit', fn (Request $request): Response => (new TenantAdminPortfolioSectionsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->update($request, $tenant, $currentUser));
@@ -241,7 +231,6 @@ if ($tenant) {
     $router->get('/password/forgot', fn (Request $request): Response => Response::html(AuthPage::forgotPassword('/password/forgot')));
     $router->get('/admin/login', fn (Request $request): Response => new Response('', 303, ['Location' => '/login']));
     $router->get('/admin', fn (Request $request): Response => (new TenantAdminDashboardController($tenantSettings))->index($request, $tenant, $currentUser));
-        $router->get('/admin/billing', fn (Request $request): Response => (new TenantAdminBillingController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->index($request, $tenant, $currentUser));
         $router->get('/admin/routes', fn (Request $request): Response => (new TenantAdminRoutesController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
 
         $router->get('/admin/directory', fn (Request $request): Response => (new TenantAdminDiscoverySettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo), $pdo))->edit($request, $tenant, $currentUser));
@@ -258,8 +247,8 @@ if ($tenant) {
         $router->get('/admin/email-signups.csv', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->export($request, $tenant, $currentUser));
         $router->post('/admin/email-signups/consent', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->updateConsent($request, $tenant, $currentUser));
         $router->post('/admin/email-signups/delete', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->delete($request, $tenant, $currentUser));
-        $router->get('/admin/settings', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo), $pdo))->edit($request, $tenant, $currentUser));
-        $router->post('/admin/settings', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo), $pdo))->update($request, $tenant, $currentUser));
+        $router->get('/admin/settings', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo)))->edit($request, $tenant, $currentUser));
+        $router->post('/admin/settings', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo)))->update($request, $tenant, $currentUser));
         $router->get('/contact', fn (Request $request): Response => $tenantController->contact($request, $tenant));
         $router->post('/contact', fn (Request $request): Response => $contactController->submit($request, $tenant));
         $router->post('/signup', fn (Request $request): Response => $signupController->submit($request, $tenant));
@@ -274,53 +263,6 @@ if ($tenant) {
     $helpController = new PlatformHelpController();
 
     $router = new Router();
-
-    // Track platform-host page views, including platform admin pages, after the
-    // tenant router has had its chance to handle tenant sites.
-    $trackPlatformPage = static function (Request $request) use ($pdo): void {
-        if ($request->method() !== 'GET') {
-            return;
-        }
-        $path = $request->path();
-        if (str_starts_with($path, '/assets/') || $path === '/favicon.ico' || $path === '/caddy/ask') {
-            return;
-        }
-        try {
-            $ip = trim((string) ($request->server('HTTP_CF_CONNECTING_IP') ?: $request->server('REMOTE_ADDR', '')));
-            $ipHash = hash('sha256', $ip . '|artsfolio-analytics');
-            $location = (new \App\Platform\Analytics\AnalyticsLocationResolver($pdo))->resolve($request, $ip, $ipHash);
-            $stmt = $pdo->prepare(
-                'INSERT INTO analytics_events (tenant_id, event_type, path, referrer, ip_hash, user_agent, country, region, city, created_at)
-                 VALUES (NULL, :event_type, :path, :referrer, :ip_hash, :user_agent, :country, :region, :city, NOW())'
-            );
-            $stmt->execute([
-                'event_type' => str_starts_with($path, '/platform/admin') ? 'platform_admin_page_view' : 'platform_page_view',
-                'path' => $path,
-                'referrer' => mb_substr((string) $request->server('HTTP_REFERER', ''), 0, 1000),
-                'ip_hash' => $ipHash,
-                'user_agent' => mb_substr((string) $request->server('HTTP_USER_AGENT', ''), 0, 1000),
-                'country' => $location['country'],
-                'region' => $location['region'],
-                'city' => $location['city'],
-            ]);
-        } catch (\Throwable) {
-            // Analytics must never break platform pages.
-        }
-    };
-    $trackPlatformPage($request);
-
-    // Protect platform admin routes before route dispatch.
-    if (str_starts_with($request->path(), '/platform/admin') || str_starts_with($request->path(), '/admin')) {
-        $platformRoleGuard = new RequirePlatformRole(new MembershipRepository($pdo));
-        if (!$currentUser) {
-            (new Response('', 303, ['Location' => '/login?notice=platform-admin-login-required']))->send();
-            exit;
-        }
-        if (!$platformRoleGuard->allows($currentUser, [\App\Platform\Membership\Roles::PLATFORM_OWNER, \App\Platform\Membership\Roles::PLATFORM_ADMIN, \App\Platform\Membership\Roles::PLATFORM_SUPPORT])) {
-            Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403)->send();
-            exit;
-        }
-    }
 
     // Compatibility redirects from the old platform admin mount. Tenant domains
     // still use /admin/* because they are dispatched before this platform router.
@@ -378,7 +320,7 @@ if ($tenant) {
     $router->get('/login', fn (Request $request): Response => $passwordAuthController->loginForm($request));
     $router->post('/login/password', fn (Request $request): Response => $passwordAuthController->loginPassword($request));
     $router->post('/login', fn (Request $request): Response => $passwordAuthController->loginPassword($request));
-    $router->get('/me', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin']));
+    $router->get('/me', fn (Request $request): Response => $passwordAuthController->me($request, $currentUser));
     $router->post('/logout', fn (Request $request): Response => $passwordAuthController->logout($request));
     $router->get('/api/me', fn (Request $request): Response => (new MeController())->show($request, $bearerToken));
 
