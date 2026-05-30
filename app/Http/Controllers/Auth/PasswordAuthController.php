@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Middleware\CurrentUser;
 use App\Http\Request;
 use App\Http\Response;
-use App\Http\Support\SessionCookie;
 use App\Http\View\AuthPage;
 use App\Http\Support\SessionCookie;
 use App\Platform\Audit\AuditLogRepository;
