@@ -375,7 +375,7 @@ HTML;
             $stmt->execute();
             $value = trim((string) ($stmt->fetchColumn() ?: ''));
             if ($value !== '') {
-                return $this->allowSafeInlineHtml($value);
+                return str_replace('{year}', $this->escape(date('Y')), $this->allowSafeInlineHtml($value));
             }
         } catch (Throwable) {
         }

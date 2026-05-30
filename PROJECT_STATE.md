@@ -773,6 +773,14 @@
 - Tenant audit log rendering was repaired; `/admin/audit-log` now builds and displays the table body instead of returning an empty page.
 - Tenant public page handlers now write `analytics_events` rows for public page, portfolio, contact, about, and artwork/image views. The tenant and platform stats pages read from `analytics_events`, so this aligns tracking with reporting.
 
+## 2026-05-30 header, copyright, and developer-reference patch
+
+- Public platform page headers now hide the Sign in link when `artsfolio_current_user` is present and show an Admin link for signed-in users.
+- Tenant public page headers show an Admin link for signed-in users and do not add a Sign in link.
+- Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
+- The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
+- The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
+
 # End of file.
 
 ## 2026-05-25 current complaints repair
@@ -787,6 +795,14 @@
 - The apply script seeds existing Bxiie tenant `custom_css` when blank.
 - OAuth Google/Facebook redirect routes are mounted. Callback routes fail closed with HTTP 501 until provider credentials and tested token exchange are configured.
 
+## 2026-05-30 header, copyright, and developer-reference patch
+
+- Public platform page headers now hide the Sign in link when `artsfolio_current_user` is present and show an Admin link for signed-in users.
+- Tenant public page headers show an Admin link for signed-in users and do not add a Sign in link.
+- Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
+- The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
+- The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
+
 # End of file.
 
 ## admin-session-help-stats-audit update
@@ -797,6 +813,14 @@
 - Platform stats are exposed at `/admin/stats`; tenant stats remain at tenant `/admin/stats`.
 - Tenant audit-log rendering was repaired so scoped audit rows are visible instead of an empty panel.
 
+## 2026-05-30 header, copyright, and developer-reference patch
+
+- Public platform page headers now hide the Sign in link when `artsfolio_current_user` is present and show an Admin link for signed-in users.
+- Tenant public page headers show an Admin link for signed-in users and do not add a Sign in link.
+- Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
+- The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
+- The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
+
 # End of file.
 
 ## Help platform polish bundle
@@ -806,6 +830,14 @@
 - Platform admin layout uses `public/assets/logo_2.png` and ArtsFolio platform branding instead of tenant/Bxiie branding.
 - Platform settings can manage support email, expected DNS IPv4, persistent login days, global artist-directory enablement, and platform custom CSS served from `/assets/platform-custom.css`.
 - `/pricing` is a branded plan-comparison page.
+
+## 2026-05-30 header, copyright, and developer-reference patch
+
+- Public platform page headers now hide the Sign in link when `artsfolio_current_user` is present and show an Admin link for signed-in users.
+- Tenant public page headers show an Admin link for signed-in users and do not add a Sign in link.
+- Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
+- The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
+- The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
 
 # End of file.
 
@@ -866,6 +898,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The selected artwork id is stored in `tenant_settings.platform_directory_thumbnail_artwork_id`.
 - Platform admin layout now has distinct platform branding/background and platform-only navigation to avoid confusion with tenant admin.
 - Tenant admin directory controls remain tenant-scoped; platform admins only control global directory availability.
+
+## 2026-05-30 header, copyright, and developer-reference patch
+
+- Public platform page headers now hide the Sign in link when `artsfolio_current_user` is present and show an Admin link for signed-in users.
+- Tenant public page headers show an Admin link for signed-in users and do not add a Sign in link.
+- Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
+- The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
+- The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
 
 # End of file.
 
@@ -928,5 +968,13 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Public contact/signup submissions verify reCAPTCHA when a tenant or platform secret is configured.
 - Platform stats now include day/hour bar graphs and location drilldown with unique IP hashes and access counts.
 - Admin color fields are progressively enhanced with color pickers and live swatches via `/assets/admin-color-fields.js`.
+
+## 2026-05-30 header, copyright, and developer-reference patch
+
+- Public platform page headers now hide the Sign in link when `artsfolio_current_user` is present and show an Admin link for signed-in users.
+- Tenant public page headers show an Admin link for signed-in users and do not add a Sign in link.
+- Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
+- The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
+- The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
 
 # End of file.

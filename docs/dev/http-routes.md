@@ -1,20 +1,13 @@
 # ArtsFolio HTTP Routes
 
-Developer route documentation is available in the application at `/help/developer` after login.
+The in-application developer reference is available at `/help/developer` or `/developer` after login. It includes route descriptions and curl examples for browser authentication, public platform routes, platform admin routes, tenant public routes, and tenant admin routes.
 
-This hotfix specifically verifies these browser routes:
+Operational notes:
 
-- `GET /help`
-- `GET /help/{article}`
-- `GET /developer`
-- `GET /pricing`
-- `GET /directory`
-- `POST /logout`
-- `POST /login`
-- `POST /login/password`
+- Platform admin routes live under `/platform/admin/*` on the platform host.
+- Tenant admin routes live under `/admin/*` on tenant hosts after tenant resolution.
+- Browser form POST routes use CSRF tokens and should normally be exercised through the rendered form.
+- Authenticated examples require the `artsfolio_session` browser cookie.
+- The old platform `/admin/*` routes redirect to `/platform/admin/*` on the platform host for compatibility.
 
-The public pricing page is served by `App\\Http\\Controllers\\Platform\\PricingController`.
-The public directory page is served by `App\\Http\\Controllers\\Platform\\DirectoryController`.
-The combined help/developer section is served by `App\\Http\\Controllers\\Platform\\HelpController`.
-
-<!-- End of file. -->
+# End of file.

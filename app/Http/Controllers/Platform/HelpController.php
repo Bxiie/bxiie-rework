@@ -93,35 +93,110 @@ final class HelpController
         }
 
         $body = <<<HTML
-<p class="admin-muted">Developer information is visible only after login. It is written as a practical route map for a junior developer implementing against ArtsFolio.</p>
+<p class="admin-muted">Developer information is visible only after login. This reference gives each major browser/API route a practical usage description and a copy-pasteable example.</p>
+
+<h2>How to read this reference</h2>
+<p>Examples assume the command is run from a trusted workstation and that browser-authenticated routes use the same session cookie a user receives after login. Replace <code>https://artsfol.io</code>, tenant hostnames, IDs, and form values with real deployment values.</p>
+
 <h2>Browser authentication</h2>
-<table class="admin-table"><thead><tr><th>Method</th><th>Route</th><th>Use</th></tr></thead><tbody>
-<tr><td>GET</td><td><code>/login</code></td><td>Render branded login.</td></tr>
-<tr><td>POST</td><td><code>/login</code></td><td>Submit email/password login from the branded form.</td></tr>
-<tr><td>POST</td><td><code>/login/password</code></td><td>Backward-compatible password-login endpoint.</td></tr>
-<tr><td>POST</td><td><code>/logout</code></td><td>Clear browser authorization and return to login.</td></tr>
-</tbody></table>
+<div class="feature-grid developer-route-grid">
+    <article><h3>GET /login</h3><p>Render the branded login form. Use this route when redirecting a browser user who needs to authenticate before reaching admin, developer, or account pages.</p><pre><code>curl -i https://artsfol.io/login</code></pre></article>
+    <article><h3>POST /login</h3><p>Submit local email/password credentials from the branded login form. A successful response sets the browser session cookie and redirects the user.</p><pre><code>curl -i -X POST https://artsfol.io/login \
+  -d 'email=admin@example.com' \
+  -d 'password=replace-with-real-password'</code></pre></article>
+    <article><h3>POST /login/password</h3><p>Backward-compatible password-login endpoint retained for older forms and scripts. Prefer <code>POST /login</code> for new browser form work unless you are maintaining an old flow.</p><pre><code>curl -i -X POST https://artsfol.io/login/password \
+  -d 'email=admin@example.com' \
+  -d 'password=replace-with-real-password'</code></pre></article>
+    <article><h3>POST /logout</h3><p>Clear the active browser session. Use this from logout buttons in authenticated platform or tenant admin screens.</p><pre><code>curl -i -X POST https://artsfol.io/logout \
+  -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE'</code></pre></article>
+</div>
+
 <h2>Platform public routes</h2>
-<table class="admin-table"><thead><tr><th>Method</th><th>Route</th><th>Use</th></tr></thead><tbody>
-<tr><td>GET</td><td><code>/</code></td><td>ArtsFolio landing page.</td></tr>
-<tr><td>GET</td><td><code>/pricing</code></td><td>Plan comparison and signup call to action.</td></tr>
-<tr><td>GET</td><td><code>/signup</code></td><td>Tenant signup form.</td></tr>
-<tr><td>POST</td><td><code>/signup</code></td><td>Create the tenant and initial user.</td></tr>
-<tr><td>GET</td><td><code>/directory</code></td><td>Opted-in artist directory.</td></tr>
-<tr><td>GET</td><td><code>/help</code></td><td>Help landing article.</td></tr>
-<tr><td>GET</td><td><code>/help/{article}</code></td><td>Help article or developer reference.</td></tr>
-</tbody></table>
-<h2>Tenant routes</h2>
-<table class="admin-table"><thead><tr><th>Method</th><th>Route</th><th>Use</th></tr></thead><tbody>
-<tr><td>GET</td><td><code>/admin</code></td><td>Tenant dashboard.</td></tr>
-<tr><td>GET</td><td><code>/admin/settings</code></td><td>Tenant settings and CSS.</td></tr>
-<tr><td>GET</td><td><code>/admin/directory</code></td><td>Tenant directory opt-in.</td></tr>
-<tr><td>POST</td><td><code>/admin/directory</code></td><td>Save tenant directory opt-in.</td></tr>
-<tr><td>GET</td><td><code>/admin/artworks</code></td><td>Artwork inventory.</td></tr>
-<tr><td>GET</td><td><code>/admin/events</code></td><td>Events and exhibitions.</td></tr>
-<tr><td>GET</td><td><code>/admin/stats</code></td><td>Tenant stats.</td></tr>
-<tr><td>GET</td><td><code>/admin/audit-log</code></td><td>Tenant audit entries.</td></tr>
-</tbody></table>
+<div class="feature-grid developer-route-grid">
+    <article><h3>GET /</h3><p>Render the ArtsFolio public landing page. Use this as the canonical platform homepage for marketing, directory entry points, help links, and signup calls to action.</p><pre><code>curl -i https://artsfol.io/</code></pre></article>
+    <article><h3>GET /pricing</h3><p>Render public plan and pricing information. Use this route from marketing pages, emails, and onboarding flows where users compare tiers.</p><pre><code>curl -i https://artsfol.io/pricing</code></pre></article>
+    <article><h3>GET /signup</h3><p>Render the tenant signup form. Use this for new artists or organizations starting an ArtsFolio tenant.</p><pre><code>curl -i https://artsfol.io/signup</code></pre></article>
+    <article><h3>POST /signup</h3><p>Create a tenant, public slug, initial owner user, membership, and provisioning jobs. The form is CSRF-protected in the browser path, so scripts should be limited to controlled tests unless an API-specific signup endpoint is added.</p><pre><code>curl -i -X POST https://artsfol.io/signup \
+  -d 'csrf_token=TOKEN_FROM_FORM' \
+  -d 'site_name=Example Studio' \
+  -d 'slug=example-studio' \
+  -d 'admin_name=Example Admin' \
+  -d 'email=admin@example.com' \
+  -d 'password=long-development-password'</code></pre></article>
+    <article><h3>GET /directory</h3><p>Render the public artist directory. Results require the platform directory to be enabled and each listed tenant to have opted into discovery.</p><pre><code>curl -i https://artsfol.io/directory</code></pre></article>
+    <article><h3>GET /help</h3><p>Render the public help landing article. Use this as the general support entry point for artists and tenant admins.</p><pre><code>curl -i https://artsfol.io/help</code></pre></article>
+    <article><h3>GET /help/{article}</h3><p>Render a specific help article, such as branding, artworks, events, directory, stats, audit, or developer. Developer reference is login-gated.</p><pre><code>curl -i https://artsfol.io/help/branding</code></pre></article>
+    <article><h3>GET /developer</h3><p>Compatibility route for the developer reference. It requires login and should redirect anonymous users to the login flow.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://artsfol.io/developer</code></pre></article>
+</div>
+
+<h2>Platform admin routes</h2>
+<div class="feature-grid developer-route-grid">
+    <article><h3>GET /platform/admin</h3><p>Open the platform admin dashboard. This is for global ArtsFolio operations, not tenant-site editing.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://artsfol.io/platform/admin</code></pre></article>
+    <article><h3>GET /platform/admin/platform-settings</h3><p>Edit global platform settings such as platform branding, copyright, directory behavior, OAuth configuration notes, and directory thumbnail sizing.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://artsfol.io/platform/admin/platform-settings</code></pre></article>
+    <article><h3>POST /platform/admin/platform-settings</h3><p>Save platform settings. Use the browser form so CSRF and audit behavior remain intact.</p><pre><code>curl -i -X POST https://artsfol.io/platform/admin/platform-settings \
+  -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  -d 'csrf_token=TOKEN_FROM_FORM' \
+  -d 'platform_footer_copyright_html=© {year} ArtsFolio'</code></pre></article>
+    <article><h3>GET /platform/admin/domains</h3><p>Review custom-domain status, DNS verification state, and related jobs. Use this to troubleshoot tenant custom domains.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://artsfol.io/platform/admin/domains</code></pre></article>
+    <article><h3>POST /platform/admin/domains/action</h3><p>Run domain actions such as DNS verification. The response returns to the domain admin screen with status messaging.</p><pre><code>curl -i -X POST https://artsfol.io/platform/admin/domains/action \
+  -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  -d 'csrf_token=TOKEN_FROM_FORM' \
+  -d 'domain_id=123' \
+  -d 'action=verify_dns'</code></pre></article>
+    <article><h3>GET /platform/admin/stats</h3><p>View platform analytics, including aggregate day/hour charts and location/IP drill-downs when analytics data is present.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://artsfol.io/platform/admin/stats</code></pre></article>
+    <article><h3>GET /platform/admin/audit-log</h3><p>Review platform audit events for security and administrative changes.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://artsfol.io/platform/admin/audit-log</code></pre></article>
+    <article><h3>GET /platform/admin/audit-log.csv</h3><p>Export platform audit entries as CSV for review or archival.</p><pre><code>curl -OJ -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://artsfol.io/platform/admin/audit-log.csv</code></pre></article>
+</div>
+
+<h2>Tenant public routes</h2>
+<div class="feature-grid developer-route-grid">
+    <article><h3>GET /</h3><p>Render the tenant public homepage on the tenant hostname. The platform tenant resolver chooses the tenant from the host.</p><pre><code>curl -i https://bxiie.com/</code></pre></article>
+    <article><h3>GET /portfolio</h3><p>Render the tenant portfolio page. Section filters may be applied by query string when portfolio sections exist.</p><pre><code>curl -i 'https://bxiie.com/portfolio?section=sculpture'</code></pre></article>
+    <article><h3>GET /artwork/{slug}</h3><p>Render a public artwork detail page by artwork slug. Use this for collector, press, and directory links to specific works.</p><pre><code>curl -i https://bxiie.com/artwork/example-work</code></pre></article>
+    <article><h3>GET /about</h3><p>Render the tenant about page, including configured copy and exhibition/event content when present.</p><pre><code>curl -i https://bxiie.com/about</code></pre></article>
+    <article><h3>GET /contact</h3><p>Render the tenant contact page and contact form.</p><pre><code>curl -i https://bxiie.com/contact</code></pre></article>
+    <article><h3>POST /contact</h3><p>Submit a tenant contact message. The browser path is CSRF and rate-limit protected, and should be used through the rendered form.</p><pre><code>curl -i -X POST https://bxiie.com/contact \
+  -d 'csrf_token=TOKEN_FROM_FORM' \
+  -d 'name=Collector Name' \
+  -d 'email=collector@example.com' \
+  -d 'subject=Inquiry' \
+  -d 'message=I am interested in this work.'</code></pre></article>
+    <article><h3>POST /signup</h3><p>Submit a tenant mailing-list signup when that form is exposed by the tenant site. The request is tenant-scoped by hostname.</p><pre><code>curl -i -X POST https://bxiie.com/signup \
+  -d 'csrf_token=TOKEN_FROM_FORM' \
+  -d 'email=collector@example.com'</code></pre></article>
+</div>
+
+<h2>Tenant admin routes</h2>
+<div class="feature-grid developer-route-grid">
+    <article><h3>GET /admin</h3><p>Open the tenant admin dashboard for the current tenant hostname. Use this for site/content work, not global platform operations.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://bxiie.com/admin</code></pre></article>
+    <article><h3>GET /admin/settings</h3><p>Edit tenant branding, public labels, CSS, page copy settings, slugs, colors, and public-site options.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://bxiie.com/admin/settings</code></pre></article>
+    <article><h3>GET /admin/directory</h3><p>Configure tenant discovery opt-in, directory summary, and featured directory thumbnail selection.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://bxiie.com/admin/directory</code></pre></article>
+    <article><h3>POST /admin/directory</h3><p>Save tenant directory settings. Use the browser form to preserve CSRF validation and audit logging.</p><pre><code>curl -i -X POST https://bxiie.com/admin/directory \
+  -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  -d 'csrf_token=TOKEN_FROM_FORM' \
+  -d 'platform_directory_opt_in=1' \
+  -d 'platform_directory_summary=Contemporary geometric work.'</code></pre></article>
+    <article><h3>GET /admin/artworks</h3><p>Manage tenant artwork inventory, image uploads, metadata, publish status, and portfolio assignments.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://bxiie.com/admin/artworks</code></pre></article>
+    <article><h3>GET /admin/portfolio-sections</h3><p>Manage portfolio sections and ordering. Use this before assigning or manually ordering artworks in public groupings.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://bxiie.com/admin/portfolio-sections</code></pre></article>
+    <article><h3>GET /admin/events</h3><p>Manage exhibitions, fairs, talks, residencies, and other date-based public history.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://bxiie.com/admin/events</code></pre></article>
+    <article><h3>GET /admin/stats</h3><p>Review tenant-scoped analytics and content engagement for the current tenant.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://bxiie.com/admin/stats</code></pre></article>
+    <article><h3>GET /admin/audit-log</h3><p>Review tenant-scoped administrative and security events.</p><pre><code>curl -i -H 'Cookie: artsfolio_session=SESSION_COOKIE_VALUE' \
+  https://bxiie.com/admin/audit-log</code></pre></article>
+</div>
 HTML;
 
         return Response::html($this->layout('Developer reference', $body, 'developer', $currentUser));
