@@ -321,6 +321,7 @@ HTML;
 
     private function page(string $title, string $body, string $active): Response
     {
+        $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
         $activeClass = static fn (string $key): string => $active === $key ? ' class="active"' : '';
 
         $html = <<<HTML
