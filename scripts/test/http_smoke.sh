@@ -178,3 +178,10 @@ if grep -R 'href=["'"'"'].*platform/admin' app/Http/Controllers/Tenant >/dev/nul
   exit 1
 fi
 echo "tenant admin nav points to tenant admin."
+
+
+# Tenant public navigation must link to tenant admin, not platform admin.
+if fetch_body "bxiie.artsfol.io" "/" | grep -q 'href="/platform/admin"'; then
+  echo "FAILED: tenant public nav does not expose platform admin" >&2
+  exit 1
+fi

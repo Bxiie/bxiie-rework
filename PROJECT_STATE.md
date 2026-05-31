@@ -1127,3 +1127,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 ## Tenant admin navigation
 - Tenant public Admin links point to `/admin` on the current tenant host. Platform admin remains canonical at `https://artsfol.io/platform/admin`; tenant public navigation must not link to `/platform/admin`.
+
+## Tenant admin navigation
+- Tenant public Admin links point to `/admin` on the current tenant host. Platform admin remains canonical at `https://artsfol.io/platform/admin`; tenant public navigation must not link to `/platform/admin`.
+
+## Tenant public admin navigation
+
+- Tenant public pages use `/admin` for their Admin nav link on the tenant host.
+- Platform admin remains canonical at `https://artsfol.io/platform/admin` and must not be emitted in tenant public navigation.
+

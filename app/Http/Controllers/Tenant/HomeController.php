@@ -335,6 +335,24 @@ HTML
         return '';
     }
 
+
+    /**
+     * Returns the tenant-admin link for signed-in users on tenant public pages.
+     *
+     * Tenant hosts must never link their public Admin tab to /platform/admin;
+     * that route belongs to the canonical platform host. The tenant admin entry
+     * point is always /admin on the current tenant hostname.
+     */
+    private function tenantAdminLink(): string
+    {
+        $currentUser = $GLOBALS['artsfolio_current_user'] ?? null;
+        if (!is_array($currentUser) || empty($currentUser['user_id'])) {
+            return '';
+        }
+
+        return '<a class="tenant-admin-top-link" href="/admin">Admin</a>';
+    }
+
     private function layout(TenantContext $tenant, string $title, string $body): string
     {
         $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
@@ -353,7 +371,7 @@ HTML
         $aboutSlug = $this->escape($this->settings->get($tenant, 'about_slug', 'about'));
         $contactSlug = $this->escape($this->settings->get($tenant, 'contact_slug', 'contact'));
         $backgroundStyle = $this->backgroundCssVariables($tenant);
-        $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
+        $platformAdminLink = $this->tenantAdminLink();
 
         return <<<HTML
 <!doctype html>
