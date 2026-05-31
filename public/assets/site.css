@@ -446,3 +446,28 @@ body[style*="--background-image"]::before {
 }
 
 /* End of file. */
+
+/* First-party CAPTCHA form-fix hardening. */
+.af-honeypot {
+    position: absolute !important;
+    left: -10000px !important;
+    top: auto !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.af-form-result.info {
+    border: 1px solid #777;
+    background: #f6f6f6;
+}
+
+button[aria-busy="true"],
+input[type="submit"][aria-busy="true"] {
+    cursor: progress;
+    opacity: 0.72;
+}
+
+/* End of file. */

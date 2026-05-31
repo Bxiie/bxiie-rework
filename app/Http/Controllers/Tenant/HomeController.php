@@ -365,7 +365,7 @@ HTML
     <meta name="description" content="Artist portfolio">
     <link rel="stylesheet" href="/assets/site.css">
     <link rel="stylesheet" href="/tenant.css">
-    <script src="/assets/tenant-forms.js" defer></script>
+    <script src="/assets/tenant-forms.js?v=20260531b" defer></script>
 </head>
 <body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};{$backgroundStyle}">
 <header class="site-header">

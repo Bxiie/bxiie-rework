@@ -34,9 +34,9 @@ final class FirstPartyCaptcha
 <div class="af-captcha" data-af-captcha>
     <input type="hidden" name="af_captcha_token" value="{$token}">
     <input type="hidden" name="af_captcha_issued_at" value="{$issuedAt}">
-    <input type="text" name="website_url" value="" tabindex="-1" autocomplete="off" class="af-honeypot" aria-hidden="true">
+    <input type="text" name="website_url" value="" tabindex="-1" autocomplete="off" class="af-honeypot" aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;">
     <label class="af-captcha-box">
-        <input type="checkbox" name="af_captcha_confirm" value="1" required disabled>
+        <input type="checkbox" name="af_captcha_confirm" value="1" required>
         <span>I’m human</span>
     </label>
     <small class="af-captcha-help">The checkbox unlocks after a moment. This keeps spam bots out without Google reCAPTCHA.</small>

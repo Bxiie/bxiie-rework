@@ -1119,3 +1119,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 ## Platform admin redirect compatibility
 - Tenant-host platform-admin redirects use `Response::html(..., 302, Location)` because `App\Http\Response` has no `redirect()` factory method.
 
+
+## Tenant first-party CAPTCHA form-fix
+- Tenant first-party CAPTCHA is progressively enhanced: the checkbox is usable without JavaScript after server dwell time, and JavaScript only temporarily disables it.
+- The honeypot field is hidden inline and in CSS to prevent tenant CSS/cache drift from exposing it to visitors.
+- Tenant form JavaScript now surfaces server error text instead of replacing failures with a generic message.
