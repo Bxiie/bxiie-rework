@@ -1,5 +1,28 @@
 ## Now
 
+-
+
+
+##
+
+- admin top nav from https://bxiie.artsfol.io/help goes to platform admin, not tenant admin
+
+##
+
+- admin link in tenant top nav goes to https://bxiie.artsfol.io/platform/admin
+
+##
+
+- If the recaptcha fails, tell the user on the same page rather than redirecting to an unbranded error page
+- Show an activity indicator while emails are being sent
+- Show the email sent message on the same page.  Clear the form.
+- Recaptcha for tenant: ERROR for site owner: Invalid domain for site key
+- Need email list signup on contact page, also, an unknown user should be presented a dialog to sign up for tenant's email list after one minute on site.
+- top nav on tenant pages should be consistent to each other.  Tabs should not change position.
+- top nav on platform pages should be consistent to each other.  Tabs should not change position.
+
+##
+
 - platform admin workers - says all workers are stale
 - platform admin jobs - remove Queued jobs require the background worker messaging.
 - Platform should check that the worker is running every minute.  Platform admin pages should display an error message if it is not.
