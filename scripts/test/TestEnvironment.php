@@ -14,8 +14,14 @@ final class TestEnvironment
         $envFile = (string) (getenv('ARTSFOLIO_ENV_FILE') ?: '');
         $normalized = str_replace('\\', '/', $envFile);
 
+        $projectRoot = str_replace('\\\\', '/', dirname(__DIR__, 2));
+        $appEnv = strtolower((string) (getenv('APP_ENV') ?: getenv('ARTSFOLIO_ENV') ?: ''));
+
         return str_contains($normalized, '/etc/artsfolio/')
-            || str_ends_with($normalized, '/artsfolio.env');
+            || str_ends_with($normalized, '/artsfolio.env')
+            || $projectRoot === '/var/www/artsfolio'
+            || $appEnv === 'production'
+            || $appEnv === 'prod';
     }
 
     public static function skipIfProduction(string $scriptName): void
