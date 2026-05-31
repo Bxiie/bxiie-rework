@@ -28,6 +28,8 @@ final class SessionRepository
         ?string $userAgent,
         int $ttlSeconds = 1209600,
     ): int {
+        $expiresAt = $this->expiryTimestamp($ttlSeconds);
+
         $stmt = $this->pdo->prepare(
             "INSERT INTO user_sessions (
                 session_hash,
@@ -42,7 +44,7 @@ final class SessionRepository
                 :tenant_id,
                 :ip_address,
                 :user_agent,
-                DATE_ADD(CURRENT_TIMESTAMP, INTERVAL :ttl_seconds SECOND)
+                :expires_at
             )"
         );
 
@@ -52,10 +54,24 @@ final class SessionRepository
             'tenant_id' => $tenantId,
             'ip_address' => $ipAddress,
             'user_agent' => $userAgent,
-            'ttl_seconds' => $ttlSeconds,
+            'expires_at' => $expiresAt,
         ]);
 
         return (int) $this->pdo->lastInsertId();
+    }
+
+    /**
+     * MariaDB does not reliably accept a bound placeholder inside INTERVAL
+     * syntax across native/emulated PDO modes. Compute the expiry value in PHP
+     * so the inserted row can be read back by the same active-session query.
+     */
+    private function expiryTimestamp(int $ttlSeconds): string
+    {
+        $ttlSeconds = max(60, $ttlSeconds);
+
+        return (new \DateTimeImmutable('now'))
+            ->modify('+' . $ttlSeconds . ' seconds')
+            ->format('Y-m-d H:i:s');
     }
 
     public function findActiveByHash(string $sessionHash): ?array

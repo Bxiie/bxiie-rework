@@ -1005,3 +1005,9 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 ## 2026-05-30 tenant login cookie loop fix
 - Fixed tenant-domain browser login/logout in `app/Http/Controllers/Auth/LoginController.php` so the `artsfolio_session` `Set-Cookie` header is returned with successful login and expired on logout.
 - Added `scripts/test/browser_login_sets_session_cookie.php` to prevent a regression where login succeeds but `/admin/*` redirects back to `/login?notice=admin-login-required` because the browser never received the session cookie.
+
+
+## 2026-05-30 browser session persistence fix
+- Fixed `app/Platform/Auth/Session/SessionRepository.php` so session expiry is computed in PHP and inserted as `:expires_at` instead of relying on a bound placeholder inside MariaDB `INTERVAL` syntax.
+- Confirmed tenant login/logout and platform signup return `Set-Cookie` with redirect responses so browser sessions can survive redirects.
+- Added `scripts/test/session_repository_expiry_sql.php` as a regression check for the session persistence SQL and browser-auth Set-Cookie behavior.

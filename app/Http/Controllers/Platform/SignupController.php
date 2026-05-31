@@ -113,11 +113,13 @@ HTML);
 
         $sessionToken = $this->createBrowserSession((int) $result['user_id']);
 
+        $headers = ['Location' => $this->gettingStartedUrl((string) $result['domain'])];
+
         if ($sessionToken !== '') {
-            SessionCookie::issueSetCookie($sessionToken, true);
+            $headers['Set-Cookie'] = SessionCookie::issueSetCookie($sessionToken, true);
         }
 
-        return new Response('', 302, ['Location' => $this->gettingStartedUrl((string) $result['domain'])]);
+        return new Response('', 302, $headers);
     }
 
     private function createBrowserSession(int $userId): string
