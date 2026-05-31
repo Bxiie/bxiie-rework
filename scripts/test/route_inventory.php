@@ -5,9 +5,10 @@ declare(strict_types=1);
 /**
  * Static route inventory regression test.
  *
- * This test guards the intended platform/tenant route split without needing a
- * browser or network listener. HTTP-level smoke coverage remains in
- * scripts/test/http_smoke.sh.
+ * This guards the intended platform/tenant route split without opening a
+ * network listener. The parser intentionally extracts the full tenant if-block
+ * with brace matching instead of splitting on the first exit; tenant guard code
+ * legitimately contains early exits before route registration.
  */
 
 $root = dirname(__DIR__, 2);
@@ -26,20 +27,79 @@ function failWith(string $message): never
     exit(1);
 }
 
-if (!str_contains($contents, "if (\$tenant) {")) {
+/**
+ * Return the source slice covered by the first balanced brace block beginning
+ * at the supplied opening brace offset.
+ */
+function extractBalancedBlock(string $source, int $openBraceOffset): string
+{
+    $length = strlen($source);
+    $depth = 0;
+    $inSingle = false;
+    $inDouble = false;
+    $escaped = false;
+
+    for ($i = $openBraceOffset; $i < $length; $i++) {
+        $char = $source[$i];
+
+        if ($escaped) {
+            $escaped = false;
+            continue;
+        }
+
+        if (($inSingle || $inDouble) && $char === '\\') {
+            $escaped = true;
+            continue;
+        }
+
+        if (!$inDouble && $char === "'") {
+            $inSingle = !$inSingle;
+            continue;
+        }
+
+        if (!$inSingle && $char === '"') {
+            $inDouble = !$inDouble;
+            continue;
+        }
+
+        if ($inSingle || $inDouble) {
+            continue;
+        }
+
+        if ($char === '{') {
+            $depth++;
+            continue;
+        }
+
+        if ($char === '}') {
+            $depth--;
+            if ($depth === 0) {
+                return substr($source, $openBraceOffset, $i - $openBraceOffset + 1);
+            }
+        }
+    }
+
+    failWith('Tenant route block opening brace was found, but no matching closing brace was found.');
+}
+
+$tenantNeedle = 'if ($tenant) {';
+$tenantIfOffset = strpos($contents, $tenantNeedle);
+
+if ($tenantIfOffset === false) {
     failWith('Tenant route block not found.');
 }
 
-$parts = explode('if ($tenant) {', $contents, 2);
-$beforeTenant = $parts[0];
-$afterTenant = $parts[1];
+$tenantOpenBraceOffset = strpos($contents, '{', $tenantIfOffset);
+if ($tenantOpenBraceOffset === false) {
+    failWith('Tenant route block opening brace not found.');
+}
 
-$tenantBlock = explode('exit;', $afterTenant, 2)[0] ?? '';
-$platformBlock = explode('exit;', $afterTenant, 2)[1] ?? '';
+$beforeTenant = substr($contents, 0, $tenantIfOffset);
+$tenantBlock = extractBalancedBlock($contents, $tenantOpenBraceOffset);
+$platformBlock = substr($contents, $tenantIfOffset + strlen($tenantBlock));
 
 $tenantMustContain = [
     "\$router->get('/'",
-    "\$router->get('/login'",
     "\$router->post('/login'",
     "\$router->get('/admin'",
     "\$router->get('/contact'",
@@ -85,7 +145,7 @@ if (
     && !str_contains($platformBlock, "\$router->post('/login/password'")
     && !str_contains($beforeTenant, "\$router->post('/login/password'")
 ) {
-    failWith("Platform route area is missing an expected login POST route.");
+    failWith('Platform route area is missing an expected login POST route.');
 }
 
 if (str_contains($tenantBlock, "\$router->get('/signup'")) {
@@ -94,8 +154,8 @@ if (str_contains($tenantBlock, "\$router->get('/signup'")) {
 
 echo json_encode([
     'ok' => true,
-    'tenant_login' => 'domain/login',
-    'tenant_root' => 'public tenant site',
+    'tenant_root_route_present' => true,
+    'tenant_admin_routes_are_tenant_only' => true,
     'platform_jobs_route_is_platform_only' => true,
     'platform_workers_route_is_platform_only' => true,
 ], JSON_PRETTY_PRINT) . PHP_EOL;

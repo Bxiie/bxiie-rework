@@ -1,6 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
+# HTTP smoke tests for the platform/tenant split.
+#
+# These tests intentionally avoid brittle scaffold copy. Tenant assertions check
+# resolution semantics, expected configured identity, and absence of obvious
+# platform-only content.
+
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "${PROJECT_ROOT}"
 
@@ -8,6 +14,8 @@ PORT="${ARTSFOLIO_HTTP_SMOKE_PORT:-18080}"
 ENV_FILE="${ARTSFOLIO_ENV_FILE:-.env.local}"
 BASE_URL="http://127.0.0.1:${PORT}"
 LOG_FILE="/tmp/artsfolio-http-smoke-${PORT}.log"
+TENANT_HOST="${ARTSFOLIO_SMOKE_TENANT_HOST:-bxiie.com}"
+TENANT_EXPECTED_TITLE="${ARTSFOLIO_SMOKE_TENANT_TITLE:-James Payne Art}"
 
 cleanup() {
   if [[ -n "${SERVER_PID:-}" ]] && kill -0 "${SERVER_PID}" 2>/dev/null; then
@@ -29,23 +37,54 @@ for _ in {1..40}; do
   sleep 0.25
 done
 
-assert_contains() {
+fetch_body() {
+  local host="$1"
+  local path="$2"
+
+  curl -fsS -H "Host: ${host}" "${BASE_URL}${path}"
+}
+
+fail_with_body() {
+  local description="$1"
+  local message="$2"
+  local body="$3"
+
+  echo "FAILED: ${description}" >&2
+  echo "${message}" >&2
+  echo "Response body:" >&2
+  echo "${body}" >&2
+  echo "Server log:" >&2
+  cat "${LOG_FILE}" >&2
+  exit 1
+}
+
+assert_contains_ci() {
   local description="$1"
   local host="$2"
   local path="$3"
   local expected="$4"
 
   local body
-  body="$(curl -fsS -H "Host: ${host}" "${BASE_URL}${path}")"
+  body="$(fetch_body "${host}" "${path}")"
 
-  if [[ "${body}" != *"${expected}"* ]]; then
-    echo "FAILED: ${description}" >&2
-    echo "Expected to find: ${expected}" >&2
-    echo "Response body:" >&2
-    echo "${body}" >&2
-    echo "Server log:" >&2
-    cat "${LOG_FILE}" >&2
-    exit 1
+  if ! grep -Fqi -- "${expected}" <<<"${body}"; then
+    fail_with_body "${description}" "Expected to find, case-insensitive: ${expected}" "${body}"
+  fi
+
+  echo "PASS: ${description}"
+}
+
+assert_not_contains_ci() {
+  local description="$1"
+  local host="$2"
+  local path="$3"
+  local unexpected="$4"
+
+  local body
+  body="$(fetch_body "${host}" "${path}")"
+
+  if grep -Fqi -- "${unexpected}" <<<"${body}"; then
+    fail_with_body "${description}" "Did not expect to find, case-insensitive: ${unexpected}" "${body}"
   fi
 
   echo "PASS: ${description}"
@@ -73,15 +112,39 @@ assert_status() {
   echo "PASS: ${description}"
 }
 
-assert_contains "platform home" "artsfol.io" "/" "ArtsFolio"
-assert_contains "platform pricing" "artsfol.io" "/pricing" "Pricing"
-assert_contains "platform login form" "artsfol.io" "/login" "login"
+assert_tenant_resolves() {
+  local host="$1"
 
-assert_contains "tenant home" "bxiie.com" "/" "James Payne Art"
-assert_contains "tenant contact form" "bxiie.com" "/contact" "Contact"
-assert_contains "tenant portfolio" "bxiie.com" "/portfolio" "Portfolio"
+  local resolved
+  if ! resolved="$(ARTSFOLIO_ENV_FILE="${ENV_FILE}" php scripts/test/resolve_tenant.php "${host}")"; then
+    echo "FAILED: tenant resolver" >&2
+    echo "Could not resolve tenant host: ${host}" >&2
+    exit 1
+  fi
 
-assert_status "tenant API without token returns unauthorized JSON" "bxiie.com" "/api/me" "401"
+  if ! grep -Fq '"slug": "bxiie"' <<<"${resolved}"; then
+    echo "FAILED: tenant resolver" >&2
+    echo "Expected tenant host ${host} to resolve to slug bxiie." >&2
+    echo "Resolver output:" >&2
+    echo "${resolved}" >&2
+    exit 1
+  fi
+
+  echo "PASS: tenant resolver"
+}
+
+assert_contains_ci "platform home" "artsfol.io" "/" "ArtsFolio"
+assert_contains_ci "platform pricing" "artsfol.io" "/pricing" "Pricing"
+assert_contains_ci "platform login form" "artsfol.io" "/login" "login"
+
+assert_tenant_resolves "${TENANT_HOST}"
+assert_contains_ci "tenant home configured title" "${TENANT_HOST}" "/" "${TENANT_EXPECTED_TITLE}"
+assert_not_contains_ci "tenant home is not platform content" "${TENANT_HOST}" "/" "Artist Operating Platform"
+assert_not_contains_ci "tenant home is not platform admin" "${TENANT_HOST}" "/" "Platform Admin"
+assert_contains_ci "tenant contact form" "${TENANT_HOST}" "/contact" "Contact"
+assert_contains_ci "tenant portfolio" "${TENANT_HOST}" "/portfolio" "Portfolio"
+
+assert_status "tenant API without token returns unauthorized JSON" "${TENANT_HOST}" "/api/me" "401"
 assert_status "platform API without token returns unauthorized JSON" "artsfol.io" "/api/me" "401"
 
 echo
