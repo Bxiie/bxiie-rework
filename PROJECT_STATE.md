@@ -1085,3 +1085,9 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The deploy stage order remains unchanged: git update, env verification, PHP lint, migrations, migration integrity, preflight, service restarts, then health check.
 
 <!-- End of file. -->
+
+## Production deploy worker requirement
+
+`artsfolio-background-worker.service` is deploy-critical. `scripts/deploy/deploy_production.sh` must fail if the unit is missing or inactive. The deploy script checks the unit with `systemctl cat artsfolio-background-worker.service` and verifies activity with `systemctl is-active --quiet artsfolio-background-worker.service`.
+
+# End of file.

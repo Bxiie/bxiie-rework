@@ -1,19 +1,17 @@
-# Production Deployment Status
+# ArtsFolio Admin Deployment Notes
 
-The production deploy command prints a final status banner at the end of every run.
+A production deploy must clearly report final success or failure. The final banner should be one of:
 
-Successful runs end with:
+- `== DEPLOY SUCCEEDED ==`
+- `== DEPLOY FAILED ==`
 
-```text
-== DEPLOY SUCCEEDED ==
+The background worker is required. If `artsfolio-background-worker.service` is missing or inactive, the deploy must fail rather than continue with a warning. Platform admin worker health messages and DNS verification results depend on this worker.
+
+To inspect the worker on production:
+
+```bash
+systemctl status artsfolio-background-worker.service --no-pager
+journalctl -u artsfolio-background-worker.service -n 100 --no-pager
 ```
 
-Failed runs end with:
-
-```text
-== DEPLOY FAILED ==
-```
-
-The failure banner includes the failed stage, exit code, branch, and commit. Use the failed stage name to decide where to look first. For example, if the failed stage is `Preflight`, review the test output directly above the banner before restarting services manually.
-
-<!-- End of file. -->
+# End of file.

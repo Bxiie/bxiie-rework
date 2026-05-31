@@ -1,27 +1,24 @@
-# ArtsFolio Production Deployment
+# ArtsFolio Developer Deployment Notes
 
-Production deploys are run from `/var/www/artsfolio` with `scripts/deploy/deploy_production.sh`.
+Production deployments are run from `/var/www/artsfolio` with `scripts/deploy/deploy_production.sh`, usually through the `deploy_to_production` shell alias.
 
-The deploy script runs these stages in order:
+The deploy script is intentionally fail-fast. It must end with either `== DEPLOY SUCCEEDED ==` or `== DEPLOY FAILED ==`. A missing or inactive `artsfolio-background-worker.service` is a deploy failure because background jobs, DNS verification, and worker heartbeat checks depend on that unit.
 
-1. Git status, fetch, and fast-forward pull.
-2. Environment file verification for `/etc/artsfolio/artsfolio.env`.
-3. PHP syntax checks.
-4. Database migrations.
-5. Migration integrity checks.
-6. Preflight tests with `ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env`.
-7. Service restarts for PHP-FPM, Caddy, the email worker, and the background worker when installed.
-8. Production health check.
+Required production services include:
 
-The script uses an `EXIT` trap to print a final `DEPLOY SUCCEEDED` or `DEPLOY FAILED` banner for every exit path. Failure output includes the stage name, exit code, branch, and commit so failed preflight or health-check runs are visibly different from successful deploys.
+- `php8.4-fpm`
+- `caddy`
+- `artsfolio-email-worker.service`
+- `artsfolio-background-worker.service`
 
-Run production deploy with:
+Useful checks:
 
 ```bash
-cd /var/www/artsfolio
-scripts/deploy/deploy_production.sh
+systemctl cat artsfolio-background-worker.service
+systemctl is-active artsfolio-background-worker.service
+journalctl -u artsfolio-background-worker.service -n 100 --no-pager
 ```
 
-If the script fails, inspect the command output immediately above the final failure banner, correct the failed stage, and rerun the deploy.
+The deploy script checks the worker with `systemctl cat` rather than parsing `systemctl list-unit-files`, because list output is formatting-sensitive and previously produced false missing-worker warnings.
 
-<!-- End of file. -->
+# End of file.
