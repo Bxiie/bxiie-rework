@@ -1,16 +1,27 @@
 <?php
 
+/**
+ * Main HTTP response object used by the hand-rolled router.
+ */
+
 declare(strict_types=1);
 
 namespace App\Http;
 
-
 use App\Http\View\ErrorPage;
+
 /**
  * Builds and sends HTTP responses.
+ *
+ * Header values may be strings or string arrays. Array support is required for
+ * Set-Cookie because browsers need separate Set-Cookie header lines; combining
+ * cookies into a comma-delimited header corrupts cookie semantics.
  */
 final class Response
 {
+    /**
+     * @param array<string, string|array<int, string>> $headers
+     */
     public function __construct(
         private readonly string $body,
         private readonly int $status = 200,
@@ -18,6 +29,9 @@ final class Response
     ) {
     }
 
+    /**
+     * @param array<string, string|array<int, string>> $headers
+     */
     public static function html(string $body, int $status = 200, array $headers = []): self
     {
         return new self($body, $status, array_merge([
@@ -25,6 +39,9 @@ final class Response
         ], $headers));
     }
 
+    /**
+     * @param array<string, string|array<int, string>> $headers
+     */
     public static function json(array $payload, int $status = 200, array $headers = []): self
     {
         return new self(
@@ -46,7 +63,10 @@ final class Response
         http_response_code($this->status);
 
         foreach ($this->headers as $name => $value) {
-            header("{$name}: {$value}");
+            foreach ((array) $value as $headerValue) {
+                $replace = strtolower((string) $name) !== 'set-cookie';
+                header("{$name}: {$headerValue}", $replace);
+            }
         }
 
         echo $this->body;

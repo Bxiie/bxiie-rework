@@ -8,8 +8,6 @@ declare(strict_types=1);
 
 namespace App\Platform\Auth\Session;
 
-use DateTimeImmutable;
-use DateTimeZone;
 use PDO;
 
 /**
@@ -30,8 +28,8 @@ final class SessionRepository
         ?string $userAgent,
         int $ttlSeconds = 1209600,
     ): int {
-        $expiresAt = (new DateTimeImmutable('now', new DateTimeZone('UTC')))
-            ->modify('+' . $ttlSeconds . ' seconds')
+        $expiresAt = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
+            ->modify('+' . max(60, $ttlSeconds) . ' seconds')
             ->format('Y-m-d H:i:s');
 
         $stmt = $this->pdo->prepare(

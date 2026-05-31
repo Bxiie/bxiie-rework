@@ -1019,3 +1019,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Added `scripts/test/session_repository_no_user_status.php` as a regression check for this specific schema-drift failure.
 
 <!-- End of file. -->
+
+## 2026-05-30 auth cookie multi-header fix
+- Browser login/logout now supports multiple `Set-Cookie` headers through `App\Http\Response`.
+- `App\Http\Support\SessionCookie` now clears stale host-only and `.artsfol.io` cookie variants before setting the canonical browser session cookie.
+- Tenant login now returns the session cookie on the redirect response and passes tenant context to the session creation path.
+- Platform password login/logout and platform signup now use the same multi-header cookie helper.
+- Added `scripts/test/auth_cookie_headers.php` to prevent regressions where browser auth succeeds server-side but stale duplicate cookies keep admin pages inaccessible.
+
+<!-- End of file. -->

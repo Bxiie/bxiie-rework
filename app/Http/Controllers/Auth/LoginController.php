@@ -38,7 +38,7 @@ final class LoginController
         return Response::html(AuthPage::login('/login', '', $brand, '/', $this->csrf->getOrCreate()));
     }
 
-    public function login(Request $request): Response
+    public function login(Request $request, ?TenantContext $tenant = null): Response
     {
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
             return Response::html('<h1>Invalid CSRF token</h1>', 419);
@@ -48,6 +48,7 @@ final class LoginController
             $result = $this->passwordAuth->login(
                 email: trim((string) ($_POST['email'] ?? '')),
                 password: (string) ($_POST['password'] ?? ''),
+                tenantId: $tenant?->tenantId,
                 ipAddress: $request->server('REMOTE_ADDR'),
                 userAgent: $request->server('HTTP_USER_AGENT'),
             );

@@ -62,7 +62,7 @@ final class PasswordAuthController
 
         return new Response('', 302, [
             'Location' => '/platform/admin',
-            'Set-Cookie' => SessionCookie::issueHeader($login['session_token'], !empty($_POST['keep_me_logged_in'])),
+            'Set-Cookie' => SessionCookie::issueHeaders($login['session_token'], !empty($_POST['keep_me_logged_in'])),
         ]);
     }
 
@@ -113,7 +113,7 @@ HTML);
 
         $this->auditAuth($request, 'auth.logout.succeeded', $session && isset($session['user_id']) ? (int) $session['user_id'] : null, ['session_id' => $session['id'] ?? null]);
 
-        return new Response('', 302, ['Location' => '/login', 'Set-Cookie' => SessionCookie::expireHeader()]);
+        return new Response('', 302, ['Location' => '/login', 'Set-Cookie' => SessionCookie::expireHeaders()]);
     }
 
     private function makeSessionCookie(string $token): string

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Shared browser session cookie helper.
+ * Shared browser-session cookie helper.
  */
 
 declare(strict_types=1);
@@ -11,32 +11,31 @@ namespace App\Http\Support;
 use App\Http\Middleware\CurrentUser;
 
 /**
- * Issues browser-session cookies consistently for platform and artsfol.io
- * subdomain flows. Custom domains cannot share cookies with artsfol.io; those
- * flows must go through OAuth/redirect based sign-in handoff.
+ * Issues browser-session cookies consistently for platform and tenant domains.
+ *
+ * Login intentionally sends multiple Set-Cookie lines: first expire stale
+ * host-only/domain variants left by older auth code, then set the canonical
+ * cookie. This prevents PHP from reading an old duplicate artsfolio_session
+ * value when a browser sends both host-only and parent-domain cookies.
  */
 final class SessionCookie
 {
     public static function issueHeader(string $token, bool $persistent = true): string
     {
-        $parts = [
-            CurrentUser::COOKIE_NAME . '=' . rawurlencode($token),
-            'Path=/',
-            'HttpOnly',
-            'SameSite=Lax',
-        ];
+        return self::buildHeader(rawurlencode($token), $persistent ? 1209600 : 86400, self::cookieDomain());
+    }
 
-        if (self::isSecure()) {
-            $parts[] = 'Secure';
-        }
+    /**
+     * Returns every Set-Cookie header needed for a clean login response.
+     *
+     * @return array<int, string>
+     */
+    public static function issueHeaders(string $token, bool $persistent = true): array
+    {
+        $headers = self::expireHeaders();
+        $headers[] = self::issueHeader($token, $persistent);
 
-        $parts[] = 'Max-Age=' . ($persistent ? 1209600 : 86400);
-        $domain = self::cookieDomain();
-        if ($domain !== '') {
-            $parts[] = 'Domain=' . $domain;
-        }
-
-        return implode('; ', $parts);
+        return array_values(array_unique($headers));
     }
 
     /**
@@ -50,24 +49,24 @@ final class SessionCookie
 
     public static function expireHeader(): string
     {
-        $parts = [
-            CurrentUser::COOKIE_NAME . '=deleted',
-            'Path=/',
-            'HttpOnly',
-            'SameSite=Lax',
-            'Max-Age=0',
-        ];
+        return self::buildHeader('deleted', 0, self::cookieDomain());
+    }
 
-        if (self::isSecure()) {
-            $parts[] = 'Secure';
-        }
-
+    /**
+     * Returns Set-Cookie headers to expire both host-only and shared-domain
+     * variants of the browser session cookie.
+     *
+     * @return array<int, string>
+     */
+    public static function expireHeaders(): array
+    {
+        $headers = [self::buildHeader('deleted', 0, '')];
         $domain = self::cookieDomain();
         if ($domain !== '') {
-            $parts[] = 'Domain=' . $domain;
+            $headers[] = self::buildHeader('deleted', 0, $domain);
         }
 
-        return implode('; ', $parts);
+        return array_values(array_unique($headers));
     }
 
     /**
@@ -77,6 +76,27 @@ final class SessionCookie
     public static function expireSetCookie(): string
     {
         return self::expireHeader();
+    }
+
+    private static function buildHeader(string $value, int $maxAge, string $domain): string
+    {
+        $parts = [
+            CurrentUser::COOKIE_NAME . '=' . $value,
+            'Path=/',
+            'HttpOnly',
+            'SameSite=Lax',
+            'Max-Age=' . $maxAge,
+        ];
+
+        if (self::isSecure()) {
+            $parts[] = 'Secure';
+        }
+
+        if ($domain !== '') {
+            $parts[] = 'Domain=' . $domain;
+        }
+
+        return implode('; ', $parts);
     }
 
     private static function cookieDomain(): string
