@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
+use App\Services\FirstPartyCaptcha;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Artwork\ArtworkReadRepository;
 use App\Tenant\Settings\TenantSettingsRepository;
@@ -198,77 +199,69 @@ HTML;
     {
         $this->track($request, $tenant, 'contact_view');
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
-        $recaptcha = $this->recaptchaWidget($tenant);
-        $contactNotice = $this->contactNotice();
-        $signupNotice = $this->signupNotice();
-        $contactDetails = $this->settings->get($tenant, 'contact_details', '');
+        $captcha = FirstPartyCaptcha::render('contact', (int) $tenant->tenantId);
+        $signupCaptcha = FirstPartyCaptcha::render('signup', (int) $tenant->tenantId);
+        $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
 
         return Response::html($this->layout(
             tenant: $tenant,
             title: "{$this->escape($tenant->name)} | Contact",
             body: <<<HTML
 <h1>Contact</h1>
-{$contactNotice}
-{$signupNotice}
-<article class="prose">{$contactDetails}</article>
-<section class="contact-layout">
-    <form method="post" action="/contact" class="form js-submit-form">
-        <input type="hidden" name="csrf_token" value="{$csrf}">
-        <p><label>Name<br><input type="text" name="name" autocomplete="name" required></label></p>
-        <p><label>Email<br><input type="email" name="email" autocomplete="email" required></label></p>
-        <p><label>Subject<br><input type="text" name="subject"></label></p>
-        <p><label>Message<br><textarea name="message" rows="8" required></textarea></label></p>
-        {$recaptcha}
-        <button type="submit" data-loading-label="Sending…">Send message</button>
-        <p class="form-progress" aria-live="polite">Sending message…</p>
-    </form>
-    <form method="post" action="/subscribe" class="form compact js-submit-form">
-        <h2>Email list</h2>
-        <p>Get occasional updates from this artist.</p>
-        <input type="hidden" name="csrf_token" value="{$csrf}">
-        <input type="hidden" name="source" value="contact_page">
-        <input type="hidden" name="return_to" value="/contact">
-        <p><label>Name<br><input type="text" name="name" autocomplete="name"></label></p>
-        <p><label>Email<br><input type="email" name="email" autocomplete="email" required></label></p>
-        {$recaptcha}
-        <button type="submit" data-loading-label="Subscribing…">Subscribe</button>
-        <p class="form-progress" aria-live="polite">Subscribing…</p>
-    </form>
+<article class="prose">{$this->settings->get($tenant, 'contact_details', '')}</article>
+<section class="contact-grid">
+<form method="post" action="/contact" data-af-async-form data-af-result="contact-form-result" data-af-busy-label="Sending..." data-af-busy-message="Sending your message...">
+    <h2>Send a message</h2>
+    <div id="contact-form-result" data-af-form-result class="af-form-result" hidden></div>
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <p>
+        <label>Name<br>
+            <input type="text" name="name" autocomplete="name" required>
+        </label>
+    </p>
+    <p>
+        <label>Email<br>
+            <input type="email" name="email" autocomplete="email" required>
+        </label>
+    </p>
+    <p>
+        <label>Subject<br>
+            <input type="text" name="subject">
+        </label>
+    </p>
+    <p>
+        <label>Message<br>
+            <textarea name="message" rows="8" required></textarea>
+        </label>
+    </p>
+    <p>
+        <label><input type="checkbox" name="join_email_list" value="1"> Also add me to {$siteTitle}'s email list.</label>
+    </p>
+    {$captcha}
+    <button type="submit">Send message</button>
+</form>
+<form method="post" action="/signup" data-af-async-form data-af-result="signup-form-result" data-af-busy-label="Joining..." data-af-busy-message="Adding you to the list...">
+    <h2>Email list</h2>
+    <p>Get occasional updates from {$siteTitle}.</p>
+    <div id="signup-form-result" data-af-form-result class="af-form-result" hidden></div>
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <p>
+        <label>Name<br>
+            <input type="text" name="name" autocomplete="name">
+        </label>
+    </p>
+    <p>
+        <label>Email<br>
+            <input type="email" name="email" autocomplete="email" required>
+        </label>
+    </p>
+    {$signupCaptcha}
+    <button type="submit">Join email list</button>
+</form>
 </section>
 HTML
         ));
     }
-
-
-    /**
-     * Renders the public reCAPTCHA widget when a tenant or platform key is configured.
-     */
-    private function recaptchaWidget(TenantContext $tenant): string
-    {
-        $siteKey = $this->recaptchaSiteKey($tenant);
-        if ($siteKey === '') {
-            return '';
-        }
-
-        return '<div class="g-recaptcha" data-sitekey="' . $this->escape($siteKey) . '"></div>';
-    }
-
-    /**
-     * Loads Google reCAPTCHA only when needed.
-     */
-    private function recaptchaScript(TenantContext $tenant): string
-    {
-        return $this->recaptchaSiteKey($tenant) !== '' ? '<script src="https://www.google.com/recaptcha/api.js" async defer></script>' : '';
-    }
-
-    /**
-     * Tenant-specific key wins; platform setting is the shared fallback.
-     */
-    private function recaptchaSiteKey(TenantContext $tenant): string
-    {
-        return trim((string) $this->settings->get($tenant, 'recaptcha_site_key', ''));
-    }
-
 
     private function track(Request $request, TenantContext $tenant, string $eventType, ?string $entityType = null, ?int $entityId = null): void
     {
@@ -372,7 +365,7 @@ HTML
     <meta name="description" content="Artist portfolio">
     <link rel="stylesheet" href="/assets/site.css">
     <link rel="stylesheet" href="/tenant.css">
-    {$this->recaptchaScript($tenant)}
+    <script src="/assets/tenant-forms.js" defer></script>
 </head>
 <body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};{$backgroundStyle}">
 <header class="site-header">
@@ -388,6 +381,15 @@ HTML
 <main class="site-main">
 {$body}
 </main>
+<div class="af-signup-prompt" data-af-signup-prompt hidden aria-hidden="true" role="dialog" aria-label="Email list signup">
+    <div class="af-signup-prompt-card">
+        <button type="button" class="af-signup-close" data-af-signup-dismiss aria-label="Close signup prompt">×</button>
+        <h2>Join {$siteTitle}'s email list</h2>
+        <p>Get occasional updates and new work announcements.</p>
+        <a class="button" href="/{$contactSlug}#signup-form-result">Sign up</a>
+        <button type="button" data-af-signup-dismiss>Not now</button>
+    </div>
+</div>
 <footer class="site-footer">© {$year} {$copyrightName}</footer>
 {$this->emailSignupModal($tenant)}
 {$this->tenantInteractionScript()}
