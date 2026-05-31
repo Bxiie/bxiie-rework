@@ -1148,3 +1148,9 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `EmailSenderFactory::fromEnvironment()` honors both `EMAIL_DRIVER` and legacy `MAIL_TRANSPORT`; `MAIL_TRANSPORT=log` maps to dry-run behavior.
 
 # End of file.
+
+## Custom-domain deploy safety
+
+- Added migration `0020_preserve_bxiie_custom_domains.sql` to preserve and repair the Bxiie tenant mappings for `bxiie.artsfol.io`, `bxiie.com`, and `www.bxiie.com`.
+- Production preflight/deploy must treat tenant custom-domain rows as durable data and must not delete or disable them as test cleanup.
+- If a custom hostname is assigned to the wrong tenant, migration code must not silently steal it; deployment should fail and require explicit operator repair.
