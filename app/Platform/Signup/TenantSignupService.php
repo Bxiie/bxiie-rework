@@ -289,7 +289,7 @@ final class TenantSignupService
         }
 
         foreach ([
-            'tenant.domain.verify' => ['domain' => $domain],
+            'custom_domain.verify_dns' => ['hostname' => $domain],
             'tenant.site.bootstrap' => ['domain' => $domain],
         ] as $jobType => $payload) {
             $this->insertKnown('background_jobs', [

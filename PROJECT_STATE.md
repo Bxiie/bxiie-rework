@@ -1055,3 +1055,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Regression check: `php scripts/test/tenant_login_and_invite_static.php`.
 
 # End of file.
+
+## Background job handler compatibility - 2026-05-31
+
+- Production background worker is expected to run as `artsfolio-background-worker.service`.
+- `scripts/workers/run_once.php` supports canonical domain job type `custom_domain.verify_dns` and compatibility alias `tenant.domain.verify` for older queued signup rows.
+- `tenant.site.bootstrap` is handled by `App\Platform\Jobs\Handlers\TenantSiteBootstrapJobHandler` to finalize tenant provisioning idempotently.
+- New signup provisioning queues `custom_domain.verify_dns` for DNS work and keeps `tenant.site.bootstrap` for tenant finalization.

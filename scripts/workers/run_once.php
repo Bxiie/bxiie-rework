@@ -14,6 +14,7 @@ use App\Platform\Domains\DomainArtifactRepository;
 use App\Platform\Domains\DnsVerifier;
 use App\Platform\Jobs\BackgroundJobRepository;
 use App\Platform\Jobs\Handlers\RenderVhostJobHandler;
+use App\Platform\Jobs\Handlers\TenantSiteBootstrapJobHandler;
 use App\Platform\Jobs\Handlers\VerifyDnsJobHandler;
 use App\Platform\Jobs\Handlers\WriteApprovedVhostJobHandler;
 use App\Platform\Tenancy\TenantDomainRepository;
@@ -38,8 +39,19 @@ if (!$job) {
 try {
     switch ($job['job_type']) {
         case 'custom_domain.verify_dns':
+        case 'tenant.domain.verify':
             $expectedIps = array_filter(array_map("trim", explode(",", getenv("ARTSFOLIO_EXPECTED_IPV4") ?: "127.0.0.1")));
             $handler = new VerifyDnsJobHandler(new DnsVerifier($expectedIps), new TenantDomainRepository($pdo), $jobs);
+            $payload = $job['payload'];
+            if (isset($payload['domain']) && !isset($payload['hostname'])) {
+                $payload['hostname'] = $payload['domain'];
+            }
+            echo $handler->handle($payload, isset($job['tenant_id']) ? (int) $job['tenant_id'] : null) . "\n";
+            $jobs->markComplete((int) $job['id']);
+            break;
+
+        case 'tenant.site.bootstrap':
+            $handler = new TenantSiteBootstrapJobHandler($pdo);
             echo $handler->handle($job['payload'], isset($job['tenant_id']) ? (int) $job['tenant_id'] : null) . "\n";
             $jobs->markComplete((int) $job['id']);
             break;
