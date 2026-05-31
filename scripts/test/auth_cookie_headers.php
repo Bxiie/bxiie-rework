@@ -43,7 +43,6 @@ foreach ($requiredFragments as $fragment) {
 $response = new Response('', 302, ['Location' => '/admin', 'Set-Cookie' => $headers]);
 $ref = new ReflectionClass($response);
 $prop = $ref->getProperty('headers');
-$prop->setAccessible(true);
 $responseHeaders = $prop->getValue($response);
 
 if (!is_array($responseHeaders['Set-Cookie'] ?? null)) {
