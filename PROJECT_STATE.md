@@ -1124,3 +1124,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant first-party CAPTCHA is progressively enhanced: the checkbox is usable without JavaScript after server dwell time, and JavaScript only temporarily disables it.
 - The honeypot field is hidden inline and in CSS to prevent tenant CSS/cache drift from exposing it to visitors.
 - Tenant form JavaScript now surfaces server error text instead of replacing failures with a generic message.
+
+## Tenant admin navigation
+- Tenant public Admin links point to `/admin` on the current tenant host. Platform admin remains canonical at `https://artsfol.io/platform/admin`; tenant public navigation must not link to `/platform/admin`.

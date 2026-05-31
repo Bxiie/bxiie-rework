@@ -169,3 +169,12 @@ echo
 echo "HTTP smoke tests passed."
 
 # End of file.
+
+# Tenant public pages must link to the tenant admin on the tenant host, not platform admin.
+# This static check prevents the tenant navigation from leaking /platform/admin again.
+if grep -R 'href=["'"'"'].*platform/admin' app/Http/Controllers/Tenant >/dev/null 2>&1; then
+  echo "FAILED: tenant admin nav points to platform admin" >&2
+  grep -R 'href=["'"'"'].*platform/admin' -n app/Http/Controllers/Tenant >&2 || true
+  exit 1
+fi
+echo "tenant admin nav points to tenant admin."
