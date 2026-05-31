@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Shared browser-session cookie helper.
+ * Shared browser session cookie helper.
  */
 
 declare(strict_types=1);
@@ -11,12 +11,8 @@ namespace App\Http\Support;
 use App\Http\Middleware\CurrentUser;
 
 /**
- * Issues browser-session cookies consistently for platform and tenant domains.
- *
- * Login intentionally sends multiple Set-Cookie lines: first expire stale
- * host-only/domain variants left by older auth code, then set the canonical
- * cookie. This prevents PHP from reading an old duplicate artsfolio_session
- * value when a browser sends both host-only and parent-domain cookies.
+ * Issues and clears browser-session cookies consistently across platform and
+ * tenant subdomains.
  */
 final class SessionCookie
 {
@@ -26,21 +22,20 @@ final class SessionCookie
     }
 
     /**
-     * Returns every Set-Cookie header needed for a clean login response.
+     * Returns every Set-Cookie value needed to clear stale variants and issue
+     * the active browser session. Browsers may keep both host-only and domain
+     * cookies with the same name; clearing both avoids redirect loops after
+     * auth-cookie changes.
      *
-     * @return array<int, string>
+     * @return list<string>
      */
     public static function issueHeaders(string $token, bool $persistent = true): array
     {
-        $headers = self::expireHeaders();
-        $headers[] = self::issueHeader($token, $persistent);
-
-        return array_values(array_unique($headers));
+        return array_merge(self::expireHeaders(), [self::issueHeader($token, $persistent)]);
     }
 
     /**
-     * Backward-compatible alias for controllers that still call the older
-     * cookie helper method name.
+     * Backward-compatible alias for older callers.
      */
     public static function issueSetCookie(string $token, bool $persistent = true): string
     {
@@ -53,15 +48,13 @@ final class SessionCookie
     }
 
     /**
-     * Returns Set-Cookie headers to expire both host-only and shared-domain
-     * variants of the browser session cookie.
-     *
-     * @return array<int, string>
+     * @return list<string>
      */
     public static function expireHeaders(): array
     {
         $headers = [self::buildHeader('deleted', 0, '')];
         $domain = self::cookieDomain();
+
         if ($domain !== '') {
             $headers[] = self::buildHeader('deleted', 0, $domain);
         }
@@ -70,8 +63,7 @@ final class SessionCookie
     }
 
     /**
-     * Backward-compatible alias for controllers that still call the older
-     * cookie helper method name.
+     * Backward-compatible alias for older callers.
      */
     public static function expireSetCookie(): string
     {

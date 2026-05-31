@@ -1,13 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
 /**
- * Claims and sends one queued email outbox row using the configured email sender.
+ * Claims and sends one queued email outbox row using platform email settings.
  */
+
+declare(strict_types=1);
 
 use App\Platform\Email\EmailOutboxRepository;
 use App\Platform\Email\EmailSenderFactory;
+use App\Platform\Settings\PlatformSettingsRepository;
 use App\Support\Database;
 
 $root = dirname(__DIR__, 2);
@@ -15,8 +16,9 @@ require_once $root . '/scripts/workers/heartbeat.php';
 require $root . '/bootstrap/app.php';
 artsfolio_worker_heartbeat('email-run-once', 'alive', ['entrypoint' => 'scripts/workers/email_run_once.php']);
 
-$outbox = new EmailOutboxRepository(Database::connect($root));
-$sender = EmailSenderFactory::fromEnvironment();
+$pdo = Database::connect($root);
+$outbox = new EmailOutboxRepository($pdo);
+$sender = EmailSenderFactory::fromPlatformSettings(new PlatformSettingsRepository($pdo));
 
 $email = $outbox->claimNext();
 

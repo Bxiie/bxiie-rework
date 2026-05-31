@@ -8,6 +8,9 @@ declare(strict_types=1);
 
 namespace App\Platform\Auth\Session;
 
+use DateInterval;
+use DateTimeImmutable;
+use DateTimeZone;
 use PDO;
 
 /**
@@ -28,8 +31,8 @@ final class SessionRepository
         ?string $userAgent,
         int $ttlSeconds = 1209600,
     ): int {
-        $expiresAt = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
-            ->modify('+' . max(60, $ttlSeconds) . ' seconds')
+        $expiresAt = (new DateTimeImmutable('now', new DateTimeZone('UTC')))
+            ->add(new DateInterval('PT' . max(1, $ttlSeconds) . 'S'))
             ->format('Y-m-d H:i:s');
 
         $stmt = $this->pdo->prepare(
@@ -65,7 +68,11 @@ final class SessionRepository
     public function findActiveByHash(string $sessionHash): ?array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT s.*, u.email, u.display_name
+            "SELECT
+                s.*,
+                s.user_id AS user_id,
+                u.email,
+                u.display_name
              FROM user_sessions s
              JOIN users u ON u.id = s.user_id
              WHERE s.session_hash = :session_hash

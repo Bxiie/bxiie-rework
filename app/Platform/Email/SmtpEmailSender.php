@@ -1,23 +1,29 @@
 <?php
 
+/**
+ * SMTP email sender.
+ */
+
 declare(strict_types=1);
 
 namespace App\Platform\Email;
 
 /**
- * Basic SMTP sender for local Mailhog-style development.
- *
- * This intentionally supports simple, unauthenticated SMTP first.
- * Production transactional email should use a hardened provider adapter.
+ * Sends queued text email over SMTP and supports provider-specific message
+ * headers such as Postmark's X-PM-Message-Stream.
  */
 final class SmtpEmailSender implements EmailSenderInterface
 {
+    /**
+     * @param array<string,string> $headers
+     */
     public function __construct(
         private readonly string $host,
         private readonly int $port,
         private readonly string $fromEmail,
         private readonly string $fromName = 'ArtsFolio',
         private readonly int $timeoutSeconds = 10,
+        private readonly array $headers = [],
     ) {
     }
 
@@ -33,16 +39,16 @@ final class SmtpEmailSender implements EmailSenderInterface
 
         try {
             $this->expect($socket, [220]);
-            $this->command($socket, "HELO artsfol.io", [250]);
+            $this->command($socket, 'HELO artsfol.io', [250]);
             $this->command($socket, "MAIL FROM:<{$this->fromEmail}>", [250]);
             $this->command($socket, "RCPT TO:<{$email['recipient_email']}>", [250, 251]);
-            $this->command($socket, "DATA", [354]);
+            $this->command($socket, 'DATA', [354]);
 
             $message = $this->buildMessage($email);
             fwrite($socket, $message . "\r\n.\r\n");
             $this->expect($socket, [250]);
 
-            $this->command($socket, "QUIT", [221]);
+            $this->command($socket, 'QUIT', [221]);
         } finally {
             fclose($socket);
         }
@@ -54,6 +60,7 @@ final class SmtpEmailSender implements EmailSenderInterface
             'id' => (int) $email['id'],
             'to' => $email['recipient_email'],
             'subject' => $email['subject'],
+            'headers' => array_keys($this->normalizedHeaders()),
         ], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR);
     }
 
@@ -65,16 +72,50 @@ final class SmtpEmailSender implements EmailSenderInterface
         $body = str_replace(["\r\n", "\r"], "\n", (string) $email['body_text']);
         $body = str_replace("\n", "\r\n", $body);
 
-        return implode("\r\n", [
+        $headers = [
             "From: {$fromName} <{$this->fromEmail}>",
             "To: <{$to}>",
             "Subject: {$subject}",
-            "MIME-Version: 1.0",
-            "Content-Type: text/plain; charset=UTF-8",
-            "Content-Transfer-Encoding: 8bit",
-            "",
-            $body,
-        ]);
+            'MIME-Version: 1.0',
+            'Content-Type: text/plain; charset=UTF-8',
+            'Content-Transfer-Encoding: 8bit',
+        ];
+
+        foreach ($this->normalizedHeaders() as $name => $value) {
+            $headers[] = $name . ': ' . $value;
+        }
+
+        $headers[] = '';
+        $headers[] = $body;
+
+        return implode("\r\n", $headers);
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    private function normalizedHeaders(): array
+    {
+        $normalized = [];
+
+        foreach ($this->headers as $name => $value) {
+            $name = trim((string) $name);
+            $value = trim((string) $value);
+
+            if ($name === '' || $value === '') {
+                continue;
+            }
+            if (!preg_match('/^[A-Za-z0-9-]+$/', $name)) {
+                throw new \RuntimeException("Invalid SMTP header name: {$name}");
+            }
+            if (str_contains($value, "\r") || str_contains($value, "\n")) {
+                throw new \RuntimeException("Invalid SMTP header value for {$name}");
+            }
+
+            $normalized[$name] = $value;
+        }
+
+        return $normalized;
     }
 
     private function encodeHeader(string $value): string

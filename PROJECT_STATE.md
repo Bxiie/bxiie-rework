@@ -1028,3 +1028,21 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Added `scripts/test/auth_cookie_headers.php` to prevent regressions where browser auth succeeds server-side but stale duplicate cookies keep admin pages inaccessible.
 
 <!-- End of file. -->
+
+## Email SMTP custom headers
+- SMTP sender supports static custom message headers configured through environment variables.
+- `SMTP_X_PM_MESSAGE_STREAM` sets `X-PM-Message-Stream` for Postmark SMTP message streams.
+- `SMTP_EXTRA_HEADERS` accepts semicolon- or newline-separated `Name: value` entries, such as `X-PM-Tag: lifecycle; X-PM-Metadata-tenant: bxiie`.
+- Header names and values are validated to prevent CRLF/header injection before SMTP DATA is sent.
+- Secret SMTP credentials remain in environment/secrets files and must not be recorded in `PROJECT_STATE.md`.
+
+<!-- End of file. -->
+
+
+## 2026-05-31 - Tenant login and platform SMTP message-stream setting
+- Tenant POST `/login` now carries the resolved tenant context into `PasswordAuthService::login()` so tenant-scoped browser sessions store `tenant_id`.
+- Login/logout responses now attach `Set-Cookie` headers instead of calling the cookie helper and discarding the result.
+- Browser session cookie handling supports repeated `Set-Cookie` values so stale host-only and `.artsfol.io` cookies can be cleared before issuing the active session cookie.
+- `SessionRepository` no longer depends on a nonexistent `users.status` column and computes `expires_at` in PHP before binding it as a normal SQL value.
+- Platform Admin > Platform Settings > Email delivery now stores `smtp_x_pm_message_stream`; SMTP sends it as `X-PM-Message-Stream` for Postmark message streams.
+- `scripts/workers/email_run_once.php` builds its sender from `platform_settings` rather than environment-only mail configuration.

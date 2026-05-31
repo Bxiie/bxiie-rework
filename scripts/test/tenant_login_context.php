@@ -1,34 +1,34 @@
 <?php
 
-declare(strict_types=1);
-
 /**
- * Smoke test that tenant browser login POST passes TenantContext.
+ * Static regression test for tenant login context and session cookie return.
  */
 
+declare(strict_types=1);
+
 $root = dirname(__DIR__, 2);
-require $root . '/bootstrap/app.php';
+$controller = file_get_contents($root . '/app/Http/Controllers/Auth/LoginController.php') ?: '';
+$index = file_get_contents($root . '/public/index.php') ?: '';
 
-$controller = file_get_contents($root . '/app/Http/Controllers/Auth/LoginController.php');
-$index = file_get_contents($root . '/public/index.php');
+$checks = [
+    'login accepts tenant context' => 'public function login(Request $request, ?TenantContext $tenant = null): Response',
+    'login passes tenant id to auth service' => 'tenantId: $tenant?->tenantId',
+    'login returns Set-Cookie header' => "'Set-Cookie' => SessionCookie::issueHeaders",
+    'logout returns Set-Cookie header' => "'Set-Cookie' => SessionCookie::expireHeaders",
+];
 
-if ($controller === false || $index === false) {
-    fwrite(STDERR, "Could not read login files.\n");
+foreach ($checks as $label => $needle) {
+    if (!str_contains($controller, $needle)) {
+        fwrite(STDERR, "Missing {$label}.\n");
+        exit(1);
+    }
+}
+
+if (!str_contains($index, '->login($request, $tenant)')) {
+    fwrite(STDERR, "Tenant POST /login route does not pass tenant context.\n");
     exit(1);
 }
 
-if (!str_contains($controller, '?TenantContext $tenant = null') || !str_contains($controller, 'tenant: $tenant')) {
-    fwrite(STDERR, "LoginController does not accept/pass tenant context.\n");
-    exit(1);
-}
-
-$tenantPart = explode('if ($tenant) {', $index, 2)[1] ?? '';
-
-if (!str_contains($tenantPart, '->login($request, $tenant)')) {
-    fwrite(STDERR, "Tenant POST /login does not pass tenant context.\n");
-    exit(1);
-}
-
-echo "Tenant login context smoke test passed.\n";
+echo "Tenant login carries tenant context and returns browser session cookies.\n";
 
 // End of file.

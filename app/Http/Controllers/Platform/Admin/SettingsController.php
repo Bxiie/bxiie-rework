@@ -42,6 +42,7 @@ final class SettingsController
         $smtpUsername = $this->escape($this->settings->get('smtp_username', ''));
         $smtpPassword = $this->escape($this->settings->get('smtp_password', ''));
         $smtpEncryption = $this->escape($this->settings->get('smtp_encryption', 'tls'));
+        $smtpMessageStream = $this->escape($this->settings->get('smtp_x_pm_message_stream', ''));
         $mailFromEmail = $this->escape($this->settings->get('mail_from_email', ''));
         $mailFromName = $this->escape($this->settings->get('mail_from_name', 'ArtsFolio'));
         $stripePublishableKey = $this->escape($this->settings->get('stripe_publishable_key', ''));
@@ -74,7 +75,7 @@ final class SettingsController
     </div>
     <fieldset><legend>OAuth providers</legend><div class="admin-form-grid"><label>Google client ID<input type="text" name="google_oauth_client_id" value="{$googleClientId}"></label><label>Google client secret<input type="password" name="google_oauth_client_secret" value="{$googleClientSecret}"></label><label>Facebook client ID<input type="text" name="facebook_oauth_client_id" value="{$facebookClientId}"></label><label>Facebook client secret<input type="password" name="facebook_oauth_client_secret" value="{$facebookClientSecret}"></label></div><p class="admin-muted">Stored in platform_settings. Do not expose provider secrets in PROJECT_STATE.md or docs.</p></fieldset>
     <fieldset><legend>Spam protection</legend><div class="admin-form-grid"><label>reCAPTCHA site key<input type="text" name="recaptcha_site_key" value="{$recaptchaSiteKey}"></label><label>reCAPTCHA secret key<input type="password" name="recaptcha_secret_key" value="{$recaptchaSecretKey}"></label></div><p class="admin-muted">When the secret key is blank, public contact and signup forms do not block submissions in development.</p></fieldset>
-    <fieldset><legend>Email delivery</legend><div class="admin-form-grid"><label>SMTP host<input type="text" name="smtp_host" value="{$smtpHost}"></label><label>SMTP port<input type="number" name="smtp_port" value="{$smtpPort}" min="1" max="65535"></label><label>SMTP username<input type="text" name="smtp_username" value="{$smtpUsername}"></label><label>SMTP password<input type="password" name="smtp_password" value="{$smtpPassword}"></label><label>SMTP encryption<input type="text" name="smtp_encryption" value="{$smtpEncryption}" placeholder="tls, ssl, or none"></label><label>From email<input type="email" name="mail_from_email" value="{$mailFromEmail}"></label><label>From name<input type="text" name="mail_from_name" value="{$mailFromName}"></label></div><p class="admin-muted">These values are stored in <code>platform_settings</code>. Keep production backups and database access restricted because SMTP and ecommerce secrets are sensitive.</p></fieldset>
+    <fieldset><legend>Email delivery</legend><div class="admin-form-grid"><label>SMTP host<input type="text" name="smtp_host" value="{$smtpHost}"></label><label>SMTP port<input type="number" name="smtp_port" value="{$smtpPort}" min="1" max="65535"></label><label>SMTP username<input type="text" name="smtp_username" value="{$smtpUsername}"></label><label>SMTP password<input type="password" name="smtp_password" value="{$smtpPassword}"></label><label>SMTP encryption<input type="text" name="smtp_encryption" value="{$smtpEncryption}" placeholder="tls, ssl, or none"></label><label>From email<input type="email" name="mail_from_email" value="{$mailFromEmail}"></label><label>From name<input type="text" name="mail_from_name" value="{$mailFromName}"></label><label>Postmark message stream<input type="text" name="smtp_x_pm_message_stream" value="{$smtpMessageStream}" placeholder="outbound or broadcasts"></label></div><p class="admin-muted">Postmark message stream is sent as <code>X-PM-Message-Stream</code>. These values are stored in <code>platform_settings</code>. Keep production backups and database access restricted because SMTP and ecommerce secrets are sensitive.</p></fieldset>
     <fieldset><legend>Ecommerce</legend><div class="admin-form-grid"><label>Stripe publishable key<input type="text" name="stripe_publishable_key" value="{$stripePublishableKey}"></label><label>Stripe secret key<input type="password" name="stripe_secret_key" value="{$stripeSecretKey}"></label><label>Stripe webhook secret<input type="password" name="stripe_webhook_secret" value="{$stripeWebhookSecret}"></label></div></fieldset>
     <fieldset class="admin-panel-wide"><legend>Platform custom CSS</legend><p class="admin-muted">Applied to platform marketing, pricing, help, and platform admin pages through <code>/assets/platform-custom.css</code>.</p><textarea name="platform_custom_css" rows="18" spellcheck="false">{$platformCustomCss}</textarea></fieldset>
     <button type="submit">Save platform settings</button>
@@ -103,6 +104,7 @@ HTML,
         $smtpUsername = trim((string) ($_POST['smtp_username'] ?? ''));
         $smtpPassword = (string) ($_POST['smtp_password'] ?? '');
         $smtpEncryption = trim((string) ($_POST['smtp_encryption'] ?? 'tls'));
+        $smtpMessageStream = trim((string) ($_POST['smtp_x_pm_message_stream'] ?? ''));
         $mailFromEmail = trim((string) ($_POST['mail_from_email'] ?? ''));
         $mailFromName = trim((string) ($_POST['mail_from_name'] ?? 'ArtsFolio'));
         $stripePublishableKey = trim((string) ($_POST['stripe_publishable_key'] ?? ''));
@@ -133,6 +135,9 @@ HTML,
         if ($smtpPort < 1 || $smtpPort > 65535) {
             return Response::html('<h1>Invalid SMTP port</h1>', 422);
         }
+        if ($smtpMessageStream !== '' && !preg_match('/^[A-Za-z0-9._-]+$/', $smtpMessageStream)) {
+            return Response::html('<h1>Invalid Postmark message stream</h1>', 422);
+        }
         if ($persistentLoginDays < 1 || $persistentLoginDays > 365) {
             return Response::html('<h1>Persistent login days must be between 1 and 365</h1>', 422);
         }
@@ -145,6 +150,7 @@ HTML,
             'platform_directory_enabled' => $this->settings->get('platform_directory_enabled', '1'),
             'platform_custom_css_sha1' => sha1((string) $this->settings->get('platform_custom_css', '')),
             'smtp_host' => $this->settings->get('smtp_host', ''),
+            'smtp_x_pm_message_stream' => $this->settings->get('smtp_x_pm_message_stream', ''),
             'mail_from_email' => $this->settings->get('mail_from_email', ''),
             'stripe_publishable_key' => $this->settings->get('stripe_publishable_key', ''),
         ];
@@ -168,6 +174,7 @@ HTML,
         $this->settings->set('smtp_username', $smtpUsername);
         $this->settings->set('smtp_password', $smtpPassword);
         $this->settings->set('smtp_encryption', $smtpEncryption);
+        $this->settings->set('smtp_x_pm_message_stream', $smtpMessageStream);
         $this->settings->set('mail_from_email', $mailFromEmail);
         $this->settings->set('mail_from_name', $mailFromName);
         $this->settings->set('stripe_publishable_key', $stripePublishableKey);
@@ -185,6 +192,7 @@ HTML,
                 'platform_directory_enabled' => $directoryEnabled,
                 'platform_custom_css_sha1' => sha1($platformCustomCss),
                 'smtp_host' => $smtpHost,
+                'smtp_x_pm_message_stream' => $smtpMessageStream,
                 'mail_from_email' => $mailFromEmail,
                 'stripe_publishable_key' => $stripePublishableKey,
             ],

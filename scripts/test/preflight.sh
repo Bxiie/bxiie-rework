@@ -57,6 +57,7 @@ run_if_exists scripts/test/tenant_api_access.php
 run_if_exists scripts/test/tenant_role_access.php
 
 run_if_exists scripts/test/password_auth.php
+php scripts/test/smtp_custom_headers.php
 php scripts/test/session_repository_no_user_status.php
 run_if_exists scripts/test/password_reset.php
 run_if_exists scripts/test/email_verification.php
@@ -101,3 +102,13 @@ echo
 echo "Preflight passed."
 
 # End of file.
+
+
+echo "== Auth cookie header regression =="
+php scripts/test/auth_cookie_headers.php
+
+echo "== Tenant login context regression =="
+php scripts/test/tenant_login_context.php
+
+echo "== Platform SMTP message stream setting regression =="
+php scripts/test/platform_smtp_message_stream_setting.php
