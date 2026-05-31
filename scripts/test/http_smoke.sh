@@ -73,7 +73,7 @@ assert_status() {
   echo "PASS: ${description}"
 }
 
-assert_contains "platform home" "artsfol.io" "/" "Arts Folio"
+assert_contains "platform home" "artsfol.io" "/" "ArtsFolio"
 assert_contains "platform pricing" "artsfol.io" "/pricing" "Pricing"
 assert_contains "platform login form" "artsfol.io" "/login" "Login"
 
