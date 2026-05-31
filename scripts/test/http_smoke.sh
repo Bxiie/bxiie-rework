@@ -77,7 +77,7 @@ assert_contains "platform home" "artsfol.io" "/" "ArtsFolio"
 assert_contains "platform pricing" "artsfol.io" "/pricing" "Pricing"
 assert_contains "platform login form" "artsfol.io" "/login" "login"
 
-assert_contains "tenant home" "bxiie.com" "/" "Tenant public site"
+assert_contains "tenant home" "bxiie.com" "/" "James Payne Art"
 assert_contains "tenant contact form" "bxiie.com" "/contact" "Contact"
 assert_contains "tenant portfolio" "bxiie.com" "/portfolio" "Portfolio"
 
