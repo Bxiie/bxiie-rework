@@ -1078,3 +1078,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Production deploy preflight validates email queue/template behavior but does not attempt to relay SMTP to test recipients.
 - To exercise the send path in a safe local environment, run preflight with `ARTSFOLIO_PREFLIGHT_SEND_EMAIL=1` and point SMTP settings at a local sink such as MailHog.
 
+## Production deploy final status reporting - 2026-05-31
+
+- `scripts/deploy/deploy_production.sh` now uses an `EXIT` trap to print a final `DEPLOY SUCCEEDED` or `DEPLOY FAILED` banner on every run.
+- Failure banners include the failed deploy stage, exit code, branch, and commit so preflight failures are no longer confused with completed deploys.
+- The deploy stage order remains unchanged: git update, env verification, PHP lint, migrations, migration integrity, preflight, service restarts, then health check.
+
+<!-- End of file. -->

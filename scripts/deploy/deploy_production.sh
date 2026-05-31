@@ -1,50 +1,78 @@
 #!/bin/bash
+# Deploy the ArtsFolio production checkout and clearly report final status.
+
 set -euo pipefail
 
 PROJECT_ROOT="/var/www/artsfolio"
 ENV_FILE="/etc/artsfolio/artsfolio.env"
+DEPLOY_STARTED_AT="$(date -Is)"
+DEPLOY_STAGE="initializing"
+
+finish_deploy() {
+  local exit_code="$?"
+  local finished_at
+  finished_at="$(date -Is)"
+
+  echo
+  if [ "$exit_code" -eq 0 ]; then
+    echo "== DEPLOY SUCCEEDED =="
+    echo "Started:  $DEPLOY_STARTED_AT"
+    echo "Finished: $finished_at"
+    echo "Project:  $PROJECT_ROOT"
+    echo "Branch:   $(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'unknown')"
+    echo "Commit:   $(git -C "$PROJECT_ROOT" rev-parse --short HEAD 2>/dev/null || echo 'unknown')"
+  else
+    echo "== DEPLOY FAILED ==" >&2
+    echo "Started:      $DEPLOY_STARTED_AT" >&2
+    echo "Failed:       $finished_at" >&2
+    echo "Failed stage: $DEPLOY_STAGE" >&2
+    echo "Exit code:    $exit_code" >&2
+    echo "Project:      $PROJECT_ROOT" >&2
+    echo "Branch:       $(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'unknown')" >&2
+    echo "Commit:       $(git -C "$PROJECT_ROOT" rev-parse --short HEAD 2>/dev/null || echo 'unknown')" >&2
+    echo "Next step: rerun the failed command or inspect the output immediately above this banner." >&2
+  fi
+}
+trap finish_deploy EXIT
+
+section() {
+  DEPLOY_STAGE="$1"
+  echo
+  echo "== $1 =="
+}
 
 echo "== ArtsFolio production deploy =="
 
 cd "$PROJECT_ROOT"
 
-echo
-echo "== Git status =="
+section "Git status"
 git status --short
 
-echo
-echo "== Fetch latest =="
+section "Fetch latest"
 git fetch origin
 
 CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 
-echo
-echo "== Pull latest on branch: $CURRENT_BRANCH =="
+section "Pull latest on branch: $CURRENT_BRANCH"
 git pull --ff-only origin "$CURRENT_BRANCH"
 
-echo
-echo "== Verify env file =="
+section "Verify env file"
 test -f "$ENV_FILE"
 
-echo
-echo "== PHP syntax checks =="
+section "PHP syntax checks"
 find app public scripts config -name '*.php' -print0 | xargs -0 -n1 php -l > /tmp/artsfolio-php-lint.log
 tail -n 5 /tmp/artsfolio-php-lint.log
 
-echo
-echo "== Run migrations =="
+section "Run migrations"
 ARTSFOLIO_ENV_FILE="$ENV_FILE" php scripts/database/migrate.php
 
-echo
-echo "== Migration integrity =="
+section "Migration integrity"
 ARTSFOLIO_ENV_FILE="$ENV_FILE" php scripts/database/check_migration_integrity.php
 
-echo
-echo "== Preflight =="
+section "Preflight"
 ARTSFOLIO_ENV_FILE="$ENV_FILE" ./scripts/test/preflight.sh
 
-echo
-echo "== Restart services =="
+section "Restart services"
 sudo systemctl restart php8.4-fpm
 sudo systemctl restart caddy
 sudo systemctl restart artsfolio-email-worker.service
@@ -54,11 +82,9 @@ else
   echo "WARNING: artsfolio-background-worker.service is not installed. Queued background_jobs will not execute until it is installed." >&2
 fi
 
-echo
-echo "== Health check =="
+section "Health check"
 ARTSFOLIO_ENV_FILE="$ENV_FILE" ./scripts/deploy/healthcheck.sh
 
-echo
-echo "== Deploy complete =="
+DEPLOY_STAGE="complete"
 
 # End of file.
