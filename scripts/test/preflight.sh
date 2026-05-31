@@ -126,3 +126,5 @@ echo "== Platform SMTP message stream setting regression =="
 php scripts/test/platform_smtp_message_stream_setting.php
 
 php scripts/test/tenant_login_and_invite_static.php
+
+run_if_exists scripts/test/tenant_chrome_static.php

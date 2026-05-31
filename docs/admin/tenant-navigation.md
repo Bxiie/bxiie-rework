@@ -1,0 +1,7 @@
+# Tenant navigation
+
+Tenant public pages use stable public navigation: Home, Portfolio, About, Contact, and Admin for signed-in users. The Admin link on tenant domains points to `/admin` on that tenant host.
+
+Platform admin remains available only from the canonical platform host at `/platform/admin`.
+
+# End of file.

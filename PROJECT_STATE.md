@@ -1136,3 +1136,9 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant public pages use `/admin` for their Admin nav link on the tenant host.
 - Platform admin remains canonical at `https://artsfol.io/platform/admin` and must not be emitted in tenant public navigation.
 
+
+## Tenant chrome guardrails
+- Tenant public pages must use `/admin` for tenant admin links and must not call `PlatformChrome::platformAdminLink()` directly.
+- Tenant form JavaScript is loaded from `/assets/tenant-forms.js`; controllers must not inline the asset contents into public pages.
+- `scripts/test/tenant_chrome_static.php` enforces these rules during preflight.
+

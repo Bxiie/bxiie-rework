@@ -44,6 +44,14 @@ final class PlatformChrome
             $roles = (new MembershipRepository($pdo))->platformRolesForUser((int) $currentUser['user_id']);
             $allowed = [Roles::PLATFORM_OWNER, Roles::PLATFORM_ADMIN, Roles::PLATFORM_SUPPORT, 'owner', 'admin'];
             if (array_intersect($allowed, $roles) !== []) {
+                $host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+                $host = preg_replace('/:\d+$/', '', $host) ?? $host;
+                $platformHosts = ['artsfol.io', 'www.artsfol.io'];
+
+                if (!in_array($host, $platformHosts, true)) {
+                    return '<a class="platform-admin-top-link" href="/admin">Admin</a>';
+                }
+
                 return '<a class="platform-admin-top-link" href="/platform/admin">Admin</a>';
             }
         } catch (Throwable) {
