@@ -1,8 +1,12 @@
 ## Now
 
-
-
-
+- platform admin workers - says all workers are stale
+- platform admin jobs - remove Queued jobs require the background worker messaging.
+- Platform should check that the worker is running every minute.  Platform admin pages should display an error message if it is not.
+- Where do I see the results of DNS verification?  Last results should be shown on the platform admin domains page
+- recapture not shown on platform contact form.
+- platform contant form, not tenant contact form, shown at https://bxiie.artsfol.io/contact
+- https://bxiie.artsfol.io/ is showing platform content, not tenant content
 
 ##
 
