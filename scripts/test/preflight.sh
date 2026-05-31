@@ -65,7 +65,17 @@ run_if_exists scripts/test/email_verification.php
 
 run_if_exists scripts/test/email_sender_factory.php
 run_if_exists scripts/test/email_outbox.php
-run_if_exists scripts/workers/email_run_once.php
+
+# Production preflight must not send real SMTP messages. The email outbox
+# script above verifies queueing and template rendering; the actual worker send
+# path is covered by service health and logs. Set this variable only when using
+# a safe local SMTP sink such as MailHog.
+if [ "${ARTSFOLIO_PREFLIGHT_SEND_EMAIL:-0}" = "1" ]; then
+  run_if_exists scripts/workers/email_run_once.php
+else
+  echo "Skipping SMTP send smoke test. Set ARTSFOLIO_PREFLIGHT_SEND_EMAIL=1 only with a safe SMTP sink."
+fi
+
 run_if_exists scripts/test/email_outbox_status.php
 
 run_if_exists scripts/test/audit_log.php

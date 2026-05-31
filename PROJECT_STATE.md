@@ -1072,3 +1072,9 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The platform contact page now renders reCAPTCHA when `platform_settings.recaptcha_site_key` is configured and verifies submitted tokens when `platform_settings.recaptcha_secret_key` is configured.
 
 # End of file.
+
+## 2026-05-31: Production preflight email send guard
+- `scripts/test/preflight.sh` no longer runs `scripts/workers/email_run_once.php` by default.
+- Production deploy preflight validates email queue/template behavior but does not attempt to relay SMTP to test recipients.
+- To exercise the send path in a safe local environment, run preflight with `ARTSFOLIO_PREFLIGHT_SEND_EMAIL=1` and point SMTP settings at a local sink such as MailHog.
+
