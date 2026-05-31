@@ -1046,3 +1046,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `SessionRepository` no longer depends on a nonexistent `users.status` column and computes `expires_at` in PHP before binding it as a normal SQL value.
 - Platform Admin > Platform Settings > Email delivery now stores `smtp_x_pm_message_stream`; SMTP sends it as `X-PM-Message-Stream` for Postmark message streams.
 - `scripts/workers/email_run_once.php` builds its sender from `platform_settings` rather than environment-only mail configuration.
+
+## Tenant login and admin invites
+- Tenant browser login stores the tenant ID on the session and returns `Set-Cookie` on the redirect to `/admin`.
+- `SessionCookie` keeps backward-compatible `issueSetCookie()` and `expireSetCookie()` aliases to avoid rolling-deploy method-name failures.
+- Platform tenant detail pages show an external link to open the tenant site in a new tab when a tenant domain is available.
+- Tenant admins can invite additional tenant admins from `/admin/users`; invites upsert membership/role records and queue `email_outbox` email with template key `tenant_admin_invite`.
+- Regression check: `php scripts/test/tenant_login_and_invite_static.php`.
+
+# End of file.

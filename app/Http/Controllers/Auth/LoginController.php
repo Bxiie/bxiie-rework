@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Browser login/logout controller for platform and tenant domains.
+ * Tenant browser login/logout controller.
  */
 
 declare(strict_types=1);
@@ -19,7 +19,7 @@ use App\Support\Security\CsrfTokenService;
 use App\Tenant\Settings\TenantSettingsRepository;
 
 /**
- * Handles local email/password browser authentication.
+ * Handles local password auth for tenant browser sessions.
  */
 final class LoginController
 {
@@ -56,7 +56,7 @@ final class LoginController
                 ipAddress: $request->server('REMOTE_ADDR'),
                 userAgent: $request->server('HTTP_USER_AGENT'),
             );
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
             return Response::html('<h1>Invalid login</h1>', 401);
         }
 
@@ -69,7 +69,7 @@ final class LoginController
 
         return new Response('', 302, [
             'Location' => '/admin',
-            'Set-Cookie' => SessionCookie::issueHeaders($token, true),
+            'Set-Cookie' => SessionCookie::loginHeaders($token, true),
         ]);
     }
 
@@ -79,7 +79,7 @@ final class LoginController
 
         return new Response('', 302, [
             'Location' => '/login',
-            'Set-Cookie' => SessionCookie::expireHeaders(),
+            'Set-Cookie' => SessionCookie::logoutHeaders(),
         ]);
     }
 

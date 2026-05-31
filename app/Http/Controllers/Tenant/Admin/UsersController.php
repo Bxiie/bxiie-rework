@@ -10,6 +10,7 @@ use App\Http\Response;
 use App\Http\View\ErrorPage;
 use App\Http\View\TenantAdminLayout;
 use App\Platform\Audit\AuditLogRepository;
+use App\Platform\Email\EmailOutboxRepository;
 use App\Platform\Identity\AdminUserRepository;
 use App\Platform\Identity\PasswordHasher;
 use App\Platform\Tenancy\TenantContext;
@@ -29,6 +30,7 @@ final class UsersController
         private readonly CsrfTokenService $csrf,
         private readonly TenantSettingsRepository $settings,
         private readonly ?AuditLogRepository $auditLog = null,
+        private readonly ?EmailOutboxRepository $emailOutbox = null,
     ) {
     }
 
@@ -76,7 +78,16 @@ HTML;
 
         $body = <<<HTML
 {$notice}
-<p class="admin-muted">Tenant admins can see tenant users and rotate local passwords. This screen does not grant or remove roles.</p>
+<p class="admin-muted">Tenant admins can see tenant users, rotate local passwords, and invite additional tenant admins.</p>
+<section class="admin-panel">
+    <h2>Invite tenant admin</h2>
+    <form method="post" action="/admin/users/invite" class="admin-form">
+        <input type="hidden" name="csrf_token" value="{$csrf}">
+        <label>Email<br><input type="email" name="email" required autocomplete="email"></label>
+        <label>Name<br><input type="text" name="display_name" autocomplete="name"></label>
+        <button type="submit">Send invite</button>
+    </form>
+</section>
 <table class="admin-table">
     <thead><tr><th>ID</th><th>User</th><th>Status</th><th>Roles</th><th>Last log on</th><th>Created</th><th>Password</th></tr></thead>
     <tbody>{$rows}</tbody>
@@ -106,6 +117,56 @@ HTML;
         FlashMessages::success('Tenant user password updated.');
 
         return new Response('', 303, ['Location' => '/admin/users?notice=password-updated']);
+    }
+
+
+    public function invite(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+        $email = strtolower(trim((string) ($_POST['email'] ?? '')));
+        $displayName = trim((string) ($_POST['display_name'] ?? ''));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return Response::html('<h1>Invalid invite email address</h1>', 422);
+        }
+
+        $userId = $this->users->inviteTenantAdmin($tenant->tenantId, $email, $displayName !== '' ? $displayName : null);
+        $this->queueInviteEmail($tenant, $email, $displayName !== '' ? $displayName : null);
+        $this->auditLog?->record('tenant.user.invited_admin', $tenant->tenantId, (int) ($currentUser['user_id'] ?? 0), 'user', (string) $userId, ['email' => $email], $request->server('REMOTE_ADDR'));
+        FlashMessages::success('Tenant admin invite queued.');
+
+        return new Response('', 303, ['Location' => '/admin/users?notice=invite-queued']);
+    }
+
+    private function queueInviteEmail(TenantContext $tenant, string $email, ?string $displayName): void
+    {
+        if ($this->emailOutbox === null) {
+            return;
+        }
+
+        $siteName = $this->settings->get($tenant, 'site_title', $tenant->name);
+        $loginUrl = 'https://' . ($_SERVER['HTTP_HOST'] ?? '') . '/login';
+        $nameLine = $displayName ? "Hello {$displayName}," : 'Hello,';
+        $bodyText = "{$nameLine}\n\nYou have been invited as a tenant admin for {$siteName}.\n\nOpen {$loginUrl} to sign in. If you do not have a local password yet, use the password reset flow to set one.\n\nArtsFolio";
+        $bodyHtml = '<p>' . htmlspecialchars($nameLine, ENT_QUOTES, 'UTF-8') . '</p>'
+            . '<p>You have been invited as a tenant admin for ' . htmlspecialchars($siteName, ENT_QUOTES, 'UTF-8') . '.</p>'
+            . '<p><a href="' . htmlspecialchars($loginUrl, ENT_QUOTES, 'UTF-8') . '">Open tenant login</a></p>'
+            . '<p>If you do not have a local password yet, use the password reset flow to set one.</p>';
+
+        $this->emailOutbox->queue(
+            recipientEmail: $email,
+            subject: 'You have been invited to administer ' . $siteName,
+            bodyText: $bodyText,
+            bodyHtml: $bodyHtml,
+            recipientName: $displayName,
+            tenantId: $tenant->tenantId,
+            templateKey: 'tenant_admin_invite',
+        );
     }
 
     private function escape(string $value): string

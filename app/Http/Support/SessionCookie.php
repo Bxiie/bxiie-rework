@@ -11,32 +11,19 @@ namespace App\Http\Support;
 use App\Http\Middleware\CurrentUser;
 
 /**
- * Issues and clears browser-session cookies consistently across platform and
- * tenant subdomains.
+ * Builds Set-Cookie header values for browser authentication.
+ *
+ * This class keeps the old issueSetCookie()/expireSetCookie() method names as
+ * aliases because some deployed controllers still call those names during
+ * rolling deploys. Removing the aliases turns /login into a production 500.
  */
 final class SessionCookie
 {
     public static function issueHeader(string $token, bool $persistent = true): string
     {
-        return self::buildHeader(rawurlencode($token), $persistent ? 1209600 : 86400, self::cookieDomain());
+        return self::build(CurrentUser::COOKIE_NAME . '=' . rawurlencode($token), $persistent ? 1209600 : 86400, true);
     }
 
-    /**
-     * Returns every Set-Cookie value needed to clear stale variants and issue
-     * the active browser session. Browsers may keep both host-only and domain
-     * cookies with the same name; clearing both avoids redirect loops after
-     * auth-cookie changes.
-     *
-     * @return list<string>
-     */
-    public static function issueHeaders(string $token, bool $persistent = true): array
-    {
-        return array_merge(self::expireHeaders(), [self::issueHeader($token, $persistent)]);
-    }
-
-    /**
-     * Backward-compatible alias for older callers.
-     */
     public static function issueSetCookie(string $token, bool $persistent = true): string
     {
         return self::issueHeader($token, $persistent);
@@ -44,36 +31,46 @@ final class SessionCookie
 
     public static function expireHeader(): string
     {
-        return self::buildHeader('deleted', 0, self::cookieDomain());
+        return self::build(CurrentUser::COOKIE_NAME . '=deleted', 0, true);
     }
 
-    /**
-     * @return list<string>
-     */
-    public static function expireHeaders(): array
-    {
-        $headers = [self::buildHeader('deleted', 0, '')];
-        $domain = self::cookieDomain();
-
-        if ($domain !== '') {
-            $headers[] = self::buildHeader('deleted', 0, $domain);
-        }
-
-        return array_values(array_unique($headers));
-    }
-
-    /**
-     * Backward-compatible alias for older callers.
-     */
     public static function expireSetCookie(): string
     {
         return self::expireHeader();
     }
 
-    private static function buildHeader(string $value, int $maxAge, string $domain): string
+    /**
+     * Returns all cookie headers needed to clear stale host-only/domain cookies
+     * and then issue the current valid session cookie.
+     *
+     * @return list<string>
+     */
+    public static function loginHeaders(string $token, bool $persistent = true): array
+    {
+        return array_merge(self::logoutHeaders(), [self::issueHeader($token, $persistent)]);
+    }
+
+    /**
+     * Returns cookie headers for both the configured domain and host-only case.
+     * This avoids old broken cookies shadowing the working cookie in browsers.
+     *
+     * @return list<string>
+     */
+    public static function logoutHeaders(): array
+    {
+        $headers = [self::build(CurrentUser::COOKIE_NAME . '=deleted', 0, false)];
+        $domain = self::cookieDomain();
+        if ($domain !== '') {
+            $headers[] = self::build(CurrentUser::COOKIE_NAME . '=deleted', 0, true);
+        }
+
+        return array_values(array_unique($headers));
+    }
+
+    private static function build(string $nameValue, int $maxAge, bool $includeDomain): string
     {
         $parts = [
-            CurrentUser::COOKIE_NAME . '=' . $value,
+            $nameValue,
             'Path=/',
             'HttpOnly',
             'SameSite=Lax',
@@ -84,7 +81,8 @@ final class SessionCookie
             $parts[] = 'Secure';
         }
 
-        if ($domain !== '') {
+        $domain = self::cookieDomain();
+        if ($includeDomain && $domain !== '') {
             $parts[] = 'Domain=' . $domain;
         }
 

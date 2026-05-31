@@ -84,6 +84,10 @@ HTML,
         $csrf = $this->escape($this->csrf->getOrCreate());
         $tenantName = $this->escape((string) $tenant['name']);
         $tenantSlug = $this->escape((string) $tenant['slug']);
+        $tenantUrl = $this->tenants->publicUrlForTenant($tenantId);
+        $tenantLink = $tenantUrl !== null
+            ? '<p><a class="button secondary" target="_blank" rel="noopener" href="' . $this->escape($tenantUrl) . '">Open tenant site in new tab</a></p>'
+            : '<p class="admin-muted">No active tenant subdomain is currently available.</p>';
         $notice = isset($_GET['notice']) ? '<p class="admin-notice admin-notice-success">Tenant user password updated.</p>' : '';
         $rows = '';
 
@@ -113,6 +117,7 @@ HTML;
 <p><a href="/platform/admin/tenants">&larr; Tenants</a></p>
 {$notice}
 <p><strong>Slug:</strong> {$tenantSlug}</p>
+{$tenantLink}
 <table class="admin-table">
     <thead><tr><th>ID</th><th>User</th><th>Membership</th><th>Roles</th><th>Last log on</th><th>Password</th></tr></thead>
     <tbody>{$rows}</tbody>

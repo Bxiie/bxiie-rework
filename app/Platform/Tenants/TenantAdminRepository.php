@@ -70,6 +70,32 @@ final class TenantAdminRepository
         return $host ? (string) $host : null;
     }
 
+
+    /**
+     * Returns the best public URL for opening the tenant site from platform admin.
+     */
+    public function publicUrlForTenant(int $tenantId): ?string
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT hostname
+             FROM tenant_domains
+             WHERE tenant_id = :tenant_id
+               AND status <> 'disabled'
+             ORDER BY
+                CASE WHEN hostname LIKE '%.artsfol.io' THEN 0 ELSE 1 END,
+                is_primary DESC,
+                id ASC
+             LIMIT 1"
+        );
+        $stmt->execute(['tenant_id' => $tenantId]);
+        $host = $stmt->fetchColumn();
+        if (!$host) {
+            return null;
+        }
+
+        return 'https://' . (string) $host . '/';
+    }
+
     /**
      * Suspends tenant content without deleting data.
      */
