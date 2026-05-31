@@ -497,7 +497,7 @@ HTML;
     {
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
         $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
-        $recaptcha = $this->recaptchaWidget($tenant);
+        $recaptcha = FirstPartyCaptcha::render('contact', (int) $tenant->tenantId);
 
         return <<<HTML
 <div class="signup-modal" id="tenant-signup-modal" hidden>
