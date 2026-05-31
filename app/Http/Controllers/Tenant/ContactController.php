@@ -1,18 +1,22 @@
 <?php
 
+/**
+ * Tenant public contact submission controller.
+ */
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Request;
 use App\Http\Response;
-use App\Platform\Tenancy\TenantContext;
 use App\Platform\Security\RateLimiter;
+use App\Platform\Tenancy\TenantContext;
 use App\Services\RecaptchaVerifier;
-use PDO;
-use Throwable;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Contact\ContactMessageService;
+use PDO;
+use Throwable;
 
 /**
  * Handles tenant public contact message submissions.
@@ -30,16 +34,15 @@ final class ContactController
     public function submit(Request $request, TenantContext $tenant): Response
     {
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return $this->backToContact('contact_error=security');
         }
 
-
         if (!RecaptchaVerifier::verify($this->recaptchaSecret($tenant), $_POST['g-recaptcha-response'] ?? null, $request->server('REMOTE_ADDR'))) {
-            return Response::html('<h1>reCAPTCHA verification failed</h1><p>Please try again.</p>', 422);
+            return $this->backToContact('contact_error=recaptcha');
         }
 
         if ($this->rateLimiter && !$this->rateLimiter->allow($this->rateKey($request, $tenant), 5, 300)) {
-            return Response::html('<h1>Too many submissions</h1><p>Please wait a few minutes and try again.</p>', 429);
+            return $this->backToContact('contact_error=rate_limited');
         }
 
         $senderName = trim((string) ($_POST['name'] ?? ''));
@@ -48,11 +51,11 @@ final class ContactController
         $message = trim((string) ($_POST['message'] ?? ''));
 
         if ($senderName === '' || $senderEmail === '' || $message === '') {
-            return Response::html('<h1>Missing required fields</h1>', 422);
+            return $this->backToContact('contact_error=missing');
         }
 
         if (!filter_var($senderEmail, FILTER_VALIDATE_EMAIL)) {
-            return Response::html('<h1>Invalid email address</h1>', 422);
+            return $this->backToContact('contact_error=email');
         }
 
         $this->messages->receive(
@@ -65,24 +68,13 @@ final class ContactController
             userAgent: $request->server('HTTP_USER_AGENT'),
         );
 
-        return Response::html(<<<HTML
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Message received</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-<h1>Message received</h1>
-<p>Thank you. Your message has been sent.</p>
-<p><a href="/contact">Back to contact</a></p>
-</body>
-</html>
-HTML);
+        return $this->backToContact('contact_sent=1');
     }
+
     /**
-     * Tenant-specific reCAPTCHA secret wins; platform secret is fallback.
+     * Tenant contact forms use only tenant-specific reCAPTCHA secrets.
+     * Platform keys are not reused on tenant/custom domains because Google
+     * validates each site key against allowed hostnames.
      */
     private function recaptchaSecret(TenantContext $tenant): string
     {
@@ -93,17 +85,16 @@ HTML);
         try {
             $stmt = $this->pdo->prepare("SELECT setting_value FROM tenant_settings WHERE tenant_id = :tenant_id AND setting_key = 'recaptcha_secret_key' LIMIT 1");
             $stmt->execute(['tenant_id' => $tenant->tenantId]);
-            $tenantSecret = trim((string) ($stmt->fetchColumn() ?: ''));
-            if ($tenantSecret !== '') {
-                return $tenantSecret;
-            }
 
-            $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'recaptcha_secret_key' LIMIT 1");
-            $stmt->execute();
             return trim((string) ($stmt->fetchColumn() ?: ''));
         } catch (Throwable) {
             return '';
         }
+    }
+
+    private function backToContact(string $query): Response
+    {
+        return new Response('', 303, ['Location' => '/contact?' . $query]);
     }
 
     private function rateKey(Request $request, TenantContext $tenant): string

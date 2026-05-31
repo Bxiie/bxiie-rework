@@ -1100,3 +1100,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 <!-- End of file. -->
 
 # End of file.
+
+## Contact, signup, reCAPTCHA, and navigation UX
+- Tenant contact and email signup submissions redirect back to branded tenant pages with inline success/error notices instead of standalone error pages.
+- Tenant public reCAPTCHA is tenant-specific only; platform keys are not reused on tenant/custom domains to avoid Google invalid-domain errors.
+- Tenant contact pages include an email-list signup form and public tenant pages show a one-minute visitor signup modal.
+- Public tenant and platform navigation styling reserves stable tab width to reduce page-to-page tab movement.
+
+# End of file.

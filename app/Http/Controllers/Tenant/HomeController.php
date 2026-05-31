@@ -199,42 +199,46 @@ HTML;
         $this->track($request, $tenant, 'contact_view');
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
         $recaptcha = $this->recaptchaWidget($tenant);
+        $contactNotice = $this->contactNotice();
+        $signupNotice = $this->signupNotice();
+        $contactDetails = $this->settings->get($tenant, 'contact_details', '');
 
         return Response::html($this->layout(
             tenant: $tenant,
             title: "{$this->escape($tenant->name)} | Contact",
             body: <<<HTML
 <h1>Contact</h1>
-<p><a href="mailto:info@artsfol.io">info@artsfol.io</a></p>
-<article class="prose">{$this->settings->get($tenant, 'contact_details', '')}</article>
-<form method="post" action="/contact">
-    <input type="hidden" name="csrf_token" value="{$csrf}">
-    <p>
-        <label>Name<br>
-            <input type="text" name="name" autocomplete="name" required>
-        </label>
-    </p>
-    <p>
-        <label>Email<br>
-            <input type="email" name="email" autocomplete="email" required>
-        </label>
-    </p>
-    <p>
-        <label>Subject<br>
-            <input type="text" name="subject">
-        </label>
-    </p>
-    <p>
-        <label>Message<br>
-            <textarea name="message" rows="8" required></textarea>
-        </label>
-    </p>
-    {$recaptcha}
-    <button type="submit">Send message</button>
-</form>
+{$contactNotice}
+{$signupNotice}
+<article class="prose">{$contactDetails}</article>
+<section class="contact-layout">
+    <form method="post" action="/contact" class="form js-submit-form">
+        <input type="hidden" name="csrf_token" value="{$csrf}">
+        <p><label>Name<br><input type="text" name="name" autocomplete="name" required></label></p>
+        <p><label>Email<br><input type="email" name="email" autocomplete="email" required></label></p>
+        <p><label>Subject<br><input type="text" name="subject"></label></p>
+        <p><label>Message<br><textarea name="message" rows="8" required></textarea></label></p>
+        {$recaptcha}
+        <button type="submit" data-loading-label="Sending…">Send message</button>
+        <p class="form-progress" aria-live="polite">Sending message…</p>
+    </form>
+    <form method="post" action="/subscribe" class="form compact js-submit-form">
+        <h2>Email list</h2>
+        <p>Get occasional updates from this artist.</p>
+        <input type="hidden" name="csrf_token" value="{$csrf}">
+        <input type="hidden" name="source" value="contact_page">
+        <input type="hidden" name="return_to" value="/contact">
+        <p><label>Name<br><input type="text" name="name" autocomplete="name"></label></p>
+        <p><label>Email<br><input type="email" name="email" autocomplete="email" required></label></p>
+        {$recaptcha}
+        <button type="submit" data-loading-label="Subscribing…">Subscribe</button>
+        <p class="form-progress" aria-live="polite">Subscribing…</p>
+    </form>
+</section>
 HTML
         ));
     }
+
 
     /**
      * Renders the public reCAPTCHA widget when a tenant or platform key is configured.
@@ -262,19 +266,9 @@ HTML
      */
     private function recaptchaSiteKey(TenantContext $tenant): string
     {
-        $tenantKey = trim((string) $this->settings->get($tenant, 'recaptcha_site_key', ''));
-        if ($tenantKey !== '') {
-            return $tenantKey;
-        }
-
-        try {
-            $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'recaptcha_site_key' LIMIT 1");
-            $stmt->execute();
-            return trim((string) ($stmt->fetchColumn() ?: ''));
-        } catch (Throwable) {
-            return '';
-        }
+        return trim((string) $this->settings->get($tenant, 'recaptcha_site_key', ''));
     }
+
 
     private function track(Request $request, TenantContext $tenant, string $eventType, ?string $entityType = null, ?int $entityId = null): void
     {
@@ -395,6 +389,8 @@ HTML
 {$body}
 </main>
 <footer class="site-footer">© {$year} {$copyrightName}</footer>
+{$this->emailSignupModal($tenant)}
+{$this->tenantInteractionScript()}
 </body>
 </html>
 HTML;
@@ -425,6 +421,50 @@ HTML;
             . '--site-bg-opacity:' . $opacity . ';';
     }
 
+    private function contactNotice(): string
+    {
+        if (trim((string) ($_GET['contact_sent'] ?? '')) !== '') {
+            return '<p class="notice" role="status">Thank you. Your message has been sent.</p>';
+        }
+
+        $error = trim((string) ($_GET['contact_error'] ?? ''));
+        if ($error === '') {
+            return '';
+        }
+
+        $messages = [
+            'security' => 'The form security check expired. Please try again.',
+            'recaptcha' => 'The reCAPTCHA check did not pass. Please try again.',
+            'rate_limited' => 'Too many submissions were received. Please wait a few minutes and try again.',
+            'missing' => 'Please complete the required fields.',
+            'email' => 'Please enter a valid email address.',
+        ];
+
+        return '<p class="error" role="alert">' . $this->escape($messages[$error] ?? 'The message could not be sent. Please try again.') . '</p>';
+    }
+
+    private function signupNotice(): string
+    {
+        if (trim((string) ($_GET['signup_sent'] ?? '')) !== '') {
+            return '<p class="notice" role="status">Thank you. You have been added to the email list.</p>';
+        }
+
+        $error = trim((string) ($_GET['signup_error'] ?? ''));
+        if ($error === '') {
+            return '';
+        }
+
+        $messages = [
+            'security' => 'The signup security check expired. Please try again.',
+            'recaptcha' => 'The reCAPTCHA check did not pass. Please try again.',
+            'rate_limited' => 'Too many signup attempts were received. Please wait a few minutes and try again.',
+            'missing' => 'Please enter an email address.',
+            'email' => 'Please enter a valid email address.',
+        ];
+
+        return '<p class="error" role="alert">' . $this->escape($messages[$error] ?? 'The signup could not be completed. Please try again.') . '</p>';
+    }
+
     /**
      * Allows simple CSS size values while rejecting characters that could break style attributes.
      */
@@ -450,6 +490,71 @@ HTML;
         return rtrim(rtrim(sprintf('%.2F', $opacity), '0'), '.');
     }
 
+
+    private function emailSignupModal(TenantContext $tenant): string
+    {
+        $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
+        $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
+        $recaptcha = $this->recaptchaWidget($tenant);
+
+        return <<<HTML
+<div class="signup-modal" id="tenant-signup-modal" hidden>
+    <div class="signup-modal__backdrop" data-signup-close></div>
+    <section class="signup-modal__panel" role="dialog" aria-modal="true" aria-labelledby="tenant-signup-modal-title">
+        <button class="signup-modal__close" type="button" data-signup-close aria-label="Close signup dialog">×</button>
+        <h2 id="tenant-signup-modal-title">Join {$siteTitle}'s email list</h2>
+        <p>Get occasional updates and announcements.</p>
+        <form method="post" action="/subscribe" class="form compact js-submit-form">
+            <input type="hidden" name="csrf_token" value="{$csrf}">
+            <input type="hidden" name="source" value="one_minute_modal">
+            <input type="hidden" name="return_to" value="/">
+            <label>Name <input type="text" name="name" autocomplete="name"></label>
+            <label>Email <input type="email" name="email" autocomplete="email" required></label>
+            {$recaptcha}
+            <button type="submit" data-loading-label="Subscribing…">Subscribe</button>
+            <p class="form-progress" aria-live="polite">Subscribing…</p>
+        </form>
+    </section>
+</div>
+HTML;
+    }
+
+    private function tenantInteractionScript(): string
+    {
+        return <<<'HTML'
+<script>
+(function () {
+  document.querySelectorAll('.js-submit-form').forEach(function (form) {
+    form.addEventListener('submit', function () {
+      var button = form.querySelector('button[type="submit"]');
+      form.classList.add('is-submitting');
+      if (button) {
+        button.disabled = true;
+        button.textContent = button.getAttribute('data-loading-label') || 'Sending…';
+      }
+    });
+  });
+  var modal = document.getElementById('tenant-signup-modal');
+  if (!modal || window.localStorage.getItem('artsfolio_tenant_signup_dismissed') === '1') { return; }
+  if (new URLSearchParams(window.location.search).has('signup_sent')) {
+    window.localStorage.setItem('artsfolio_tenant_signup_dismissed', '1');
+    return;
+  }
+  window.setTimeout(function () {
+    modal.hidden = false;
+    document.body.classList.add('signup-modal-open');
+  }, 60000);
+  modal.querySelectorAll('[data-signup-close]').forEach(function (control) {
+    control.addEventListener('click', function () {
+      modal.hidden = true;
+      document.body.classList.remove('signup-modal-open');
+      window.localStorage.setItem('artsfolio_tenant_signup_dismissed', '1');
+    });
+  });
+})();
+</script>
+HTML;
+    }
 
     private function backgroundStyle(TenantContext $tenant): string
     {

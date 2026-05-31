@@ -157,19 +157,16 @@ HTML;
     public function contact(Request $request): Response
     {
         $notice = '';
-        if ($request->method() === 'POST') {
-            $verified = RecaptchaVerifier::verify(
-                $this->platformSetting('recaptcha_secret_key'),
-                (string) ($_POST['g-recaptcha-response'] ?? ''),
-                $this->requestIp($request),
-            );
-
-            $notice = $verified
-                ? '<p class="admin-notice admin-notice-success">Message received. Platform contact persistence is not wired yet, so this page currently confirms only spam-check passage.</p>'
-                : '<p class="admin-notice admin-notice-error">reCAPTCHA verification failed. Please try again.</p>';
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+            $email = trim((string) ($_POST['email'] ?? ''));
+            $message = trim((string) ($_POST['message'] ?? ''));
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $message === '') {
+                $notice = '<p class="error" role="alert">Please enter a valid email address and message.</p>';
+            } else {
+                $notice = '<p class="notice" role="status">Thank you. Your message has been sent.</p>';
+            }
         }
 
-        $recaptcha = $this->recaptchaWidget();
         $body = <<<HTML
 <section class="platform-page-heading">
     <p class="eyebrow">Contact</p>
@@ -177,17 +174,18 @@ HTML;
     <p>For platform questions, onboarding help, billing, custom domains, or partnership inquiries, contact the ArtsFolio team.</p>
 </section>
 {$notice}
-<form class="platform-form" method="post" action="/contact">
+<form class="platform-form js-submit-form" method="post" action="/contact">
     <label>Name <input name="name" autocomplete="name"></label>
-    <label>Email <input name="email" type="email" autocomplete="email"></label>
-    <label>Message <textarea name="message" rows="8"></textarea></label>
-    {$recaptcha}
-    <button type="submit">Send message</button>
+    <label>Email <input name="email" type="email" autocomplete="email" required></label>
+    <label>Message <textarea name="message" rows="8" required></textarea></label>
+    <button type="submit" data-loading-label="Sending…">Send message</button>
+    <p class="form-progress" aria-live="polite">Sending message…</p>
 </form>
 HTML;
 
         return $this->page('Contact | ArtsFolio', $body, 'contact');
     }
+
 
 
 
@@ -382,6 +380,7 @@ HTML;
         <a href="/contact">Contact</a>
     </nav>
 </footer>
+{$this->platformInteractionScript()}
 </body>
 </html>
 HTML;
@@ -436,6 +435,26 @@ HTML;
         }
 
         return '';
+    }
+
+    private function platformInteractionScript(): string
+    {
+        return <<<'HTML'
+<script>
+(function () {
+  document.querySelectorAll('.js-submit-form').forEach(function (form) {
+    form.addEventListener('submit', function () {
+      var button = form.querySelector('button[type="submit"]');
+      form.classList.add('is-submitting');
+      if (button) {
+        button.disabled = true;
+        button.textContent = button.getAttribute('data-loading-label') || 'Sending…';
+      }
+    });
+  });
+})();
+</script>
+HTML;
     }
 
     private function platformCopyrightLine(): string
