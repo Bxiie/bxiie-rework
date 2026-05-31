@@ -61,7 +61,7 @@ final class DomainsController
     <button type="submit">Verify DNS</button>
 </form>
 HTML;
-
+            $dnsResult = $this->dnsResultSummary($domain);
 
             $rows .= '<tr>'
                 . '<td>' . AdminLayout::escape((string) $domain['id']) . '</td>'
@@ -71,12 +71,13 @@ HTML;
                 . '<td>' . AdminLayout::escape((string) $domain['tenant_name']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $domain['created_at']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) ($domain['updated_at'] ?? '')) . '</td>'
+                . '<td>' . $dnsResult . '</td>'
                 . '<td>' . $actions . '</td>'
                 . '</tr>';
         }
 
         if ($rows === '') {
-            $rows = '<tr><td colspan="8">No custom domains found.</td></tr>';
+            $rows = '<tr><td colspan="9">No custom domains found.</td></tr>'; 
         }
 
         $query = ['limit' => $limit];
@@ -107,6 +108,7 @@ HTML;
             <th>Tenant Name</th>
             <th>Created</th>
             <th>Updated</th>
+            <th>Last DNS Result</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -157,6 +159,39 @@ HTML,
         }
 
         return new Response('', 303, ['Location' => '/platform/admin/domains?notice=domain-action-queued']);
+    }
+
+
+    /**
+     * Summarizes the most recent DNS verification result persisted by the worker.
+     */
+    private function dnsResultSummary(array $domain): string
+    {
+        $checkedAt = trim((string) ($domain['dns_last_checked_at'] ?? ''));
+        $error = trim((string) ($domain['dns_last_error'] ?? ''));
+        $raw = trim((string) ($domain['dns_last_result'] ?? ''));
+
+        if ($checkedAt === '' && $raw === '' && $error === '') {
+            return '<span class="admin-muted">Not checked yet</span>';
+        }
+
+        if ($error !== '') {
+            return '<strong>Failed</strong><br><span class="admin-muted">' . AdminLayout::escape($checkedAt) . '</span><br><code>' . AdminLayout::escape($error) . '</code>';
+        }
+
+        $decoded = json_decode($raw, true);
+        if (!is_array($decoded)) {
+            return '<span class="admin-muted">' . AdminLayout::escape($checkedAt) . '</span><br><code>' . AdminLayout::escape(mb_substr($raw, 0, 220)) . '</code>';
+        }
+
+        $verified = !empty($decoded['verified']) ? 'Verified' : 'Not verified';
+        $actual = implode(', ', array_map('strval', $decoded['actual_ipv4'] ?? []));
+        $expected = implode(', ', array_map('strval', $decoded['expected_ipv4'] ?? []));
+
+        return '<strong>' . AdminLayout::escape($verified) . '</strong><br>'
+            . '<span class="admin-muted">' . AdminLayout::escape($checkedAt) . '</span><br>'
+            . '<small>Actual: ' . AdminLayout::escape($actual !== '' ? $actual : 'none') . '</small><br>'
+            . '<small>Expected: ' . AdminLayout::escape($expected !== '' ? $expected : 'none configured') . '</small>';
     }
 
     private function auditAction(Request $request, ?array $currentUser, string $action, string $entityId, array $details = []): void

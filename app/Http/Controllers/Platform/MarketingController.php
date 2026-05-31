@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Request;
 use App\Http\Response;
+use App\Services\RecaptchaVerifier;
 use PDO;
 use Throwable;
 
@@ -155,16 +156,32 @@ HTML;
 
     public function contact(Request $request): Response
     {
+        $notice = '';
+        if ($request->method() === 'POST') {
+            $verified = RecaptchaVerifier::verify(
+                $this->platformSetting('recaptcha_secret_key'),
+                (string) ($_POST['g-recaptcha-response'] ?? ''),
+                $this->requestIp($request),
+            );
+
+            $notice = $verified
+                ? '<p class="admin-notice admin-notice-success">Message received. Platform contact persistence is not wired yet, so this page currently confirms only spam-check passage.</p>'
+                : '<p class="admin-notice admin-notice-error">reCAPTCHA verification failed. Please try again.</p>';
+        }
+
+        $recaptcha = $this->recaptchaWidget();
         $body = <<<HTML
 <section class="platform-page-heading">
     <p class="eyebrow">Contact</p>
     <h1>Talk to ArtsFolio</h1>
     <p>For platform questions, onboarding help, billing, custom domains, or partnership inquiries, contact the ArtsFolio team.</p>
 </section>
+{$notice}
 <form class="platform-form" method="post" action="/contact">
     <label>Name <input name="name" autocomplete="name"></label>
     <label>Email <input name="email" type="email" autocomplete="email"></label>
     <label>Message <textarea name="message" rows="8"></textarea></label>
+    {$recaptcha}
     <button type="submit">Send message</button>
 </form>
 HTML;
@@ -321,6 +338,9 @@ HTML;
 
     private function page(string $title, string $body, string $active): Response
     {
+        $recaptchaScript = $active === 'contact' && $this->recaptchaSiteKey() !== ''
+            ? '<script src="https://www.google.com/recaptcha/api.js" async defer></script>'
+            : '';
         $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
         $activeClass = static fn (string $key): string => $active === $key ? ' class="active"' : '';
         $authLink = $this->currentUser() ? '' : '<a class="login-link" href="/login">Sign in</a>';
@@ -335,6 +355,7 @@ HTML;
     <meta name="description" content="ArtsFolio is an artist portfolio and sales platform for working artists.">
     <link rel="stylesheet" href="/assets/platform.css">
     <link rel="stylesheet" href="/assets/platform-custom.css">
+    {$recaptchaScript}
 </head>
 <body>
 <header class="platform-header">
@@ -368,6 +389,54 @@ HTML;
         return Response::html($html);
     }
 
+
+
+    /**
+     * Renders Google reCAPTCHA on the platform contact form when configured.
+     */
+    private function recaptchaWidget(): string
+    {
+        $siteKey = $this->recaptchaSiteKey();
+        if ($siteKey === '') {
+            return '';
+        }
+
+        return '<div class="g-recaptcha" data-sitekey="' . $this->escape($siteKey) . '"></div>';
+    }
+
+    private function recaptchaSiteKey(): string
+    {
+        return $this->platformSetting('recaptcha_site_key');
+    }
+
+    private function platformSetting(string $key): string
+    {
+        try {
+            $stmt = $this->pdo->prepare('SELECT setting_value FROM platform_settings WHERE setting_key = :setting_key LIMIT 1');
+            $stmt->execute(['setting_key' => $key]);
+
+            return trim((string) ($stmt->fetchColumn() ?: ''));
+        } catch (Throwable) {
+            return '';
+        }
+    }
+
+    private function requestIp(Request $request): string
+    {
+        foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {
+            $value = trim((string) $request->server($key, ''));
+            if ($value === '') {
+                continue;
+            }
+
+            $first = trim(explode(',', $value)[0]);
+            if (filter_var($first, FILTER_VALIDATE_IP)) {
+                return $first;
+            }
+        }
+
+        return '';
+    }
 
     private function platformCopyrightLine(): string
     {

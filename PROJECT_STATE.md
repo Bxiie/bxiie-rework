@@ -1062,3 +1062,13 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `scripts/workers/run_once.php` supports canonical domain job type `custom_domain.verify_dns` and compatibility alias `tenant.domain.verify` for older queued signup rows.
 - `tenant.site.bootstrap` is handled by `App\Platform\Jobs\Handlers\TenantSiteBootstrapJobHandler` to finalize tenant provisioning idempotently.
 - New signup provisioning queues `custom_domain.verify_dns` for DNS work and keeps `tenant.site.bootstrap` for tenant finalization.
+
+## 2026-05-31 worker health, DNS results, tenant subdomain fallback
+
+- Platform admin pages now display a background worker error banner when no worker heartbeat has been seen within 75 seconds.
+- Worker heartbeat writes now use `UTC_TIMESTAMP()` and PHP reads heartbeat timestamps as UTC to prevent false stale worker status caused by timezone drift.
+- Custom domain DNS verification now stores the last DNS check on `tenant_domains.dns_last_checked_at`, `tenant_domains.dns_last_result`, and `tenant_domains.dns_last_error`; Platform Admin → Domains displays these values.
+- `*.artsfol.io` tenant subdomains now fall back to resolving by tenant slug when an active `tenant_domains` row is missing or stale. Platform/root/admin hostnames remain excluded from tenant fallback.
+- The platform contact page now renders reCAPTCHA when `platform_settings.recaptcha_site_key` is configured and verifies submitted tokens when `platform_settings.recaptcha_secret_key` is configured.
+
+# End of file.

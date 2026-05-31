@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\View;
 
 use App\Platform\Membership\MembershipRepository;
+use App\Platform\Workers\WorkerHeartbeatRepository;
 use App\Platform\Tenancy\TenantResolver;
 use App\Support\Database;
 use App\Support\Security\CsrfTokenService;
@@ -52,6 +53,7 @@ final class AdminLayout
         $identity = self::platformIdentity();
         $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
         $platformCopyright = \App\Http\View\PlatformChrome::copyrightLine();
+        $workerWarning = self::workerHealthWarning();
 
         return <<<HTML
 <!doctype html>
@@ -88,7 +90,7 @@ final class AdminLayout
         {$adminNav}
     </aside>
     <main class="platform-admin-main">
-        <section class="platform-admin-panel"><h1>{$safeTitle}</h1>{$body}</section>
+        <section class="platform-admin-panel"><h1>{$safeTitle}</h1>{$workerWarning}{$body}</section>
     </main>
 </div>
 <footer class="site-footer platform-admin-footer">
@@ -111,6 +113,34 @@ HTML;
             return (new CsrfTokenService())->getOrCreate();
         } catch (Throwable) {
             return '';
+        }
+    }
+
+
+    /**
+     * Shows a platform-admin-wide warning when the background worker heartbeat is
+     * missing or older than the one-minute operational expectation.
+     */
+    private static function workerHealthWarning(): string
+    {
+        $path = (string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+        if (!str_starts_with($path, '/platform/admin') || $path === '/platform/admin/workers') {
+            return '';
+        }
+
+        try {
+            $pdo = Database::connect(dirname(__DIR__, 3));
+            $heartbeats = new WorkerHeartbeatRepository($pdo);
+            if ($heartbeats->hasHealthyWorker()) {
+                return '';
+            }
+
+            $freshest = $heartbeats->freshestHeartbeat();
+            $age = $freshest ? (string) $heartbeats->ageSeconds((string) $freshest['last_seen_at']) : 'none';
+
+            return '<p class="admin-notice admin-notice-error"><strong>Background worker is not reporting.</strong> Last heartbeat age: ' . self::escape($age) . ' seconds. Check <code>artsfolio-background-worker.service</code>; queued jobs will not run until it is healthy.</p>';
+        } catch (Throwable $e) {
+            return '<p class="admin-notice admin-notice-error"><strong>Worker health check failed.</strong> ' . self::escape($e->getMessage()) . '</p>';
         }
     }
 

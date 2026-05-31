@@ -4,13 +4,21 @@ declare(strict_types=1);
 
 namespace App\Platform\Workers;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use PDO;
 
 /**
  * Records and reads background worker heartbeat status.
+ *
+ * Heartbeat timestamps are stored and evaluated in UTC. This avoids the stale
+ * worker false-positive caused by MariaDB/PHP timezone drift on hosts running
+ * local time such as EDT while database timestamps are effectively UTC.
  */
 final class WorkerHeartbeatRepository
 {
+    public const HEALTHY_AGE_SECONDS = 75;
+
     public function __construct(
         private readonly PDO $pdo,
     ) {
@@ -38,16 +46,16 @@ final class WorkerHeartbeatRepository
                 :process_id,
                 :status,
                 :details,
-                CURRENT_TIMESTAMP,
-                CURRENT_TIMESTAMP
+                UTC_TIMESTAMP(),
+                UTC_TIMESTAMP()
             )
             ON DUPLICATE KEY UPDATE
                 host_name = VALUES(host_name),
                 process_id = VALUES(process_id),
                 status = VALUES(status),
                 details = VALUES(details),
-                last_seen_at = CURRENT_TIMESTAMP,
-                updated_at = CURRENT_TIMESTAMP"
+                last_seen_at = UTC_TIMESTAMP(),
+                updated_at = UTC_TIMESTAMP()"
         );
 
         $stmt->execute([
@@ -72,6 +80,43 @@ final class WorkerHeartbeatRepository
         $stmt->execute();
 
         return $stmt->fetchAll();
+    }
+
+    public function freshestHeartbeat(): ?array
+    {
+        $stmt = $this->pdo->query(
+            "SELECT *
+             FROM worker_heartbeats
+             ORDER BY last_seen_at DESC
+             LIMIT 1"
+        );
+
+        $row = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : false;
+
+        return $row ?: null;
+    }
+
+    public function hasHealthyWorker(int $maxAgeSeconds = self::HEALTHY_AGE_SECONDS): bool
+    {
+        $worker = $this->freshestHeartbeat();
+        if (!$worker) {
+            return false;
+        }
+
+        return $this->ageSeconds((string) $worker['last_seen_at']) <= $maxAgeSeconds
+            && in_array((string) ($worker['status'] ?? ''), ['alive', 'idle', 'running'], true);
+    }
+
+    public function ageSeconds(string $lastSeenAt): int
+    {
+        try {
+            $timestamp = new DateTimeImmutable($lastSeenAt, new DateTimeZone('UTC'));
+            $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+
+            return max(0, $now->getTimestamp() - $timestamp->getTimestamp());
+        } catch (\Throwable) {
+            return 999999;
+        }
     }
 }
 

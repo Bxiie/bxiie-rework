@@ -204,7 +204,6 @@ HTML;
         return Response::html(AdminLayout::render(
             title: 'Background Jobs | Platform Admin',
             body: <<<HTML
-<p class="admin-notice admin-notice-warning"><strong>Queued jobs require the background worker.</strong> Production deploy now checks <code>artsfolio-background-worker.service</code>. If every row stays queued, run <code>systemctl status artsfolio-background-worker.service</code> and <code>ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env php /var/www/artsfolio/scripts/workers/run_once.php</code> on the server.</p>
 <form class="admin-form" method="get" action="/platform/admin/jobs">
     <p>
         <label>Status<br>

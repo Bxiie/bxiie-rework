@@ -27,7 +27,10 @@ final class DomainAdminRepository
                 td.hostname,
                 td.status,
                 td.created_at,
-                td.updated_at
+                td.updated_at,
+                td.dns_last_checked_at,
+                td.dns_last_result,
+                td.dns_last_error
              FROM tenant_domains td
              JOIN tenants t ON t.id = td.tenant_id
              ORDER BY td.id DESC

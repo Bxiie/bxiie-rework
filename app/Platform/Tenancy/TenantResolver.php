@@ -31,41 +31,12 @@ final class TenantResolver
             return null;
         }
 
-        $stmt = $this->pdo->prepare(
-            "SELECT
-                t.id AS tenant_id,
-                t.uuid AS tenant_uuid,
-                t.slug,
-                t.name,
-                t.status,
-                d.hostname,
-                d.domain_type,
-                d.is_primary
-             FROM tenant_domains d
-             JOIN tenants t ON t.id = d.tenant_id
-             WHERE d.hostname = :hostname
-               AND d.status = 'active'
-               AND t.status <> 'deleted'
-             LIMIT 1"
-        );
-
-        $stmt->execute(['hostname' => $hostname]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$row) {
-            return null;
+        $tenant = $this->resolveActiveDomain($hostname);
+        if ($tenant !== null) {
+            return $tenant;
         }
 
-        return new TenantContext(
-            tenantId: (int) $row['tenant_id'],
-            tenantUuid: (string) $row['tenant_uuid'],
-            slug: (string) $row['slug'],
-            name: (string) $row['name'],
-            hostname: (string) $row['hostname'],
-            domainType: (string) $row['domain_type'],
-            isPrimaryDomain: (bool) $row['is_primary'],
-            status: (string) $row['status'],
-        );
+        return $this->resolvePlatformSubdomainFallback($hostname);
     }
 
     public function suspendedTenantForHost(string $host): ?array
@@ -85,6 +56,87 @@ final class TenantResolver
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row ?: null;
+    }
+
+    private function resolveActiveDomain(string $hostname): ?TenantContext
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT
+                t.id AS tenant_id,
+                t.uuid AS tenant_uuid,
+                t.slug,
+                t.name,
+                t.status,
+                d.hostname,
+                d.domain_type,
+                d.is_primary
+             FROM tenant_domains d
+             JOIN tenants t ON t.id = d.tenant_id
+             WHERE d.hostname = :hostname
+               AND d.status = 'active'
+               AND t.status IN ('trial', 'active')
+             LIMIT 1"
+        );
+
+        $stmt->execute(['hostname' => $hostname]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ? $this->contextFromRow($row) : null;
+    }
+
+    /**
+     * Platform subdomains are routing affordances. Resolve slug.artsfol.io from
+     * the tenant slug even if tenant_domains was not seeded or was left in a
+     * non-active DNS state. Custom domains still require active tenant_domains.
+     */
+    private function resolvePlatformSubdomainFallback(string $hostname): ?TenantContext
+    {
+        if (!str_ends_with($hostname, $this->platformWildcardSuffix)) {
+            return null;
+        }
+
+        $slug = substr($hostname, 0, -strlen($this->platformWildcardSuffix));
+        if ($slug === '' || str_contains($slug, '.') || in_array($slug, ['www', 'app', 'admin', 'api'], true)) {
+            return null;
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT
+                t.id AS tenant_id,
+                t.uuid AS tenant_uuid,
+                t.slug,
+                t.name,
+                t.status,
+                :hostname AS hostname,
+                'platform_subdomain' AS domain_type,
+                0 AS is_primary
+             FROM tenants t
+             WHERE t.slug = :slug
+               AND t.status IN ('trial', 'active')
+             LIMIT 1"
+        );
+
+        $stmt->execute([
+            'hostname' => $hostname,
+            'slug' => $slug,
+        ]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ? $this->contextFromRow($row) : null;
+    }
+
+    private function contextFromRow(array $row): TenantContext
+    {
+        return new TenantContext(
+            tenantId: (int) $row['tenant_id'],
+            tenantUuid: (string) $row['tenant_uuid'],
+            slug: (string) $row['slug'],
+            name: (string) $row['name'],
+            hostname: (string) $row['hostname'],
+            domainType: (string) $row['domain_type'],
+            isPrimaryDomain: (bool) $row['is_primary'],
+            status: (string) $row['status'],
+        );
     }
 
     private function normalizeHost(string $host): string

@@ -106,6 +106,28 @@ final class TenantDomainRepository
         }
     }
 
+
+    /**
+     * Stores the most recent DNS verification result for platform-admin review.
+     */
+    public function recordDnsVerificationResult(string $hostname, array $result, ?string $error = null): void
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE tenant_domains
+             SET dns_last_checked_at = UTC_TIMESTAMP(),
+                 dns_last_result = :dns_last_result,
+                 dns_last_error = :dns_last_error,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE hostname = :hostname"
+        );
+
+        $stmt->execute([
+            'hostname' => $this->normalizeHostname($hostname),
+            'dns_last_result' => json_encode($result, JSON_THROW_ON_ERROR),
+            'dns_last_error' => $error,
+        ]);
+    }
+
     public function listForTenant(int $tenantId): array
     {
         $stmt = $this->pdo->prepare(

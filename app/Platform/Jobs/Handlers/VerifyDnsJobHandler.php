@@ -32,7 +32,12 @@ final class VerifyDnsJobHandler
             throw new \InvalidArgumentException('Missing hostname in DNS verification payload.');
         }
 
-        $result = $this->verifier->verifyARecord($hostname);
+        try {
+            $result = $this->verifier->verifyARecord($hostname);
+        } catch (\Throwable $e) {
+            $this->domains->recordDnsVerificationResult($hostname, ['hostname' => $hostname, 'verified' => false], $e->getMessage());
+            throw $e;
+        }
 
         if ($result['verified'] === true) {
             $this->domains->setStatus($hostname, 'active');
@@ -42,6 +47,8 @@ final class VerifyDnsJobHandler
             $this->domains->setStatus($hostname, 'pending_dns');
             $result['domain_status'] = 'pending_dns';
         }
+
+        $this->domains->recordDnsVerificationResult($hostname, $result);
 
         return json_encode($result, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR);
     }
