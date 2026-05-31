@@ -11,7 +11,7 @@ $sender = new SmtpEmailSender(
     port: 1025,
     fromEmail: 'no-reply@artsfol.io',
     fromName: 'ArtsFolio',
-    extraHeaders: [
+    headers: [
         'X-PM-Message-Stream' => 'broadcasts',
         'X-PM-Tag' => 'welcome-email',
     ],
@@ -42,7 +42,7 @@ try {
         host: '127.0.0.1',
         port: 1025,
         fromEmail: 'no-reply@artsfol.io',
-        extraHeaders: ['X-Bad' => "one\r\nInjected: two"],
+        headers: ['X-Bad' => "one\r\nInjected: two"],
     );
     fwrite(STDERR, "Unsafe SMTP header value was accepted.\n");
     exit(1);

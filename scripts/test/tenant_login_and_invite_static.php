@@ -33,8 +33,8 @@ $checks = [
         'publicUrlForTenant',
     ],
     'public/index.php' => [
-        "->login($request, $tenant)",
-        "/admin/users/invite",
+        '->login($request, $tenant)',
+        '/admin/users/invite',
         'new EmailOutboxRepository($pdo)',
     ],
 ];
@@ -45,7 +45,13 @@ foreach ($checks as $file => $needles) {
         fwrite(STDERR, "Missing {$file}\n");
         exit(1);
     }
+
     $contents = file_get_contents($path);
+    if ($contents === false) {
+        fwrite(STDERR, "Could not read {$file}\n");
+        exit(1);
+    }
+
     foreach ($needles as $needle) {
         if (!str_contains($contents, $needle)) {
             fwrite(STDERR, "Missing {$needle} in {$file}\n");

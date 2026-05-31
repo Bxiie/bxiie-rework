@@ -50,6 +50,8 @@ final class EmailSenderFactory
                 $headers['X-PM-Message-Stream'] = $messageStream;
             }
 
+            $headers = array_merge($headers, self::parseExtraHeaders((string) (getenv('SMTP_EXTRA_HEADERS') ?: '')));
+
             return new SmtpEmailSender(
                 host: getenv('SMTP_HOST') ?: '127.0.0.1',
                 port: (int) (getenv('SMTP_PORT') ?: '1025'),
@@ -60,6 +62,30 @@ final class EmailSenderFactory
         }
 
         return new DryRunEmailSender();
+    }
+
+    private static function parseExtraHeaders(string $rawHeaders): array
+    {
+        $headers = [];
+
+        foreach (explode(';', $rawHeaders) as $headerLine) {
+            $headerLine = trim($headerLine);
+
+            if ($headerLine === '' || !str_contains($headerLine, ':')) {
+                continue;
+            }
+
+            [$name, $value] = explode(':', $headerLine, 2);
+
+            $name = trim($name);
+            $value = trim($value);
+
+            if ($name !== '' && $value !== '') {
+                $headers[$name] = $value;
+            }
+        }
+
+        return $headers;
     }
 }
 

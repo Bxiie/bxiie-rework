@@ -1,13 +1,76 @@
 ## Now
 
+
+
+
+
+##
+
+- https://bxiie.artsfol.io/login: Application error
+Call to undefined method App\Http\Support\SessionCookie::issueSetCookie()
+- On tenant page, display link to open tenant subdomain in new tab
+- tenant admins should be able to send invites to new tenant admin users
+
+##
+
+- stats not showing bar graphs
+- platform admin stats - When clicking on Unique IPs, show detail dialog when drilling in
+- Show actual IP, not IP hash
+- On tenant page, display link to open tenant subdomain in new tab
+
+- All application entities and every application functional flow must be accessible via API.  Routes must be created to allow creation of tenants and manipulation of all tenant configuration and content details. Content includes all data accessible to the tenant admin through the tenant admin UI.
+- It is expected that these API calls will come from external users.  Protect all calls with OAuth 2.0.  
+- Update developer documentation with explanations and examples for all calls.
+- platform admin user - require confirmnation before deleting or suspending users
+https://artsfol.io/login?notice=platform-admin-login-required
+- I am now not able to authenticate - I keep getting https://artsfol.io/login?notice=platform-admin-login-required loops
+
+##
+
+- All pages: remove sign-in button from all page headers for signed-in users.
+- Platform page - copyright broken - year token not uppdated : '© {year} ArtsFolio'
+- Developer reference - Expand each method/route to include a text description of how to use the API as well as a code example for each.
+- Users should not be prompted for login when going between resources located in a tenant's custom domains and the artsfol.io subdomain configured by default, e.g. bxiie.com and bxiie.artsfol.io 
+- Unable to access developer reference page again
+- admins should have the ability to suspend and delete users
+- admins should have the ability to suspend and delete tenants
+- Visitors accessing suspended tenants' resources will be redirected to an artsfol.io-branded page expressing regret that the content can't be shown.
+- https://artsfol.io/platform/admin/jobs - Don't appear to be executing.  All entries shown as queued.
+
+##
+
+- Platform copyright should be consistent across platform pages and specifiable on the platform setting page.
+- Still not able to access developer page as logged-in platform admin
+- Remove 'Continue with Google Continue with Facebook Use email instead' from platform home page
+- a signed in platform admin should have an admin link at the top of the platform page layout
+- a signed in platform admin should have an admin link at the top of the tenant page layout
+- https://artsfol.io/directory - Platform admin should be able to set the size of thumbnails on the platform admin settings page
+- add config details for Google and Facebook authentication to platform admin settings
+- CSS should be seeded at tenenat creation time for new tenentas.  CSS should be seeded right now for Bxiie.  CSS should be seeded right now for platform.
+- platform admin domains - remove 'Caddy can serve this domain. No vhost render is required.'
+- platform admin domains - remove 'This deployment uses Caddy on-demand TLS, so verified domains are activated for Caddy instead of rendering Apache vhost files.'
+- platform admin domains - Clicking 'Verify DNS' scrolls to top of page but does not display and acknowledgement or status.
+- platform admin stats - show bar graphs for day and hour.
+- platform admin stats - allow drill into 'By Location', showing unique IPs and access count for each.
+- Add color picker to any and every platform admin and tenant admin page and field that specifies a color.  Show the color swatch for the current selection.
+- Tenant admin settings - allow specification of artwork display wherever applicable by name, date, date descending, medium, manual ordering.
+- Tenant portfolio sections - Show thumbnails of member artworks.  Allow drag-and-drop manual persistent reordering of artworks.  Allow removal from portfolio section.
+- Add  info@artsfol.io to contact page.
+- Add recaptcha to contact form entry
+- Add recaptcha to mailing list entry
+
+##
+
+- Tenant Admin Domains -> Verify DNS -> No route was found for No route for POST /admin/domains/action.
+- Tenant Admin Domains -> Render VHOST -> No route was found for No route for POST /admin/domains/action.  Do we need this option with Caddy?
+
+##
+
 - https://artsfol.io/platform/admin/users: Class "App\Http\Controllers\Platform\Admin\UsersController" not found
 - https://artsfol.io/platform/admin/tenants: Class "App\Platform\Identity\AdminUserRepository" not found
 - https://artsfol.io/platform/admin: ArtsFolio Platform Admin
 Global ArtsFolio operations, not a tenant site
 Signed in as James O Payne Jr · password-auth-test@example.test · admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin, admin
-
-
-
 
 ##
 

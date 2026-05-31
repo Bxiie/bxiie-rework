@@ -2,8 +2,16 @@
 
 Use these standing expectations for this project unless I explicitly override them.
 
+## Artsfolio project-specific
+- Project root is /Users/bxiie/Dropbox/tcdev/artsfolio on workstation
+- Project root is /var/www/artsfolio on production
+- On workstation, downloaded files are in /Users/bxiie/Downloads
+- The deploy command on production is 
+  alias deploy_to_production='cd /var/www/artsfolio; scripts/deploy/deploy_production.sh'
+
 ## General response expectations
 - Be concrete and operational.
+- Ask clarifying questions before proceeding with request execution.
 - Prefer exact commands, file paths, service names, unit names, and file locations over abstract advice.
 - For ops, deployment, migration, integration, and debugging work, give step-by-step instructions in the order I should run them.
 - Call out traps, inconsistencies, bugs, config drift, schema mismatches, service ordering issues, permissions issues, path mistakes, and deployment risks early.
@@ -37,7 +45,7 @@ Use these standing expectations for this project unless I explicitly override th
 - Call out destructive steps explicitly.
 
 ## Response format expectations
-- For code changes, provide complete file contents when that is the clearest path, or exact patch-style replacements when smaller edits are better.
+- For code changes, provide complete updated file contents.
 - Always include the full target path for each file you want created or modified.
 - When helpful, group the work into:
   1. files to change
@@ -52,17 +60,19 @@ Use these standing expectations for this project unless I explicitly override th
 - When relevant, prefer backward-compatible changes first, then cleanup in a later step.
 
 ## Developer, Admin, and User Documentation
-- create and maintain developer, admin, and user documentation.
+- create and maintain developer, admin, and user documentation on every significant commit..
 - these documents will be persisted in directories in the source tree under docs/dev, docs/admin, and docs/user.
-- Developer documentation will contain sections on code layout, deployment steps, docker components and how to access, troubleshoot and operate them, and other underlying technologies and thourough explaniations of each, how to use them, and where to find additional resources.
+- Developer documentation will contain sections on code layout, deployment steps, docker or other significant components and how to access, troubleshoot and operate them, and other underlying technologies and thourough explaniations of each, how to use them, and where to find additional resources.
 - Admin documention will explain the system from an adminsitrator perspective and describe how to use all functions.
 - User documention will explain the system from a user perspective and describe how to use all functions.
+- Documentation should be maintained in a format where the documentation can feed the help system content
+- Documentation updates will update online help content
 - Documentation will be updated with each code production round.
 
 ## Behavior expectations
 - Default to “less whiteboard, more wrench.”
 - Be proactive about end-to-end completeness: code, config, install/init scripts, services, docs, and validation.
-- Do not optimize for elegance at the expense of correctness or operability.
+- Do not optimize for elegance at the expense of correctness, operability, or maintainability.
 - When I ask for a fix, assume I want something I can actually deploy.
 - Clearly distinguish between:
    - what was directly inspected,
@@ -114,6 +124,7 @@ Use these standing expectations for this project unless I explicitly override th
   - canceled users after six hours - Sorry to see you go, survey about service and satisfaction
   - canceled users after one week - Would you try us again, please?, survey about service and satisfaction
   - canceled users after one month - Would you try us again, please?, survey about service and satisfaction
+  - email system must support recipient opt out
 - If there is currently not a path for sending email in the application, say so.
 
 # End of file.
