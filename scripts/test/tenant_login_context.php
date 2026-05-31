@@ -13,8 +13,8 @@ $index = file_get_contents($root . '/public/index.php') ?: '';
 $checks = [
     'login accepts tenant context' => 'public function login(Request $request, ?TenantContext $tenant = null): Response',
     'login passes tenant id to auth service' => 'tenantId: $tenant?->tenantId',
-    'login returns Set-Cookie header' => "'Set-Cookie' => SessionCookie::issueHeaders",
-    'logout returns Set-Cookie header' => "'Set-Cookie' => SessionCookie::expireHeaders",
+    'login returns Set-Cookie header' => "'Set-Cookie' => SessionCookie::loginHeaders",
+    'logout returns Set-Cookie header' => "'Set-Cookie' => SessionCookie::logoutHeaders",
 ];
 
 foreach ($checks as $label => $needle) {
