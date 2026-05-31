@@ -1116,3 +1116,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 ## Platform admin routing
 - Platform-admin routes are canonical to `artsfol.io`; tenant-host `/platform/admin...` requests redirect to `https://artsfol.io/platform/admin...` so tenant routing cannot swallow platform admin URLs.
 
+## Platform admin redirect compatibility
+- Tenant-host platform-admin redirects use `Response::html(..., 302, Location)` because `App\Http\Response` has no `redirect()` factory method.
+

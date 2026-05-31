@@ -164,7 +164,7 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     if ($tenant && str_starts_with($request->path(), '/platform/admin')) {
         $queryString = (string) ($_SERVER['QUERY_STRING'] ?? '');
         $target = 'https://artsfol.io' . $request->path() . ($queryString !== '' ? '?' . $queryString : '');
-        Response::redirect($target)->send();
+        Response::html('', 302, ['Location' => $target])->send();
         exit;
     }
 
