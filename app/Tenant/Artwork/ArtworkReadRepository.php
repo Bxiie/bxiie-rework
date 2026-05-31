@@ -24,6 +24,7 @@ final class ArtworkReadRepository
              WHERE a.tenant_id = :tenant_id
                AND a.slug = :slug
                AND a.status = 'published'
+               AND " . $this->portfolioTypeExistsSql('a') . "
              LIMIT 1"
         );
         $stmt->execute(['tenant_id' => $tenant->tenantId, 'slug' => $slug]);
@@ -49,6 +50,7 @@ final class ArtworkReadRepository
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
              WHERE a.tenant_id = :tenant_id
                AND a.status = 'published'
+               AND " . $this->portfolioTypeExistsSql('a') . "
              ORDER BY " . $this->orderSql($order) . "
              LIMIT :limit_count"
         );
@@ -89,6 +91,7 @@ final class ArtworkReadRepository
                AND ps.tenant_id = a.tenant_id
                AND ps.slug = :section_slug
                AND ps.status = 'active'
+               AND " . $this->portfolioTypeExistsSql('a') . "
              ORDER BY " . $this->orderSql($order, $manualDefault) . "
              LIMIT :limit_count"
         );
@@ -98,6 +101,20 @@ final class ArtworkReadRepository
         $stmt->execute();
 
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Keeps site-only images out of public portfolio routes while preserving legacy data.
+     */
+    private function portfolioTypeExistsSql(string $alias): string
+    {
+        return "EXISTS (
+            SELECT 1
+            FROM artwork_type_assignments ata
+            JOIN artwork_types atype ON atype.id = ata.type_id
+            WHERE ata.artwork_id = {$alias}.id
+              AND atype.code = 'portfolio_images'
+        )";
     }
 
     /**

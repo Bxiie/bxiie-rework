@@ -61,10 +61,10 @@ final class UsersController
         </form>
 HTML : '';
             $deleteForm = $canOwnerManage && $id !== (int) ($currentUser['user_id'] ?? 0) ? <<<HTML
-        <form method="post" action="/admin/users/delete" class="admin-inline-form" onsubmit="return confirm('Delete this tenant user from this tenant? This revokes tenant access and logs the action.');">
+        <form method="post" action="/admin/users/delete" class="admin-inline-form" onsubmit="this.confirm_delete.value = prompt('Type delete to remove this tenant user from this tenant. This revokes tenant access and writes an audit log entry.') || ''; return this.confirm_delete.value === 'delete';">
             <input type="hidden" name="csrf_token" value="{$csrf}">
             <input type="hidden" name="user_id" value="{$id}">
-            <input type="hidden" name="confirm_delete" value="DELETE">
+            <input type="hidden" name="confirm_delete" value="">
             <button type="submit">Delete</button>
         </form>
 HTML : '';
@@ -194,7 +194,7 @@ HTML;
         }
 
         $userId = (int) ($_POST['user_id'] ?? 0);
-        if ($userId < 1 || $userId === (int) ($currentUser['user_id'] ?? 0) || (string) ($_POST['confirm_delete'] ?? '') !== 'DELETE') {
+        if ($userId < 1 || $userId === (int) ($currentUser['user_id'] ?? 0) || strtolower((string) ($_POST['confirm_delete'] ?? '')) !== 'delete') {
             return Response::html('<h1>Invalid tenant user delete request</h1>', 422);
         }
         if (!$this->users->userBelongsToTenant($tenant->tenantId, $userId)) {

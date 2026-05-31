@@ -471,3 +471,18 @@ input[type="submit"][aria-busy="true"] {
 }
 
 /* End of file. */
+
+/* Optional about/contact site images. */
+.site-content-image {
+    margin: 0 0 1.5rem;
+    opacity: var(--site-content-image-opacity, 1);
+}
+
+.site-content-image img {
+    display: block;
+    max-width: min(100%, 680px);
+    height: auto;
+    border-radius: 18px;
+}
+
+/* End of file. */

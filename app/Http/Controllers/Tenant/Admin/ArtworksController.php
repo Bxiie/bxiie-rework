@@ -60,6 +60,10 @@ final class ArtworksController
                 a.sale_status,
                 a.price,
                 a.created_at,
+                (SELECT GROUP_CONCAT(atype.code ORDER BY atype.code SEPARATOR ',')
+                 FROM artwork_type_assignments ata
+                 JOIN artwork_types atype ON atype.id = ata.type_id
+                 WHERE ata.artwork_id = a.id) AS artwork_type_codes,
                 m.id AS media_id,
                 m.uuid AS media_uuid,
                 m.storage_path,
@@ -94,6 +98,7 @@ final class ArtworksController
         foreach ($rows as $row) {
             $title = htmlspecialchars((string) $row['title'], ENT_QUOTES, 'UTF-8');
             $status = htmlspecialchars((string) $row['status'], ENT_QUOTES, 'UTF-8');
+            $typeBadges = $this->artworkTypeBadges((string) ($row['artwork_type_codes'] ?? ''));
             $saleStatus = htmlspecialchars((string) $row['sale_status'], ENT_QUOTES, 'UTF-8');
             $price = htmlspecialchars((string) ($row['price'] ?? ''), ENT_QUOTES, 'UTF-8');
             $medium = htmlspecialchars((string) ($row['medium'] ?? ''), ENT_QUOTES, 'UTF-8');
@@ -117,7 +122,7 @@ final class ArtworksController
     </td>
     <td>{$year}</td>
     <td>{$medium}</td>
-    <td class="js-artwork-status">{$status}</td>
+    <td class="js-artwork-status">{$status}<br>{$typeBadges}</td>
     <td>{$saleStatus}</td>
     <td>{$price}</td>
     <td>{$notes}</td>
@@ -227,6 +232,9 @@ HTML;
         $saleStatus = (string) $artwork['sale_status'];
         $sections = $this->portfolioSections($tenant);
         $selectedSectionIds = $this->artworkSectionIds($tenant, $id);
+        $selectedTypeCodes = $this->artworkTypeCodes($id);
+        $portfolioChecked = in_array('portfolio_images', $selectedTypeCodes, true) ? ' checked' : '';
+        $siteChecked = in_array('site_images', $selectedTypeCodes, true) ? ' checked' : '';
         $sectionOptions = '';
 
         foreach ($sections as $section) {
@@ -270,6 +278,12 @@ HTML;
                 </select>
             </label>
         </p>
+        <fieldset style="margin:1rem 0;padding:1rem;border:1px solid #ccc;">
+            <legend>Artwork types</legend>
+            <p>Choose whether this image is visible in the public portfolio, available for site image pickers, or both.</p>
+            <label style="display:block;margin:.25rem 0;"><input type="checkbox" name="artwork_types[]" value="portfolio_images"{$portfolioChecked}> Portfolio Images</label>
+            <label style="display:block;margin:.25rem 0;"><input type="checkbox" name="artwork_types[]" value="site_images"{$siteChecked}> Site Images</label>
+        </fieldset>
         <fieldset style="margin:1rem 0;padding:1rem;border:1px solid #ccc;">
             <legend>Portfolio sections</legend>
             <p>Choose where this artwork appears.</p>
@@ -333,6 +347,9 @@ HTML;
             'id' => $id,
             'tenant_id' => $tenant->tenantId,
         ]);
+
+        $this->replaceArtworkTypes($id, $_POST['artwork_types'] ?? []);
+        $this->replaceArtworkSections($tenant, $id, $_POST['section_ids'] ?? []);
 
         return Response::html('<h1>Artwork saved</h1><p><a href="/admin/artworks">Back to artworks</a></p>');
     }
@@ -434,6 +451,71 @@ HTML;
         }
 
         return $returnTo;
+    }
+
+    private function artworkTypeBadges(string $codes): string
+    {
+        $labels = [];
+        foreach (array_filter(explode(',', $codes)) as $code) {
+            $labels[] = match ($code) {
+                'portfolio_images' => 'Portfolio Images',
+                'site_images' => 'Site Images',
+                default => $code,
+            };
+        }
+
+        return $labels ? '<small>' . htmlspecialchars(implode(' · ', $labels), ENT_QUOTES, 'UTF-8') . '</small>' : '<small>No type</small>';
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function artworkTypeCodes(int $artworkId): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT atype.code
+             FROM artwork_type_assignments ata
+             JOIN artwork_types atype ON atype.id = ata.type_id
+             WHERE ata.artwork_id = :artwork_id"
+        );
+        $stmt->execute(['artwork_id' => $artworkId]);
+
+        return array_map('strval', array_column($stmt->fetchAll(), 'code'));
+    }
+
+    /**
+     * @param mixed $rawTypes
+     */
+    private function replaceArtworkTypes(int $artworkId, mixed $rawTypes): void
+    {
+        $allowed = ['portfolio_images', 'site_images'];
+        $codes = [];
+        if (is_array($rawTypes)) {
+            foreach ($rawTypes as $code) {
+                $code = (string) $code;
+                if (in_array($code, $allowed, true)) {
+                    $codes[] = $code;
+                }
+            }
+        }
+        $codes = array_values(array_unique($codes));
+
+        $this->pdo->prepare('DELETE FROM artwork_type_assignments WHERE artwork_id = :artwork_id')->execute(['artwork_id' => $artworkId]);
+        if (!$codes) {
+            return;
+        }
+
+        $lookup = $this->pdo->prepare('SELECT id FROM artwork_types WHERE code = :code LIMIT 1');
+        $insert = $this->pdo->prepare('INSERT IGNORE INTO artwork_type_assignments (artwork_id, type_id, created_at) VALUES (:artwork_id, :type_id, CURRENT_TIMESTAMP)');
+
+        foreach ($codes as $code) {
+            $lookup->execute(['code' => $code]);
+            $row = $lookup->fetch();
+            if (!$row) {
+                continue;
+            }
+            $insert->execute(['artwork_id' => $artworkId, 'type_id' => (int) $row['id']]);
+        }
     }
 
     /**

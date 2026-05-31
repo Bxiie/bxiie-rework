@@ -210,3 +210,58 @@ body.tenant-admin-page{margin:0;min-height:100vh;background:#f4efe7;color:#17171
 .g-recaptcha { margin: 1rem 0; }
 
 /* End of file. */
+
+/* Tenant admin readability and site-image picker controls. */
+.tenant-admin-brand {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.8rem !important;
+    line-height: 1.05 !important;
+    letter-spacing: normal !important;
+}
+
+.tenant-admin-brand span {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 0.28rem 0.55rem !important;
+    border-radius: 999px !important;
+    background: rgba(0, 0, 0, 0.12) !important;
+    font-size: 0.82rem !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+}
+
+.site-image-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.9rem;
+    margin: 0.75rem 0 1rem;
+}
+
+.site-image-picker-card {
+    display: grid !important;
+    gap: 0.45rem !important;
+    align-content: start;
+    padding: 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    border-radius: 16px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.site-image-picker-card input {
+    width: auto !important;
+}
+
+.site-image-picker-card img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #f6f1e9;
+}
+
+/* End of file. */

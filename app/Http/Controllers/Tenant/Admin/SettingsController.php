@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant\Admin;
 
-
-use App\Http\View\ErrorPage;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\View\AdminLayout;
+use App\Http\View\ErrorPage;
 use App\Platform\Audit\AuditLogRepository;
-use App\Platform\Membership\Roles;
 use App\Platform\Tenancy\TenantContext;
-use App\Support\Flash\FlashMessages;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Settings\TenantSettingsRepository;
 use PDO;
@@ -38,12 +35,11 @@ final class SettingsController
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
-        $notice = match ((string) ($_GET['notice'] ?? '')) {
-            'saved' => '<p class="admin-notice admin-notice-success">Site settings saved.</p>',
-            default => '',
-        };
+        $notice = ((string) ($_GET['notice'] ?? '')) === 'saved'
+            ? '<p class="admin-notice admin-notice-success">Site settings saved.</p>'
+            : '';
 
-        $csrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
+        $csrf = $this->escape($this->csrf->getOrCreate());
         $siteTitle = $this->setting($tenant, 'site_title', $tenant->name);
         $artistName = $this->setting($tenant, 'artist_name', $tenant->name);
         $browserTitle = $this->setting($tenant, 'browser_title', $siteTitle);
@@ -62,25 +58,21 @@ final class SettingsController
         $backgroundColor = $this->setting($tenant, 'background_color', '#f7f2e8');
         $topbarBackgroundColor = $this->setting($tenant, 'topbar_background_color', '');
         $exhibitionsHeading = $this->setting($tenant, 'exhibitions_heading', 'Recent exhibitions');
-        $exhibitionsDisplayMode = $this->settings->get($tenant, 'exhibitions_display_mode', 'text');
-        $backgroundMode = $this->settings->get($tenant, 'background_mode', 'single');
+        $exhibitionsDisplayMode = (string) $this->settings->get($tenant, 'exhibitions_display_mode', 'text');
+        $backgroundMode = (string) $this->settings->get($tenant, 'background_mode', 'single');
         $backgroundTileSize = $this->setting($tenant, 'background_tile_size', '360px');
         $backgroundOpacity = $this->setting($tenant, 'background_opacity', '0.12');
         $backgroundMediaUuid = (string) $this->settings->get($tenant, 'background_media_uuid', '');
-        $backgroundOptions = $this->backgroundMediaOptions($tenant, $backgroundMediaUuid);
-        $tenantCss = htmlspecialchars($this->settings->get($tenant, 'tenant_css',
-            'artwork_display_order',
-            'recaptcha_site_key',
-            'recaptcha_secret_key', ''), ENT_QUOTES, 'UTF-8');
-        $artworkDisplayOrder = $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
+        $backgroundPicker = $this->siteImagePicker($tenant, 'background_media_uuid', $backgroundMediaUuid, true);
+        $tenantCss = $this->setting($tenant, 'tenant_css', '');
+        $artworkDisplayOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
         $recaptchaSiteKey = $this->setting($tenant, 'recaptcha_site_key', '');
         $recaptchaSecretKey = $this->setting($tenant, 'recaptcha_secret_key', '');
 
-        $selected = fn (string $actual, string $expected): string => $actual === $expected ? ' selected' : '';
+        $selected = static fn (string $actual, string $expected): string => $actual === $expected ? ' selected' : '';
 
         $body = <<<HTML
 <main class="admin-shell">
-    <p><a href="/admin">&larr; Admin</a></p>
     <h1>Site settings</h1>
     {$notice}
     <form method="post" action="/admin/settings" class="admin-form">
@@ -88,8 +80,8 @@ final class SettingsController
 
         <fieldset>
             <legend>Identity</legend>
-            <label>Site title / visible brand<input name="site_title" value="{$siteTitle}" required></label>
-            <label>Artist name<input name="artist_name" value="{$artistName}"></label>
+            <label>Site title / menu and browser brand<input name="site_title" value="{$siteTitle}" required></label>
+            <label>Artist name / public home headline<input name="artist_name" value="{$artistName}"></label>
             <label>Browser tab title<input name="browser_title" value="{$browserTitle}"></label>
             <label>Copyright name<input name="copyright_name" value="{$copyrightName}"></label>
             <label>Site admin notification email<input type="email" name="site_admin_email" value="{$siteAdminEmail}"></label>
@@ -120,11 +112,6 @@ final class SettingsController
                 <label>Accent color<input name="accent_color" value="{$accentColor}"></label>
                 <label>Page background color<input name="background_color" value="{$backgroundColor}"></label>
                 <label>Top bar background color<input name="topbar_background_color" value="{$topbarBackgroundColor}"></label>
-                <label>Background image
-                    <select name="background_media_uuid">
-                        {$backgroundOptions}
-                    </select>
-                </label>
                 <label>Background mode
                     <select name="background_mode">
                         <option value="single"{$selected($backgroundMode, 'single')}>Single image</option>
@@ -132,9 +119,11 @@ final class SettingsController
                     </select>
                 </label>
                 <label>Background tile size<input name="background_tile_size" value="{$backgroundTileSize}"></label>
-                <label>Background opacity<input name="background_opacity" value="{$backgroundOpacity}"></label>
+                <label>Background opacity<input type="number" name="background_opacity" min="0" max="1" step="0.05" value="{$backgroundOpacity}"></label>
             </div>
-            <p class="admin-help">Background images are selected from published artwork so the public media route can serve them safely. Use opacity between 0 and 1; tile size accepts CSS values like 240px or 18rem.</p>
+            <h3>Background image</h3>
+            {$backgroundPicker}
+            <p class="admin-help">Only published artwork marked as Site Images appears here. Use opacity between 0 and 1; tile size accepts CSS values like 240px or 18rem.</p>
         </fieldset>
 
         <fieldset>
@@ -195,33 +184,11 @@ HTML;
         }
 
         $keys = [
-            'site_title',
-            'artist_name',
-            'browser_title',
-            'copyright_name',
-            'site_admin_email',
-            'home_intro',
-            'home_tab',
-            'portfolio_tab',
-            'about_tab',
-            'contact_tab',
-            'portfolio_slug',
-            'about_slug',
-            'contact_slug',
-            'primary_color',
-            'accent_color',
-            'background_color',
-            'topbar_background_color',
-            'background_media_uuid',
-            'background_mode',
-            'background_tile_size',
-            'background_opacity',
-            'exhibitions_heading',
-            'exhibitions_display_mode',
-            'tenant_css',
-            'artwork_display_order',
-            'recaptcha_site_key',
-            'recaptcha_secret_key',
+            'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro',
+            'home_tab', 'portfolio_tab', 'about_tab', 'contact_tab', 'portfolio_slug', 'about_slug', 'contact_slug',
+            'primary_color', 'accent_color', 'background_color', 'topbar_background_color', 'background_media_uuid',
+            'background_mode', 'background_tile_size', 'background_opacity', 'exhibitions_heading', 'exhibitions_display_mode',
+            'tenant_css', 'artwork_display_order', 'recaptcha_site_key', 'recaptcha_secret_key',
         ];
 
         $before = [];
@@ -231,7 +198,10 @@ HTML;
             $before[$key] = $this->settings->get($tenant, $key, '');
             $value = trim((string) ($_POST[$key] ?? ''));
             if ($key === 'background_media_uuid') {
-                $value = $this->safeBackgroundMediaUuid($tenant, $value);
+                $value = $this->safeSiteImageMediaUuid($tenant, $value);
+            }
+            if ($key === 'background_opacity') {
+                $value = $this->safeOpacity($value, '0.12');
             }
             if (str_ends_with($key, '_slug')) {
                 $value = $this->safeSlug($value, str_replace('_slug', '', $key));
@@ -240,36 +210,28 @@ HTML;
             $after[$key] = $value;
         }
 
-        $this->auditAction($request, $tenant, $currentUser, [
-            'before' => $before,
-            'after' => $after,
-        ]);
+        $this->auditAction($request, $tenant, $currentUser, ['before' => $before, 'after' => $after]);
 
         return new Response('', 303, ['Location' => '/admin/settings?notice=saved']);
     }
 
-
     /**
-     * Builds a tenant-scoped picker of published artwork media for public-safe backgrounds.
+     * Builds a thumbnail radio picker from published Site Images.
      */
-    private function backgroundMediaOptions(TenantContext $tenant, string $selectedUuid): string
+    private function siteImagePicker(TenantContext $tenant, string $fieldName, string $selectedUuid, bool $includeNone): string
     {
-        $options = '<option value="">None</option>';
+        $cards = $includeNone ? '<label class="site-image-picker-card"><input type="radio" name="' . $this->escape($fieldName) . '" value=""' . ($selectedUuid === '' ? ' checked' : '') . '><span>No image</span></label>' : '';
 
         if ($this->pdo === null) {
-            return $options;
+            return '<div class="site-image-picker">' . $cards . '</div>';
         }
 
         $stmt = $this->pdo->prepare(
-            "SELECT DISTINCT
-                m.uuid,
-                COALESCE(NULLIF(m.title, ''), NULLIF(a.title, ''), m.original_filename) AS label,
-                a.year_created
+            "SELECT DISTINCT m.uuid, COALESCE(NULLIF(m.title, ''), NULLIF(a.title, ''), m.original_filename) AS label, a.year_created
              FROM media_assets m
-             INNER JOIN artworks a
-                ON a.primary_media_id = m.id
-               AND a.tenant_id = m.tenant_id
-               AND a.status = 'published'
+             INNER JOIN artworks a ON a.primary_media_id = m.id AND a.tenant_id = m.tenant_id AND a.status = 'published'
+             INNER JOIN artwork_type_assignments ata ON ata.artwork_id = a.id
+             INNER JOIN artwork_types atype ON atype.id = ata.type_id AND atype.code = 'site_images'
              WHERE m.tenant_id = :tenant_id
                AND m.is_private = 0
                AND (m.mime_type LIKE 'image/%' OR m.mime_type IS NULL)
@@ -284,27 +246,25 @@ HTML;
             if (!empty($row['year_created'])) {
                 $label .= ' · ' . (string) $row['year_created'];
             }
-
-            $safeUuid = htmlspecialchars($uuid, ENT_QUOTES, 'UTF-8');
-            $safeLabel = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
-            $selected = $uuid === $selectedUuid ? ' selected' : '';
-            $options .= "<option value=\"{$safeUuid}\"{$selected}>{$safeLabel}</option>";
+            $safeUuid = $this->escape($uuid);
+            $safeLabel = $this->escape($label);
+            $checked = $uuid === $selectedUuid ? ' checked' : '';
+            $src = '/media?uuid=' . rawurlencode($uuid) . '&variant=thumb';
+            $cards .= '<label class="site-image-picker-card"><input type="radio" name="' . $this->escape($fieldName) . '" value="' . $safeUuid . '"' . $checked . '><img src="' . $this->escape($src) . '" alt=""><span>' . $safeLabel . '</span></label>';
         }
 
-        return $options;
+        return '<div class="site-image-picker">' . $cards . '</div>';
     }
 
     /**
-     * Normalizes background media IDs so arbitrary form values cannot be persisted.
+     * Normalizes media IDs so arbitrary form values cannot be persisted.
      */
-    private function safeBackgroundMediaUuid(TenantContext $tenant, string $value): string
+    private function safeSiteImageMediaUuid(TenantContext $tenant, string $value): string
     {
         $value = strtolower(trim($value));
-
         if ($value === '') {
             return '';
         }
-
         if (!preg_match('/^[a-f0-9-]{36}$/', $value) || $this->pdo === null) {
             return '';
         }
@@ -312,42 +272,26 @@ HTML;
         $stmt = $this->pdo->prepare(
             "SELECT m.uuid
              FROM media_assets m
-             INNER JOIN artworks a
-                ON a.primary_media_id = m.id
-               AND a.tenant_id = m.tenant_id
-               AND a.status = 'published'
+             INNER JOIN artworks a ON a.primary_media_id = m.id AND a.tenant_id = m.tenant_id AND a.status = 'published'
+             INNER JOIN artwork_type_assignments ata ON ata.artwork_id = a.id
+             INNER JOIN artwork_types atype ON atype.id = ata.type_id AND atype.code = 'site_images'
              WHERE m.tenant_id = :tenant_id
                AND m.uuid = :media_uuid
                AND m.is_private = 0
                AND (m.mime_type LIKE 'image/%' OR m.mime_type IS NULL)
              LIMIT 1"
         );
-        $stmt->execute([
-            'tenant_id' => $tenant->tenantId,
-            'media_uuid' => $value,
-        ]);
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'media_uuid' => $value]);
 
         return $stmt->fetch() ? $value : '';
     }
 
-private function backgroundPreview(string $mediaUuid): string
+    private function safeOpacity(string $value, string $default): string
     {
-        if ($mediaUuid === '') {
-            return '<p class="admin-help">No background image is currently selected.</p>';
-        }
+        $opacity = is_numeric($value) ? (float) $value : (float) $default;
+        $opacity = max(0.0, min(1.0, $opacity));
 
-        $src = '/media?uuid=' . rawurlencode($mediaUuid);
-
-        return '<div class="admin-media-preview"><strong>Current background image</strong><br><img src="' . $this->escape($src) . '" alt="Selected background image preview" style="max-width:260px;max-height:160px;object-fit:contain;background:#fff;border:1px solid #ddd;padding:.5rem;"></div>';
-    }
-
-    private function settingsPdo(): \PDO
-    {
-        $reflection = new \ReflectionObject($this->settings);
-        $property = $reflection->getProperty('pdo');
-        $property->setAccessible(true);
-
-        return $property->getValue($this->settings);
+        return rtrim(rtrim(sprintf('%.2F', $opacity), '0'), '.');
     }
 
     private function safeSlug(string $value, string $default): string
@@ -359,18 +303,13 @@ private function backgroundPreview(string $mediaUuid): string
         return $value !== '' ? $value : $default;
     }
 
-
     private function setting(TenantContext $tenant, string $key, string $default = ''): string
     {
-        return htmlspecialchars($this->settings->get($tenant, $key, $default), ENT_QUOTES, 'UTF-8');
+        return $this->escape((string) $this->settings->get($tenant, $key, $default));
     }
 
-    private function auditAction(
-        Request $request,
-        TenantContext $tenant,
-        ?array $currentUser,
-        array $details = [],
-    ): void {
+    private function auditAction(Request $request, TenantContext $tenant, ?array $currentUser, array $details = []): void
+    {
         if (!$this->auditLog) {
             return;
         }
@@ -378,34 +317,10 @@ private function backgroundPreview(string $mediaUuid): string
         $this->auditLog->record('tenant.settings.updated', $tenant->tenantId, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, 'tenant_settings', (string) $tenant->tenantId, $details, $request->server('REMOTE_ADDR'));
     }
 
-    private function canManageSettings(?array $currentUser, TenantContext $tenant): bool
-    {
-        return $this->roles->allows(
-            currentUser: $currentUser,
-            tenant: $tenant,
-            allowedRoles: [Roles::TENANT_OWNER, Roles::TENANT_ADMIN],
-        );
-    }
-
     private function escape(string $value): string
     {
         return AdminLayout::escape($value);
     }
-    private function recordAudit(Request $request, TenantContext $tenant, ?array $currentUser, string $action, array $details): void
-    {
-        $userId = isset($currentUser['id']) ? (int) $currentUser['id'] : null;
-
-        $this->auditLog->record(
-            $action,
-            $tenant->tenantId,
-            $userId,
-            'tenant_settings',
-            (string) $tenant->tenantId,
-            $details,
-            $request->ip(),
-        );
-    }
-
 }
 
 // End of file.

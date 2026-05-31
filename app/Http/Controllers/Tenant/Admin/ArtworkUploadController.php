@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Tenant\Admin;
 
 
 use App\Http\View\ErrorPage;
+use App\Http\View\AdminLayout;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
@@ -13,6 +14,7 @@ use App\Platform\Tenancy\TenantContext;
 use App\Platform\Audit\AuditLogRepository;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Artwork\ArtworkUploadService;
+use PDO;
 
 /**
  * Minimal tenant-admin artwork upload screen.
@@ -24,6 +26,7 @@ final class ArtworkUploadController
         private readonly CsrfTokenService $csrf,
         private readonly ArtworkUploadService $uploads,
         private readonly ?AuditLogRepository $auditLog = null,
+        private readonly ?PDO $pdo = null,
     ) {
     }
 
@@ -35,11 +38,7 @@ final class ArtworkUploadController
 
         $csrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
 
-        return Response::html(<<<HTML
-<!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><title>Upload artwork</title><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-<body>
+        $body = <<<HTML
 <h1>Upload artwork</h1>
 <style>
     .upload-status {
@@ -85,6 +84,12 @@ final class ArtworkUploadController
             </select>
         </label>
     </p>
+    <fieldset>
+        <legend>Artwork types</legend>
+        <p>Images can be public portfolio work, site-only material for about/contact/background pickers, or both.</p>
+        <label><input type="checkbox" name="artwork_types[]" value="portfolio_images" checked> Portfolio Images</label>
+        <label><input type="checkbox" name="artwork_types[]" value="site_images"> Site Images</label>
+    </fieldset>
     <p><label>Price<br><input type="text" name="price" placeholder="1200, 1200 USD, contact for price"></label></p>
     <p><label>Image<br><input type="file" name="artwork" accept="image/jpeg,image/png,image/webp,image/gif" required></label></p>
     <button id="artwork-upload-button" type="submit">Upload artwork</button>
@@ -105,9 +110,9 @@ final class ArtworkUploadController
         status.style.display = 'block';
     });
 </script>
-</body>
-</html>
-HTML);
+HTML;
+
+        return Response::html(AdminLayout::render('Upload artwork', $body, 'artworks'));
     }
 
     public function submit(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -133,6 +138,10 @@ HTML);
             return Response::html('<h1>Upload failed</h1><p>' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>', 422);
         }
 
+        if (!empty($record['artwork_id'])) {
+            $this->replaceArtworkTypes((int) $record['artwork_id'], $_POST['artwork_types'] ?? ['portfolio_images']);
+        }
+
         if ($this->auditLog !== null) {
             try {
                 $this->auditLog->record(
@@ -152,6 +161,44 @@ HTML);
         $title = htmlspecialchars((string) $record['title'], ENT_QUOTES, 'UTF-8');
 
         return Response::html("<h1>Artwork uploaded</h1><p>{$title} has been saved as a draft.</p><p><a href=\"/admin/artworks\">Review artworks</a></p>");
+    }
+
+    /**
+     * @param mixed $rawTypes
+     */
+    private function replaceArtworkTypes(int $artworkId, mixed $rawTypes): void
+    {
+        if ($this->pdo === null) {
+            return;
+        }
+
+        $allowed = ['portfolio_images', 'site_images'];
+        $codes = [];
+        if (is_array($rawTypes)) {
+            foreach ($rawTypes as $code) {
+                $code = (string) $code;
+                if (in_array($code, $allowed, true)) {
+                    $codes[] = $code;
+                }
+            }
+        }
+        if (!$codes) {
+            $codes = ['portfolio_images'];
+        }
+        $codes = array_values(array_unique($codes));
+
+        $this->pdo->prepare('DELETE FROM artwork_type_assignments WHERE artwork_id = :artwork_id')->execute(['artwork_id' => $artworkId]);
+        $lookup = $this->pdo->prepare('SELECT id FROM artwork_types WHERE code = :code LIMIT 1');
+        $insert = $this->pdo->prepare('INSERT IGNORE INTO artwork_type_assignments (artwork_id, type_id, created_at) VALUES (:artwork_id, :type_id, CURRENT_TIMESTAMP)');
+
+        foreach ($codes as $code) {
+            $lookup->execute(['code' => $code]);
+            $row = $lookup->fetch();
+            if (!$row) {
+                continue;
+            }
+            $insert->execute(['artwork_id' => $artworkId, 'type_id' => (int) $row['id']]);
+        }
     }
 
     private function validAuditUserId(?array $currentUser): ?int

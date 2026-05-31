@@ -31,6 +31,7 @@ final class HomeController
     {
         $this->track($request, $tenant, 'page_view');
         $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
+        $artistName = $this->escape($this->settings->get($tenant, 'artist_name', $this->settings->get($tenant, 'site_title', $tenant->name)));
         $homeIntro = (string) $this->settings->get(
             $tenant,
             'home_intro',
@@ -41,7 +42,7 @@ final class HomeController
 
         $body = <<<HTML
 <section class="hero">
-    <h1>{$siteTitle}</h1>
+    <h1>{$artistName}</h1>
     <div class="prose">{$homeIntro}</div>
 </section>
 HTML;
@@ -208,6 +209,7 @@ HTML;
             title: "{$this->escape($tenant->name)} | Contact",
             body: <<<HTML
 <h1>Contact</h1>
+{$this->siteImageFigure($tenant, 'contact_media_uuid', 'contact_image_opacity', 'Contact image')}
 <article class="prose">{$this->settings->get($tenant, 'contact_details', '')}</article>
 <section class="contact-grid">
 <form method="post" action="/contact" data-af-async-form data-af-result="contact-form-result" data-af-busy-label="Sending..." data-af-busy-message="Sending your message...">
@@ -418,13 +420,56 @@ HTML;
 
 
     /**
+     * Renders optional published Site Images for public about/contact content.
+     */
+    private function siteImageFigure(TenantContext $tenant, string $mediaSetting, string $opacitySetting, string $alt): string
+    {
+        $uuid = strtolower(trim((string) $this->settings->get($tenant, $mediaSetting, '')));
+        if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid) || !$this->isPublishedSiteImage($tenant, $uuid)) {
+            return '';
+        }
+
+        $opacity = $this->safeOpacity((string) $this->settings->get($tenant, $opacitySetting, '1'));
+        $src = '/media?uuid=' . rawurlencode($uuid);
+        $safeAlt = $this->escape($alt);
+
+        return '<figure class="site-content-image" style="--site-content-image-opacity:' . $opacity . '"><img src="' . $this->escape($src) . '" alt="' . $safeAlt . '" loading="lazy"></figure>';
+    }
+
+    /**
+     * Verifies that a configured media UUID is still a published Site Image.
+     */
+    private function isPublishedSiteImage(TenantContext $tenant, string $uuid): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare(
+                "SELECT 1
+                 FROM media_assets m
+                 INNER JOIN artworks a ON a.primary_media_id = m.id AND a.tenant_id = m.tenant_id AND a.status = 'published'
+                 INNER JOIN artwork_type_assignments ata ON ata.artwork_id = a.id
+                 INNER JOIN artwork_types atype ON atype.id = ata.type_id AND atype.code = 'site_images'
+                 WHERE m.tenant_id = :tenant_id
+                   AND m.uuid = :media_uuid
+                   AND m.is_private = 0
+                   AND (m.mime_type LIKE 'image/%' OR m.mime_type IS NULL)
+                 LIMIT 1"
+            );
+            $stmt->execute(['tenant_id' => $tenant->tenantId, 'media_uuid' => $uuid]);
+
+            return (bool) $stmt->fetch();
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    /**
      * Returns inline CSS variables used by site.css for tenant background images.
      */
     private function backgroundCssVariables(TenantContext $tenant): string
     {
         $uuid = strtolower(trim((string) $this->settings->get($tenant, 'background_media_uuid', '')));
 
-        if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid)) {
+        if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid) || !$this->isPublishedSiteImage($tenant, $uuid)) {
             return '';
         }
 

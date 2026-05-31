@@ -1163,3 +1163,13 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant owner user-management actions now include promotion of tenant admins to tenant owner and deletion of invited or active tenant users from that tenant. Delete actions revoke tenant-scoped access and active sessions and write `tenant.user.deleted` audit rows.
 
 # End of file.
+
+## 2026-05-31 tenant branding and site image patch
+- Tenant public home body headline now uses tenant setting `artist_name`; menu brand and browser title continue to use `site_title`/page title behavior.
+- Tenant artwork supports seeded artwork types `portfolio_images` and `site_images` through `artwork_types` and `artwork_type_assignments`.
+- Public portfolio/home/artwork queries require `portfolio_images`; published `site_images` are available to About, Contact, and Background pickers and are not public portfolio items unless also marked `portfolio_images`.
+- About, Contact, and Background image pickers use thumbnails and selectable opacity.
+- Tenant admin user deletion requires typing `delete` in confirmation and continues to audit tenant user deletion.
+- Tenant admin upload page now uses the tenant admin shell instead of an unbranded bare HTML page.
+
+# End of file.

@@ -125,7 +125,6 @@ HTML;
         }
 
         $body = <<<HTML
-<p><a href="/admin">&larr; Tenant Admin</a></p>
 <h1>Contact Messages</h1>
 {$noticeHtml}
 
