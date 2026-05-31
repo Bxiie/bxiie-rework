@@ -39,7 +39,6 @@ final class ArtworkUploadController
         $csrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
 
         $body = <<<HTML
-<h1>Upload artwork</h1>
 <style>
     .upload-status {
         display: none;

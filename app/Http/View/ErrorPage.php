@@ -9,7 +9,7 @@ final class ErrorPage
     public static function notFound(string $path = ''): string
     {
         $safePath = self::escape($path);
-        $message = $safePath !== '' ? "No route was found for <code>{$safePath}</code>." : 'No route was found for this request.';
+        $message = $safePath !== '' ? '<code>' . $safePath . '</code>' : 'No route for this request';
 
         return self::page('Page not found', '404', 'This page wandered off.', $message, [
             ['/', 'Go home'],

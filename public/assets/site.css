@@ -47,8 +47,25 @@ a {
   gap: 18px;
   padding: 28px 5vw;
   border-bottom: 1px solid color-mix(in srgb, var(--primary), transparent 85%);
-  background: color-mix(in srgb, var(--bg), white 50%);
+  background: var(--topbar-bg, color-mix(in srgb, var(--bg), white 50%));
+  position: relative;
   backdrop-filter: blur(8px);
+}
+
+.site-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--topbar-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  opacity: var(--topbar-bg-image-opacity, 0);
+  pointer-events: none;
+}
+
+.site-header > * {
+  position: relative;
+  z-index: 1;
 }
 
 .brand {

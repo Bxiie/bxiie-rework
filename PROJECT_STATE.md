@@ -1173,3 +1173,15 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant admin upload page now uses the tenant admin shell instead of an unbranded bare HTML page.
 
 # End of file.
+
+## 2026-05-31 signup-code and tenant UI repair patch
+
+- Tenant upload/edit/contact-message admin pages now avoid duplicate page headings; artwork save redirects back to `/admin/artworks` with a status notice.
+- Tenant artwork list now shows either Publish or Unpublish based on the current artwork status, not both at once.
+- Tenant contact-message delete route is explicitly registered at `POST /admin/contact-messages/delete`.
+- 404 messages now show the route text once, for example `No route for POST /admin/contact-messages/delete`.
+- Tenant Settings supports top-bar background image and opacity using published Site Images. Public tenant pages now honor `topbar_background_color` through `--topbar-bg`.
+- Platform Settings includes `tenant_signup_code_required`. When enabled, public tenant creation requires an active signup code.
+- Platform Admin → Signup Codes manages one-time and blanket tenant signup codes, bulk prospect email lists, invite email queueing, recipient restrictions, redemption limits, and redemption-to-tenant tracking.
+
+# End of file.

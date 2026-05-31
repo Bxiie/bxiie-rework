@@ -238,6 +238,7 @@ HTML;
             'dashboard' => ['/platform/admin', 'Dashboard'],
             'tenants' => ['/platform/admin/tenants', 'Tenants'],
             'users' => ['/platform/admin/users', 'Users'],
+            'codes' => ['/platform/admin/signup-codes', 'Signup Codes'],
             'domains' => ['/platform/admin/domains', 'Domains'],
             'pricing' => ['/platform/admin/pricing', 'Plans & Billing'],
             'jobs' => ['/platform/admin/jobs', 'Jobs'],

@@ -42,6 +42,7 @@ final class TenantAdminLayout
         $contactSlug = self::slug($this->settings->get($tenant, 'contact_slug', 'contact'), 'contact');
 
         $topbarBackground = self::escape($this->settings->get($tenant, 'topbar_background_color', '#f7f2e8'));
+        $topbarImageStyle = $this->topbarImageStyle($tenant);
         $topbarText = self::escape($this->settings->get($tenant, 'topbar_text_color', '#111111'));
         $adminNav = TenantAdminNav::render($active);
         $csrf = self::escape(self::csrfToken());
@@ -60,7 +61,7 @@ final class TenantAdminLayout
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
     <script defer src="/assets/admin-color-fields.js"></script>
 </head>
-<body class="tenant-admin-page" style="--tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText};">
+<body class="tenant-admin-page" style="--tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText}; {$topbarImageStyle}">
 <header class="site-header tenant-admin-public-header">
     <a class="brand tenant-admin-brand" href="/"><strong>{$siteTitle}</strong><span>Tenant Admin</span></a>
     <nav>
@@ -102,6 +103,23 @@ final class TenantAdminLayout
 </body>
 </html>
 HTML;
+    }
+
+
+    /**
+     * Builds CSS variables for the optional tenant-admin top-bar background image.
+     */
+    private function topbarImageStyle(TenantContext $tenant): string
+    {
+        $uuid = strtolower(trim((string) $this->settings->get($tenant, 'topbar_background_media_uuid', '')));
+        if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid)) {
+            return '';
+        }
+
+        $rawOpacity = (string) $this->settings->get($tenant, 'topbar_background_opacity', '1');
+        $opacity = is_numeric($rawOpacity) ? max(0, min(1, (float) $rawOpacity)) : 1;
+
+        return '--tenant-topbar-bg-image: url(/media?uuid=' . rawurlencode($uuid) . '); --tenant-topbar-bg-image-opacity: ' . rtrim(rtrim(sprintf('%.2F', $opacity), '0'), '.') . ';';
     }
 
     public static function escape(string $value): string

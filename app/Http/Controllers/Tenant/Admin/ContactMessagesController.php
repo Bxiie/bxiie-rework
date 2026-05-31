@@ -125,7 +125,6 @@ HTML;
         }
 
         $body = <<<HTML
-<h1>Contact Messages</h1>
 {$noticeHtml}
 
 <form method="get" action="/admin/contact-messages" class="admin-filter-bar">

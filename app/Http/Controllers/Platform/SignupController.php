@@ -31,6 +31,7 @@ final class SignupController
     public function show(Request $request): Response
     {
         $csrfToken = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
+        $signupCode = htmlspecialchars((string) ($_GET['code'] ?? ''), ENT_QUOTES, 'UTF-8');
         $oauthName = htmlspecialchars((string) ($_SESSION['artsfolio_oauth_profile']['name'] ?? ''), ENT_QUOTES, 'UTF-8');
         $oauthEmail = htmlspecialchars((string) ($_SESSION['artsfolio_oauth_profile']['email'] ?? ''), ENT_QUOTES, 'UTF-8');
         $passwordBlock = $oauthEmail !== ''
@@ -66,6 +67,7 @@ final class SignupController
             <label>Site slug<input type="text" name="slug" pattern="[a-z0-9-]{3,63}" required></label>
             <label>Your name<input type="text" name="admin_name" autocomplete="name" value="{$oauthName}"></label>
             <label>Email<input type="email" name="email" autocomplete="email" value="{$oauthEmail}" required></label>
+            <label>Signup passcode<input type="text" name="signup_code" value="{$signupCode}" autocomplete="off"></label>
             {$passwordBlock}
             <button type="submit">Create site</button>
         </form>
@@ -101,6 +103,7 @@ HTML);
                 adminEmail: (string) ($_POST['email'] ?? ''),
                 adminName: (string) ($_POST['admin_name'] ?? ''),
                 passwordHash: $this->passwords->hash($password),
+                signupCode: (string) ($_POST['signup_code'] ?? ''),
             );
 
             unset($_SESSION['artsfolio_oauth_profile']);

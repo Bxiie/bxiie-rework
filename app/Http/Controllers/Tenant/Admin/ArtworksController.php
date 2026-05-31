@@ -113,6 +113,12 @@ final class ArtworksController
                 $image = "<img src=\"{$src}\" alt=\"{$title}\" style=\"max-width:180px;max-height:140px;object-fit:contain;border:1px solid #ddd;background:#fff;\">";
             }
 
+            $nextStatus = (string) $row['status'] === 'published' ? 'draft' : 'published';
+            $nextLabel = $nextStatus === 'published' ? 'Publish' : 'Unpublish';
+            $nextConfirm = $nextStatus === 'published'
+                ? 'Publish this artwork? It will become visible on public pages.'
+                : 'Unpublish this artwork? It will be hidden from public pages.';
+
             $items .= <<<HTML
 <tr id="artwork-{$row['id']}">
     <td>{$image}</td>
@@ -130,15 +136,9 @@ final class ArtworksController
         <a href="/admin/artworks/edit?id={$row['id']}">Edit</a>
         <form method="post" action="/admin/artworks/status" class="js-artwork-action" style="display:inline">
             <input type="hidden" name="id" value="{$row['id']}">
-            <input type="hidden" name="status" value="published">
+            <input type="hidden" name="status" value="{$nextStatus}">
             <input type="hidden" name="return_to" value="{$returnToValue}">
-            <button type="submit" onclick="return confirm('Publish this artwork? It will become visible on public pages.');">Publish</button>
-        </form>
-        <form method="post" action="/admin/artworks/status" class="js-artwork-action" style="display:inline">
-            <input type="hidden" name="id" value="{$row['id']}">
-            <input type="hidden" name="status" value="draft">
-            <input type="hidden" name="return_to" value="{$returnToValue}">
-            <button type="submit" onclick="return confirm('Unpublish this artwork? It will be hidden from public pages.');">Unpublish</button>
+            <button type="submit" onclick="return confirm('{$nextConfirm}');">{$nextLabel}</button>
         </form>
         <form method="post" action="/admin/artworks/delete" class="js-artwork-action" style="display:inline" onsubmit="return confirm('Archive this artwork? It will disappear from normal review and public pages, but the file will not be deleted yet.');">
             <input type="hidden" name="id" value="{$row['id']}">
@@ -157,6 +157,7 @@ HTML;
         $notice = match ((string) ($_GET['notice'] ?? '')) {
             'status-updated' => '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Artwork status updated.</p>',
             'artwork-archived' => '<p style="padding:.75rem;background:#fff4df;border:1px solid #d9b36a;">Artwork archived.</p>',
+            'artwork-saved' => '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Artwork saved.</p>',
             default => '',
         };
 
@@ -252,8 +253,6 @@ HTML;
 
         $body = <<<HTML
 <main>
-    <p><a href="/admin/artworks">&larr; Artworks</a></p>
-    <h1>Edit artwork</h1>
     <form method="post" action="/admin/artworks/edit">
         <input type="hidden" name="id" value="{$id}">
         <p><label>Title<br><input type="text" name="title" value="{$title}" required></label></p>
@@ -297,7 +296,7 @@ HTML;
 <script src="/assets/admin/artworks.js"></script>
 HTML;
 
-        return Response::html(AdminLayout::render('Artworks', $body));
+        return Response::html(AdminLayout::render('Edit artwork', $body, 'artworks'));
     }
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -351,7 +350,7 @@ HTML;
         $this->replaceArtworkTypes($id, $_POST['artwork_types'] ?? []);
         $this->replaceArtworkSections($tenant, $id, $_POST['section_ids'] ?? []);
 
-        return Response::html('<h1>Artwork saved</h1><p><a href="/admin/artworks">Back to artworks</a></p>');
+        return new Response('', 303, ['Location' => '/admin/artworks?notice=artwork-saved#artwork-' . $id]);
     }
 
 

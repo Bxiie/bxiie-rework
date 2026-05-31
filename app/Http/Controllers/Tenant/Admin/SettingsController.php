@@ -57,6 +57,9 @@ final class SettingsController
         $accentColor = $this->setting($tenant, 'accent_color', '#c9a85f');
         $backgroundColor = $this->setting($tenant, 'background_color', '#f7f2e8');
         $topbarBackgroundColor = $this->setting($tenant, 'topbar_background_color', '');
+        $topbarBackgroundOpacity = $this->setting($tenant, 'topbar_background_opacity', '1');
+        $topbarBackgroundMediaUuid = (string) $this->settings->get($tenant, 'topbar_background_media_uuid', '');
+        $topbarBackgroundPicker = $this->siteImagePicker($tenant, 'topbar_background_media_uuid', $topbarBackgroundMediaUuid, true);
         $exhibitionsHeading = $this->setting($tenant, 'exhibitions_heading', 'Recent exhibitions');
         $exhibitionsDisplayMode = (string) $this->settings->get($tenant, 'exhibitions_display_mode', 'text');
         $backgroundMode = (string) $this->settings->get($tenant, 'background_mode', 'single');
@@ -112,6 +115,7 @@ final class SettingsController
                 <label>Accent color<input name="accent_color" value="{$accentColor}"></label>
                 <label>Page background color<input name="background_color" value="{$backgroundColor}"></label>
                 <label>Top bar background color<input name="topbar_background_color" value="{$topbarBackgroundColor}"></label>
+                <label>Top bar background image opacity<input type="number" name="topbar_background_opacity" min="0" max="1" step="0.05" value="{$topbarBackgroundOpacity}"></label>
                 <label>Background mode
                     <select name="background_mode">
                         <option value="single"{$selected($backgroundMode, 'single')}>Single image</option>
@@ -121,7 +125,9 @@ final class SettingsController
                 <label>Background tile size<input name="background_tile_size" value="{$backgroundTileSize}"></label>
                 <label>Background opacity<input type="number" name="background_opacity" min="0" max="1" step="0.05" value="{$backgroundOpacity}"></label>
             </div>
-            <h3>Background image</h3>
+            <h3>Top bar background image</h3>
+            {$topbarBackgroundPicker}
+            <h3>Page background image</h3>
             {$backgroundPicker}
             <p class="admin-help">Only published artwork marked as Site Images appears here. Use opacity between 0 and 1; tile size accepts CSS values like 240px or 18rem.</p>
         </fieldset>
@@ -186,7 +192,7 @@ HTML;
         $keys = [
             'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro',
             'home_tab', 'portfolio_tab', 'about_tab', 'contact_tab', 'portfolio_slug', 'about_slug', 'contact_slug',
-            'primary_color', 'accent_color', 'background_color', 'topbar_background_color', 'background_media_uuid',
+            'primary_color', 'accent_color', 'background_color', 'topbar_background_color', 'topbar_background_media_uuid', 'topbar_background_opacity', 'background_media_uuid',
             'background_mode', 'background_tile_size', 'background_opacity', 'exhibitions_heading', 'exhibitions_display_mode',
             'tenant_css', 'artwork_display_order', 'recaptcha_site_key', 'recaptcha_secret_key',
         ];
@@ -197,10 +203,10 @@ HTML;
         foreach ($keys as $key) {
             $before[$key] = $this->settings->get($tenant, $key, '');
             $value = trim((string) ($_POST[$key] ?? ''));
-            if ($key === 'background_media_uuid') {
+            if ($key === 'background_media_uuid' || $key === 'topbar_background_media_uuid') {
                 $value = $this->safeSiteImageMediaUuid($tenant, $value);
             }
-            if ($key === 'background_opacity') {
+            if ($key === 'background_opacity' || $key === 'topbar_background_opacity') {
                 $value = $this->safeOpacity($value, '0.12');
             }
             if (str_ends_with($key, '_slug')) {

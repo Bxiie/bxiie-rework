@@ -365,6 +365,7 @@ HTML
         $accentColor = $this->escape($this->settings->get($tenant, 'accent_color', '#c9a85f'));
         $backgroundColor = $this->escape($this->settings->get($tenant, 'background_color', '#f7f2e8'));
         $topbarBackgroundColor = $this->escape($this->settings->get($tenant, 'topbar_background_color', 'color-mix(in srgb, var(--bg), white 50%)'));
+        $topbarBackgroundStyle = $this->topbarBackgroundCssVariables($tenant);
         $homeTab = $this->escape($this->settings->get($tenant, 'home_tab', 'Home'));
         $portfolioTab = $this->escape($this->settings->get($tenant, 'portfolio_tab', 'Portfolio'));
         $aboutTab = $this->escape($this->settings->get($tenant, 'about_tab', 'About'));
@@ -387,7 +388,7 @@ HTML
     <link rel="stylesheet" href="/tenant.css">
     <script src="/assets/tenant-forms.js?v=20260531b" defer></script>
 </head>
-<body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};{$backgroundStyle}">
+<body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};{$topbarBackgroundStyle}{$backgroundStyle}">
 <header class="site-header">
     <a class="brand" href="/">{$siteTitle}</a>
     <nav>
@@ -460,6 +461,23 @@ HTML;
         } catch (Throwable) {
             return false;
         }
+    }
+
+
+    /**
+     * Returns inline CSS variables for the tenant public top-bar image layer.
+     */
+    private function topbarBackgroundCssVariables(TenantContext $tenant): string
+    {
+        $uuid = strtolower(trim((string) $this->settings->get($tenant, 'topbar_background_media_uuid', '')));
+        if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid) || !$this->isPublishedSiteImage($tenant, $uuid)) {
+            return '';
+        }
+
+        $opacity = $this->safeOpacity((string) $this->settings->get($tenant, 'topbar_background_opacity', '1'));
+        $url = '/media?uuid=' . rawurlencode($uuid);
+
+        return '--topbar-bg-image:url(' . $url . ');--topbar-bg-image-opacity:' . $opacity . ';';
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Platform\Signup;
 
+use App\Platform\Settings\PlatformSettingsRepository;
 use PDO;
 use RuntimeException;
 
@@ -18,6 +19,8 @@ final class TenantSignupService
 {
     public function __construct(
         private readonly PDO $pdo,
+        private readonly ?PlatformSettingsRepository $settings = null,
+        private readonly ?SignupCodeRepository $signupCodes = null,
     ) {
     }
 
@@ -28,6 +31,7 @@ final class TenantSignupService
         string $adminName,
         string $passwordHash,
         string $platformDomain = 'artsfol.io',
+        ?string $signupCode = null,
     ): array {
         $slug = $this->normalizeSlug($slug);
         $siteName = trim($siteName);
@@ -47,6 +51,7 @@ final class TenantSignupService
         }
 
         $domain = $slug . '.' . $platformDomain;
+        $validatedSignupCode = $this->validateSignupCode($signupCode, $adminEmail);
 
         $this->pdo->beginTransaction();
 
@@ -63,6 +68,9 @@ final class TenantSignupService
             $this->assignTenantAdminRole($tenantId, $userId);
             $this->queueProvisioningJobs($tenantId, $domain);
             $this->queueLifecycleEmail($tenantId, $userId, $adminEmail, $adminName, $slug);
+            if ($validatedSignupCode !== null && $this->signupCodes !== null) {
+                $this->signupCodes->markRedeemed((int) $validatedSignupCode['id'], $tenantId, $adminEmail);
+            }
 
             $this->pdo->commit();
 
@@ -78,6 +86,29 @@ final class TenantSignupService
 
             throw $e;
         }
+    }
+
+
+    /**
+     * Enforces optional platform signup-code gating before tenant creation.
+     */
+    private function validateSignupCode(?string $signupCode, string $adminEmail): ?array
+    {
+        $required = $this->settings !== null
+            && in_array(strtolower((string) $this->settings->get('tenant_signup_code_required', '0')), ['1', 'true', 'yes', 'on'], true);
+        $signupCode = strtoupper(trim((string) $signupCode));
+
+        if (!$required && $signupCode === '') {
+            return null;
+        }
+        if ($this->signupCodes === null) {
+            throw new RuntimeException('Signup code validation is not configured.');
+        }
+        if ($signupCode === '') {
+            throw new RuntimeException('A signup passcode is required to create a new site.');
+        }
+
+        return $this->signupCodes->validateForSignup($signupCode, $adminEmail);
     }
 
     private function normalizeSlug(string $slug): string

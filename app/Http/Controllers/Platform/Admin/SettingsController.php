@@ -60,6 +60,7 @@ final class SettingsController
         $facebookClientSecret = $this->escape($this->settings->get('facebook_oauth_client_secret', ''));
         $recaptchaSiteKey = $this->escape($this->settings->get('recaptcha_site_key', ''));
         $recaptchaSecretKey = $this->escape($this->settings->get('recaptcha_secret_key', ''));
+        $signupCodeRequired = $this->truthy($this->settings->get('tenant_signup_code_required', '0')) ? ' checked' : '';
 
         return Response::html(AdminLayout::render(
             title: 'Platform Settings',
@@ -69,7 +70,7 @@ final class SettingsController
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <div class="admin-form-grid">
         <fieldset><legend>Platform identity</legend><label>Platform name<input type="text" name="platform_name" value="{$platformName}" required></label><label>Support email<input type="email" name="support_email" value="{$supportEmail}"></label><label>Footer copyright HTML<input type="text" name="platform_footer_copyright_html" value="{$platformFooterCopyright}"></label><p class="admin-muted">Use {year} for the current year. Safe inline tags only.</p></fieldset>
-        <fieldset><legend>Authentication</legend><label>Persistent login days<input type="number" name="persistent_login_days" min="1" max="365" value="{$persistentLoginDays}"></label><p class="admin-muted">Browser-session login expires when the browser session ends. “Keep me logged in” uses this many days.</p></fieldset>
+        <fieldset><legend>Authentication</legend><label>Persistent login days<input type="number" name="persistent_login_days" min="1" max="365" value="{$persistentLoginDays}"></label><label><span><input type="checkbox" name="tenant_signup_code_required" value="1"{$signupCodeRequired}> Require a signup passcode to create new tenant sites</span></label><p class="admin-muted">Use Platform Codes to create one-time or blanket passcodes for prospective tenants.</p></fieldset>
         <fieldset><legend>Directory</legend><label><span><input type="checkbox" name="platform_directory_enabled" value="1"{$directoryEnabled}> Enable public artist directory</span></label><label>Directory thumbnail size, px<input type="number" name="platform_directory_thumbnail_size" min="80" max="420" value="{$directoryThumbSize}"></label><p class="admin-muted">Tenant opt-in still applies. This switch controls whether the platform directory is available at all.</p></fieldset>
         <fieldset><legend>Domains</legend><label>Expected IPv4 for custom domain DNS checks<input type="text" name="expected_ipv4" value="{$expectedIpv4}"></label></fieldset>
     </div>
@@ -119,6 +120,7 @@ HTML,
         $facebookClientSecret = (string) ($_POST['facebook_oauth_client_secret'] ?? '');
         $recaptchaSiteKey = trim((string) ($_POST['recaptcha_site_key'] ?? ''));
         $recaptchaSecretKey = (string) ($_POST['recaptcha_secret_key'] ?? '');
+        $signupCodeRequired = isset($_POST['tenant_signup_code_required']) ? '1' : '0';
 
         if ($platformName === '') {
             return Response::html('<h1>Platform name is required</h1>', 422);
@@ -168,6 +170,7 @@ HTML,
         $this->settings->set('facebook_oauth_client_secret', $facebookClientSecret);
         $this->settings->set('recaptcha_site_key', $recaptchaSiteKey);
         $this->settings->set('recaptcha_secret_key', $recaptchaSecretKey);
+        $this->settings->set('tenant_signup_code_required', $signupCodeRequired);
         $this->settings->set('platform_custom_css', $platformCustomCss);
         $this->settings->set('smtp_host', $smtpHost);
         $this->settings->set('smtp_port', (string) $smtpPort);
