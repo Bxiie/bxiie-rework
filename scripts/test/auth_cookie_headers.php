@@ -15,7 +15,7 @@ use App\Http\Support\SessionCookie;
 $_SERVER['HTTP_HOST'] = 'bxiie.artsfol.io';
 $_SERVER['HTTPS'] = 'on';
 
-$headers = SessionCookie::issueHeaders('abc123', true);
+$headers = SessionCookie::issueSetCookie('abc123', true);
 if (count($headers) < 2) {
     fwrite(STDERR, "Expected stale-cookie clearing plus active session Set-Cookie headers.\n");
     exit(1);
