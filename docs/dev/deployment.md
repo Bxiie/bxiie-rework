@@ -1,24 +1,29 @@
-# ArtsFolio Developer Deployment Notes
+# ArtsFolio Production Deployment
 
-Production deployments are run from `/var/www/artsfolio` with `scripts/deploy/deploy_production.sh`, usually through the `deploy_to_production` shell alias.
+Production deploys are run from `/var/www/artsfolio` with `scripts/deploy/deploy_production.sh`.
 
-The deploy script is intentionally fail-fast. It must end with either `== DEPLOY SUCCEEDED ==` or `== DEPLOY FAILED ==`. A missing or inactive `artsfolio-background-worker.service` is a deploy failure because background jobs, DNS verification, and worker heartbeat checks depend on that unit.
+The deploy script runs these stages in order:
 
-Required production services include:
+1. Git status, fetch, and fast-forward pull.
+2. Environment file verification for `/etc/artsfolio/artsfolio.env`.
+3. PHP syntax checks.
+4. Database migrations.
+5. Migration integrity checks.
+6. Preflight tests with `ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env`.
+7. Required service restarts for `php8.4-fpm`, `caddy`, `artsfolio-email-worker.service`, and `artsfolio-background-worker.service`.
+8. Production health check.
 
-- `php8.4-fpm`
-- `caddy`
-- `artsfolio-email-worker.service`
-- `artsfolio-background-worker.service`
+The deploy script prints a final `DEPLOY SUCCEEDED` or `DEPLOY FAILED` banner for every normal exit path. SIGINT and SIGTERM are treated as deployment failures and exit with code 130.
 
-Useful checks:
+The background worker is required in production. If `artsfolio-background-worker.service` is missing or cannot become active, deploy fails. The production health check also fails when the background worker is missing or inactive.
+
+Run production deploy with:
 
 ```bash
-systemctl cat artsfolio-background-worker.service
-systemctl is-active artsfolio-background-worker.service
-journalctl -u artsfolio-background-worker.service -n 100 --no-pager
+cd /var/www/artsfolio
+scripts/deploy/deploy_production.sh
 ```
 
-The deploy script checks the worker with `systemctl cat` rather than parsing `systemctl list-unit-files`, because list output is formatting-sensitive and previously produced false missing-worker warnings.
+If the script fails, inspect the command output immediately above the final failure banner, correct the failed stage, and rerun the deploy.
 
-# End of file.
+<!-- End of file. -->

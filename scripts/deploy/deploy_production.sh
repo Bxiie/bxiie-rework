@@ -33,12 +33,32 @@ finish_deploy() {
     echo "Next step: rerun the failed command or inspect the output immediately above this banner." >&2
   fi
 }
+
+handle_interrupt() {
+  echo >&2
+  echo "Deploy interrupted." >&2
+  exit 130
+}
+
 trap finish_deploy EXIT
+trap handle_interrupt INT TERM
 
 section() {
   DEPLOY_STAGE="$1"
   echo
   echo "== $1 =="
+}
+
+restart_required_service() {
+  local service_name="$1"
+
+  if ! systemctl cat "$service_name" >/dev/null 2>&1; then
+    echo "ERROR: required systemd service is not installed: $service_name" >&2
+    exit 1
+  fi
+
+  sudo systemctl restart "$service_name"
+  sudo systemctl is-active --quiet "$service_name"
 }
 
 echo "== ArtsFolio production deploy =="
@@ -73,16 +93,10 @@ section "Preflight"
 ARTSFOLIO_ENV_FILE="$ENV_FILE" ./scripts/test/preflight.sh
 
 section "Restart services"
-sudo systemctl restart php8.4-fpm
-sudo systemctl restart caddy
-sudo systemctl restart artsfolio-email-worker.service
-if systemctl cat artsfolio-background-worker.service >/dev/null 2>&1; then
-  sudo systemctl restart artsfolio-background-worker.service
-  sudo systemctl is-active --quiet artsfolio-background-worker.service
-else
-  echo "ERROR: artsfolio-background-worker.service is not installed. Queued background_jobs will not execute." >&2
-  exit 1
-fi
+restart_required_service php8.4-fpm
+restart_required_service caddy
+restart_required_service artsfolio-email-worker.service
+restart_required_service artsfolio-background-worker.service
 
 section "Health check"
 ARTSFOLIO_ENV_FILE="$ENV_FILE" ./scripts/deploy/healthcheck.sh

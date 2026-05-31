@@ -1090,4 +1090,13 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 `artsfolio-background-worker.service` is deploy-critical. `scripts/deploy/deploy_production.sh` must fail if the unit is missing or inactive. The deploy script checks the unit with `systemctl cat artsfolio-background-worker.service` and verifies activity with `systemctl is-active --quiet artsfolio-background-worker.service`.
 
+## Hardened production deploy worker health - 2026-05-31
+
+- `scripts/deploy/deploy_production.sh` now fails if `artsfolio-background-worker.service` is missing or inactive.
+- `scripts/deploy/healthcheck.sh` now treats the background worker as a required service instead of warning and passing.
+- SIGINT/SIGTERM during deploy now exit with code 130 and produce a `DEPLOY FAILED` banner rather than a false success banner.
+- Required production services are `php8.4-fpm`, `caddy`, `mariadb`, `artsfolio-email-worker.service`, and `artsfolio-background-worker.service`.
+
+<!-- End of file. -->
+
 # End of file.

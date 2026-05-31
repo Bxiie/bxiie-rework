@@ -1,5 +1,22 @@
 #!/bin/bash
+# Verify the ArtsFolio production web, service, and database health.
+
 set -euo pipefail
+
+require_active_service() {
+  local service_name="$1"
+
+  if ! systemctl cat "$service_name" >/dev/null 2>&1; then
+    echo "ERROR: required systemd service is not installed: $service_name" >&2
+    exit 1
+  fi
+
+  if ! systemctl is-active --quiet "$service_name"; then
+    echo "ERROR: required systemd service is not active: $service_name" >&2
+    systemctl status "$service_name" --no-pager >&2 || true
+    exit 1
+  fi
+}
 
 echo "== HTTP checks =="
 
@@ -13,15 +30,11 @@ echo "HTTP checks passed."
 echo
 echo "== Service checks =="
 
-systemctl is-active --quiet caddy
-systemctl is-active --quiet php8.4-fpm
-systemctl is-active --quiet mariadb
-systemctl is-active --quiet artsfolio-email-worker.service
-if systemctl list-unit-files | grep -q "^artsfolio-background-worker.service"; then
-  systemctl is-active --quiet artsfolio-background-worker.service
-else
-  echo "WARNING: artsfolio-background-worker.service is not installed. Background jobs may remain queued." >&2
-fi
+require_active_service caddy
+require_active_service php8.4-fpm
+require_active_service mariadb
+require_active_service artsfolio-email-worker.service
+require_active_service artsfolio-background-worker.service
 
 echo "Service checks passed."
 
