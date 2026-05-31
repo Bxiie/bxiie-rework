@@ -1,6 +1,23 @@
 #!/bin/bash
 set -euo pipefail
 
+assert_redirect_location() {
+  local description="$1"
+  local host="$2"
+  local path="$3"
+  local expected_location="$4"
+  local location
+
+  location="$(curl -fsSI -H "Host: ${host}" "http://127.0.0.1:18080${path}" | awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/, "", $0); print substr($0, 11); exit}')"
+  if [[ "${location}" != "${expected_location}" ]]; then
+    echo "FAILED: ${description}" >&2
+    echo "Expected Location: ${expected_location}" >&2
+    echo "Actual Location: ${location}" >&2
+    return 1
+  fi
+}
+
+
 # HTTP smoke tests for the platform/tenant split.
 #
 # These tests intentionally avoid brittle scaffold copy. Tenant assertions check
@@ -133,6 +150,7 @@ assert_tenant_resolves() {
   echo "PASS: tenant resolver"
 }
 
+assert_redirect_location "platform admin tenant-host redirect" "bxiie.artsfol.io" "/platform/admin" "https://artsfol.io/platform/admin"
 assert_contains_ci "platform home" "artsfol.io" "/" "ArtsFolio"
 assert_contains_ci "platform pricing" "artsfol.io" "/pricing" "Pricing"
 assert_contains_ci "platform login form" "artsfol.io" "/login" "login"

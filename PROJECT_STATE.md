@@ -1112,3 +1112,7 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 ## Tenant first-party CAPTCHA controller integration
 - Tenant public pages use `FirstPartyCaptcha::render()` directly and must not call the removed `HomeController::recaptchaWidget()` helper.
 - Tenant contact/signup submissions verify first-party CAPTCHA server-side and render branded same-page errors for visitors.
+
+## Platform admin routing
+- Platform-admin routes are canonical to `artsfol.io`; tenant-host `/platform/admin...` requests redirect to `https://artsfol.io/platform/admin...` so tenant routing cannot swallow platform admin URLs.
+
