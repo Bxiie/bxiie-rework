@@ -1,20 +1,23 @@
 <?php
 
+/**
+ * Platform-admin email outbox diagnostics.
+ */
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Platform\Admin;
 
-
-use App\Http\View\ErrorPage;
 use App\Http\Middleware\RequirePlatformRole;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\View\AdminLayout;
+use App\Http\View\ErrorPage;
 use App\Platform\Email\EmailOutboxRepository;
 use App\Platform\Membership\Roles;
 
 /**
- * Handles platform-admin email outbox list screen.
+ * Handles the platform-admin email outbox list screen.
  */
 final class EmailOutboxController
 {
@@ -33,24 +36,34 @@ final class EmailOutboxController
         $rows = '';
 
         foreach ($this->outbox->latest(50) as $email) {
-            $rows .= '<tr>'
+            $status = (string) $email['status'];
+            $lastError = trim((string) ($email['last_error'] ?? ''));
+            $diagnostic = $lastError !== ''
+                ? '<details class="admin-error-details" open><summary>Last error</summary><pre>' . $this->escape($lastError) . '</pre></details>'
+                : '<span class="admin-muted">None recorded</span>';
+
+            $statusClass = $status === 'failed' ? ' status-failed' : '';
+
+            $rows .= '<tr class="email-outbox-row' . $statusClass . '">'
                 . '<td>' . $this->escape((string) $email['id']) . '</td>'
-                . '<td>' . $this->escape((string) $email['status']) . '</td>'
+                . '<td>' . $this->escape($status) . '</td>'
                 . '<td>' . $this->escape((string) $email['recipient_email']) . '</td>'
                 . '<td>' . $this->escape((string) $email['subject']) . '</td>'
                 . '<td>' . $this->escape((string) ($email['template_key'] ?? '')) . '</td>'
                 . '<td>' . $this->escape((string) $email['attempts']) . '</td>'
                 . '<td>' . $this->escape((string) $email['created_at']) . '</td>'
+                . '<td>' . $diagnostic . '</td>'
                 . '</tr>';
         }
 
         if ($rows === '') {
-            $rows = '<tr><td colspan="7">No email outbox rows found.</td></tr>';
+            $rows = '<tr><td colspan="8">No email outbox rows found.</td></tr>';
         }
 
         return Response::html(AdminLayout::render(
             title: 'Email Outbox | Platform Admin',
             body: <<<HTML
+<p class="admin-muted">Failed rows show the stored SMTP or transport error from <code>email_outbox.last_error</code>.</p>
 <table class="admin-table">
     <thead>
         <tr>
@@ -61,6 +74,7 @@ final class EmailOutboxController
             <th>Template</th>
             <th>Attempts</th>
             <th>Created</th>
+            <th>Diagnostic</th>
         </tr>
     </thead>
     <tbody>

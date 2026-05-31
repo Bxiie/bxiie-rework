@@ -1142,3 +1142,9 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant form JavaScript is loaded from `/assets/tenant-forms.js`; controllers must not inline the asset contents into public pages.
 - `scripts/test/tenant_chrome_static.php` enforces these rules during preflight.
 
+
+## Email outbox diagnostics
+- Platform Admin → Email Outbox displays `email_outbox.last_error` for failed rows.
+- `EmailSenderFactory::fromEnvironment()` honors both `EMAIL_DRIVER` and legacy `MAIL_TRANSPORT`; `MAIL_TRANSPORT=log` maps to dry-run behavior.
+
+# End of file.

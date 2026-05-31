@@ -41,7 +41,8 @@ final class EmailSenderFactory
 
     public static function fromEnvironment(): EmailSenderInterface
     {
-        $driver = getenv('EMAIL_DRIVER') ?: 'dry_run';
+        $driver = getenv('EMAIL_DRIVER') ?: getenv('MAIL_TRANSPORT') ?: 'dry_run';
+        $driver = $driver === 'log' ? 'dry_run' : $driver;
 
         if ($driver === 'smtp') {
             $messageStream = trim((string) (getenv('SMTP_X_PM_MESSAGE_STREAM') ?: ''));
