@@ -1011,3 +1011,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Fixed `app/Platform/Auth/Session/SessionRepository.php` so session expiry is computed in PHP and inserted as `:expires_at` instead of relying on a bound placeholder inside MariaDB `INTERVAL` syntax.
 - Confirmed tenant login/logout and platform signup return `Set-Cookie` with redirect responses so browser sessions can survive redirects.
 - Added `scripts/test/session_repository_expiry_sql.php` as a regression check for the session persistence SQL and browser-auth Set-Cookie behavior.
+
+## 2026-05-30 auth/session schema drift fix
+- Fixed `app/Platform/Auth/Session/SessionRepository.php` so active browser session lookup no longer requires a `users.status` column.
+- The current deployed/local core user schema can exist without `users.status`; session validity now depends on the session row being unrevoked and unexpired.
+- Session creation stores `expires_at` as a bound timestamp computed in PHP instead of relying on a MariaDB `INTERVAL :ttl_seconds SECOND` placeholder.
+- Added `scripts/test/session_repository_no_user_status.php` as a regression check for this specific schema-drift failure.
+
+<!-- End of file. -->

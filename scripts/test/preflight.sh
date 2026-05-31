@@ -57,6 +57,7 @@ run_if_exists scripts/test/tenant_api_access.php
 run_if_exists scripts/test/tenant_role_access.php
 
 run_if_exists scripts/test/password_auth.php
+php scripts/test/session_repository_no_user_status.php
 run_if_exists scripts/test/password_reset.php
 run_if_exists scripts/test/email_verification.php
 

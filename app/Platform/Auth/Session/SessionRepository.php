@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace App\Platform\Auth\Session;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use PDO;
 
 /**
@@ -28,7 +30,9 @@ final class SessionRepository
         ?string $userAgent,
         int $ttlSeconds = 1209600,
     ): int {
-        $expiresAt = $this->expiryTimestamp($ttlSeconds);
+        $expiresAt = (new DateTimeImmutable('now', new DateTimeZone('UTC')))
+            ->modify('+' . $ttlSeconds . ' seconds')
+            ->format('Y-m-d H:i:s');
 
         $stmt = $this->pdo->prepare(
             "INSERT INTO user_sessions (
@@ -60,28 +64,13 @@ final class SessionRepository
         return (int) $this->pdo->lastInsertId();
     }
 
-    /**
-     * MariaDB does not reliably accept a bound placeholder inside INTERVAL
-     * syntax across native/emulated PDO modes. Compute the expiry value in PHP
-     * so the inserted row can be read back by the same active-session query.
-     */
-    private function expiryTimestamp(int $ttlSeconds): string
-    {
-        $ttlSeconds = max(60, $ttlSeconds);
-
-        return (new \DateTimeImmutable('now'))
-            ->modify('+' . $ttlSeconds . ' seconds')
-            ->format('Y-m-d H:i:s');
-    }
-
     public function findActiveByHash(string $sessionHash): ?array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT s.*, u.email, u.display_name, COALESCE(u.status, 'active') AS user_status
+            "SELECT s.*, u.email, u.display_name
              FROM user_sessions s
              JOIN users u ON u.id = s.user_id
              WHERE s.session_hash = :session_hash
-               AND COALESCE(u.status, 'active') = 'active'
                AND s.revoked_at IS NULL
                AND s.expires_at > CURRENT_TIMESTAMP
              LIMIT 1"
