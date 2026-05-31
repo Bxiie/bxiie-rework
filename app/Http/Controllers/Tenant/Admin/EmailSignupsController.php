@@ -47,6 +47,8 @@ final class EmailSignupsController
         foreach ($this->signups->latestForTenant($tenant, $limit, $offset) as $signup) {
             $id = (int) $signup['id'];
 
+            $ip = $this->escape((string) ($signup['ip_address'] ?? ''));
+            $location = $this->escape($this->formatLocation($signup));
             $actions = <<<HTML
 <form method="post" action="/admin/email-signups/consent" class="admin-inline-form">
     <input type="hidden" name="csrf_token" value="{$csrf}">
@@ -66,7 +68,7 @@ HTML;
                 . '<td>' . $this->escape((string) $signup['id']) . '</td>'
                 . '<td>' . $this->escape((string) $signup['email']) . '</td>'
                 . '<td>' . $this->escape((string) ($signup['name'] ?? '')) . '</td>'
-                . '<td>' . $this->escape((string) ($signup['source'] ?? '')) . '</td>'
+                . '<td>' . $this->escape((string) ($signup['source'] ?? '')) . '<br><small>IP: ' . $ip . '<br>Location: ' . $location . '</small></td>'
                 . '<td>' . $this->escape((string) $signup['consent_status']) . '</td>'
                 . '<td>' . $this->escape((string) $signup['created_at']) . '</td>'
                 . '<td>' . $actions . '</td>'
@@ -90,7 +92,7 @@ HTML;
             <th>ID</th>
             <th>Email</th>
             <th>Name</th>
-            <th>Source</th>
+            <th>Source / IP / Location</th>
             <th>Consent</th>
             <th>Created</th>
             <th>Actions</th>
@@ -161,6 +163,10 @@ HTML,
                 'name' => (string) ($signup['name'] ?? ''),
                 'source' => (string) ($signup['source'] ?? ''),
                 'consent_status' => (string) $signup['consent_status'],
+                'ip_address' => (string) ($signup['ip_address'] ?? ''),
+                'city' => (string) ($signup['city'] ?? ''),
+                'region' => (string) ($signup['region'] ?? ''),
+                'country' => (string) ($signup['country'] ?? ''),
                 'confirmed_at' => (string) ($signup['confirmed_at'] ?? ''),
                 'unsubscribed_at' => (string) ($signup['unsubscribed_at'] ?? ''),
                 'created_at' => (string) $signup['created_at'],
@@ -169,7 +175,7 @@ HTML,
 
         return CsvResponse::download(
             filename: 'email-signups-' . $tenant->slug . '.csv',
-            headers: ['id', 'email', 'name', 'source', 'consent_status', 'confirmed_at', 'unsubscribed_at', 'created_at'],
+            headers: ['id', 'email', 'name', 'source', 'ip_address', 'city', 'region', 'country', 'consent_status', 'confirmed_at', 'unsubscribed_at', 'created_at'],
             rows: $rows,
         );
     }
@@ -204,6 +210,19 @@ HTML,
             tenant: $tenant,
             allowedRoles: [Roles::TENANT_OWNER, Roles::TENANT_ADMIN, Roles::TENANT_EDITOR],
         );
+    }
+
+
+    /** @param array<string,mixed> $row */
+    private function formatLocation(array $row): string
+    {
+        $parts = array_filter([
+            trim((string) ($row['city'] ?? '')),
+            trim((string) ($row['region'] ?? '')),
+            trim((string) ($row['country'] ?? '')),
+        ], static fn (string $part): bool => $part !== '');
+
+        return $parts ? implode(', ', $parts) : 'Unknown';
     }
 
     private function escape(string $value): string

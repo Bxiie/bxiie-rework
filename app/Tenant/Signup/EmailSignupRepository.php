@@ -24,6 +24,9 @@ final class EmailSignupRepository
         ?string $source = null,
         ?string $ipAddress = null,
         ?string $userAgent = null,
+        ?string $country = null,
+        ?string $region = null,
+        ?string $city = null,
         string $consentStatus = 'pending',
     ): int {
         $stmt = $this->pdo->prepare(
@@ -34,6 +37,9 @@ final class EmailSignupRepository
                 source,
                 ip_address,
                 user_agent,
+                country,
+                region,
+                city,
                 consent_status,
                 updated_at
             ) VALUES (
@@ -43,6 +49,9 @@ final class EmailSignupRepository
                 :source,
                 :ip_address,
                 :user_agent,
+                :country,
+                :region,
+                :city,
                 :consent_status,
                 CURRENT_TIMESTAMP
             )
@@ -51,6 +60,9 @@ final class EmailSignupRepository
                 source = VALUES(source),
                 ip_address = VALUES(ip_address),
                 user_agent = VALUES(user_agent),
+                country = VALUES(country),
+                region = VALUES(region),
+                city = VALUES(city),
                 consent_status = VALUES(consent_status),
                 updated_at = CURRENT_TIMESTAMP"
         );
@@ -62,6 +74,9 @@ final class EmailSignupRepository
             'source' => $source,
             'ip_address' => $ipAddress,
             'user_agent' => $userAgent,
+            'country' => $country,
+            'region' => $region,
+            'city' => $city,
             'consent_status' => $consentStatus,
         ]);
 

@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Request;
 use App\Http\Response;
-use App\Services\RecaptchaVerifier;
+use App\Services\FirstPartyCaptcha;
 use PDO;
 use Throwable;
 
@@ -27,6 +27,8 @@ final class MarketingController
     {
         $tenantCards = $this->tenantCards(limit: 6);
         $imageMosaic = $this->imageMosaic(limit: 10);
+
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
 
         $body = <<<HTML
 <section class="platform-hero">
@@ -116,6 +118,8 @@ HTML;
     {
         $cards = $this->tenantCards(limit: 100);
 
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
+
         $body = <<<HTML
 <section class="platform-page-heading">
     <p class="eyebrow">Artist directory</p>
@@ -132,6 +136,8 @@ HTML;
 
     public function signup(Request $request): Response
     {
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
+
         $body = <<<HTML
 <section class="signup-panel">
     <p class="eyebrow">Start your site</p>
@@ -160,12 +166,17 @@ HTML;
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $email = trim((string) ($_POST['email'] ?? ''));
             $message = trim((string) ($_POST['message'] ?? ''));
-            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $message === '') {
+            $captcha = FirstPartyCaptcha::verify('platform_contact', 0, $_POST);
+            if (!$captcha->passed) {
+                $notice = '<p class="error" role="alert">Please complete the human confirmation.</p>';
+            } elseif ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $message === '') {
                 $notice = '<p class="error" role="alert">Please enter a valid email address and message.</p>';
             } else {
                 $notice = '<p class="notice" role="status">Thank you. Your message has been sent.</p>';
             }
         }
+
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
 
         $body = <<<HTML
 <section class="platform-page-heading">
@@ -178,6 +189,7 @@ HTML;
     <label>Name <input name="name" autocomplete="name"></label>
     <label>Email <input name="email" type="email" autocomplete="email" required></label>
     <label>Message <textarea name="message" rows="8" required></textarea></label>
+    {$captcha}
     <button type="submit" data-loading-label="Sending…">Send message</button>
     <p class="form-progress" aria-live="polite">Sending message…</p>
 </form>
@@ -192,6 +204,8 @@ HTML;
 
     public function help(Request $request): Response
     {
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
+
         $body = <<<HTML
 <section class="platform-page-heading">
     <p class="eyebrow">Help center</p>
@@ -257,6 +271,8 @@ HTML;
 
     public function developer(Request $request): Response
     {
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
+
         $body = <<<HTML
 <section class="platform-page-heading">
     <p class="eyebrow">Developer documentation</p>
@@ -315,6 +331,8 @@ HTML;
 
     public function privacy(Request $request): Response
     {
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
+
         $body = <<<HTML
 <section class="platform-page-heading">
     <p class="eyebrow">Privacy</p>
@@ -336,9 +354,7 @@ HTML;
 
     private function page(string $title, string $body, string $active): Response
     {
-        $recaptchaScript = $active === 'contact' && $this->recaptchaSiteKey() !== ''
-            ? '<script src="https://www.google.com/recaptcha/api.js" async defer></script>'
-            : '';
+        $recaptchaScript = '';
         $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
         $activeClass = static fn (string $key): string => $active === $key ? ' class="active"' : '';
         $authLink = $this->currentUser() ? '' : '<a class="login-link" href="/login">Sign in</a>';

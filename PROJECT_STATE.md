@@ -1154,3 +1154,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Added migration `0020_preserve_bxiie_custom_domains.sql` to preserve and repair the Bxiie tenant mappings for `bxiie.artsfol.io`, `bxiie.com`, and `www.bxiie.com`.
 - Production preflight/deploy must treat tenant custom-domain rows as durable data and must not delete or disable them as test cleanup.
 - If a custom hostname is assigned to the wrong tenant, migration code must not silently steal it; deployment should fail and require explicit operator repair.
+
+## 2026-05-31 engagement and tenant-user admin update
+
+- Contact messages and email-list signups now store IP address, user agent, city, region, and country when location can be resolved.
+- Tenant admin contact-message and email-signup screens and CSV exports show IP and location details.
+- Public tenant contact/signup forms and the platform `/contact` page use the first-party ArtsFolio CAPTCHA widget instead of silently depending on absent Google reCAPTCHA tenant secrets.
+- Tenant owner user-management actions now include promotion of tenant admins to tenant owner and deletion of invited or active tenant users from that tenant. Delete actions revoke tenant-scoped access and active sessions and write `tenant.user.deleted` audit rows.
+
+# End of file.

@@ -41,7 +41,7 @@ final class UsersController
         }
 
         $csrf = $this->escape($this->csrf->getOrCreate());
-        $notice = isset($_GET['notice']) ? '<p class="admin-notice admin-notice-success">Tenant user password updated.</p>' : '';
+        $notice = $this->noticeHtml((string) ($_GET['notice'] ?? ''));
         $rows = '';
 
         foreach ($this->users->tenantUsers($tenant->tenantId) as $user) {
@@ -52,6 +52,23 @@ final class UsersController
             $roles = $this->escape((string) ($user['roles'] ?? ''));
             $created = $this->escape((string) ($user['created_at'] ?? ''));
             $lastLogin = $this->escape((string) ($user['last_login_at'] ?? 'Never'));
+            $canOwnerManage = $this->isTenantOwner($currentUser, $tenant);
+            $promoteForm = $canOwnerManage && !str_contains(',' . $roles . ',', ', owner,') ? <<<HTML
+        <form method="post" action="/admin/users/promote-owner" class="admin-inline-form" onsubmit="return confirm('Promote this user to tenant owner?');">
+            <input type="hidden" name="csrf_token" value="{$csrf}">
+            <input type="hidden" name="user_id" value="{$id}">
+            <button type="submit">Make owner</button>
+        </form>
+HTML : '';
+            $deleteForm = $canOwnerManage && $id !== (int) ($currentUser['user_id'] ?? 0) ? <<<HTML
+        <form method="post" action="/admin/users/delete" class="admin-inline-form" onsubmit="return confirm('Delete this tenant user from this tenant? This revokes tenant access and logs the action.');">
+            <input type="hidden" name="csrf_token" value="{$csrf}">
+            <input type="hidden" name="user_id" value="{$id}">
+            <input type="hidden" name="confirm_delete" value="DELETE">
+            <button type="submit">Delete</button>
+        </form>
+HTML : '';
+
             $rows .= <<<HTML
 <tr>
     <td>{$id}</td>
@@ -67,6 +84,8 @@ final class UsersController
             <input type="password" name="new_password" minlength="12" required placeholder="New password">
             <button type="submit">Change password</button>
         </form>
+        {$promoteForm}
+        {$deleteForm}
     </td>
 </tr>
 HTML;
@@ -78,7 +97,7 @@ HTML;
 
         $body = <<<HTML
 {$notice}
-<p class="admin-muted">Tenant admins can see tenant users, rotate local passwords, and invite additional tenant admins.</p>
+<p class="admin-muted">Tenant admins can see tenant users, rotate local passwords, and invite additional tenant admins. Tenant owners can promote admins to owner and delete tenant user access.</p>
 <section class="admin-panel">
     <h2>Invite tenant admin</h2>
     <form method="post" action="/admin/users/invite" class="admin-form">
@@ -143,6 +162,52 @@ HTML;
         return new Response('', 303, ['Location' => '/admin/users?notice=invite-queued']);
     }
 
+
+    public function promoteOwner(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->isTenantOwner($currentUser, $tenant)) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant owner access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+        $userId = (int) ($_POST['user_id'] ?? 0);
+        if ($userId < 1 || !$this->users->userBelongsToTenant($tenant->tenantId, $userId)) {
+            return Response::html('<h1>Invalid tenant user</h1>', 422);
+        }
+
+        $this->users->promoteTenantUserToOwner($tenant->tenantId, $userId);
+        $this->auditLog?->record('tenant.user.promoted_owner', $tenant->tenantId, (int) ($currentUser['user_id'] ?? 0), 'user', (string) $userId, [], $request->server('REMOTE_ADDR'));
+        FlashMessages::success('Tenant user promoted to owner.');
+
+        return new Response('', 303, ['Location' => '/admin/users?notice=owner-promoted']);
+    }
+
+    public function delete(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->isTenantOwner($currentUser, $tenant)) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant owner access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+        $userId = (int) ($_POST['user_id'] ?? 0);
+        if ($userId < 1 || $userId === (int) ($currentUser['user_id'] ?? 0) || (string) ($_POST['confirm_delete'] ?? '') !== 'DELETE') {
+            return Response::html('<h1>Invalid tenant user delete request</h1>', 422);
+        }
+        if (!$this->users->userBelongsToTenant($tenant->tenantId, $userId)) {
+            return Response::html('<h1>Invalid tenant user</h1>', 422);
+        }
+
+        $this->users->deleteTenantUser($tenant->tenantId, $userId);
+        $this->auditLog?->record('tenant.user.deleted', $tenant->tenantId, (int) ($currentUser['user_id'] ?? 0), 'user', (string) $userId, ['scope' => 'tenant_membership'], $request->server('REMOTE_ADDR'));
+        FlashMessages::success('Tenant user deleted.');
+
+        return new Response('', 303, ['Location' => '/admin/users?notice=user-deleted']);
+    }
+
     private function queueInviteEmail(TenantContext $tenant, string $email, ?string $displayName): void
     {
         if ($this->emailOutbox === null) {
@@ -167,6 +232,25 @@ HTML;
             tenantId: $tenant->tenantId,
             templateKey: 'tenant_admin_invite',
         );
+    }
+
+
+    private function isTenantOwner(?array $currentUser, TenantContext $tenant): bool
+    {
+        return $this->roles->allows($currentUser, $tenant, ['tenant_owner', 'owner']);
+    }
+
+    private function noticeHtml(string $notice): string
+    {
+        $message = match ($notice) {
+            'password-updated' => 'Tenant user password updated.',
+            'invite-queued' => 'Tenant admin invite queued.',
+            'owner-promoted' => 'Tenant user promoted to owner.',
+            'user-deleted' => 'Tenant user deleted.',
+            default => '',
+        };
+
+        return $message !== '' ? '<p class="admin-notice admin-notice-success">' . $this->escape($message) . '</p>' : '';
     }
 
     private function escape(string $value): string

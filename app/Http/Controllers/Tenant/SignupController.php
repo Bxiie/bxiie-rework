@@ -12,7 +12,8 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Security\RateLimiter;
 use App\Platform\Tenancy\TenantContext;
-use App\Services\RecaptchaVerifier;
+use App\Platform\Analytics\AnalyticsLocationResolver;
+use App\Services\FirstPartyCaptcha;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Signup\EmailSignupService;
 use PDO;
@@ -39,7 +40,8 @@ final class SignupController
             return $this->backTo($returnTo, 'signup_error=security');
         }
 
-        if (!RecaptchaVerifier::verify($this->recaptchaSecret($tenant), $_POST['g-recaptcha-response'] ?? null, $request->server('REMOTE_ADDR'))) {
+        $captcha = FirstPartyCaptcha::verify('signup', (int) $tenant->tenantId, $_POST);
+        if (!$captcha->passed) {
             return $this->backTo($returnTo, 'signup_error=recaptcha');
         }
 
@@ -59,34 +61,41 @@ final class SignupController
             return $this->backTo($returnTo, 'signup_error=email');
         }
 
+        $ipAddress = $request->server('REMOTE_ADDR');
+        $location = $this->resolveLocation($request, $ipAddress);
+
         $this->signups->receive(
             tenant: $tenant,
             email: $email,
             name: $name !== '' ? $name : null,
             source: $source,
-            ipAddress: $request->server('REMOTE_ADDR'),
+            ipAddress: $ipAddress,
             userAgent: $request->server('HTTP_USER_AGENT'),
+            country: $location['country'],
+            region: $location['region'],
+            city: $location['city'],
         );
 
         return $this->backTo($returnTo, 'signup_sent=1');
     }
 
     /**
-     * Tenant signup forms use only tenant-specific reCAPTCHA secrets.
+     * Resolves location for engagement records using the same coarse resolver as analytics.
+     *
+     * @return array{country:string,region:string,city:string,source:string}
      */
-    private function recaptchaSecret(TenantContext $tenant): string
+    private function resolveLocation(Request $request, string $ipAddress): array
     {
-        if ($this->pdo === null) {
-            return '';
+        if ($this->pdo === null || $ipAddress === '') {
+            return ['country' => '', 'region' => '', 'city' => '', 'source' => 'unavailable'];
         }
 
         try {
-            $stmt = $this->pdo->prepare("SELECT setting_value FROM tenant_settings WHERE tenant_id = :tenant_id AND setting_key = 'recaptcha_secret_key' LIMIT 1");
-            $stmt->execute(['tenant_id' => $tenant->tenantId]);
+            $ipHash = hash('sha256', $ipAddress . '|artsfolio-analytics');
 
-            return trim((string) ($stmt->fetchColumn() ?: ''));
+            return (new AnalyticsLocationResolver($this->pdo))->resolve($request, $ipAddress, $ipHash);
         } catch (Throwable) {
-            return '';
+            return ['country' => '', 'region' => '', 'city' => '', 'source' => 'error'];
         }
     }
 

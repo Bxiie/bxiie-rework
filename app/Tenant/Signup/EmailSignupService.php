@@ -24,6 +24,9 @@ final class EmailSignupService
         ?string $source = null,
         ?string $ipAddress = null,
         ?string $userAgent = null,
+        ?string $country = null,
+        ?string $region = null,
+        ?string $city = null,
     ): int {
         $signupId = $this->signups->upsert(
             tenant: $tenant,
@@ -32,6 +35,9 @@ final class EmailSignupService
             source: $source,
             ipAddress: $ipAddress,
             userAgent: $userAgent,
+            country: $country,
+            region: $region,
+            city: $city,
         );
 
         $this->notifications->queueSignupNotification(

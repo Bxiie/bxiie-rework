@@ -153,6 +153,39 @@ final class AdminUserRepository
         }
     }
 
+    /**
+     * Promotes a tenant member to tenant owner while preserving existing admin role.
+     */
+    public function promoteTenantUserToOwner(int $tenantId, int $userId): void
+    {
+        if (!$this->userBelongsToTenant($tenantId, $userId)) {
+            throw new \InvalidArgumentException('User does not belong to this tenant.');
+        }
+
+        $this->assignTenantRole($tenantId, $userId, 'owner');
+    }
+
+    /**
+     * Removes a user from one tenant and revokes tenant-scoped roles for that tenant.
+     */
+    public function deleteTenantUser(int $tenantId, int $userId): void
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $roles = $this->pdo->prepare('DELETE FROM role_assignments WHERE tenant_id = :tenant_id AND user_id = :user_id');
+            $roles->execute(['tenant_id' => $tenantId, 'user_id' => $userId]);
+
+            $membership = $this->pdo->prepare('DELETE FROM tenant_memberships WHERE tenant_id = :tenant_id AND user_id = :user_id');
+            $membership->execute(['tenant_id' => $tenantId, 'user_id' => $userId]);
+
+            $this->revokeUserSessions($userId);
+            $this->pdo->commit();
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
     private function findOrCreateUser(string $email, ?string $displayName): int
     {
         $stmt = $this->pdo->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');

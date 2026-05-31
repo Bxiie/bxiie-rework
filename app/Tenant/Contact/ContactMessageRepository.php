@@ -26,6 +26,9 @@ final class ContactMessageRepository
         ?string $subject = null,
         ?string $ipAddress = null,
         ?string $userAgent = null,
+        ?string $country = null,
+        ?string $region = null,
+        ?string $city = null,
     ): int {
         $stmt = $this->pdo->prepare(
             "INSERT INTO contact_messages (
@@ -36,7 +39,10 @@ final class ContactMessageRepository
                 subject,
                 message,
                 ip_address,
-                user_agent
+                user_agent,
+                country,
+                region,
+                city
             ) VALUES (
                 :uuid,
                 :tenant_id,
@@ -45,7 +51,10 @@ final class ContactMessageRepository
                 :subject,
                 :message,
                 :ip_address,
-                :user_agent
+                :user_agent,
+                :country,
+                :region,
+                :city
             )"
         );
 
@@ -58,6 +67,9 @@ final class ContactMessageRepository
             'message' => $message,
             'ip_address' => $ipAddress,
             'user_agent' => $userAgent,
+            'country' => $country,
+            'region' => $region,
+            'city' => $city,
         ]);
 
         return (int) $this->pdo->lastInsertId();

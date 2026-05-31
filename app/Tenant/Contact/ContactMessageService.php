@@ -25,6 +25,9 @@ final class ContactMessageService
         ?string $subject = null,
         ?string $ipAddress = null,
         ?string $userAgent = null,
+        ?string $country = null,
+        ?string $region = null,
+        ?string $city = null,
     ): int {
         $messageId = $this->messages->create(
             tenant: $tenant,
@@ -34,6 +37,9 @@ final class ContactMessageService
             subject: $subject,
             ipAddress: $ipAddress,
             userAgent: $userAgent,
+            country: $country,
+            region: $region,
+            city: $city,
         );
 
         $this->notifications->queueContactNotification(

@@ -76,6 +76,8 @@ final class ContactMessagesController
             $message = nl2br($this->escape((string) ($row['message'] ?? '')));
             $rowStatus = $this->escape((string) ($row['status'] ?? 'new'));
             $created = $this->escape((string) ($row['created_at'] ?? ''));
+            $ip = $this->escape((string) ($row['ip_address'] ?? ''));
+            $location = $this->escape($this->formatLocation($row));
             $query = http_build_query(array_filter(['q' => $q, 'status' => $status, 'sort' => $sort], static fn ($v) => $v !== ''));
             $returnTo = '/admin/contact-messages' . ($query ? '?' . $query : '');
             $returnToEsc = $this->escape($returnTo);
@@ -83,7 +85,7 @@ final class ContactMessagesController
             $bodyRows .= <<<HTML
 <tr>
     <td>{$created}</td>
-    <td><strong>{$name}</strong><br><a href="mailto:{$email}">{$email}</a></td>
+    <td><strong>{$name}</strong><br><a href="mailto:{$email}">{$email}</a><br><small>IP: {$ip}<br>Location: {$location}</small></td>
     <td>{$subject}</td>
     <td><div class="admin-message-preview">{$message}</div></td>
     <td>{$rowStatus}</td>
@@ -172,13 +174,17 @@ HTML;
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
 
         $out = fopen('php://temp', 'w+');
-        fputcsv($out, ['created_at', 'status', 'name', 'email', 'subject', 'message']);
+        fputcsv($out, ['created_at', 'status', 'name', 'email', 'ip_address', 'city', 'region', 'country', 'subject', 'message']);
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             fputcsv($out, [
                 $row['created_at'] ?? '',
                 $row['status'] ?? '',
                 $row['sender_name'] ?? $row['name'] ?? '',
                 $row['sender_email'] ?? $row['email'] ?? '',
+                $row['ip_address'] ?? '',
+                $row['city'] ?? '',
+                $row['region'] ?? '',
+                $row['country'] ?? '',
                 $row['subject'] ?? '',
                 $row['message'] ?? '',
             ]);
@@ -313,6 +319,19 @@ HTML;
             'deleted' => 'Contact message permanently deleted.',
             default => 'Action complete.',
         };
+    }
+
+
+    /** @param array<string,mixed> $row */
+    private function formatLocation(array $row): string
+    {
+        $parts = array_filter([
+            trim((string) ($row['city'] ?? '')),
+            trim((string) ($row['region'] ?? '')),
+            trim((string) ($row['country'] ?? '')),
+        ], static fn (string $part): bool => $part !== '');
+
+        return $parts ? implode(', ', $parts) : 'Unknown';
     }
 
     private function escape(string $value): string
