@@ -315,3 +315,54 @@ body.tenant-admin-page{margin:0;min-height:100vh;background:#f4efe7;color:#17171
 /* End tenant-admin surface variables. */
 
 /* End of file. */
+/* Tenant admin settings must preview the same page surfaces as the public site. */
+body.tenant-admin-page {
+  color: var(--text-color, #1f1a14) !important;
+  background-color: var(--bg, #f7f2e8) !important;
+}
+
+.site-header.tenant-admin-public-header {
+  background-color: var(--topbar-bg-overlay, var(--tenant-topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image) !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  box-shadow: var(--tenant-header-shadow, none) !important;
+}
+
+.site-header.tenant-admin-public-header nav {
+  background-color: var(--menu-bg-overlay, rgba(255, 248, 236, 0.82)) !important;
+  background-image: var(--menu-bg-image) !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  border-radius: 999px !important;
+  padding: 0.35rem 0.55rem !important;
+}
+
+.tenant-admin-main {
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+}
+
+.tenant-admin-panel {
+  color: var(--text-color, #1f1a14) !important;
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+}
+
+.tenant-admin-panel h1,
+.tenant-admin-panel h2,
+.tenant-admin-panel h3,
+.tenant-admin-panel legend {
+  color: var(--text-color, #1f1a14) !important;
+  background-color: var(--heading-bg-overlay, rgba(255, 248, 236, 0.72)) !important;
+  box-shadow: 0.18em 0 0 var(--heading-bg-overlay, rgba(255, 248, 236, 0.72)), -0.18em 0 0 var(--heading-bg-overlay, rgba(255, 248, 236, 0.72)) !important;
+}
+
+.tenant-settings-form fieldset,
+.tenant-admin-panel .admin-panel,
+.tenant-admin-panel .admin-toolbar,
+.tenant-admin-panel .admin-table-wrap {
+  background-color: var(--text-bg-overlay, rgba(255, 247, 232, 0.72)) !important;
+}
+
+/* End tenant admin surface preview. */

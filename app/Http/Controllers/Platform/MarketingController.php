@@ -34,7 +34,7 @@ final class MarketingController
 <section class="platform-hero">
     <div>
         <p class="eyebrow">Artist portfolio software with sales baked in</p>
-        <h1>Build the art site you meant to have.</h1>
+        <h1>A portfolio that works as hard as the art.</h1>
         <p class="hero-copy">ArtsFolio gives artists a fast, elegant portfolio, collector-ready artwork pages, email capture, contact tools, analytics, and room to grow into sales without rebuilding the whole machine later.</p>
         <div class="hero-actions">
             <a class="button primary" href="/signup">Start your portfolio</a>

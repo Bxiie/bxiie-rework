@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Tenant\Admin;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
-use App\Http\View\AdminLayout;
+use App\Http\View\TenantAdminLayout;
 use App\Http\View\ErrorPage;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Tenancy\TenantContext;
@@ -94,10 +94,8 @@ final class SettingsController
         $checked = static fn (string $actual, string $expected): string => $actual === $expected ? ' checked' : '';
 
         $body = <<<HTML
-<main class="admin-shell">
-    <h1>Site settings</h1>
-    {$notice}
-    <form method="post" action="/admin/settings" class="admin-form">
+{$notice}
+<form method="post" action="/admin/settings" class="admin-form tenant-settings-form">
         <input type="hidden" name="csrf_token" value="{$csrf}">
 
         <fieldset>
@@ -214,11 +212,10 @@ final class SettingsController
         </fieldset>
 
         <button type="submit">Save site settings</button>
-    </form>
-</main>
+</form>
 HTML;
 
-        return Response::html(AdminLayout::render('Settings', $body));
+        return Response::html((new TenantAdminLayout($this->settings))->render($tenant, 'Site settings', $body, 'settings'));
     }
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -372,7 +369,7 @@ HTML;
 
     private function escape(string $value): string
     {
-        return AdminLayout::escape($value);
+        return TenantAdminLayout::escape($value);
     }
 }
 

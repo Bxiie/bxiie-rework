@@ -41,6 +41,9 @@ final class TenantAdminLayout
         $aboutSlug = self::slug($this->settings->get($tenant, 'about_slug', 'about'), 'about');
         $contactSlug = self::slug($this->settings->get($tenant, 'contact_slug', 'contact'), 'contact');
 
+        $primaryColor = self::escape($this->settings->get($tenant, 'primary_color', '#111111'));
+        $accentColor = self::escape($this->settings->get($tenant, 'accent_color', '#c9a85f'));
+        $backgroundColor = self::escape($this->settings->get($tenant, 'background_color', '#f7f2e8'));
         $topbarBackground = self::escape($this->settings->get($tenant, 'topbar_background_color', '#f7f2e8'));
         $topbarText = self::escape($this->settings->get($tenant, 'topbar_text_color', '#111111'));
         $textColor = self::escape($this->settings->get($tenant, 'text_color', '#1f1a14'));
@@ -62,7 +65,7 @@ final class TenantAdminLayout
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
     <script defer src="/assets/admin-color-fields.js"></script>
 </head>
-<body class="tenant-admin-page" style="--tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText}; --text-color: {$textColor}; {$surfaceStyle}">
+<body class="tenant-admin-page" style="--primary: {$primaryColor}; --accent: {$accentColor}; --bg: {$backgroundColor}; --tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText}; --text-color: {$textColor}; {$surfaceStyle}">
 <header class="site-header tenant-admin-public-header">
     <a class="brand tenant-admin-brand" href="/"><strong>{$siteTitle}</strong><span>Tenant Admin</span></a>
     <nav>

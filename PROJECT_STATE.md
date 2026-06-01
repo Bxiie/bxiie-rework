@@ -1182,3 +1182,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - SMTP relay failures should be diagnosed by checking Platform Admin SMTP settings, sender/domain verification, and worker logs before editing environment files.
 
 # End of file.
+
+## 2026-05-31 tenant contact styling and admin settings preview fix
+
+- Platform marketing headline changed from `Build the art site you meant to have.` to `A portfolio that works as hard as the art.`.
+- Tenant public contact forms now use shared tenant visual surface settings for panels, labels, inputs, CAPTCHA blocks, and buttons.
+- Tenant Admin > Settings now renders through `TenantAdminLayout`, not the platform `AdminLayout`, so page/top-bar/menu/heading/content/text visual settings apply in tenant admin.
+- `TenantAdminLayout` now exports `--primary`, `--accent`, and `--bg` in addition to tenant surface variables for admin preview consistency.
+
+# End of file.
