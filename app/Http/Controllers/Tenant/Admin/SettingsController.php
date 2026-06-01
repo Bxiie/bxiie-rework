@@ -55,11 +55,29 @@ final class SettingsController
         $contactSlug = $this->setting($tenant, 'contact_slug', 'contact');
         $primaryColor = $this->setting($tenant, 'primary_color', '#111111');
         $accentColor = $this->setting($tenant, 'accent_color', '#c9a85f');
+        $textColor = $this->setting($tenant, 'text_color', '#1f1a14');
         $backgroundColor = $this->setting($tenant, 'background_color', '#f7f2e8');
         $topbarBackgroundColor = $this->setting($tenant, 'topbar_background_color', '');
-        $topbarBackgroundOpacity = $this->setting($tenant, 'topbar_background_opacity', '1');
-        $topbarBackgroundMediaUuid = (string) $this->settings->get($tenant, 'topbar_background_media_uuid', '');
-        $topbarBackgroundPicker = $this->siteImagePicker($tenant, 'topbar_background_media_uuid', $topbarBackgroundMediaUuid, true);
+        $topbarBackgroundOpacity = $this->setting($tenant, 'topbar_background_opacity', '0.86');
+        $topbarMediaUuid = (string) $this->settings->get($tenant, 'topbar_media_uuid', '');
+        $menuBackgroundColor = $this->setting($tenant, 'menu_background_color', $topbarBackgroundColor);
+        $menuBackgroundOpacity = $this->setting($tenant, 'menu_background_opacity', '0.82');
+        $menuMediaUuid = (string) $this->settings->get($tenant, 'menu_media_uuid', '');
+        $headingBackgroundColor = $this->setting($tenant, 'heading_background_color', 'rgba(255,255,255,0.72)');
+        $headingBackgroundOpacity = $this->setting($tenant, 'heading_background_opacity', '0.72');
+        $contentBackgroundColor = $this->setting($tenant, 'content_background_color', 'rgba(255,255,255,0.72)');
+        $contentBackgroundOpacity = $this->setting($tenant, 'content_background_opacity', '0.72');
+        $textBackgroundColor = $this->setting($tenant, 'text_background_color', 'rgba(255,255,255,0.68)');
+        $textBackgroundOpacity = $this->setting($tenant, 'text_background_opacity', '0.72');
+        $headerDropShadowEnabled = $this->setting($tenant, 'header_drop_shadow_enabled', '1');
+        $headerDropShadow = $this->setting($tenant, 'header_drop_shadow', '0 18px 45px rgba(0,0,0,0.24)');
+        $artworkCardBackgroundColor = $this->setting($tenant, 'artwork_card_background_color', '#fffaf0');
+        $artworkCardBackgroundOpacity = $this->setting($tenant, 'artwork_card_background_opacity', '0.84');
+        $artworkCardBackgroundSize = $this->setting($tenant, 'artwork_card_background_size', 'cover');
+        $artworkCardMediaUuid = (string) $this->settings->get($tenant, 'artwork_card_media_uuid', '');
+        $topbarPicker = $this->siteImagePicker($tenant, 'topbar_media_uuid', $topbarMediaUuid, true);
+        $menuPicker = $this->siteImagePicker($tenant, 'menu_media_uuid', $menuMediaUuid, true);
+        $artworkCardPicker = $this->siteImagePicker($tenant, 'artwork_card_media_uuid', $artworkCardMediaUuid, true);
         $exhibitionsHeading = $this->setting($tenant, 'exhibitions_heading', 'Recent exhibitions');
         $exhibitionsDisplayMode = (string) $this->settings->get($tenant, 'exhibitions_display_mode', 'text');
         $backgroundMode = (string) $this->settings->get($tenant, 'background_mode', 'single');
@@ -73,6 +91,7 @@ final class SettingsController
         $recaptchaSecretKey = $this->setting($tenant, 'recaptcha_secret_key', '');
 
         $selected = static fn (string $actual, string $expected): string => $actual === $expected ? ' selected' : '';
+        $checked = static fn (string $actual, string $expected): string => $actual === $expected ? ' checked' : '';
 
         $body = <<<HTML
 <main class="admin-shell">
@@ -113,9 +132,28 @@ final class SettingsController
             <div class="admin-grid-2">
                 <label>Primary color<input name="primary_color" value="{$primaryColor}"></label>
                 <label>Accent color<input name="accent_color" value="{$accentColor}"></label>
+                <label>Default text color<input name="text_color" value="{$textColor}"></label>
                 <label>Page background color<input name="background_color" value="{$backgroundColor}"></label>
                 <label>Top bar background color<input name="topbar_background_color" value="{$topbarBackgroundColor}"></label>
-                <label>Top bar background image opacity<input type="number" name="topbar_background_opacity" min="0" max="1" step="0.05" value="{$topbarBackgroundOpacity}"></label>
+                <label>Top bar opacity<input type="number" name="topbar_background_opacity" min="0" max="1" step="0.05" value="{$topbarBackgroundOpacity}"></label>
+                <label>Menu background color<input name="menu_background_color" value="{$menuBackgroundColor}"></label>
+                <label>Menu opacity<input type="number" name="menu_background_opacity" min="0" max="1" step="0.05" value="{$menuBackgroundOpacity}"></label>
+                <label>Heading spread color<input name="heading_background_color" value="{$headingBackgroundColor}"></label>
+                <label>Heading spread opacity<input type="number" name="heading_background_opacity" min="0" max="1" step="0.05" value="{$headingBackgroundOpacity}"></label>
+                <label>Content background color<input name="content_background_color" value="{$contentBackgroundColor}"></label>
+                <label>Content background opacity<input type="number" name="content_background_opacity" min="0" max="1" step="0.05" value="{$contentBackgroundOpacity}"></label>
+                <label>Text spread color<input name="text_background_color" value="{$textBackgroundColor}"></label>
+                <label>Text spread opacity<input type="number" name="text_background_opacity" min="0" max="1" step="0.05" value="{$textBackgroundOpacity}"></label>
+                <label>Header drop shadow
+                    <select name="header_drop_shadow_enabled">
+                        <option value="1"{$selected($headerDropShadowEnabled, '1')}>On</option>
+                        <option value="0"{$selected($headerDropShadowEnabled, '0')}>Off</option>
+                    </select>
+                </label>
+                <label>Header shadow CSS<input name="header_drop_shadow" value="{$headerDropShadow}"></label>
+                <label>Artwork card background color<input name="artwork_card_background_color" value="{$artworkCardBackgroundColor}"></label>
+                <label>Artwork card opacity<input type="number" name="artwork_card_background_opacity" min="0" max="1" step="0.05" value="{$artworkCardBackgroundOpacity}"></label>
+                <label>Artwork card background size<input name="artwork_card_background_size" value="{$artworkCardBackgroundSize}"></label>
                 <label>Background mode
                     <select name="background_mode">
                         <option value="single"{$selected($backgroundMode, 'single')}>Single image</option>
@@ -126,7 +164,11 @@ final class SettingsController
                 <label>Background opacity<input type="number" name="background_opacity" min="0" max="1" step="0.05" value="{$backgroundOpacity}"></label>
             </div>
             <h3>Top bar background image</h3>
-            {$topbarBackgroundPicker}
+            {$topbarPicker}
+            <h3>Menu background image</h3>
+            {$menuPicker}
+            <h3>Portfolio artwork card background image</h3>
+            {$artworkCardPicker}
             <h3>Page background image</h3>
             {$backgroundPicker}
             <p class="admin-help">Only published artwork marked as Site Images appears here. Use opacity between 0 and 1; tile size accepts CSS values like 240px or 18rem.</p>
@@ -192,7 +234,9 @@ HTML;
         $keys = [
             'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro',
             'home_tab', 'portfolio_tab', 'about_tab', 'contact_tab', 'portfolio_slug', 'about_slug', 'contact_slug',
-            'primary_color', 'accent_color', 'background_color', 'topbar_background_color', 'topbar_background_media_uuid', 'topbar_background_opacity', 'background_media_uuid',
+            'primary_color', 'accent_color', 'text_color', 'background_color', 'topbar_background_color', 'topbar_background_opacity', 'topbar_media_uuid',
+            'menu_background_color', 'menu_background_opacity', 'menu_media_uuid', 'heading_background_color', 'heading_background_opacity',
+            'content_background_color', 'content_background_opacity', 'text_background_color', 'text_background_opacity', 'header_drop_shadow_enabled', 'header_drop_shadow', 'artwork_card_background_color', 'artwork_card_background_opacity', 'artwork_card_background_size', 'artwork_card_media_uuid', 'background_media_uuid',
             'background_mode', 'background_tile_size', 'background_opacity', 'exhibitions_heading', 'exhibitions_display_mode',
             'tenant_css', 'artwork_display_order', 'recaptcha_site_key', 'recaptcha_secret_key',
         ];
@@ -203,11 +247,14 @@ HTML;
         foreach ($keys as $key) {
             $before[$key] = $this->settings->get($tenant, $key, '');
             $value = trim((string) ($_POST[$key] ?? ''));
-            if ($key === 'background_media_uuid' || $key === 'topbar_background_media_uuid') {
+            if (in_array($key, ['background_media_uuid', 'topbar_media_uuid', 'menu_media_uuid', 'artwork_card_media_uuid'], true)) {
                 $value = $this->safeSiteImageMediaUuid($tenant, $value);
             }
-            if ($key === 'background_opacity' || $key === 'topbar_background_opacity') {
-                $value = $this->safeOpacity($value, '0.12');
+            if (str_ends_with($key, '_opacity')) {
+                $value = $this->safeOpacity($value, in_array($key, ['background_opacity'], true) ? '0.12' : (in_array($key, ['artwork_card_background_opacity'], true) ? '0.84' : '0.72'));
+            }
+            if ($key === 'header_drop_shadow_enabled') {
+                $value = $value === '0' ? '0' : '1';
             }
             if (str_ends_with($key, '_slug')) {
                 $value = $this->safeSlug($value, str_replace('_slug', '', $key));

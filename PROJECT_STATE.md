@@ -1174,14 +1174,18 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 # End of file.
 
-## 2026-05-31 signup-code and tenant UI repair patch
 
-- Tenant upload/edit/contact-message admin pages now avoid duplicate page headings; artwork save redirects back to `/admin/artworks` with a status notice.
-- Tenant artwork list now shows either Publish or Unpublish based on the current artwork status, not both at once.
-- Tenant contact-message delete route is explicitly registered at `POST /admin/contact-messages/delete`.
-- 404 messages now show the route text once, for example `No route for POST /admin/contact-messages/delete`.
-- Tenant Settings supports top-bar background image and opacity using published Site Images. Public tenant pages now honor `topbar_background_color` through `--topbar-bg`.
-- Platform Settings includes `tenant_signup_code_required`. When enabled, public tenant creation requires an active signup code.
-- Platform Admin → Signup Codes manages one-time and blanket tenant signup codes, bulk prospect email lists, invite email queueing, recipient restrictions, redemption limits, and redemption-to-tenant tracking.
+## 2026-05-31 Tenant visual surface and footer signup cleanup
+- Tenant public and tenant-admin chrome now share heading, content, text-spread, top-bar, and menu background controls.
+- Tenant settings include top-bar image/opacity and menu image/opacity selected from published Site Images.
+- Public tenant pages expose a compact footer mailing-list signup form and suppress the older delayed signup prompt/modal to avoid duplicate signup UI.
+- Tenant admin nested legacy headings are suppressed so pages such as Artworks show a single page title.
+
+## 2026-05-31 Tenant visual controls follow-up
+- Tenant public and tenant-admin chrome support configurable header drop shadow through `header_drop_shadow_enabled` and `header_drop_shadow` tenant settings.
+- Tenant portfolio artwork cards support background color, Site Image background, opacity, and background-size through `artwork_card_*` tenant settings.
+- Tenant text defaults use high-contrast `text_color` with separate heading/content/text spread overlay values so readable text backgrounds do not fade the text itself.
+- The retired delayed signup prompt JavaScript is inert; public tenant mailing-list signup is the footer form plus explicit contact-page form.
+- Tenant admin Artworks body no longer renders a nested breadcrumb/title inside the layout title.
 
 # End of file.

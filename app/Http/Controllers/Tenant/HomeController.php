@@ -365,7 +365,8 @@ HTML
         $accentColor = $this->escape($this->settings->get($tenant, 'accent_color', '#c9a85f'));
         $backgroundColor = $this->escape($this->settings->get($tenant, 'background_color', '#f7f2e8'));
         $topbarBackgroundColor = $this->escape($this->settings->get($tenant, 'topbar_background_color', 'color-mix(in srgb, var(--bg), white 50%)'));
-        $topbarBackgroundStyle = $this->topbarBackgroundCssVariables($tenant);
+        $textColor = $this->escape($this->settings->get($tenant, 'text_color', '#1f1a14'));
+        $surfaceStyle = $this->tenantSurfaceCssVariables($tenant);
         $homeTab = $this->escape($this->settings->get($tenant, 'home_tab', 'Home'));
         $portfolioTab = $this->escape($this->settings->get($tenant, 'portfolio_tab', 'Portfolio'));
         $aboutTab = $this->escape($this->settings->get($tenant, 'about_tab', 'About'));
@@ -374,6 +375,7 @@ HTML
         $aboutSlug = $this->escape($this->settings->get($tenant, 'about_slug', 'about'));
         $contactSlug = $this->escape($this->settings->get($tenant, 'contact_slug', 'contact'));
         $backgroundStyle = $this->backgroundCssVariables($tenant);
+        $footerSignupForm = $this->footerSignupForm($tenant, $contactSlug);
         $platformAdminLink = $this->tenantAdminLink();
 
         return <<<HTML
@@ -388,7 +390,7 @@ HTML
     <link rel="stylesheet" href="/tenant.css">
     <script src="/assets/tenant-forms.js?v=20260531b" defer></script>
 </head>
-<body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};{$topbarBackgroundStyle}{$backgroundStyle}">
+<body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};--text-color:{$textColor};{$backgroundStyle}{$surfaceStyle}">
 <header class="site-header">
     <a class="brand" href="/">{$siteTitle}</a>
     <nav>
@@ -399,24 +401,159 @@ HTML
         {$platformAdminLink}
     </nav>
 </header>
-<main class="site-main">
+<main class="site-main tenant-content-surface">
 {$body}
 </main>
-<div class="af-signup-prompt" data-af-signup-prompt hidden aria-hidden="true" role="dialog" aria-label="Email list signup">
-    <div class="af-signup-prompt-card">
-        <button type="button" class="af-signup-close" data-af-signup-dismiss aria-label="Close signup prompt">×</button>
-        <h2>Join {$siteTitle}'s email list</h2>
-        <p>Get occasional updates and new work announcements.</p>
-        <a class="button" href="/{$contactSlug}#signup-form-result">Sign up</a>
-        <button type="button" data-af-signup-dismiss>Not now</button>
-    </div>
-</div>
-<footer class="site-footer">© {$year} {$copyrightName}</footer>
-{$this->emailSignupModal($tenant)}
-{$this->tenantInteractionScript()}
+<footer class="site-footer tenant-public-footer">
+    <span>© {$year} {$copyrightName}</span>
+    {$footerSignupForm}
+</footer>
 </body>
 </html>
 HTML;
+    }
+
+
+    /**
+     * Returns public and admin-visible surface CSS variables from tenant settings.
+     */
+    private function tenantSurfaceCssVariables(TenantContext $tenant): string
+    {
+        $vars = '';
+        $headingColor = (string) $this->settings->get($tenant, 'heading_background_color', '#fff8ec');
+        $headingOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'heading_background_opacity', '0.78'));
+        $contentColor = (string) $this->settings->get($tenant, 'content_background_color', '#fffaf0');
+        $contentOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'content_background_opacity', '0.76'));
+        $textBgColor = (string) $this->settings->get($tenant, 'text_background_color', '#fff7e8');
+        $textBgOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'text_background_opacity', '0.72'));
+        $menuColor = (string) $this->settings->get($tenant, 'menu_background_color', (string) $this->settings->get($tenant, 'topbar_background_color', '#fff8ec'));
+        $menuOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'menu_background_opacity', '0.86'));
+        $cardColor = (string) $this->settings->get($tenant, 'artwork_card_background_color', '#fffaf0');
+        $cardOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'artwork_card_background_opacity', '0.84'));
+
+        $vars .= '--heading-bg:' . $this->safeCssColor($headingColor) . ';';
+        $vars .= '--heading-bg-overlay:' . $this->cssColorWithOpacity($headingColor, $headingOpacity) . ';';
+        $vars .= '--heading-bg-opacity:' . $headingOpacity . ';';
+        $vars .= '--content-bg:' . $this->safeCssColor($contentColor) . ';';
+        $vars .= '--content-bg-overlay:' . $this->cssColorWithOpacity($contentColor, $contentOpacity) . ';';
+        $vars .= '--content-bg-opacity:' . $contentOpacity . ';';
+        $vars .= '--text-bg:' . $this->safeCssColor($textBgColor) . ';';
+        $vars .= '--text-bg-overlay:' . $this->cssColorWithOpacity($textBgColor, $textBgOpacity) . ';';
+        $vars .= '--text-bg-opacity:' . $textBgOpacity . ';';
+        $vars .= '--menu-bg:' . $this->safeCssColor($menuColor) . ';';
+        $vars .= '--menu-bg-overlay:' . $this->cssColorWithOpacity($menuColor, $menuOpacity) . ';';
+        $vars .= '--menu-bg-opacity:' . $menuOpacity . ';';
+        $vars .= '--topbar-bg-opacity:' . $this->safeOpacity((string) $this->settings->get($tenant, 'topbar_background_opacity', '0.86')) . ';';
+        $vars .= '--tenant-header-shadow:' . ($this->settings->get($tenant, 'header_drop_shadow_enabled', '1') === '1' ? $this->safeCssShadow((string) $this->settings->get($tenant, 'header_drop_shadow', '0 18px 45px rgba(0,0,0,0.24)')) : 'none') . ';';
+        $vars .= '--artwork-card-bg:' . $this->safeCssColor($cardColor) . ';';
+        $vars .= '--artwork-card-bg-overlay:' . $this->cssColorWithOpacity($cardColor, $cardOpacity) . ';';
+        $vars .= '--artwork-card-bg-opacity:' . $cardOpacity . ';';
+        $vars .= '--artwork-card-bg-size:' . $this->safeCssSize((string) $this->settings->get($tenant, 'artwork_card_background_size', 'cover'), 'cover') . ';';
+        $vars .= $this->mediaBackgroundVar($tenant, 'menu_media_uuid', '--menu-bg-image');
+        $vars .= $this->mediaBackgroundVar($tenant, 'topbar_media_uuid', '--topbar-bg-image');
+        $vars .= $this->mediaBackgroundVar($tenant, 'artwork_card_media_uuid', '--artwork-card-bg-image');
+
+        return $vars;
+    }
+
+    /**
+     * Builds the compact footer signup form available on every public tenant page.
+     */
+    private function footerSignupForm(TenantContext $tenant, string $contactSlug): string
+    {
+        $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
+        $captcha = FirstPartyCaptcha::render('signup', (int) $tenant->tenantId);
+        $contactSlug = trim($contactSlug, '/') !== '' ? trim($contactSlug, '/') : 'contact';
+
+        return <<<HTML
+<form method="post" action="/signup" class="tenant-footer-signup" data-af-async-form data-af-result="footer-signup-result" data-af-busy-label="Subscribing..." data-af-busy-message="Adding you to the mailing list...">
+    <label for="footer-signup-email">Join the mailing list</label>
+    <div class="tenant-footer-signup-row">
+        <input id="footer-signup-email" type="email" name="email" autocomplete="email" placeholder="Email address" required>
+        <input type="hidden" name="csrf_token" value="{$csrf}">
+        <input type="hidden" name="source" value="footer">
+        <input type="hidden" name="return_to" value="/{$contactSlug}?signup_sent=1">
+        <button type="submit">Subscribe</button>
+    </div>
+    <div id="footer-signup-result" data-af-form-result class="af-form-result" hidden></div>
+    <div class="tenant-footer-captcha">{$captcha}</div>
+</form>
+HTML;
+    }
+
+    /**
+     * Adds a CSS variable for a tenant-selected Site Image when the UUID remains valid.
+     */
+    private function mediaBackgroundVar(TenantContext $tenant, string $settingKey, string $cssVar): string
+    {
+        $uuid = strtolower(trim((string) $this->settings->get($tenant, $settingKey, '')));
+        if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid) || !$this->isPublishedSiteImage($tenant, $uuid)) {
+            return '';
+        }
+
+        return $cssVar . ":url('/media?uuid=" . rawurlencode($uuid) . "');";
+    }
+
+    /**
+     * Allows conservative color tokens plus rgba()/color-mix() values used by tenants.
+     */
+    /**
+     * Converts common CSS color forms into an alpha-applied overlay value.
+     */
+    private function cssColorWithOpacity(string $color, string $opacity): string
+    {
+        $color = trim($color);
+        $alpha = $this->safeOpacity($opacity);
+
+        if (preg_match('/^#([0-9a-fA-F]{6})$/', $color, $matches) === 1) {
+            $hex = $matches[1];
+            $red = hexdec(substr($hex, 0, 2));
+            $green = hexdec(substr($hex, 2, 2));
+            $blue = hexdec(substr($hex, 4, 2));
+
+            return sprintf('rgba(%d,%d,%d,%s)', $red, $green, $blue, $alpha);
+        }
+
+        if (preg_match('/^#([0-9a-fA-F]{3})$/', $color, $matches) === 1) {
+            $hex = $matches[1];
+            $red = hexdec(str_repeat($hex[0], 2));
+            $green = hexdec(str_repeat($hex[1], 2));
+            $blue = hexdec(str_repeat($hex[2], 2));
+
+            return sprintf('rgba(%d,%d,%d,%s)', $red, $green, $blue, $alpha);
+        }
+
+        if (preg_match('/^rgba?\(([^)]+)\)$/i', $color, $matches) === 1) {
+            $parts = array_map('trim', explode(',', $matches[1]));
+            if (count($parts) >= 3) {
+                return 'rgba(' . $parts[0] . ',' . $parts[1] . ',' . $parts[2] . ',' . $alpha . ')';
+            }
+        }
+
+        return $this->safeCssColor($color);
+    }
+
+    /**
+     * Restricts box-shadow settings to simple, non-executable CSS tokens.
+     */
+    private function safeCssShadow(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '' || strtolower($value) === 'none') {
+            return 'none';
+        }
+
+        return preg_match('/^[#a-zA-Z0-9.,%()\s-]+$/', $value) ? $value : '0 18px 45px rgba(0,0,0,0.24)';
+    }
+
+    private function safeCssColor(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return 'rgba(255,255,255,0.72)';
+        }
+
+        return preg_match('/^[#a-zA-Z0-9.,%()\s-]+$/', $value) ? $value : 'rgba(255,255,255,0.72)';
     }
 
 
@@ -461,23 +598,6 @@ HTML;
         } catch (Throwable) {
             return false;
         }
-    }
-
-
-    /**
-     * Returns inline CSS variables for the tenant public top-bar image layer.
-     */
-    private function topbarBackgroundCssVariables(TenantContext $tenant): string
-    {
-        $uuid = strtolower(trim((string) $this->settings->get($tenant, 'topbar_background_media_uuid', '')));
-        if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid) || !$this->isPublishedSiteImage($tenant, $uuid)) {
-            return '';
-        }
-
-        $opacity = $this->safeOpacity((string) $this->settings->get($tenant, 'topbar_background_opacity', '1'));
-        $url = '/media?uuid=' . rawurlencode($uuid);
-
-        return '--topbar-bg-image:url(' . $url . ');--topbar-bg-image-opacity:' . $opacity . ';';
     }
 
     /**
@@ -574,70 +694,6 @@ HTML;
     }
 
 
-    private function emailSignupModal(TenantContext $tenant): string
-    {
-        $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
-        $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
-        $recaptcha = FirstPartyCaptcha::render('contact', (int) $tenant->tenantId);
-
-        return <<<HTML
-<div class="signup-modal" id="tenant-signup-modal" hidden>
-    <div class="signup-modal__backdrop" data-signup-close></div>
-    <section class="signup-modal__panel" role="dialog" aria-modal="true" aria-labelledby="tenant-signup-modal-title">
-        <button class="signup-modal__close" type="button" data-signup-close aria-label="Close signup dialog">×</button>
-        <h2 id="tenant-signup-modal-title">Join {$siteTitle}'s email list</h2>
-        <p>Get occasional updates and announcements.</p>
-        <form method="post" action="/subscribe" class="form compact js-submit-form">
-            <input type="hidden" name="csrf_token" value="{$csrf}">
-            <input type="hidden" name="source" value="one_minute_modal">
-            <input type="hidden" name="return_to" value="/">
-            <label>Name <input type="text" name="name" autocomplete="name"></label>
-            <label>Email <input type="email" name="email" autocomplete="email" required></label>
-            {$recaptcha}
-            <button type="submit" data-loading-label="Subscribing…">Subscribe</button>
-            <p class="form-progress" aria-live="polite">Subscribing…</p>
-        </form>
-    </section>
-</div>
-HTML;
-    }
-
-    private function tenantInteractionScript(): string
-    {
-        return <<<'HTML'
-<script>
-(function () {
-  document.querySelectorAll('.js-submit-form').forEach(function (form) {
-    form.addEventListener('submit', function () {
-      var button = form.querySelector('button[type="submit"]');
-      form.classList.add('is-submitting');
-      if (button) {
-        button.disabled = true;
-        button.textContent = button.getAttribute('data-loading-label') || 'Sending…';
-      }
-    });
-  });
-  var modal = document.getElementById('tenant-signup-modal');
-  if (!modal || window.localStorage.getItem('artsfolio_tenant_signup_dismissed') === '1') { return; }
-  if (new URLSearchParams(window.location.search).has('signup_sent')) {
-    window.localStorage.setItem('artsfolio_tenant_signup_dismissed', '1');
-    return;
-  }
-  window.setTimeout(function () {
-    modal.hidden = false;
-    document.body.classList.add('signup-modal-open');
-  }, 60000);
-  modal.querySelectorAll('[data-signup-close]').forEach(function (control) {
-    control.addEventListener('click', function () {
-      modal.hidden = true;
-      document.body.classList.remove('signup-modal-open');
-      window.localStorage.setItem('artsfolio_tenant_signup_dismissed', '1');
-    });
-  });
-})();
-</script>
-HTML;
-    }
 
     private function backgroundStyle(TenantContext $tenant): string
     {

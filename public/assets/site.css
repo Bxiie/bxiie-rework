@@ -7,7 +7,7 @@
 
 :root {
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  color: var(--primary);
+  color: var(--text-color, #1f1a14);
   background: var(--bg);
 }
 
@@ -47,25 +47,8 @@ a {
   gap: 18px;
   padding: 28px 5vw;
   border-bottom: 1px solid color-mix(in srgb, var(--primary), transparent 85%);
-  background: var(--topbar-bg, color-mix(in srgb, var(--bg), white 50%));
-  position: relative;
+  background: color-mix(in srgb, var(--bg), white 50%);
   backdrop-filter: blur(8px);
-}
-
-.site-header::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: var(--topbar-bg-image, none);
-  background-size: cover;
-  background-position: center;
-  opacity: var(--topbar-bg-image-opacity, 0);
-  pointer-events: none;
-}
-
-.site-header > * {
-  position: relative;
-  z-index: 1;
 }
 
 .brand {
@@ -501,5 +484,206 @@ input[type="submit"][aria-busy="true"] {
     height: auto;
     border-radius: 18px;
 }
+
+/* End of file. */
+
+
+/* Tenant readable surfaces, menu imagery, and footer signup. */
+.site-header,
+.tenant-admin-public-header {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--topbar-bg, var(--tenant-topbar-bg, var(--bg))), transparent calc((1 - var(--topbar-bg-opacity, 0.86)) * 100%)) !important;
+}
+
+.site-header::before,
+.tenant-admin-public-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--topbar-bg-image);
+  background-position: center;
+  background-size: cover;
+  opacity: var(--topbar-bg-opacity, 0.86);
+}
+
+.site-header nav,
+.tenant-admin-public-header nav {
+  padding: 0.35rem;
+  border-radius: 999px;
+  background-color: var(--menu-bg, rgba(255, 255, 255, 0.72));
+  background-image: var(--menu-bg-image);
+  background-position: center;
+  background-size: cover;
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, calc(1 - var(--menu-bg-opacity, 0.82)));
+}
+
+.tenant-content-surface {
+  padding: clamp(1rem, 2vw, 2rem);
+  border-radius: 24px;
+  background-color: var(--content-bg, rgba(255, 255, 255, 0.72));
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, calc(1 - var(--content-bg-opacity, 0.72)));
+}
+
+.tenant-content-surface h1,
+.tenant-content-surface h2,
+.tenant-content-surface h3,
+.tenant-admin-panel h1,
+.tenant-admin-panel h2,
+.tenant-admin-panel h3 {
+  display: inline-block;
+  padding: 0.08em 0.18em 0.14em;
+  border-radius: 0.18em;
+  background-color: var(--heading-bg, rgba(255, 255, 255, 0.72));
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, calc(1 - var(--heading-bg-opacity, 0.72)));
+}
+
+.tenant-content-surface p,
+.tenant-content-surface li,
+.tenant-content-surface .prose,
+.tenant-content-surface figcaption {
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  background-color: var(--text-bg, rgba(255, 255, 255, 0.68));
+  box-shadow: 0.35em 0 0 var(--text-bg, rgba(255, 255, 255, 0.68)), -0.35em 0 0 var(--text-bg, rgba(255, 255, 255, 0.68));
+  opacity: max(var(--text-bg-opacity, 0.68), 0.35);
+}
+
+.tenant-public-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  border-top: 1px solid color-mix(in srgb, var(--primary), transparent 86%);
+  background: color-mix(in srgb, var(--bg), white 52%);
+}
+
+.tenant-footer-signup {
+  display: grid;
+  gap: 0.55rem;
+  min-width: min(100%, 420px);
+}
+
+.tenant-footer-signup label {
+  font-weight: 800;
+}
+
+.tenant-footer-signup-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tenant-footer-signup input[type="email"] {
+  flex: 1 1 220px;
+  min-height: 42px;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--primary), transparent 70%);
+  border-radius: 999px;
+  font: inherit;
+}
+
+.tenant-footer-signup button {
+  min-height: 42px;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--bg);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tenant-footer-captcha {
+  max-width: 420px;
+}
+
+.af-signup-prompt,
+.signup-modal {
+  display: none !important;
+}
+
+@media (max-width: 720px) {
+  .tenant-public-footer,
+  .tenant-footer-signup-row {
+    display: grid;
+  }
+}
+
+/* End tenant readable surfaces, menu imagery, and footer signup. */
+
+
+
+/* Tenant visual-surface controls. */
+.site-header,
+.tenant-admin-public-header {
+  z-index: 2;
+  box-shadow: var(--tenant-header-shadow, none);
+}
+
+.site-header nav,
+.tenant-admin-public-header nav {
+  background-color: var(--menu-bg-overlay, rgba(255, 248, 236, 0.86));
+  box-shadow: none;
+}
+
+.tenant-content-surface,
+.tenant-admin-panel {
+  color: var(--text-color, #1f1a14);
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0.76)) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+}
+
+.tenant-content-surface h1,
+.tenant-content-surface h2,
+.tenant-content-surface h3,
+.tenant-admin-panel h1,
+.tenant-admin-panel h2,
+.tenant-admin-panel h3 {
+  color: var(--text-color, #1f1a14);
+  background-color: var(--heading-bg-overlay, rgba(255, 248, 236, 0.78));
+  box-shadow: 0.18em 0 0 var(--heading-bg-overlay, rgba(255, 248, 236, 0.78)), -0.18em 0 0 var(--heading-bg-overlay, rgba(255, 248, 236, 0.78));
+}
+
+.tenant-content-surface p,
+.tenant-content-surface li,
+.tenant-content-surface .prose,
+.tenant-content-surface figcaption,
+.tenant-admin-panel p,
+.tenant-admin-panel li {
+  color: var(--text-color, #1f1a14);
+  background-color: var(--text-bg-overlay, rgba(255, 247, 232, 0.72));
+  box-shadow: 0.35em 0 0 var(--text-bg-overlay, rgba(255, 247, 232, 0.72)), -0.35em 0 0 var(--text-bg-overlay, rgba(255, 247, 232, 0.72));
+  opacity: 1;
+}
+
+.artwork-card {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0.84));
+  background-image: var(--artwork-card-bg-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: var(--artwork-card-bg-size, cover);
+  box-shadow: inset 0 0 0 999px var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0.84));
+}
+
+.artwork-card img,
+.artwork-card span,
+.artwork-card small {
+  position: relative;
+  z-index: 1;
+}
+
+.af-signup-prompt,
+.signup-modal,
+[data-af-signup-prompt] {
+  display: none !important;
+}
+
+/* End tenant visual-surface controls. */
 
 /* End of file. */

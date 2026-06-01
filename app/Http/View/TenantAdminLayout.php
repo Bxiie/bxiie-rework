@@ -42,8 +42,9 @@ final class TenantAdminLayout
         $contactSlug = self::slug($this->settings->get($tenant, 'contact_slug', 'contact'), 'contact');
 
         $topbarBackground = self::escape($this->settings->get($tenant, 'topbar_background_color', '#f7f2e8'));
-        $topbarImageStyle = $this->topbarImageStyle($tenant);
         $topbarText = self::escape($this->settings->get($tenant, 'topbar_text_color', '#111111'));
+        $textColor = self::escape($this->settings->get($tenant, 'text_color', '#1f1a14'));
+        $surfaceStyle = self::tenantSurfaceCssVariables($tenant, $this->settings);
         $adminNav = TenantAdminNav::render($active);
         $csrf = self::escape(self::csrfToken());
         $identity = self::tenantIdentity($tenant);
@@ -61,7 +62,7 @@ final class TenantAdminLayout
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
     <script defer src="/assets/admin-color-fields.js"></script>
 </head>
-<body class="tenant-admin-page" style="--tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText}; {$topbarImageStyle}">
+<body class="tenant-admin-page" style="--tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText}; --text-color: {$textColor}; {$surfaceStyle}">
 <header class="site-header tenant-admin-public-header">
     <a class="brand tenant-admin-brand" href="/"><strong>{$siteTitle}</strong><span>Tenant Admin</span></a>
     <nav>
@@ -105,26 +106,134 @@ final class TenantAdminLayout
 HTML;
     }
 
+    public static function escape(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+
 
     /**
-     * Builds CSS variables for the optional tenant-admin top-bar background image.
+     * Mirrors public tenant surface variables in admin so settings preview honestly.
      */
-    private function topbarImageStyle(TenantContext $tenant): string
+    private static function tenantSurfaceCssVariables(TenantContext $tenant, TenantSettingsRepository $settings): string
     {
-        $uuid = strtolower(trim((string) $this->settings->get($tenant, 'topbar_background_media_uuid', '')));
+        $vars = '';
+        $headingColor = (string) $settings->get($tenant, 'heading_background_color', '#fff8ec');
+        $headingOpacity = self::safeOpacity((string) $settings->get($tenant, 'heading_background_opacity', '0.78'));
+        $contentColor = (string) $settings->get($tenant, 'content_background_color', '#fffaf0');
+        $contentOpacity = self::safeOpacity((string) $settings->get($tenant, 'content_background_opacity', '0.76'));
+        $textBgColor = (string) $settings->get($tenant, 'text_background_color', '#fff7e8');
+        $textBgOpacity = self::safeOpacity((string) $settings->get($tenant, 'text_background_opacity', '0.72'));
+        $menuColor = (string) $settings->get($tenant, 'menu_background_color', (string) $settings->get($tenant, 'topbar_background_color', '#fff8ec'));
+        $menuOpacity = self::safeOpacity((string) $settings->get($tenant, 'menu_background_opacity', '0.86'));
+        $cardColor = (string) $settings->get($tenant, 'artwork_card_background_color', '#fffaf0');
+        $cardOpacity = self::safeOpacity((string) $settings->get($tenant, 'artwork_card_background_opacity', '0.84'));
+
+        $vars .= '--heading-bg:' . self::safeCssColor($headingColor) . ';';
+        $vars .= '--heading-bg-overlay:' . self::cssColorWithOpacity($headingColor, $headingOpacity) . ';';
+        $vars .= '--heading-bg-opacity:' . $headingOpacity . ';';
+        $vars .= '--content-bg:' . self::safeCssColor($contentColor) . ';';
+        $vars .= '--content-bg-overlay:' . self::cssColorWithOpacity($contentColor, $contentOpacity) . ';';
+        $vars .= '--content-bg-opacity:' . $contentOpacity . ';';
+        $vars .= '--text-bg:' . self::safeCssColor($textBgColor) . ';';
+        $vars .= '--text-bg-overlay:' . self::cssColorWithOpacity($textBgColor, $textBgOpacity) . ';';
+        $vars .= '--text-bg-opacity:' . $textBgOpacity . ';';
+        $vars .= '--menu-bg:' . self::safeCssColor($menuColor) . ';';
+        $vars .= '--menu-bg-overlay:' . self::cssColorWithOpacity($menuColor, $menuOpacity) . ';';
+        $vars .= '--menu-bg-opacity:' . $menuOpacity . ';';
+        $vars .= '--topbar-bg-opacity:' . self::safeOpacity((string) $settings->get($tenant, 'topbar_background_opacity', '0.86')) . ';';
+        $vars .= '--tenant-header-shadow:' . ($settings->get($tenant, 'header_drop_shadow_enabled', '1') === '1' ? self::safeCssShadow((string) $settings->get($tenant, 'header_drop_shadow', '0 18px 45px rgba(0,0,0,0.24)')) : 'none') . ';';
+        $vars .= '--artwork-card-bg:' . self::safeCssColor($cardColor) . ';';
+        $vars .= '--artwork-card-bg-overlay:' . self::cssColorWithOpacity($cardColor, $cardOpacity) . ';';
+        $vars .= '--artwork-card-bg-opacity:' . $cardOpacity . ';';
+        $vars .= '--artwork-card-bg-size:' . self::safeCssSize((string) $settings->get($tenant, 'artwork_card_background_size', 'cover')) . ';';
+        $vars .= self::mediaVar((string) $settings->get($tenant, 'menu_media_uuid', ''), '--menu-bg-image');
+        $vars .= self::mediaVar((string) $settings->get($tenant, 'topbar_media_uuid', ''), '--topbar-bg-image');
+        $vars .= self::mediaVar((string) $settings->get($tenant, 'artwork_card_media_uuid', ''), '--artwork-card-bg-image');
+
+        return $vars;
+    }
+
+    private static function mediaVar(string $uuid, string $cssVar): string
+    {
+        $uuid = strtolower(trim($uuid));
         if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid)) {
             return '';
         }
 
-        $rawOpacity = (string) $this->settings->get($tenant, 'topbar_background_opacity', '1');
-        $opacity = is_numeric($rawOpacity) ? max(0, min(1, (float) $rawOpacity)) : 1;
-
-        return '--tenant-topbar-bg-image: url(/media?uuid=' . rawurlencode($uuid) . '); --tenant-topbar-bg-image-opacity: ' . rtrim(rtrim(sprintf('%.2F', $opacity), '0'), '.') . ';';
+        return $cssVar . ":url('/media?uuid=" . rawurlencode($uuid) . "');";
     }
 
-    public static function escape(string $value): string
+    /**
+     * Converts common CSS colors to alpha-applied overlay values for admin previews.
+     */
+    private static function cssColorWithOpacity(string $color, string $opacity): string
     {
-        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        $color = trim($color);
+        $alpha = self::safeOpacity($opacity);
+
+        if (preg_match('/^#([0-9a-fA-F]{6})$/', $color, $matches) === 1) {
+            $hex = $matches[1];
+            return sprintf('rgba(%d,%d,%d,%s)', hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2)), $alpha);
+        }
+
+        if (preg_match('/^#([0-9a-fA-F]{3})$/', $color, $matches) === 1) {
+            $hex = $matches[1];
+            return sprintf('rgba(%d,%d,%d,%s)', hexdec(str_repeat($hex[0], 2)), hexdec(str_repeat($hex[1], 2)), hexdec(str_repeat($hex[2], 2)), $alpha);
+        }
+
+        if (preg_match('/^rgba?\(([^)]+)\)$/i', $color, $matches) === 1) {
+            $parts = array_map('trim', explode(',', $matches[1]));
+            if (count($parts) >= 3) {
+                return 'rgba(' . $parts[0] . ',' . $parts[1] . ',' . $parts[2] . ',' . $alpha . ')';
+            }
+        }
+
+        return self::safeCssColor($color);
+    }
+
+    /**
+     * Restricts box-shadow settings to simple CSS tokens.
+     */
+    private static function safeCssShadow(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '' || strtolower($value) === 'none') {
+            return 'none';
+        }
+
+        return preg_match('/^[#a-zA-Z0-9.,%()\s-]+$/', $value) ? $value : '0 18px 45px rgba(0,0,0,0.24)';
+    }
+
+    /**
+     * Restricts background-size values to simple CSS tokens.
+     */
+    private static function safeCssSize(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return 'cover';
+        }
+
+        return preg_match('/^[#a-zA-Z0-9.,%()\s-]+$/', $value) ? $value : 'cover';
+    }
+
+    private static function safeOpacity(string $value): string
+    {
+        $opacity = is_numeric($value) ? (float) $value : 0.72;
+        $opacity = max(0.0, min(1.0, $opacity));
+
+        return rtrim(rtrim(sprintf('%.2F', $opacity), '0'), '.');
+    }
+
+    private static function safeCssColor(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return 'rgba(255,255,255,0.72)';
+        }
+
+        return preg_match('/^[#a-zA-Z0-9.,%()\s-]+$/', $value) ? $value : 'rgba(255,255,255,0.72)';
     }
 
     private static function csrfToken(): string

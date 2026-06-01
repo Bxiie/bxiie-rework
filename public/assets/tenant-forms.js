@@ -161,23 +161,7 @@
   }
 
   function initSignupPrompt() {
-    var prompt = document.querySelector('[data-af-signup-prompt]');
-    if (!prompt || window.localStorage.getItem('af_signup_prompt_dismissed') === '1') {
-      return;
-    }
-
-    window.setTimeout(function () {
-      prompt.hidden = false;
-      prompt.setAttribute('aria-hidden', 'false');
-    }, 60000);
-
-    prompt.querySelectorAll('[data-af-signup-dismiss]').forEach(function (button) {
-      button.addEventListener('click', function () {
-        window.localStorage.setItem('af_signup_prompt_dismissed', '1');
-        prompt.hidden = true;
-        prompt.setAttribute('aria-hidden', 'true');
-      });
-    });
+    // The old delayed modal/prompt was retired in favor of the always-visible footer signup form.
   }
 
   ready(function () {
