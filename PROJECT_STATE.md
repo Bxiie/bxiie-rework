@@ -934,8 +934,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The picker lists only non-private media attached to published artwork so `/media?uuid=...` can serve the selected image through the existing public media safety gate.
 - Public rendering uses CSS variables consumed by `public/assets/site.css`: `--site-bg-image`, `--site-bg-repeat`, `--site-bg-size`, and `--site-bg-opacity`.
 
-- 2026-05-31: Corrected tenant visual-surface defaults so public headers render configured color/images on subdomains and custom domains, while content/artwork overlays default transparent and remain configurable.
-
 <!-- End of file. -->
 
 ## 2026-05-29 admin user/config/email repair
@@ -1020,8 +1018,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Session creation stores `expires_at` as a bound timestamp computed in PHP instead of relying on a MariaDB `INTERVAL :ttl_seconds SECOND` placeholder.
 - Added `scripts/test/session_repository_no_user_status.php` as a regression check for this specific schema-drift failure.
 
-- 2026-05-31: Corrected tenant visual-surface defaults so public headers render configured color/images on subdomains and custom domains, while content/artwork overlays default transparent and remain configurable.
-
 <!-- End of file. -->
 
 ## 2026-05-30 auth cookie multi-header fix
@@ -1031,8 +1027,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform password login/logout and platform signup now use the same multi-header cookie helper.
 - Added `scripts/test/auth_cookie_headers.php` to prevent regressions where browser auth succeeds server-side but stale duplicate cookies keep admin pages inaccessible.
 
-- 2026-05-31: Corrected tenant visual-surface defaults so public headers render configured color/images on subdomains and custom domains, while content/artwork overlays default transparent and remain configurable.
-
 <!-- End of file. -->
 
 ## Email SMTP custom headers
@@ -1041,8 +1035,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `SMTP_EXTRA_HEADERS` accepts semicolon- or newline-separated `Name: value` entries, such as `X-PM-Tag: lifecycle; X-PM-Metadata-tenant: bxiie`.
 - Header names and values are validated to prevent CRLF/header injection before SMTP DATA is sent.
 - Secret SMTP credentials remain in environment/secrets files and must not be recorded in `PROJECT_STATE.md`.
-
-- 2026-05-31: Corrected tenant visual-surface defaults so public headers render configured color/images on subdomains and custom domains, while content/artwork overlays default transparent and remain configurable.
 
 <!-- End of file. -->
 
@@ -1092,8 +1084,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Failure banners include the failed deploy stage, exit code, branch, and commit so preflight failures are no longer confused with completed deploys.
 - The deploy stage order remains unchanged: git update, env verification, PHP lint, migrations, migration integrity, preflight, service restarts, then health check.
 
-- 2026-05-31: Corrected tenant visual-surface defaults so public headers render configured color/images on subdomains and custom domains, while content/artwork overlays default transparent and remain configurable.
-
 <!-- End of file. -->
 
 ## Production deploy worker requirement
@@ -1106,8 +1096,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `scripts/deploy/healthcheck.sh` now treats the background worker as a required service instead of warning and passing.
 - SIGINT/SIGTERM during deploy now exit with code 130 and produce a `DEPLOY FAILED` banner rather than a false success banner.
 - Required production services are `php8.4-fpm`, `caddy`, `mariadb`, `artsfolio-email-worker.service`, and `artsfolio-background-worker.service`.
-
-- 2026-05-31: Corrected tenant visual-surface defaults so public headers render configured color/images on subdomains and custom domains, while content/artwork overlays default transparent and remain configurable.
 
 <!-- End of file. -->
 
@@ -1186,18 +1174,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 # End of file.
 
+## 2026-05-31 email platform settings SMTP auth fix
 
-## 2026-05-31 Tenant visual surface and footer signup cleanup
-- Tenant public and tenant-admin chrome now share heading, content, text-spread, top-bar, and menu background controls.
-- Tenant settings include top-bar image/opacity and menu image/opacity selected from published Site Images.
-- Public tenant pages expose a compact footer mailing-list signup form and suppress the older delayed signup prompt/modal to avoid duplicate signup UI.
-- Tenant admin nested legacy headings are suppressed so pages such as Artworks show a single page title.
-
-## 2026-05-31 Tenant visual controls follow-up
-- Tenant public and tenant-admin chrome support configurable header drop shadow through `header_drop_shadow_enabled` and `header_drop_shadow` tenant settings.
-- Tenant portfolio artwork cards support background color, Site Image background, opacity, and background-size through `artwork_card_*` tenant settings.
-- Tenant text defaults use high-contrast `text_color` with separate heading/content/text spread overlay values so readable text backgrounds do not fade the text itself.
-- The retired delayed signup prompt JavaScript is inert; public tenant mailing-list signup is the footer form plus explicit contact-page form.
-- Tenant admin Artworks body no longer renders a nested breadcrumb/title inside the layout title.
+- Production email delivery is controlled from Platform Admin > Settings > Email delivery via `platform_settings`; `/etc/artsfolio/artsfolio.env` is only a fallback/bootstrap source for development-style sender creation.
+- `EmailSenderFactory::fromPlatformSettings()` now passes SMTP username, password, and encryption into `SmtpEmailSender`.
+- `SmtpEmailSender` supports STARTTLS, implicit SSL, and SMTP AUTH PLAIN so Postmark and similar relays do not reject mail with relay-access errors when platform settings are complete.
+- SMTP relay failures should be diagnosed by checking Platform Admin SMTP settings, sender/domain verification, and worker logs before editing environment files.
 
 # End of file.

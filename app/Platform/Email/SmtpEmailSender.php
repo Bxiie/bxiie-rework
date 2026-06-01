@@ -1,9 +1,19 @@
 <?php
 
+/**
+ * SMTP email sender with optional TLS and authentication support.
+ */
+
 declare(strict_types=1);
 
 namespace App\Platform\Email;
 
+/**
+ * Sends queued plain-text platform email through SMTP.
+ *
+ * Platform settings own the production mail configuration. Environment
+ * variables remain a development/bootstrap fallback only.
+ */
 final class SmtpEmailSender implements EmailSenderInterface
 {
     public function __construct(
@@ -14,6 +24,9 @@ final class SmtpEmailSender implements EmailSenderInterface
         private readonly int $timeoutSeconds = 10,
         private array $headers = [],
         ?array $extraHeaders = null,
+        private readonly string $username = '',
+        private readonly string $password = '',
+        private readonly string $encryption = 'none',
     ) {
         if ($extraHeaders !== null) {
             $this->headers = array_merge($this->headers, $extraHeaders);
@@ -22,21 +35,38 @@ final class SmtpEmailSender implements EmailSenderInterface
         foreach ($this->headers as $name => $value) {
             $this->assertSafeHeader((string) $name, (string) $value);
         }
+
+        if (($this->username === '') !== ($this->password === '')) {
+            throw new \InvalidArgumentException('SMTP username and password must both be set or both be blank.');
+        }
+
+        if (!in_array($this->normalizedEncryption(), ['none', 'tls', 'ssl'], true)) {
+            throw new \InvalidArgumentException('SMTP encryption must be none, tls, or ssl.');
+        }
     }
 
     public function send(array $email): string
     {
-        $socket = fsockopen($this->host, $this->port, $errno, $errstr, $this->timeoutSeconds);
-
-        if (!$socket) {
-            throw new \RuntimeException("SMTP connection failed: {$errno} {$errstr}");
-        }
-
-        stream_set_timeout($socket, $this->timeoutSeconds);
+        $socket = $this->connect();
 
         try {
             $this->expect($socket, [220]);
-            $this->command($socket, 'HELO artsfol.io', [250]);
+            $this->ehlo($socket);
+
+            if ($this->normalizedEncryption() === 'tls') {
+                $this->command($socket, 'STARTTLS', [220]);
+                if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+                    throw new \RuntimeException('SMTP STARTTLS negotiation failed.');
+                }
+
+                // RFC 3207 requires EHLO again after STARTTLS resets SMTP state.
+                $this->ehlo($socket);
+            }
+
+            if ($this->username !== '') {
+                $this->authenticate($socket);
+            }
+
             $this->command($socket, "MAIL FROM:<{$this->fromEmail}>", [250]);
             $this->command($socket, "RCPT TO:<{$email['recipient_email']}>", [250, 251]);
             $this->command($socket, 'DATA', [354]);
@@ -54,6 +84,35 @@ final class SmtpEmailSender implements EmailSenderInterface
     public function buildMessageForTest(array $email): string
     {
         return $this->buildMessage($email);
+    }
+
+    private function connect()
+    {
+        $target = $this->normalizedEncryption() === 'ssl'
+            ? 'ssl://' . $this->host
+            : $this->host;
+
+        $socket = fsockopen($target, $this->port, $errno, $errstr, $this->timeoutSeconds);
+
+        if (!$socket) {
+            throw new \RuntimeException("SMTP connection failed: {$errno} {$errstr}");
+        }
+
+        stream_set_timeout($socket, $this->timeoutSeconds);
+
+        return $socket;
+    }
+
+    private function ehlo($socket): void
+    {
+        $hostname = gethostname() ?: 'artsfol.io';
+        $this->command($socket, 'EHLO ' . $hostname, [250]);
+    }
+
+    private function authenticate($socket): void
+    {
+        $auth = base64_encode("\0{$this->username}\0{$this->password}");
+        $this->command($socket, 'AUTH PLAIN ' . $auth, [235]);
     }
 
     private function buildMessage(array $email): string
@@ -100,7 +159,15 @@ final class SmtpEmailSender implements EmailSenderInterface
 
     private function encodeHeader(string $value): string
     {
-        return mb_encode_mimeheader($value, 'UTF-8', 'B', "\r\n");
+        if (function_exists('mb_encode_mimeheader')) {
+            return mb_encode_mimeheader($value, 'UTF-8', 'B', "\r\n");
+        }
+
+        if (preg_match('/[^\x20-\x7E]/', $value) === 1) {
+            return '=?UTF-8?B?' . base64_encode($value) . '?=';
+        }
+
+        return $value;
     }
 
     private function command($socket, string $command, array $expectedCodes): string
@@ -112,19 +179,33 @@ final class SmtpEmailSender implements EmailSenderInterface
 
     private function expect($socket, array $expectedCodes): string
     {
-        $line = fgets($socket);
+        $response = '';
+        $code = 0;
 
-        if ($line === false) {
-            throw new \RuntimeException('SMTP server did not respond.');
-        }
+        do {
+            $line = fgets($socket);
 
-        $code = (int) substr($line, 0, 3);
+            if ($line === false) {
+                throw new \RuntimeException('SMTP server did not respond.');
+            }
+
+            $response .= $line;
+            $code = (int) substr($line, 0, 3);
+            $continuation = strlen($line) >= 4 && $line[3] === '-';
+        } while ($continuation);
 
         if (!in_array($code, $expectedCodes, true)) {
-            throw new \RuntimeException("Unexpected SMTP response: {$line}");
+            throw new \RuntimeException('Unexpected SMTP response: ' . trim($response));
         }
 
-        return $line;
+        return $response;
+    }
+
+    private function normalizedEncryption(): string
+    {
+        $value = strtolower(trim($this->encryption));
+
+        return $value === '' ? 'none' : $value;
     }
 }
 

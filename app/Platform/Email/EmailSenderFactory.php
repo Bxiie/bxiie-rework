@@ -18,13 +18,13 @@ final class EmailSenderFactory
 {
     public static function fromPlatformSettings(PlatformSettingsRepository $settings): EmailSenderInterface
     {
-        $smtpHost = trim($settings->get('smtp_host', ''));
+        $smtpHost = trim((string) $settings->get('smtp_host', ''));
 
         if ($smtpHost === '') {
             return new DryRunEmailSender();
         }
 
-        $messageStream = trim($settings->get('smtp_x_pm_message_stream', ''));
+        $messageStream = trim((string) $settings->get('smtp_x_pm_message_stream', ''));
         $headers = [];
         if ($messageStream !== '') {
             $headers['X-PM-Message-Stream'] = $messageStream;
@@ -33,8 +33,11 @@ final class EmailSenderFactory
         return new SmtpEmailSender(
             host: $smtpHost,
             port: (int) $settings->get('smtp_port', '587'),
-            fromEmail: $settings->get('mail_from_email', 'no-reply@artsfol.io'),
-            fromName: $settings->get('mail_from_name', 'ArtsFolio'),
+            fromEmail: (string) $settings->get('mail_from_email', 'no-reply@artsfol.io'),
+            fromName: (string) $settings->get('mail_from_name', 'ArtsFolio'),
+            username: trim((string) $settings->get('smtp_username', '')),
+            password: (string) $settings->get('smtp_password', ''),
+            encryption: trim((string) $settings->get('smtp_encryption', 'tls')),
             headers: $headers,
         );
     }
@@ -56,8 +59,11 @@ final class EmailSenderFactory
             return new SmtpEmailSender(
                 host: getenv('SMTP_HOST') ?: '127.0.0.1',
                 port: (int) (getenv('SMTP_PORT') ?: '1025'),
-                fromEmail: getenv('MAIL_FROM_EMAIL') ?: 'no-reply@artsfol.io',
+                fromEmail: getenv('MAIL_FROM_EMAIL') ?: getenv('MAIL_FROM_ADDRESS') ?: 'no-reply@artsfol.io',
                 fromName: getenv('MAIL_FROM_NAME') ?: 'ArtsFolio',
+                username: trim((string) (getenv('SMTP_USERNAME') ?: '')),
+                password: (string) (getenv('SMTP_PASSWORD') ?: ''),
+                encryption: trim((string) (getenv('SMTP_ENCRYPTION') ?: 'none')),
                 headers: $headers,
             );
         }
