@@ -66,13 +66,13 @@ final class SettingsController
         $headingBackgroundColor = $this->setting($tenant, 'heading_background_color', 'rgba(255,255,255,0.72)');
         $headingBackgroundOpacity = $this->setting($tenant, 'heading_background_opacity', '0.72');
         $contentBackgroundColor = $this->setting($tenant, 'content_background_color', 'rgba(255,255,255,0.72)');
-        $contentBackgroundOpacity = $this->setting($tenant, 'content_background_opacity', '0.72');
+        $contentBackgroundOpacity = $this->setting($tenant, 'content_background_opacity', '0.00');
         $textBackgroundColor = $this->setting($tenant, 'text_background_color', 'rgba(255,255,255,0.68)');
         $textBackgroundOpacity = $this->setting($tenant, 'text_background_opacity', '0.72');
         $headerDropShadowEnabled = $this->setting($tenant, 'header_drop_shadow_enabled', '1');
         $headerDropShadow = $this->setting($tenant, 'header_drop_shadow', '0 18px 45px rgba(0,0,0,0.24)');
         $artworkCardBackgroundColor = $this->setting($tenant, 'artwork_card_background_color', '#fffaf0');
-        $artworkCardBackgroundOpacity = $this->setting($tenant, 'artwork_card_background_opacity', '0.84');
+        $artworkCardBackgroundOpacity = $this->setting($tenant, 'artwork_card_background_opacity', '0.00');
         $artworkCardBackgroundSize = $this->setting($tenant, 'artwork_card_background_size', 'cover');
         $artworkCardMediaUuid = (string) $this->settings->get($tenant, 'artwork_card_media_uuid', '');
         $topbarPicker = $this->siteImagePicker($tenant, 'topbar_media_uuid', $topbarMediaUuid, true);
@@ -140,8 +140,8 @@ final class SettingsController
                 <label>Menu opacity<input type="number" name="menu_background_opacity" min="0" max="1" step="0.05" value="{$menuBackgroundOpacity}"></label>
                 <label>Heading spread color<input name="heading_background_color" value="{$headingBackgroundColor}"></label>
                 <label>Heading spread opacity<input type="number" name="heading_background_opacity" min="0" max="1" step="0.05" value="{$headingBackgroundOpacity}"></label>
-                <label>Content background color<input name="content_background_color" value="{$contentBackgroundColor}"></label>
-                <label>Content background opacity<input type="number" name="content_background_opacity" min="0" max="1" step="0.05" value="{$contentBackgroundOpacity}"></label>
+                <label>Content/artwork area background color<input name="content_background_color" value="{$contentBackgroundColor}"></label>
+                <label>Content/artwork area opacity<input type="number" name="content_background_opacity" min="0" max="1" step="0.05" value="{$contentBackgroundOpacity}"></label>
                 <label>Text spread color<input name="text_background_color" value="{$textBackgroundColor}"></label>
                 <label>Text spread opacity<input type="number" name="text_background_opacity" min="0" max="1" step="0.05" value="{$textBackgroundOpacity}"></label>
                 <label>Header drop shadow
@@ -152,7 +152,7 @@ final class SettingsController
                 </label>
                 <label>Header shadow CSS<input name="header_drop_shadow" value="{$headerDropShadow}"></label>
                 <label>Artwork card background color<input name="artwork_card_background_color" value="{$artworkCardBackgroundColor}"></label>
-                <label>Artwork card opacity<input type="number" name="artwork_card_background_opacity" min="0" max="1" step="0.05" value="{$artworkCardBackgroundOpacity}"></label>
+                <label>Artwork card opacity<input type="number" name="artwork_card_background_opacity" min="0" max="1" step="0.05" value="{$artworkCardBackgroundOpacity}"><span class="admin-help">Use 0 for no card wash over artwork; increase only when text needs a panel.</span></label>
                 <label>Artwork card background size<input name="artwork_card_background_size" value="{$artworkCardBackgroundSize}"></label>
                 <label>Background mode
                     <select name="background_mode">
@@ -251,7 +251,7 @@ HTML;
                 $value = $this->safeSiteImageMediaUuid($tenant, $value);
             }
             if (str_ends_with($key, '_opacity')) {
-                $value = $this->safeOpacity($value, in_array($key, ['background_opacity'], true) ? '0.12' : (in_array($key, ['artwork_card_background_opacity'], true) ? '0.84' : '0.72'));
+                $value = $this->safeOpacity($value, in_array($key, ['background_opacity'], true) ? '0.12' : (in_array($key, ['artwork_card_background_opacity', 'content_background_opacity'], true) ? '0.00' : '0.72'));
             }
             if ($key === 'header_drop_shadow_enabled') {
                 $value = $value === '0' ? '0' : '1';

@@ -423,13 +423,13 @@ HTML;
         $headingColor = (string) $this->settings->get($tenant, 'heading_background_color', '#fff8ec');
         $headingOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'heading_background_opacity', '0.78'));
         $contentColor = (string) $this->settings->get($tenant, 'content_background_color', '#fffaf0');
-        $contentOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'content_background_opacity', '0.76'));
+        $contentOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'content_background_opacity', '0.00'));
         $textBgColor = (string) $this->settings->get($tenant, 'text_background_color', '#fff7e8');
         $textBgOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'text_background_opacity', '0.72'));
         $menuColor = (string) $this->settings->get($tenant, 'menu_background_color', (string) $this->settings->get($tenant, 'topbar_background_color', '#fff8ec'));
         $menuOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'menu_background_opacity', '0.86'));
         $cardColor = (string) $this->settings->get($tenant, 'artwork_card_background_color', '#fffaf0');
-        $cardOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'artwork_card_background_opacity', '0.84'));
+        $cardOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'artwork_card_background_opacity', '0.00'));
 
         $vars .= '--heading-bg:' . $this->safeCssColor($headingColor) . ';';
         $vars .= '--heading-bg-overlay:' . $this->cssColorWithOpacity($headingColor, $headingOpacity) . ';';
@@ -487,7 +487,7 @@ HTML;
     private function mediaBackgroundVar(TenantContext $tenant, string $settingKey, string $cssVar): string
     {
         $uuid = strtolower(trim((string) $this->settings->get($tenant, $settingKey, '')));
-        if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid) || !$this->isPublishedSiteImage($tenant, $uuid)) {
+        if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid) || !$this->isPublicTenantImage($tenant, $uuid)) {
             return '';
         }
 
@@ -575,6 +575,32 @@ HTML;
     }
 
     /**
+     * Verifies that a previously selected visual asset is a public image for this tenant.
+     *
+     * Site image pick lists stay restricted to published Site Images, but rendering must
+     * preserve legacy selections so existing custom-domain headers do not disappear.
+     */
+    private function isPublicTenantImage(TenantContext $tenant, string $uuid): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare(
+                "SELECT 1
+                 FROM media_assets
+                 WHERE tenant_id = :tenant_id
+                   AND uuid = :media_uuid
+                   AND is_private = 0
+                   AND (mime_type LIKE 'image/%' OR mime_type IS NULL)
+                 LIMIT 1"
+            );
+            $stmt->execute(['tenant_id' => $tenant->tenantId, 'media_uuid' => $uuid]);
+
+            return (bool) $stmt->fetch();
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    /**
      * Verifies that a configured media UUID is still a published Site Image.
      */
     private function isPublishedSiteImage(TenantContext $tenant, string $uuid): bool
@@ -607,7 +633,7 @@ HTML;
     {
         $uuid = strtolower(trim((string) $this->settings->get($tenant, 'background_media_uuid', '')));
 
-        if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid) || !$this->isPublishedSiteImage($tenant, $uuid)) {
+        if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid) || !$this->isPublicTenantImage($tenant, $uuid)) {
             return '';
         }
 

@@ -934,6 +934,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The picker lists only non-private media attached to published artwork so `/media?uuid=...` can serve the selected image through the existing public media safety gate.
 - Public rendering uses CSS variables consumed by `public/assets/site.css`: `--site-bg-image`, `--site-bg-repeat`, `--site-bg-size`, and `--site-bg-opacity`.
 
+- 2026-05-31: Corrected tenant visual-surface defaults so public headers render configured color/images on subdomains and custom domains, while content/artwork overlays default transparent and remain configurable.
+
 <!-- End of file. -->
 
 ## 2026-05-29 admin user/config/email repair
@@ -1018,6 +1020,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Session creation stores `expires_at` as a bound timestamp computed in PHP instead of relying on a MariaDB `INTERVAL :ttl_seconds SECOND` placeholder.
 - Added `scripts/test/session_repository_no_user_status.php` as a regression check for this specific schema-drift failure.
 
+- 2026-05-31: Corrected tenant visual-surface defaults so public headers render configured color/images on subdomains and custom domains, while content/artwork overlays default transparent and remain configurable.
+
 <!-- End of file. -->
 
 ## 2026-05-30 auth cookie multi-header fix
@@ -1027,6 +1031,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform password login/logout and platform signup now use the same multi-header cookie helper.
 - Added `scripts/test/auth_cookie_headers.php` to prevent regressions where browser auth succeeds server-side but stale duplicate cookies keep admin pages inaccessible.
 
+- 2026-05-31: Corrected tenant visual-surface defaults so public headers render configured color/images on subdomains and custom domains, while content/artwork overlays default transparent and remain configurable.
+
 <!-- End of file. -->
 
 ## Email SMTP custom headers
@@ -1035,6 +1041,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `SMTP_EXTRA_HEADERS` accepts semicolon- or newline-separated `Name: value` entries, such as `X-PM-Tag: lifecycle; X-PM-Metadata-tenant: bxiie`.
 - Header names and values are validated to prevent CRLF/header injection before SMTP DATA is sent.
 - Secret SMTP credentials remain in environment/secrets files and must not be recorded in `PROJECT_STATE.md`.
+
+- 2026-05-31: Corrected tenant visual-surface defaults so public headers render configured color/images on subdomains and custom domains, while content/artwork overlays default transparent and remain configurable.
 
 <!-- End of file. -->
 
@@ -1084,6 +1092,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Failure banners include the failed deploy stage, exit code, branch, and commit so preflight failures are no longer confused with completed deploys.
 - The deploy stage order remains unchanged: git update, env verification, PHP lint, migrations, migration integrity, preflight, service restarts, then health check.
 
+- 2026-05-31: Corrected tenant visual-surface defaults so public headers render configured color/images on subdomains and custom domains, while content/artwork overlays default transparent and remain configurable.
+
 <!-- End of file. -->
 
 ## Production deploy worker requirement
@@ -1096,6 +1106,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `scripts/deploy/healthcheck.sh` now treats the background worker as a required service instead of warning and passing.
 - SIGINT/SIGTERM during deploy now exit with code 130 and produce a `DEPLOY FAILED` banner rather than a false success banner.
 - Required production services are `php8.4-fpm`, `caddy`, `mariadb`, `artsfolio-email-worker.service`, and `artsfolio-background-worker.service`.
+
+- 2026-05-31: Corrected tenant visual-surface defaults so public headers render configured color/images on subdomains and custom domains, while content/artwork overlays default transparent and remain configurable.
 
 <!-- End of file. -->
 

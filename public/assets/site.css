@@ -352,6 +352,44 @@ body[style*="--background-image"]::before {
     opacity: var(--background-opacity, 0.12);
 }
 
+
+/* Tenant visual correction: preserve public headers and keep overlays configurable. */
+.site-header,
+.tenant-admin-public-header {
+  isolation: isolate;
+  background-color: var(--topbar-bg-overlay, var(--tenant-topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.site-header::before,
+.tenant-admin-public-header::before {
+  z-index: 0;
+  background-color: var(--topbar-bg-overlay, rgba(255, 248, 236, 0.86));
+  background-image: none;
+}
+
+.site-header > *,
+.tenant-admin-public-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tenant-content-surface,
+.tenant-admin-panel {
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, calc(var(--content-bg-opacity, 0) * 0.10));
+}
+
+.artwork-card {
+  background-color: var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+  box-shadow: inset 0 0 0 999px var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+}
+
+/* End tenant visual correction. */
+
 /* End of file. */
 
 
@@ -445,6 +483,44 @@ body[style*="--background-image"]::before {
   .platform-header nav a { min-width: auto; }
 }
 
+
+/* Tenant visual correction: preserve public headers and keep overlays configurable. */
+.site-header,
+.tenant-admin-public-header {
+  isolation: isolate;
+  background-color: var(--topbar-bg-overlay, var(--tenant-topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.site-header::before,
+.tenant-admin-public-header::before {
+  z-index: 0;
+  background-color: var(--topbar-bg-overlay, rgba(255, 248, 236, 0.86));
+  background-image: none;
+}
+
+.site-header > *,
+.tenant-admin-public-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tenant-content-surface,
+.tenant-admin-panel {
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, calc(var(--content-bg-opacity, 0) * 0.10));
+}
+
+.artwork-card {
+  background-color: var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+  box-shadow: inset 0 0 0 999px var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+}
+
+/* End tenant visual correction. */
+
 /* End of file. */
 
 /* First-party CAPTCHA form-fix hardening. */
@@ -470,6 +546,44 @@ input[type="submit"][aria-busy="true"] {
     opacity: 0.72;
 }
 
+
+/* Tenant visual correction: preserve public headers and keep overlays configurable. */
+.site-header,
+.tenant-admin-public-header {
+  isolation: isolate;
+  background-color: var(--topbar-bg-overlay, var(--tenant-topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.site-header::before,
+.tenant-admin-public-header::before {
+  z-index: 0;
+  background-color: var(--topbar-bg-overlay, rgba(255, 248, 236, 0.86));
+  background-image: none;
+}
+
+.site-header > *,
+.tenant-admin-public-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tenant-content-surface,
+.tenant-admin-panel {
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, calc(var(--content-bg-opacity, 0) * 0.10));
+}
+
+.artwork-card {
+  background-color: var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+  box-shadow: inset 0 0 0 999px var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+}
+
+/* End tenant visual correction. */
+
 /* End of file. */
 
 /* Optional about/contact site images. */
@@ -484,6 +598,44 @@ input[type="submit"][aria-busy="true"] {
     height: auto;
     border-radius: 18px;
 }
+
+
+/* Tenant visual correction: preserve public headers and keep overlays configurable. */
+.site-header,
+.tenant-admin-public-header {
+  isolation: isolate;
+  background-color: var(--topbar-bg-overlay, var(--tenant-topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.site-header::before,
+.tenant-admin-public-header::before {
+  z-index: 0;
+  background-color: var(--topbar-bg-overlay, rgba(255, 248, 236, 0.86));
+  background-image: none;
+}
+
+.site-header > *,
+.tenant-admin-public-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tenant-content-surface,
+.tenant-admin-panel {
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, calc(var(--content-bg-opacity, 0) * 0.10));
+}
+
+.artwork-card {
+  background-color: var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+  box-shadow: inset 0 0 0 999px var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+}
+
+/* End tenant visual correction. */
 
 /* End of file. */
 
@@ -685,5 +837,43 @@ input[type="submit"][aria-busy="true"] {
 }
 
 /* End tenant visual-surface controls. */
+
+
+/* Tenant visual correction: preserve public headers and keep overlays configurable. */
+.site-header,
+.tenant-admin-public-header {
+  isolation: isolate;
+  background-color: var(--topbar-bg-overlay, var(--tenant-topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.site-header::before,
+.tenant-admin-public-header::before {
+  z-index: 0;
+  background-color: var(--topbar-bg-overlay, rgba(255, 248, 236, 0.86));
+  background-image: none;
+}
+
+.site-header > *,
+.tenant-admin-public-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tenant-content-surface,
+.tenant-admin-panel {
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, calc(var(--content-bg-opacity, 0) * 0.10));
+}
+
+.artwork-card {
+  background-color: var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+  box-shadow: inset 0 0 0 999px var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+}
+
+/* End tenant visual correction. */
 
 /* End of file. */
