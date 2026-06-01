@@ -84,7 +84,30 @@
     }
   }
 
+  function redirectedFormResult(response) {
+    try {
+      var url = new URL(response.url || window.location.href, window.location.origin);
+      if (url.searchParams.has('contact_sent')) {
+        return { ok: true, httpOk: response.ok, status: response.status, message: 'Thank you. Your message has been sent.' };
+      }
+      if (url.searchParams.has('signup_sent')) {
+        return { ok: true, httpOk: response.ok, status: response.status, message: 'Thank you. You have been added to the email list.' };
+      }
+      if (url.searchParams.has('contact_error') || url.searchParams.has('signup_error')) {
+        return { ok: false, httpOk: response.ok, status: response.status, message: 'Please check the form and try again.' };
+      }
+    } catch (ignored) {
+      // Fall through to normal body decoding.
+    }
+    return null;
+  }
+
   function decodeResponse(response) {
+    var redirectedResult = redirectedFormResult(response);
+    if (redirectedResult) {
+      return Promise.resolve(redirectedResult);
+    }
+
     var contentType = response.headers.get('content-type') || '';
     if (contentType.indexOf('application/json') !== -1) {
       return response.json().then(function (payload) {

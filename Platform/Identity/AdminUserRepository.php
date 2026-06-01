@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Platform and tenant user-management repository.
+ */
+
 declare(strict_types=1);
 
 namespace App\Platform\Identity;
@@ -8,10 +12,6 @@ use PDO;
 
 /**
  * Read/write helpers for admin user-management screens.
- *
- * This repository intentionally exposes only admin-facing user facts and password
- * mutation. Role assignment and invitation flows should remain separate so this
- * screen does not become an accidental entitlement editor.
  */
 final class AdminUserRepository
 {
@@ -19,9 +19,6 @@ final class AdminUserRepository
     {
     }
 
-    /**
-     * Returns tenant users with tenant role, membership, and last browser-session use.
-     */
     public function tenantUsers(int $tenantId): array
     {
         $stmt = $this->pdo->prepare(
@@ -30,6 +27,7 @@ final class AdminUserRepository
                 u.uuid,
                 u.email,
                 u.display_name,
+                'active' AS user_status,
                 u.created_at,
                 tm.status AS membership_status,
                 GROUP_CONCAT(DISTINCT r.slug ORDER BY r.slug SEPARATOR ', ') AS roles,
@@ -49,9 +47,6 @@ final class AdminUserRepository
         return $stmt->fetchAll();
     }
 
-    /**
-     * Returns platform-scoped admins/support users.
-     */
     public function platformUsers(): array
     {
         $stmt = $this->pdo->query(
@@ -60,6 +55,7 @@ final class AdminUserRepository
                 u.uuid,
                 u.email,
                 u.display_name,
+                'active' AS user_status,
                 u.created_at,
                 GROUP_CONCAT(DISTINCT r.slug ORDER BY r.slug SEPARATOR ', ') AS roles,
                 MAX(us.created_at) AS last_login_at
@@ -75,8 +71,47 @@ final class AdminUserRepository
     }
 
     /**
-     * Updates a local password hash for an existing user.
+     * Returns one user row by primary key for invite resend workflows.
      */
+    public function userById(int $userId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT id, uuid, email, display_name, status, created_at
+             FROM users
+             WHERE id = :user_id
+             LIMIT 1"
+        );
+        $stmt->execute(['user_id' => $userId]);
+        $row = $stmt->fetch();
+
+        return is_array($row) ? $row : null;
+    }
+
+    /**
+     * Returns one tenant user row only when the user belongs to the tenant.
+     */
+    public function tenantUserById(int $tenantId, int $userId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT
+                u.id,
+                u.uuid,
+                u.email,
+                u.display_name,
+                tm.status AS membership_status,
+                u.created_at
+             FROM tenant_memberships tm
+             JOIN users u ON u.id = tm.user_id
+             WHERE tm.tenant_id = :tenant_id
+               AND u.id = :user_id
+             LIMIT 1"
+        );
+        $stmt->execute(['tenant_id' => $tenantId, 'user_id' => $userId]);
+        $row = $stmt->fetch();
+
+        return is_array($row) ? $row : null;
+    }
+
     public function updatePasswordHash(int $userId, string $passwordHash): void
     {
         $stmt = $this->pdo->prepare(
@@ -89,13 +124,30 @@ final class AdminUserRepository
         $stmt->execute(['password_hash' => $passwordHash, 'user_id' => $userId]);
     }
 
-    /**
-     * Confirms that a user belongs to the tenant before tenant-admin mutation.
-     */
+    public function setUserStatus(int $userId, string $status): void
+    {
+        if (!in_array($status, ['active', 'suspended', 'deleted'], true)) {
+            throw new \InvalidArgumentException('Invalid user status.');
+        }
+
+        $stmt = $this->pdo->prepare(
+            "UPDATE users
+             SET status = :status,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = :user_id"
+        );
+        $stmt->execute(['status' => $status, 'user_id' => $userId]);
+
+        if ($status !== 'active') {
+            $this->revokeUserSessions($userId);
+        }
+    }
+
     public function userBelongsToTenant(int $tenantId, int $userId): bool
     {
         $stmt = $this->pdo->prepare(
-            "SELECT 1 FROM tenant_memberships
+            "SELECT 1
+             FROM tenant_memberships
              WHERE tenant_id = :tenant_id AND user_id = :user_id
              LIMIT 1"
         );
@@ -104,9 +156,6 @@ final class AdminUserRepository
         return (bool) $stmt->fetchColumn();
     }
 
-    /**
-     * Confirms that a user has at least one platform-scoped role.
-     */
     public function userIsPlatformUser(int $userId): bool
     {
         $stmt = $this->pdo->prepare(
@@ -119,6 +168,155 @@ final class AdminUserRepository
         $stmt->execute(['user_id' => $userId]);
 
         return (bool) $stmt->fetchColumn();
+    }
+
+
+    /**
+     * Creates or reuses a user, attaches them to a tenant, assigns tenant admin,
+     * and leaves membership in invited status until the user accepts.
+     */
+    public function inviteTenantAdmin(int $tenantId, string $email, ?string $displayName = null): int
+    {
+        $email = strtolower(trim($email));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException('A valid invite email address is required.');
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $userId = $this->findOrCreateUser($email, $displayName);
+            $this->attachTenantMembership($tenantId, $userId, 'invited');
+            $this->assignTenantRole($tenantId, $userId, 'admin');
+            $this->pdo->commit();
+            return $userId;
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Promotes a tenant member to tenant owner while preserving existing admin role.
+     */
+    public function promoteTenantUserToOwner(int $tenantId, int $userId): void
+    {
+        if (!$this->userBelongsToTenant($tenantId, $userId)) {
+            throw new \InvalidArgumentException('User does not belong to this tenant.');
+        }
+
+        $this->assignTenantRole($tenantId, $userId, 'owner');
+    }
+
+    /**
+     * Removes a user from one tenant and revokes tenant-scoped roles for that tenant.
+     */
+    public function deleteTenantUser(int $tenantId, int $userId): void
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $roles = $this->pdo->prepare('DELETE FROM role_assignments WHERE tenant_id = :tenant_id AND user_id = :user_id');
+            $roles->execute(['tenant_id' => $tenantId, 'user_id' => $userId]);
+
+            $membership = $this->pdo->prepare('DELETE FROM tenant_memberships WHERE tenant_id = :tenant_id AND user_id = :user_id');
+            $membership->execute(['tenant_id' => $tenantId, 'user_id' => $userId]);
+
+            $this->revokeUserSessions($userId);
+            $this->pdo->commit();
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    private function findOrCreateUser(string $email, ?string $displayName): int
+    {
+        $stmt = $this->pdo->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
+        $stmt->execute(['email' => $email]);
+        $existing = $stmt->fetchColumn();
+        if ($existing) {
+            return (int) $existing;
+        }
+
+        $insert = $this->pdo->prepare(
+            "INSERT INTO users (uuid, email, display_name, created_at, updated_at)
+             VALUES (:uuid, :email, :display_name, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+        );
+        $insert->execute([
+            'uuid' => $this->uuidV4(),
+            'email' => $email,
+            'display_name' => $displayName,
+        ]);
+
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    private function attachTenantMembership(int $tenantId, int $userId, string $status): void
+    {
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO tenant_memberships (tenant_id, user_id, status, created_at, updated_at)
+             VALUES (:tenant_id, :user_id, :status, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+             ON DUPLICATE KEY UPDATE status = VALUES(status), updated_at = CURRENT_TIMESTAMP"
+        );
+        $stmt->execute(['tenant_id' => $tenantId, 'user_id' => $userId, 'status' => $status]);
+    }
+
+    private function assignTenantRole(int $tenantId, int $userId, string $roleSlug): void
+    {
+        $roleId = $this->roleId('tenant', $roleSlug);
+        $stmt = $this->pdo->prepare(
+            "INSERT IGNORE INTO role_assignments (role_id, user_id, tenant_id, created_at)
+             VALUES (:role_id, :user_id, :tenant_id, CURRENT_TIMESTAMP)"
+        );
+        $stmt->execute(['role_id' => $roleId, 'user_id' => $userId, 'tenant_id' => $tenantId]);
+    }
+
+    private function roleId(string $scope, string $slug): int
+    {
+        $stmt = $this->pdo->prepare('SELECT id FROM roles WHERE scope = :scope AND slug = :slug LIMIT 1');
+        $stmt->execute(['scope' => $scope, 'slug' => $slug]);
+        $roleId = $stmt->fetchColumn();
+        if (!$roleId) {
+            throw new \RuntimeException("Missing {$scope} role: {$slug}");
+        }
+
+        return (int) $roleId;
+    }
+
+    private function uuidV4(): string
+    {
+        $data = random_bytes(16);
+        $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
+        $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+    }
+
+    private function revokeUserSessions(int $userId): void
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE user_sessions
+             SET revoked_at = CURRENT_TIMESTAMP
+             WHERE user_id = :user_id
+               AND revoked_at IS NULL"
+        );
+        $stmt->execute(['user_id' => $userId]);
+    }
+
+    /**
+     * Suspends a user without deleting audit history.
+     */
+    public function suspendUser(int $userId): void
+    {
+        $stmt = $this->pdo->prepare("UPDATE users SET status = 'suspended', suspended_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = :user_id");
+        $stmt->execute(['user_id' => $userId]);
+    }
+
+    /**
+     * Soft-deletes a user. Historical records are retained.
+     */
+    public function deleteUser(int $userId): void
+    {
+        $stmt = $this->pdo->prepare("UPDATE users SET status = 'deleted', deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = :user_id");
+        $stmt->execute(['user_id' => $userId]);
     }
 }
 

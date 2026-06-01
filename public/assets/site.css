@@ -1003,3 +1003,67 @@ input[type="submit"][aria-busy="true"] {
 }
 
 /* End tenant public form and surface cleanup. */
+
+/* Single footer mailing-list form used on public tenant pages. */
+.site-footer {
+  display: grid;
+  gap: 1rem;
+  padding: 2rem clamp(1rem, 4vw, 4rem);
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  background: var(--content-bg-overlay, rgba(255, 250, 240, 0.42));
+  color: var(--text-color, #1f1a14);
+}
+
+.footer-signup {
+  display: grid;
+  gap: 0.65rem;
+  max-width: 42rem;
+}
+
+.footer-signup label {
+  display: grid;
+  gap: 0.5rem;
+  font-weight: 800;
+}
+
+.footer-signup-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.footer-signup input[type="email"] {
+  flex: 1 1 16rem;
+  min-height: 2.75rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(0, 0, 0, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--text-color, #1f1a14);
+  font: inherit;
+}
+
+.footer-signup button {
+  min-height: 2.75rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary, #111111);
+  color: var(--bg, #f7f2e8);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.footer-signup .af-captcha {
+  max-width: 28rem;
+  padding: 0.65rem;
+  border-radius: 0.9rem;
+  background: var(--text-bg-overlay, rgba(255, 247, 232, 0.72));
+}
+
+.site-footer-copyright {
+  font-size: 0.9rem;
+  opacity: 0.78;
+}
+
+/* End of file. */

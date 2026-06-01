@@ -1191,3 +1191,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `TenantAdminLayout` now exports `--primary`, `--accent`, and `--bg` in addition to tenant surface variables for admin preview consistency.
 
 # End of file.
+
+## 2026-06-01 tenant forms and invite resend correction
+
+- Tenant public contact and signup controllers return JSON for `Accept: application/json` or `X-Requested-With: XMLHttpRequest` submissions, preventing the enhanced form UI from rendering a redirected full page as a red error block after a successful send.
+- Tenant public pages emit one footer mailing-list form and no longer render the retired delayed prompt/modal signup interfaces.
+- Tenant and platform user-management screens include a `Resend invite` action that queues the relevant invite email and writes audit-log entries.
+
+# End of file.
