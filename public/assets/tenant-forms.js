@@ -102,7 +102,7 @@
     return null;
   }
 
-  function decodeResponse(response) {
+  function decodeResponse(response, form) {
     var redirectedResult = redirectedFormResult(response);
     if (redirectedResult) {
       return Promise.resolve(redirectedResult);
@@ -118,13 +118,40 @@
     }
 
     return response.text().then(function (body) {
+      var text = textFromHtml(body);
+
+      // Some legacy controllers still respond to successful AJAX posts with a
+      // full redirected HTML page instead of JSON. Do not show the entire page
+      // body as an error when the HTTP request succeeded; use the form's
+      // configured success message instead. Real validation failures should use
+      // a non-2xx status or JSON {ok:false}.
+      if (response.ok) {
+        return {
+          ok: true,
+          httpOk: true,
+          status: response.status,
+          message: form.getAttribute('data-af-success-message') || successMessageForForm(form)
+        };
+      }
+
       return {
         ok: false,
         httpOk: response.ok,
         status: response.status,
-        message: textFromHtml(body)
+        message: text
       };
     });
+  }
+
+  function successMessageForForm(form) {
+    var purpose = form.getAttribute('data-af-form-purpose') || '';
+    if (purpose === 'signup') {
+      return 'Thank you. You have been added to the email list.';
+    }
+    if (purpose === 'contact') {
+      return 'Thank you. Your message has been sent.';
+    }
+    return 'Thank you. Your submission was received.';
   }
 
   function initAsyncForms() {
@@ -155,7 +182,9 @@
             'X-Requested-With': 'XMLHttpRequest'
           },
           credentials: 'same-origin'
-        }).then(decodeResponse).then(function (payload) {
+        }).then(function (response) {
+          return decodeResponse(response, form);
+        }).then(function (payload) {
           if (payload.ok === true) {
             setResult(form, 'success', payload.message || 'Sent.');
             form.reset();
