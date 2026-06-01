@@ -146,6 +146,7 @@ HTML;
         $notice = match ((string) ($_GET['notice'] ?? '')) {
             'status-updated' => '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Artwork status updated.</p>',
             'artwork-archived' => '<p style="padding:.75rem;background:#fff4df;border:1px solid #d9b36a;">Artwork archived.</p>',
+            'artwork-saved' => '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Artwork saved.</p>',
             default => '',
         };
 
@@ -338,7 +339,7 @@ HTML;
         $this->replaceArtworkTypes($id, $_POST['artwork_types'] ?? []);
         $this->replaceArtworkSections($tenant, $id, $_POST['section_ids'] ?? []);
 
-        return Response::html('<h1>Artwork saved</h1><p><a href="/admin/artworks">Back to artworks</a></p>');
+        return new Response('', 303, ['Location' => '/admin/artworks?notice=artwork-saved#artwork-' . $id]);
     }
 
 
@@ -423,6 +424,40 @@ HTML;
         }
 
         return new Response('', 303, ['Location' => $returnTo . $separator . 'notice=artwork-archived']);
+    }
+
+
+    /**
+     * Render one status action button for the current artwork state.
+     *
+     * Published artwork should only offer Unpublish. Draft artwork should only
+     * offer Publish. Archived artwork is already hidden by the index query, but
+     * the defensive fallback keeps future list changes from rendering nonsense.
+     *
+     * @param array<string,mixed> $row
+     */
+    private function statusActionButton(array $row, string $returnToValue): string
+    {
+        $id = (int) ($row['id'] ?? 0);
+        $status = (string) ($row['status'] ?? 'draft');
+
+        if ($id <= 0 || $status === 'archived') {
+            return '';
+        }
+
+        $nextStatus = $status === 'published' ? 'draft' : 'published';
+        $label = $status === 'published' ? 'Unpublish' : 'Publish';
+        $escapedNextStatus = htmlspecialchars($nextStatus, ENT_QUOTES, 'UTF-8');
+        $escapedLabel = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
+
+        return <<<HTML
+        <form method="post" action="/admin/artworks/status" class="js-artwork-action" style="display:inline">
+            <input type="hidden" name="id" value="{$id}">
+            <input type="hidden" name="status" value="{$escapedNextStatus}">
+            <input type="hidden" name="return_to" value="{$returnToValue}">
+            <button type="submit">{$escapedLabel}</button>
+        </form>
+HTML;
     }
 
     private function wantsJson(): bool
