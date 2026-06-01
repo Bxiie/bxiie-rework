@@ -113,6 +113,7 @@ Use these standing expectations for this project unless I explicitly override th
   - LIFTAWARE_TEST_SCOPE=all ./bin/test_before_commit.sh
   - LIFTAWARE_TEST_SCOPE=all RUN_INTEGRATION_TESTS=1 ./bin/test_before_commit.sh
   - LIFTAWARE_TEST_SCOPE=all RUN_INTEGRATION_TESTS=1 LIFTAWARE_RUN_SELENIUM=true ./bin/test_before_commit.sh
+  - Preflight and other tests must not delete actual production data.
 
 ## User Engagement Expectations
 - The platform should engage with users via regular email; welcome emails, feature education. Check in and reengagement. Please-come-back notes for churned users.

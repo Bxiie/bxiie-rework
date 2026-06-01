@@ -3,6 +3,9 @@
 .env.*
 !.env.example
 
+# trash files
+t.t
+
 # SQLite databases.
 database/*.sqlite
 database/*.sqlite-*
@@ -15,6 +18,7 @@ storage/cache/*
 storage/private/*
 
 .patch-backups/*
+bundle/*
 
 # Keep storage directories.
 !storage/uploads/.gitkeep

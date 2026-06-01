@@ -1,7 +1,75 @@
 ## Now
 
--
+- Tenant portfolio artwork cards should have configurable background image, opacity, and size
+- Text colors should default to a value that is stylish but high-contrast.  This color should be overwriteable.
+- Text should have background spread color and opacity in order that the text be more visible against the background or image.
+- https://bxiie.artsfol.io/portfolio: botoom of page: [Join James Payne Art's email list
+Get occasional updates and new work announcements.
 
+Sign up Not now
+© 2026 Terracopia, llc.
+×
+Join James Payne Art's email list
+Get occasional updates and announcements.
+
+Name
+Email
+
+I’m human
+The checkbox unlocks after a moment. This keeps spam bots out without Google reCAPTCHA.
+Subscribe
+Subscribing…].  This should be cleaned up.
+- Non-logged-in users should have the ability to join a tenants mailing list from the footer of every tenant site page.  The footer should contain an email address field and a subscribe button.  
+- Heading background should be shown on tenant content as well as admin pages.
+- Content background should be shown on tenant content as well as admin pages.
+- Add menu background image and opacity
+- Menu background  should be shown on tenant content as well as admin pages.
+
+##
+
+- Upload page says 'Upload artwork  Upload Artwork'.  Fix.
+- https://bxiie.artsfol.io/admin/artworks/edit?id=351: [Artworks
+← Artworks
+
+Edit artwork].  Change to [Edit artwork].
+- https://bxiie.artsfol.io/admin/artworks/edit: Artwork Saved.  Should be a status message on the artwork/s page, not a new page.
+- tenant admin artworks - artworks should have only a publish or unpublish button, not both, depending onm the artwork status.
+- platform admin settings - create setting to restrict creation of new sites to users with a one-time or blanket passcode.  Update code to reflect this new feature.
+- platform admin codes
+  - Allow tracking of one-time codes and blanket codes to recipient email and subsequent tenancy
+  - A one time code may be redeemed only once, and may be limited to a specific recipient address
+  - A blanket code may be redeemed up to a preconfigured limit.
+  - platform admin must be able to send email invite to prospective tenants containing a one time or blanket code
+  - platform admin should be able to create a list of prospective tenant email addresses using the local email list system and target them with blanket or individual one-time codes
+- tenant admin settings: Top bar should have specifiable background image and opacity.
+- tenant admin settings: The 'Top bar background color' value updates the color of the top bar in the admin pages, but not the content pages.
+- https://bxiie.artsfol.io/admin/contact-messages/delete: No route was found for No route for POST /admin/contact-messages/delete.
+- Fix error messaging on 404 to just say, in this case, 'No route for POST /admin/contact-messages/delete'.  No need to repeat.
+
+##
+
+- The tenant admin settings site title is shown twice on tenant home.  The value in the menu bar and browser tab should continue to be the site title, while the text in the body should be changed to use the Artist Name value.
+- in the header, the text 'Tenant Admin' is not legible due to small size and overlapping kerning.
+- https://bxiie.artsfol.io/admin/artwork/upload is not tenant branded or styled
+- Users may not want images used in contact, about, and backgrounds to also be part of their portfolio.  
+  - Create a new artwork type called 'Site Images' that allows images so selected on the artworks page to be shown in pick lists for contact, about, and background images.  
+  - Artwork types 'Portfolio Images' and 'Site Images' to be created.
+  - Only published images in 'Site Images' type should be shown in the contact, about, and background image picklistspicklists.  Picklists should include thumbnails of the images.  
+  - Images in 'Site Images' status are not shown in other public facing portfolio or portfolio section pages unless they have also been opted into 'Portfolio Images'.
+- Ensure opacity is selectable for contact, about, and background images.
+- Deleting a user should require that the user type 'delete' into the modal dialog.
+- tenant admin contact-messages: [Contact Messages
+← Tenant Admin
+
+Contact Messages] should be 'Contact Messages'
+
+##
+
+- Keep and show IP address and location for contact messages and email list signups
+- https://artsfol.io/contact does not have any recaptcha
+- sent invite email using https://bxiie.artsfol.io/admin/users?notice=invite-queued, status message updated to 'Tenant user password updated.'
+- Allow deletion of invited and actual users.  Require positive confirmation before deleting.  Deletion should be sent to audit log.
+- tenant admin users: Tenant owners should be able to upgrade other tenant admins to tenant owner
 
 ##
 
