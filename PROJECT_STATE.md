@@ -1203,3 +1203,13 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant menu visual settings now suppress the nav panel background and background image when menu opacity is zero or the menu panel is disabled.
 
 # End of file.
+
+## 2026-06-02 sales readiness phase 1
+- Published, unsold `for_sale` artworks display price on portfolio cards and artwork detail pages.
+- Artwork detail pages include a contact link with the artwork title prefilled for inquiry.
+- Artwork rows now include `is_one_off` and `inventory_quantity` fields for original versus inventory-backed items.
+- Tenant settings include `sales_notes`; public artwork detail pages display the notes with sales context.
+- Tenant pages show first-party cookie consent in preparation for sessions, analytics, signup/contact forms, and tenant-scoped cart support.
+- Stripe checkout, cart/order records, sales workflow, recent sales, commission calculation, and sales analytics remain phase-two/phase-three work.
+
+# End of file.

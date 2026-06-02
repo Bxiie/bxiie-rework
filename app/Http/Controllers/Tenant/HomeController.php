@@ -114,6 +114,7 @@ HTML;
                 $slug = rawurlencode((string) $item['slug']);
                 $year = $this->escape((string) ($item['year_created'] ?? ''));
                 $medium = $this->escape((string) ($item['medium'] ?? ''));
+                $priceLine = $this->publicPriceLine($item);
                 $image = '';
 
                 if (!empty($item['media_uuid'])) {
@@ -128,6 +129,7 @@ HTML;
     <h2 style="font-size:1.1rem;margin:.75rem 0 .25rem;"><a href="/artwork/{$slug}">{$title}</a></h2>
     <p style="margin:.2rem 0;color:#666;">{$year}</p>
     <p style="margin:.2rem 0;color:#666;">{$medium}</p>
+    {$priceLine}
 </article>
 HTML;
             }
@@ -157,6 +159,8 @@ HTML;
         $medium = $this->escape((string) ($artwork['medium'] ?? ''));
         $dimensions = $this->escape((string) ($artwork['dimensions'] ?? ''));
         $year = $this->escape((string) ($artwork['year_created'] ?? ''));
+        $pricePanel = $this->artworkSalesPanel($tenant, $artwork);
+        $contactLink = '/contact?artwork=' . rawurlencode((string) $artwork['slug']);
 
         $body = "<h1>{$title}</h1>\n";
 
@@ -170,6 +174,8 @@ HTML;
         $body .= "<p><strong>Dimensions:</strong> {$dimensions}</p>\n";
         $body .= "<p><strong>Year:</strong> {$year}</p>\n";
         $body .= "<div>{$description}</div>\n";
+        $body .= $pricePanel;
+        $body .= '<p><a class="button artwork-inquiry-link" href="' . $contactLink . '">Contact the artist about this artwork</a></p>' . "\n";
 
         return Response::html($this->layout(
             tenant: $tenant,
@@ -203,6 +209,7 @@ HTML;
         $captcha = FirstPartyCaptcha::render('contact', (int) $tenant->tenantId);
         $signupCaptcha = FirstPartyCaptcha::render('signup', (int) $tenant->tenantId);
         $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
+        $artworkSubject = $this->contactArtworkSubject($tenant, (string) ($_GET['artwork'] ?? ''));
 
         return Response::html($this->layout(
             tenant: $tenant,
@@ -228,7 +235,7 @@ HTML;
     </p>
     <p>
         <label>Subject<br>
-            <input type="text" name="subject">
+            <input type="text" name="subject" value="{$artworkSubject}">
         </label>
     </p>
     <p>
@@ -263,6 +270,117 @@ HTML;
 </section>
 HTML
         ));
+    }
+
+
+    /**
+     * Shows price for published, unsold artwork marked for sale.
+     *
+     * @param array<string,mixed> $artwork
+     */
+    private function publicPriceLine(array $artwork): string
+    {
+        if ((string) ($artwork['sale_status'] ?? '') !== 'for_sale') {
+            return '';
+        }
+
+        $price = trim((string) ($artwork['price'] ?? ''));
+        if ($price === '') {
+            return '<p class="artwork-price">For sale</p>';
+        }
+
+        return '<p class="artwork-price">' . $this->escape($price) . '</p>';
+    }
+
+    /**
+     * Renders phase-one sales context on artwork detail pages.
+     *
+     * @param array<string,mixed> $artwork
+     */
+    private function artworkSalesPanel(TenantContext $tenant, array $artwork): string
+    {
+        $priceLine = $this->publicPriceLine($artwork);
+        $salesNotes = trim((string) $this->settings->get($tenant, 'sales_notes', ''));
+        $inventoryLabel = ((int) ($artwork['is_one_off'] ?? 1)) === 1
+            ? 'One-off artwork'
+            : 'Multiple item · ' . max(1, (int) ($artwork['inventory_quantity'] ?? 1)) . ' available';
+
+        if ($priceLine === '' && $salesNotes === '') {
+            return '';
+        }
+
+        $notesHtml = $salesNotes !== '' ? '<div class="prose sales-notes">' . $salesNotes . '</div>' : '';
+        $cartHtml = $this->tenantSalesEnabled($tenant)
+            ? '<button class="button add-to-cart-placeholder" type="button" disabled>Add to cart coming next</button><p class="sales-note-small">Checkout will use Stripe in the next sales phase.</p>'
+            : '<p class="sales-note-small">Online checkout is available on paid ArtsFolio plans.</p>';
+
+        return <<<HTML
+<section class="artwork-sales-panel">
+    <h2>Sales</h2>
+    {$priceLine}
+    <p class="artwork-inventory-mode">{$inventoryLabel}</p>
+    {$notesHtml}
+    {$cartHtml}
+</section>
+HTML;
+    }
+
+    private function tenantSalesEnabled(TenantContext $tenant): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare(
+                "SELECT p.monthly_price_cents
+                 FROM tenant_plan_assignments tpa
+                 JOIN plans p ON p.id = tpa.plan_id
+                 WHERE tpa.tenant_id = :tenant_id
+                   AND tpa.status IN ('trial', 'active', 'manual')
+                 LIMIT 1"
+            );
+            $stmt->execute(['tenant_id' => $tenant->tenantId]);
+            $row = $stmt->fetch();
+
+            return $row && (int) ($row['monthly_price_cents'] ?? 0) > 0;
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    private function contactArtworkSubject(TenantContext $tenant, string $slug): string
+    {
+        $slug = trim($slug);
+        if ($slug === '') {
+            return '';
+        }
+
+        $artwork = $this->artworks->findPublishedBySlug($tenant, $slug);
+        if (!$artwork) {
+            return '';
+        }
+
+        return $this->escape('Inquiry about ' . (string) $artwork['title']);
+    }
+
+    private function cookieConsentBanner(): string
+    {
+        return <<<HTML
+<div class="cookie-consent" data-cookie-consent hidden>
+    <p>This site uses cookies for sessions, spam protection, analytics, mailing-list forms, and shopping cart support.</p>
+    <button type="button" data-cookie-consent-accept>Accept cookies</button>
+</div>
+<script>
+(() => {
+    const banner = document.querySelector('[data-cookie-consent]');
+    if (!banner || window.localStorage.getItem('artsfolio_cookie_consent') === 'accepted') {
+        return;
+    }
+    banner.hidden = false;
+    banner.querySelector('[data-cookie-consent-accept]')?.addEventListener('click', () => {
+        window.localStorage.setItem('artsfolio_cookie_consent', 'accepted');
+        banner.hidden = true;
+    });
+})();
+</script>
+HTML;
     }
 
     private function track(Request $request, TenantContext $tenant, string $eventType, ?string $entityType = null, ?int $entityId = null): void
@@ -409,6 +527,7 @@ HTML
     {$this->artsfolioFreePlanLink($tenant)}
     {$footerSignupForm}
 </footer>
+{$this->cookieConsentBanner()}
 </body>
 </html>
 HTML;

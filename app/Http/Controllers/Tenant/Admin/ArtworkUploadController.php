@@ -90,6 +90,13 @@ final class ArtworkUploadController
         <label><input type="checkbox" name="artwork_types[]" value="site_images"> Site Images</label>
     </fieldset>
     <p><label>Price<br><input type="text" name="price" placeholder="1200, 1200 USD, contact for price"></label></p>
+    <fieldset>
+        <legend>Sales inventory</legend>
+        <p>Use one-off for an original work. Use multiple for inventory-backed items such as postcards, shirts, prints, or editions.</p>
+        <label><input type="radio" name="sales_inventory_mode" value="one_off" checked> One-off artwork</label>
+        <label><input type="radio" name="sales_inventory_mode" value="multiple"> Multiple / inventory item</label>
+        <p><label>Inventory quantity<br><input type="number" name="inventory_quantity" min="1" step="1" value="1"></label></p>
+    </fieldset>
     <p><label>Image<br><input type="file" name="artwork" accept="image/jpeg,image/png,image/webp,image/gif" required></label></p>
     <button id="artwork-upload-button" type="submit">Upload artwork</button>
     <p id="artwork-upload-status" class="upload-status" role="status" aria-live="polite">
@@ -138,7 +145,9 @@ HTML;
         }
 
         if (!empty($record['artwork_id'])) {
-            $this->replaceArtworkTypes((int) $record['artwork_id'], $_POST['artwork_types'] ?? ['portfolio_images']);
+            $artworkId = (int) $record['artwork_id'];
+            $this->replaceArtworkTypes($artworkId, $_POST['artwork_types'] ?? ['portfolio_images']);
+            $this->updateSalesInventory($artworkId, $_POST['sales_inventory_mode'] ?? 'one_off', $_POST['inventory_quantity'] ?? 1);
         }
 
         if ($this->auditLog !== null) {
@@ -198,6 +207,33 @@ HTML;
             }
             $insert->execute(['artwork_id' => $artworkId, 'type_id' => (int) $row['id']]);
         }
+    }
+
+
+    /**
+     * Persists first-pass sales inventory metadata after the artwork row is created.
+     *
+     * The upload service owns file/media creation. Sales inventory is admin form
+     * metadata, so it is patched onto the row here until the broader sales
+     * subsystem centralizes catalog writes.
+     */
+    private function updateSalesInventory(int $artworkId, mixed $mode, mixed $quantity): void
+    {
+        if ($this->pdo === null) {
+            return;
+        }
+
+        $isOneOff = (string) $mode === 'multiple' ? 0 : 1;
+        $inventoryQuantity = $isOneOff === 1 ? 1 : max(1, (int) $quantity);
+
+        $stmt = $this->pdo->prepare(
+            'UPDATE artworks SET is_one_off = :is_one_off, inventory_quantity = :inventory_quantity, updated_at = CURRENT_TIMESTAMP WHERE id = :id'
+        );
+        $stmt->execute([
+            'is_one_off' => $isOneOff,
+            'inventory_quantity' => $inventoryQuantity,
+            'id' => $artworkId,
+        ]);
     }
 
     private function validAuditUserId(?array $currentUser): ?int

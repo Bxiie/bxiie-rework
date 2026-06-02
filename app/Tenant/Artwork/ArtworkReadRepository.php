@@ -18,6 +18,9 @@ final class ArtworkReadRepository
     {
         $stmt = $this->pdo->prepare(
             "SELECT a.id, a.uuid, a.title, a.slug, a.description, a.medium, a.dimensions, a.year_created, a.status,
+                    a.sale_status, a.price,
+                    COALESCE(a.is_one_off, 1) AS is_one_off,
+                    COALESCE(a.inventory_quantity, 1) AS inventory_quantity,
                     m.uuid AS media_uuid, m.alt_text AS media_alt_text
              FROM artworks a
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
@@ -45,6 +48,9 @@ final class ArtworkReadRepository
     {
         $stmt = $this->pdo->prepare(
             "SELECT a.id, a.uuid, a.title, a.slug, a.medium, a.dimensions, a.year_created, a.status,
+                    a.sale_status, a.price,
+                    COALESCE(a.is_one_off, 1) AS is_one_off,
+                    COALESCE(a.inventory_quantity, 1) AS inventory_quantity,
                     m.uuid AS media_uuid, m.alt_text AS media_alt_text
              FROM artworks a
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
@@ -81,6 +87,9 @@ final class ArtworkReadRepository
         $manualDefault = 'asa.sort_order ASC, a.sort_order ASC, a.id DESC';
         $stmt = $this->pdo->prepare(
             "SELECT a.id, a.uuid, a.title, a.slug, a.medium, a.dimensions, a.year_created, a.status,
+                    a.sale_status, a.price,
+                    COALESCE(a.is_one_off, 1) AS is_one_off,
+                    COALESCE(a.inventory_quantity, 1) AS inventory_quantity,
                     m.uuid AS media_uuid, m.alt_text AS media_alt_text
              FROM artworks a
              JOIN artwork_section_assignments asa ON asa.artwork_id = a.id

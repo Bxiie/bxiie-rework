@@ -1254,3 +1254,70 @@ body:not(.platform-page) {
 }
 
 /* End of file. */
+
+/* Sales readiness and cookie consent. */
+.artwork-price {
+  display: inline-block;
+  margin: 0.5rem 0 0;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: var(--text-bg-overlay, rgba(255, 247, 232, 0.72));
+  font-weight: 800;
+}
+
+.artwork-sales-panel {
+  margin: 2rem 0;
+  padding: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--primary), transparent 78%);
+  border-radius: 22px;
+  background: var(--content-bg-overlay, rgba(255, 250, 240, 0.72));
+}
+
+.artwork-inventory-mode,
+.sales-note-small {
+  color: color-mix(in srgb, var(--text-color, #1f1a14), transparent 22%);
+  font-size: 0.95rem;
+}
+
+.artwork-inquiry-link,
+.add-to-cart-placeholder,
+.cookie-consent button {
+  display: inline-block;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary, #111111);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.add-to-cart-placeholder[disabled] {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.cookie-consent {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1000;
+  display: grid;
+  gap: 0.75rem;
+  max-width: 420px;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--primary, #111111), transparent 70%);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg, #f7f2e8), white 82%);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.2);
+}
+
+.cookie-consent[hidden] {
+  display: none;
+}
+
+.cookie-consent p {
+  margin: 0;
+}
+
+/* End of file. */

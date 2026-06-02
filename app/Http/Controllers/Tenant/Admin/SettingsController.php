@@ -46,6 +46,7 @@ final class SettingsController
         $siteAdminEmail = $this->setting($tenant, 'site_admin_email', '');
         $copyrightName = $this->setting($tenant, 'copyright_name', $artistName);
         $homeIntro = $this->setting($tenant, 'home_intro', 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.');
+        $salesNotes = $this->setting($tenant, 'sales_notes', 'Sales are handled directly by the artist. Contact the studio for shipping, pickup, installation, and timing details.');
         $homeTab = $this->setting($tenant, 'home_tab', 'Home');
         $portfolioTab = $this->setting($tenant, 'portfolio_tab', 'Portfolio');
         $aboutTab = $this->setting($tenant, 'about_tab', 'About');
@@ -111,6 +112,12 @@ final class SettingsController
         <fieldset>
             <legend>Home page</legend>
             <label>Home intro text<textarea name="home_intro" rows="5">{$homeIntro}</textarea></label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Sales notes</legend>
+            <label>Public sales explanation<textarea name="sales_notes" rows="5">{$salesNotes}</textarea></label>
+            <p class="admin-help">Shown on artwork detail pages beside price/contact actions. Use this for shipping, pickup, edition, commission, and payment workflow notes.</p>
         </fieldset>
 
         <fieldset>
@@ -236,7 +243,7 @@ HTML;
         }
 
         $keys = [
-            'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro',
+            'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro', 'sales_notes',
             'home_tab', 'portfolio_tab', 'about_tab', 'contact_tab', 'portfolio_slug', 'about_slug', 'contact_slug',
             'primary_color', 'accent_color', 'text_color', 'background_color', 'topbar_background_color', 'topbar_background_opacity', 'topbar_media_uuid',
             'menu_background_color', 'menu_background_enabled', 'menu_background_opacity', 'menu_media_uuid', 'heading_background_color', 'heading_background_opacity',

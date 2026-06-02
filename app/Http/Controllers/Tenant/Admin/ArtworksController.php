@@ -59,6 +59,8 @@ final class ArtworksController
                 a.status,
                 a.sale_status,
                 a.price,
+                COALESCE(a.is_one_off, 1) AS is_one_off,
+                COALESCE(a.inventory_quantity, 1) AS inventory_quantity,
                 a.created_at,
                 (SELECT GROUP_CONCAT(atype.code ORDER BY atype.code SEPARATOR ',')
                  FROM artwork_type_assignments ata
@@ -278,6 +280,13 @@ HTML;
             {$sectionOptions}
         </fieldset>
         <p><label>Price<br><input type="text" name="price" value="{$price}"></label></p>
+        <fieldset style="margin:1rem 0;padding:1rem;border:1px solid #ccc;">
+            <legend>Sales inventory</legend>
+            <p>Mark one-off for traditional original work. Use multiple for editioned objects, postcards, shirts, or other inventory-backed items.</p>
+            <label style="display:block;margin:.25rem 0;"><input type="radio" name="sales_inventory_mode" value="one_off"{$oneOffChecked}> One-off artwork</label>
+            <label style="display:block;margin:.25rem 0;"><input type="radio" name="sales_inventory_mode" value="multiple"{$multipleChecked}> Multiple / inventory item</label>
+            <label style="display:block;margin:.5rem 0;">Inventory quantity<br><input type="number" name="inventory_quantity" min="1" step="1" value="{$inventoryQuantity}"></label>
+        </fieldset>
         <button type="submit">Save artwork</button>
     </form>
 </main>
@@ -309,6 +318,12 @@ HTML;
         $status = in_array(($_POST['status'] ?? 'draft'), ['draft', 'published', 'archived'], true) ? (string) $_POST['status'] : 'draft';
         $saleStatus = in_array(($_POST['sale_status'] ?? 'nfs'), ['nfs', 'for_sale', 'sold'], true) ? (string) $_POST['sale_status'] : 'nfs';
         $price = $saleStatus === 'nfs' ? null : trim((string) ($_POST['price'] ?? ''));
+        $salesInventoryMode = (string) ($_POST['sales_inventory_mode'] ?? 'one_off');
+        $isOneOff = $salesInventoryMode === 'multiple' ? 0 : 1;
+        $inventoryQuantity = max(1, (int) ($_POST['inventory_quantity'] ?? 1));
+        if ($isOneOff === 1) {
+            $inventoryQuantity = 1;
+        }
 
         $stmt = $this->pdo->prepare(
             "UPDATE artworks
@@ -319,6 +334,8 @@ HTML;
                  status = :status,
                  sale_status = :sale_status,
                  price = :price,
+                 is_one_off = :is_one_off,
+                 inventory_quantity = :inventory_quantity,
                  updated_at = CURRENT_TIMESTAMP
              WHERE id = :id
                AND tenant_id = :tenant_id"
@@ -332,6 +349,8 @@ HTML;
             'status' => $status,
             'sale_status' => $saleStatus,
             'price' => $price !== '' ? $price : null,
+            'is_one_off' => $isOneOff,
+            'inventory_quantity' => $inventoryQuantity,
             'id' => $id,
             'tenant_id' => $tenant->tenantId,
         ]);
