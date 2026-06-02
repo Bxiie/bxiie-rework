@@ -29,6 +29,19 @@ final class SessionCookie
         return self::issueHeader($token, $persistent);
     }
 
+    /**
+     * Returns every Set-Cookie header required for login.
+     *
+     * Older controllers used this plural method name. Keep it as a safe alias
+     * so rolling deploys do not break /login while cookie clearing evolves.
+     *
+     * @return list<string>
+     */
+    public static function issueHeaders(string $token, bool $persistent = true): array
+    {
+        return self::loginHeaders($token, $persistent);
+    }
+
     public static function expireHeader(): string
     {
         return self::build(CurrentUser::COOKIE_NAME . '=deleted', 0, true);
@@ -37,6 +50,16 @@ final class SessionCookie
     public static function expireSetCookie(): string
     {
         return self::expireHeader();
+    }
+
+    /**
+     * Returns every Set-Cookie header required for logout.
+     *
+     * @return list<string>
+     */
+    public static function expireHeaders(): array
+    {
+        return self::logoutHeaders();
     }
 
     /**

@@ -48,6 +48,7 @@ final class TenantAdminLayout
         $topbarText = self::escape($this->settings->get($tenant, 'topbar_text_color', '#111111'));
         $textColor = self::escape($this->settings->get($tenant, 'text_color', '#1f1a14'));
         $surfaceStyle = self::tenantSurfaceCssVariables($tenant, $this->settings);
+        $backgroundStyle = self::backgroundCssVariables($tenant, $this->settings);
         $adminNav = TenantAdminNav::render($active);
         $csrf = self::escape(self::csrfToken());
         $identity = self::tenantIdentity($tenant);
@@ -65,7 +66,7 @@ final class TenantAdminLayout
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
     <script defer src="/assets/admin-color-fields.js"></script>
 </head>
-<body class="tenant-admin-page" style="--primary: {$primaryColor}; --accent: {$accentColor}; --bg: {$backgroundColor}; --tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText}; --text-color: {$textColor}; {$surfaceStyle}">
+<body class="tenant-admin-page" style="--primary: {$primaryColor}; --accent: {$accentColor}; --bg: {$backgroundColor}; --tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText}; --text-color: {$textColor}; {$backgroundStyle}{$surfaceStyle}">
 <header class="site-header tenant-admin-public-header">
     <a class="brand tenant-admin-brand" href="/"><strong>{$siteTitle}</strong><span>Tenant Admin</span></a>
     <nav>
@@ -129,6 +130,7 @@ HTML;
         $textBgOpacity = self::safeOpacity((string) $settings->get($tenant, 'text_background_opacity', '0.72'));
         $menuColor = (string) $settings->get($tenant, 'menu_background_color', (string) $settings->get($tenant, 'topbar_background_color', '#fff8ec'));
         $menuOpacity = self::safeOpacity((string) $settings->get($tenant, 'menu_background_opacity', '0.86'));
+        $menuEnabled = (string) $settings->get($tenant, 'menu_background_enabled', '1') !== '0';
         $cardColor = (string) $settings->get($tenant, 'artwork_card_background_color', '#fffaf0');
         $cardOpacity = self::safeOpacity((string) $settings->get($tenant, 'artwork_card_background_opacity', '0.84'));
 
@@ -142,8 +144,11 @@ HTML;
         $vars .= '--text-bg-overlay:' . self::cssColorWithOpacity($textBgColor, $textBgOpacity) . ';';
         $vars .= '--text-bg-opacity:' . $textBgOpacity . ';';
         $vars .= '--menu-bg:' . self::safeCssColor($menuColor) . ';';
-        $vars .= '--menu-bg-overlay:' . self::cssColorWithOpacity($menuColor, $menuOpacity) . ';';
-        $vars .= '--menu-bg-opacity:' . $menuOpacity . ';';
+        $vars .= '--menu-bg-overlay:' . ($menuEnabled ? self::cssColorWithOpacity($menuColor, $menuOpacity) : 'transparent') . ';';
+        $vars .= '--menu-bg-opacity:' . ($menuEnabled ? $menuOpacity : '0') . ';';
+        $vars .= '--menu-panel-padding:' . ($menuEnabled ? '0.35rem 0.55rem' : '0') . ';';
+        $vars .= '--menu-panel-radius:' . ($menuEnabled ? '999px' : '0') . ';';
+        $vars .= '--menu-panel-shadow:' . ($menuEnabled ? '0 12px 32px rgba(0,0,0,0.08)' : 'none') . ';';
         $vars .= '--topbar-bg-opacity:' . self::safeOpacity((string) $settings->get($tenant, 'topbar_background_opacity', '0.86')) . ';';
         $vars .= '--tenant-header-shadow:' . ($settings->get($tenant, 'header_drop_shadow_enabled', '1') === '1' ? self::safeCssShadow((string) $settings->get($tenant, 'header_drop_shadow', '0 18px 45px rgba(0,0,0,0.24)')) : 'none') . ';';
         $vars .= '--artwork-card-bg:' . self::safeCssColor($cardColor) . ';';
@@ -155,6 +160,29 @@ HTML;
         $vars .= self::mediaVar((string) $settings->get($tenant, 'artwork_card_media_uuid', ''), '--artwork-card-bg-image');
 
         return $vars;
+    }
+
+    /**
+     * Mirrors public tenant page background variables in tenant admin pages.
+     */
+    private static function backgroundCssVariables(TenantContext $tenant, TenantSettingsRepository $settings): string
+    {
+        $uuid = strtolower(trim((string) $settings->get($tenant, 'background_media_uuid', '')));
+        if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid)) {
+            return '';
+        }
+
+        $mode = (string) $settings->get($tenant, 'background_mode', 'single');
+        $tileSize = self::safeCssSize((string) $settings->get($tenant, 'background_tile_size', '360px'));
+        $opacity = self::safeOpacity((string) $settings->get($tenant, 'background_opacity', '0.12'));
+        $imageUrl = '/media?uuid=' . rawurlencode($uuid);
+        $repeat = $mode === 'tile' ? 'repeat' : 'no-repeat';
+        $size = $mode === 'tile' ? $tileSize : 'cover';
+
+        return "--site-bg-image:url('" . self::escape($imageUrl) . "');"
+            . '--site-bg-repeat:' . $repeat . ';'
+            . '--site-bg-size:' . self::escape($size) . ';'
+            . '--site-bg-opacity:' . $opacity . ';';
     }
 
     private static function mediaVar(string $uuid, string $cssVar): string

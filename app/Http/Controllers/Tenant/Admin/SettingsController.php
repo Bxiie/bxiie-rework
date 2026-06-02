@@ -62,6 +62,7 @@ final class SettingsController
         $topbarMediaUuid = (string) $this->settings->get($tenant, 'topbar_media_uuid', '');
         $menuBackgroundColor = $this->setting($tenant, 'menu_background_color', $topbarBackgroundColor);
         $menuBackgroundOpacity = $this->setting($tenant, 'menu_background_opacity', '0.82');
+        $menuBackgroundEnabled = $this->setting($tenant, 'menu_background_enabled', '1');
         $menuMediaUuid = (string) $this->settings->get($tenant, 'menu_media_uuid', '');
         $headingBackgroundColor = $this->setting($tenant, 'heading_background_color', 'rgba(255,255,255,0.72)');
         $headingBackgroundOpacity = $this->setting($tenant, 'heading_background_opacity', '0.72');
@@ -135,7 +136,13 @@ final class SettingsController
                 <label>Top bar background color<input name="topbar_background_color" value="{$topbarBackgroundColor}"></label>
                 <label>Top bar opacity<input type="number" name="topbar_background_opacity" min="0" max="1" step="0.05" value="{$topbarBackgroundOpacity}"></label>
                 <label>Menu background color<input name="menu_background_color" value="{$menuBackgroundColor}"></label>
-                <label>Menu opacity<input type="number" name="menu_background_opacity" min="0" max="1" step="0.05" value="{$menuBackgroundOpacity}"></label>
+                <label>Menu background panel
+                    <select name="menu_background_enabled">
+                        <option value="1"{$selected($menuBackgroundEnabled, '1')}>Show panel</option>
+                        <option value="0"{$selected($menuBackgroundEnabled, '0')}>Suppress panel</option>
+                    </select>
+                </label>
+                <label>Menu opacity<input type="number" name="menu_background_opacity" min="0" max="1" step="0.05" value="{$menuBackgroundOpacity}"><span class="admin-help">Use 0, or suppress the panel, to remove the tan/nav wash.</span></label>
                 <label>Heading spread color<input name="heading_background_color" value="{$headingBackgroundColor}"></label>
                 <label>Heading spread opacity<input type="number" name="heading_background_opacity" min="0" max="1" step="0.05" value="{$headingBackgroundOpacity}"></label>
                 <label>Content/artwork area background color<input name="content_background_color" value="{$contentBackgroundColor}"></label>
@@ -232,7 +239,7 @@ HTML;
             'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro',
             'home_tab', 'portfolio_tab', 'about_tab', 'contact_tab', 'portfolio_slug', 'about_slug', 'contact_slug',
             'primary_color', 'accent_color', 'text_color', 'background_color', 'topbar_background_color', 'topbar_background_opacity', 'topbar_media_uuid',
-            'menu_background_color', 'menu_background_opacity', 'menu_media_uuid', 'heading_background_color', 'heading_background_opacity',
+            'menu_background_color', 'menu_background_enabled', 'menu_background_opacity', 'menu_media_uuid', 'heading_background_color', 'heading_background_opacity',
             'content_background_color', 'content_background_opacity', 'text_background_color', 'text_background_opacity', 'header_drop_shadow_enabled', 'header_drop_shadow', 'artwork_card_background_color', 'artwork_card_background_opacity', 'artwork_card_background_size', 'artwork_card_media_uuid', 'background_media_uuid',
             'background_mode', 'background_tile_size', 'background_opacity', 'exhibitions_heading', 'exhibitions_display_mode',
             'tenant_css', 'artwork_display_order', 'recaptcha_site_key', 'recaptcha_secret_key',
@@ -250,7 +257,7 @@ HTML;
             if (str_ends_with($key, '_opacity')) {
                 $value = $this->safeOpacity($value, in_array($key, ['background_opacity'], true) ? '0.12' : (in_array($key, ['artwork_card_background_opacity', 'content_background_opacity'], true) ? '0.00' : '0.72'));
             }
-            if ($key === 'header_drop_shadow_enabled') {
+            if (in_array($key, ['header_drop_shadow_enabled', 'menu_background_enabled'], true)) {
                 $value = $value === '0' ? '0' : '1';
             }
             if (str_ends_with($key, '_slug')) {

@@ -212,7 +212,7 @@ HTML;
 {$this->siteImageFigure($tenant, 'contact_media_uuid', 'contact_image_opacity', 'Contact image')}
 <article class="prose">{$this->settings->get($tenant, 'contact_details', '')}</article>
 <section class="contact-grid">
-<form method="post" action="/contact" data-af-async-form data-af-result="contact-form-result" data-af-busy-label="Sending..." data-af-busy-message="Sending your message...">
+<form method="post" action="/contact" data-af-async-form data-af-result="contact-form-result" data-af-busy-label="Sending..." data-af-busy-message="Sending your message..." data-af-form-purpose="contact" data-af-success-message="Thank you. Your message has been sent.">
     <h2>Send a message</h2>
     <div id="contact-form-result" data-af-form-result class="af-form-result" hidden></div>
     <input type="hidden" name="csrf_token" value="{$csrf}">
@@ -242,7 +242,7 @@ HTML;
     {$captcha}
     <button type="submit">Send message</button>
 </form>
-<form method="post" action="/signup" data-af-async-form data-af-result="signup-form-result" data-af-busy-label="Joining..." data-af-busy-message="Adding you to the list...">
+<form method="post" action="/signup" data-af-async-form data-af-result="signup-form-result" data-af-busy-label="Joining..." data-af-busy-message="Adding you to the list..." data-af-form-purpose="signup" data-af-success-message="Thank you. You have been added to the email list.">
     <h2>Email list</h2>
     <p>Get occasional updates from {$siteTitle}.</p>
     <div id="signup-form-result" data-af-form-result class="af-form-result" hidden></div>
@@ -388,7 +388,7 @@ HTML
     <meta name="description" content="Artist portfolio">
     <link rel="stylesheet" href="/assets/site.css">
     <link rel="stylesheet" href="/tenant.css">
-    <script src="/assets/tenant-forms.js?v=20260601c" defer></script>
+    <script src="/assets/tenant-forms.js?v=20260602a" defer></script>
 </head>
 <body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};--text-color:{$textColor};{$backgroundStyle}{$surfaceStyle}">
 <header class="site-header">
@@ -428,6 +428,7 @@ HTML;
         $textBgOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'text_background_opacity', '0.72'));
         $menuColor = (string) $this->settings->get($tenant, 'menu_background_color', (string) $this->settings->get($tenant, 'topbar_background_color', '#fff8ec'));
         $menuOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'menu_background_opacity', '0.86'));
+        $menuEnabled = (string) $this->settings->get($tenant, 'menu_background_enabled', '1') !== '0';
         $cardColor = (string) $this->settings->get($tenant, 'artwork_card_background_color', '#fffaf0');
         $cardOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'artwork_card_background_opacity', '0.00'));
 
@@ -441,8 +442,11 @@ HTML;
         $vars .= '--text-bg-overlay:' . $this->cssColorWithOpacity($textBgColor, $textBgOpacity) . ';';
         $vars .= '--text-bg-opacity:' . $textBgOpacity . ';';
         $vars .= '--menu-bg:' . $this->safeCssColor($menuColor) . ';';
-        $vars .= '--menu-bg-overlay:' . $this->cssColorWithOpacity($menuColor, $menuOpacity) . ';';
-        $vars .= '--menu-bg-opacity:' . $menuOpacity . ';';
+        $vars .= '--menu-bg-overlay:' . ($menuEnabled ? $this->cssColorWithOpacity($menuColor, $menuOpacity) : 'transparent') . ';';
+        $vars .= '--menu-bg-opacity:' . ($menuEnabled ? $menuOpacity : '0') . ';';
+        $vars .= '--menu-panel-padding:' . ($menuEnabled ? '0.35rem 0.55rem' : '0') . ';';
+        $vars .= '--menu-panel-radius:' . ($menuEnabled ? '999px' : '0') . ';';
+        $vars .= '--menu-panel-shadow:' . ($menuEnabled ? '0 12px 32px rgba(0,0,0,0.08)' : 'none') . ';';
         $vars .= '--topbar-bg-opacity:' . $this->safeOpacity((string) $this->settings->get($tenant, 'topbar_background_opacity', '0.86')) . ';';
         $vars .= '--tenant-header-shadow:' . ($this->settings->get($tenant, 'header_drop_shadow_enabled', '1') === '1' ? $this->safeCssShadow((string) $this->settings->get($tenant, 'header_drop_shadow', '0 18px 45px rgba(0,0,0,0.24)')) : 'none') . ';';
         $vars .= '--artwork-card-bg:' . $this->safeCssColor($cardColor) . ';';
@@ -466,7 +470,7 @@ HTML;
         $contactSlug = trim($contactSlug, '/') !== '' ? trim($contactSlug, '/') : 'contact';
 
         return <<<HTML
-<form method="post" action="/signup" class="tenant-footer-signup" data-af-async-form data-af-result="footer-signup-result" data-af-busy-label="Subscribing..." data-af-busy-message="Adding you to the mailing list...">
+<form method="post" action="/signup" class="tenant-footer-signup" data-af-async-form data-af-result="footer-signup-result" data-af-busy-label="Subscribing..." data-af-busy-message="Adding you to the mailing list..." data-af-form-purpose="signup" data-af-success-message="Thank you. You have been added to the email list.">
     <label for="footer-signup-email">Join the mailing list</label>
     <div class="tenant-footer-signup-row">
         <input id="footer-signup-email" type="email" name="email" autocomplete="email" placeholder="Email address" required>

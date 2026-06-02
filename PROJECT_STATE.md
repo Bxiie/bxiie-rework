@@ -1178,3 +1178,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - All queued outbound email is branded centrally through `App\Platform\Email\BrandedEmail` from `EmailOutboxRepository::queue()`.
 - Individual email templates should keep message-specific content only and avoid duplicating the shared ArtsFolio header/footer.
 
+
+## 2026-06-02 tenant visual/admin auth repair
+
+- Tenant public pages and tenant admin pages now share page background, top bar, menu panel, heading spread, content surface, and text color CSS variables.
+- Tenant settings include `menu_background_enabled` so the visible navigation background wash can be suppressed without hiding navigation links.
+- Tenant contact and signup forms use tenant surface styling and the tenant form asset version was bumped to avoid stale browser JavaScript.
+- `App\Http\Support\SessionCookie` includes plural `issueHeaders()` and `expireHeaders()` aliases used by platform login/logout controllers.
+
+# End of file.

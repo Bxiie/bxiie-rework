@@ -1067,3 +1067,151 @@ input[type="submit"][aria-busy="true"] {
 }
 
 /* End of file. */
+
+/* Tenant visual authority repair: public and admin headers, nav panel, contact forms. */
+body.tenant-admin-page,
+body:not(.platform-page) {
+  color: var(--text-color, #1f1a14);
+  background-color: var(--bg, #f7f2e8);
+}
+
+.site-header,
+.site-header.tenant-admin-public-header {
+  background-color: var(--topbar-bg-overlay, var(--topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image) !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  box-shadow: var(--tenant-header-shadow, none) !important;
+}
+
+.site-header nav,
+.site-header.tenant-admin-public-header nav {
+  background-color: var(--menu-bg-overlay, transparent) !important;
+  background-image: var(--menu-bg-image) !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  border-radius: var(--menu-panel-radius, 0) !important;
+  box-shadow: var(--menu-panel-shadow, none) !important;
+  padding: var(--menu-panel-padding, 0) !important;
+}
+
+.tenant-content-surface,
+.tenant-admin-main,
+.tenant-admin-panel {
+  color: var(--text-color, #1f1a14) !important;
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: start;
+  margin-top: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.contact-grid form {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 1.75rem) !important;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 1.4rem;
+  background: var(--text-bg-overlay, rgba(255, 247, 232, 0.78)) !important;
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.10);
+  backdrop-filter: blur(4px);
+}
+
+.contact-grid h2 {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  letter-spacing: -0.04em;
+}
+
+.contact-grid p {
+  margin: 0;
+}
+
+.contact-grid label {
+  display: grid;
+  gap: 0.45rem;
+  font-weight: 850;
+}
+
+.contact-grid input[type="text"],
+.contact-grid input[type="email"],
+.contact-grid textarea {
+  width: 100%;
+  min-height: 2.9rem;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid rgba(0, 0, 0, 0.26);
+  border-radius: 0.95rem;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--text-color, #1f1a14);
+  font: inherit;
+}
+
+.contact-grid textarea {
+  min-height: 10rem;
+  resize: vertical;
+}
+
+.contact-grid input[type="checkbox"] {
+  width: auto;
+  min-height: 0;
+}
+
+.contact-grid button,
+.tenant-footer-signup button,
+.footer-signup button {
+  justify-self: start;
+  min-height: 2.8rem;
+  padding: 0.78rem 1.2rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary, #111111);
+  color: var(--bg, #f7f2e8);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.af-form-result.success,
+.notice {
+  background: rgba(219, 255, 226, 0.92) !important;
+  color: #12351b !important;
+}
+
+.af-form-result.error,
+.form-error,
+.error {
+  background: rgba(255, 216, 216, 0.92) !important;
+  color: #3d1111 !important;
+}
+
+.tenant-admin-panel h1,
+.tenant-admin-panel h2,
+.tenant-admin-panel h3,
+.tenant-admin-panel legend,
+.tenant-content-surface h1,
+.tenant-content-surface h2,
+.tenant-content-surface h3 {
+  color: var(--text-color, #1f1a14);
+  background-color: var(--heading-bg-overlay, transparent);
+  box-shadow: 0.18em 0 0 var(--heading-bg-overlay, transparent), -0.18em 0 0 var(--heading-bg-overlay, transparent);
+}
+
+.tenant-content-surface p,
+.tenant-content-surface li,
+.tenant-content-surface .prose,
+.tenant-content-surface figcaption,
+.tenant-admin-panel label,
+.tenant-admin-panel p,
+.tenant-admin-panel td,
+.tenant-admin-panel th {
+  color: var(--text-color, #1f1a14);
+}
+
+/* End tenant visual authority repair. */
+
+/* End of file. */
