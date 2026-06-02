@@ -425,3 +425,26 @@ body.tenant-admin-page {
 /* End tenant admin visual authority repair. */
 
 /* End of file. */
+
+/* Tenant admin header buttons match link styling. */
+.site-header.tenant-admin-public-header nav form {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+}
+
+.site-header.tenant-admin-public-header nav .link-button {
+  appearance: none !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  padding: 0.65rem 1rem !important;
+  border-radius: 999px !important;
+  font: inherit !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+}
+
+/* End of file. */

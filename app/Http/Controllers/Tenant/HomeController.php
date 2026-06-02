@@ -429,7 +429,7 @@ HTML;
         $textBgOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'text_background_opacity', '0.72'));
         $menuColor = (string) $this->settings->get($tenant, 'menu_background_color', (string) $this->settings->get($tenant, 'topbar_background_color', '#fff8ec'));
         $menuOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'menu_background_opacity', '0.86'));
-        $menuEnabled = (string) $this->settings->get($tenant, 'menu_background_enabled', '1') !== '0';
+        $menuEnabled = (string) $this->settings->get($tenant, 'menu_background_enabled', '1') !== '0' && (float) $menuOpacity > 0.0;
         $cardColor = (string) $this->settings->get($tenant, 'artwork_card_background_color', '#fffaf0');
         $cardOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'artwork_card_background_opacity', '0.00'));
 
@@ -454,7 +454,7 @@ HTML;
         $vars .= '--artwork-card-bg-overlay:' . $this->cssColorWithOpacity($cardColor, $cardOpacity) . ';';
         $vars .= '--artwork-card-bg-opacity:' . $cardOpacity . ';';
         $vars .= '--artwork-card-bg-size:' . $this->safeCssSize((string) $this->settings->get($tenant, 'artwork_card_background_size', 'cover'), 'cover') . ';';
-        $vars .= $this->mediaBackgroundVar($tenant, 'menu_media_uuid', '--menu-bg-image');
+        $vars .= $menuEnabled ? $this->mediaBackgroundVar($tenant, 'menu_media_uuid', '--menu-bg-image') : '--menu-bg-image:none;';
         $vars .= $this->mediaBackgroundVar($tenant, 'topbar_media_uuid', '--topbar-bg-image');
         $vars .= $this->mediaBackgroundVar($tenant, 'artwork_card_media_uuid', '--artwork-card-bg-image');
 

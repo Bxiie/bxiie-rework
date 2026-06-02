@@ -84,6 +84,11 @@ HTML : '';
             <input type="password" name="new_password" minlength="12" required placeholder="New password">
             <button type="submit">Change password</button>
         </form>
+        <form method="post" action="/admin/users/resend-invite" class="admin-inline-form">
+            <input type="hidden" name="csrf_token" value="{$csrf}">
+            <input type="hidden" name="user_id" value="{$id}">
+            <button type="submit">Resend invite</button>
+        </form>
         {$promoteForm}
         {$deleteForm}
     </td>
@@ -162,6 +167,40 @@ HTML;
         return new Response('', 303, ['Location' => '/admin/users?notice=invite-queued']);
     }
 
+
+
+    public function resendInvite(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+        $userId = (int) ($_POST['user_id'] ?? 0);
+        $user = $this->findTenantUser($tenant->tenantId, $userId);
+        if (!$user) {
+            return Response::html('<h1>Invalid tenant user invite resend request</h1>', 422);
+        }
+
+        $this->queueInviteEmail($tenant, (string) $user['email'], $user['display_name'] !== null ? (string) $user['display_name'] : null);
+        $this->auditLog?->record('tenant.user.invite_resent', $tenant->tenantId, (int) ($currentUser['user_id'] ?? 0), 'user', (string) $userId, ['email' => (string) $user['email']], $request->server('REMOTE_ADDR'));
+        FlashMessages::success('Tenant admin invite resent.');
+
+        return new Response('', 303, ['Location' => '/admin/users?notice=invite-resent']);
+    }
+
+    private function findTenantUser(int $tenantId, int $userId): ?array
+    {
+        foreach ($this->users->tenantUsers($tenantId) as $user) {
+            if ((int) $user['id'] === $userId) {
+                return $user;
+            }
+        }
+
+        return null;
+    }
 
     public function promoteOwner(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
@@ -245,6 +284,7 @@ HTML;
         $message = match ($notice) {
             'password-updated' => 'Tenant user password updated.',
             'invite-queued' => 'Tenant admin invite queued.',
+            'invite-resent' => 'Tenant admin invite resent.',
             'owner-promoted' => 'Tenant user promoted to owner.',
             'user-deleted' => 'Tenant user deleted.',
             default => '',

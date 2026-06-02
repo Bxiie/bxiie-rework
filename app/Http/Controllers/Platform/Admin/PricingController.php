@@ -83,6 +83,20 @@ HTML;
 {$formOpen}
 <section class="admin-panel"><h2>Platform sales commission</h2><label>Commission on sales, percent<input type="number" name="platform_sales_commission_percent" min="0" max="100" step="0.01" value="{$commissionPercent}"></label><p class="admin-muted">Current disclosure: ArtsFolio commission is {$commissionPercent}% of platform-processed sales.</p></section>
 <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Slug</th><th>Name</th><th>Monthly</th><th>Allowed artworks</th><th>Allowed email addresses</th><th>Custom domain</th><th>Status</th><th>Order</th></tr></thead><tbody>{$rows}</tbody></table></div>
+<section class="admin-panel"><h2>Create plan</h2>
+<div class="admin-form-grid three">
+<label>Slug<input name="new_plan[slug]" pattern="[a-z0-9-]+" placeholder="artist-plus"></label>
+<label>Name<input name="new_plan[name]" placeholder="Artist Plus"></label>
+<label>Monthly price<input type="number" name="new_plan[monthly_price_dollars]" min="0" step="0.01" value="0.00"></label>
+<label>Allowed artworks<input type="number" name="new_plan[allowed_artworks]" min="0" value="100"></label>
+<label>Allowed email addresses<input type="number" name="new_plan[allowed_email_addresses]" min="0" value="500"></label>
+<label>Display order<input type="number" name="new_plan[display_order]" min="0" value="50"></label>
+<label><input type="checkbox" name="new_plan[custom_domain_included]" value="1"> Custom domain included</label>
+<label><input type="checkbox" name="new_plan[is_active]" value="1" checked> Active</label>
+</div>
+<label>Description<textarea name="new_plan[description]" rows="2" placeholder="Who this plan is for and what it includes."></textarea></label>
+<p class="admin-muted">Leave slug and name blank when you only want to edit existing plans.</p>
+</section>
 {$button}
 {$formClose}
 <p><a class="admin-button" href="/pricing">View public pricing page</a> <a class="admin-button" href="/platform/admin/platform-settings">Platform settings</a></p>
@@ -122,6 +136,24 @@ HTML, active: 'pricing'));
             $active = isset($plan['is_active']) ? 1 : 0;
             $stmt = $this->pdo->prepare('UPDATE plans SET name = :name, monthly_price_cents = :monthly_price_cents, description = :description, custom_domain_included = :custom_domain_included, allowed_artworks = :allowed_artworks, allowed_email_addresses = :allowed_email_addresses, display_order = :display_order, is_active = :is_active WHERE id = :id');
             $stmt->execute(['id' => $id, 'name' => $name, 'monthly_price_cents' => $priceCents, 'description' => $description, 'custom_domain_included' => $customDomain, 'allowed_artworks' => $allowedArtworks, 'allowed_email_addresses' => $allowedEmails, 'display_order' => $displayOrder, 'is_active' => $active]);
+        }
+
+        $newPlan = is_array($_POST['new_plan'] ?? null) ? $_POST['new_plan'] : [];
+        $newSlug = strtolower(trim((string) ($newPlan['slug'] ?? '')));
+        $newName = trim((string) ($newPlan['name'] ?? ''));
+        if ($newSlug !== '' || $newName !== '') {
+            if (!preg_match('/^[a-z0-9-]+$/', $newSlug) || $newName === '') {
+                return Response::html('<h1>New plan requires a lowercase slug and name</h1>', 422);
+            }
+            $newPriceCents = max(0, (int) round(((float) ($newPlan['monthly_price_dollars'] ?? 0)) * 100));
+            $newDescription = trim((string) ($newPlan['description'] ?? ''));
+            $newAllowedArtworks = max(0, (int) ($newPlan['allowed_artworks'] ?? 0));
+            $newAllowedEmails = max(0, (int) ($newPlan['allowed_email_addresses'] ?? 0));
+            $newDisplayOrder = max(0, (int) ($newPlan['display_order'] ?? 100));
+            $newCustomDomain = isset($newPlan['custom_domain_included']) ? 1 : 0;
+            $newActive = isset($newPlan['is_active']) ? 1 : 0;
+            $insert = $this->pdo->prepare('INSERT INTO plans (slug, name, monthly_price_cents, description, custom_domain_included, allowed_artworks, allowed_email_addresses, display_order, is_active) VALUES (:slug, :name, :monthly_price_cents, :description, :custom_domain_included, :allowed_artworks, :allowed_email_addresses, :display_order, :is_active) ON DUPLICATE KEY UPDATE name = VALUES(name), monthly_price_cents = VALUES(monthly_price_cents), description = VALUES(description), custom_domain_included = VALUES(custom_domain_included), allowed_artworks = VALUES(allowed_artworks), allowed_email_addresses = VALUES(allowed_email_addresses), display_order = VALUES(display_order), is_active = VALUES(is_active)');
+            $insert->execute(['slug' => $newSlug, 'name' => $newName, 'monthly_price_cents' => $newPriceCents, 'description' => $newDescription, 'custom_domain_included' => $newCustomDomain, 'allowed_artworks' => $newAllowedArtworks, 'allowed_email_addresses' => $newAllowedEmails, 'display_order' => $newDisplayOrder, 'is_active' => $newActive]);
         }
 
         $this->auditLog?->record('platform.pricing.updated', null, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, 'plans', 'pricing', ['before' => $before, 'after' => ['commission_basis_points' => $commissionBasisPoints, 'plans' => $this->plans()]], $request->server('REMOTE_ADDR'));

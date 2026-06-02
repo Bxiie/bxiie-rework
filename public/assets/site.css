@@ -1215,3 +1215,42 @@ body:not(.platform-page) {
 /* End tenant visual authority repair. */
 
 /* End of file. */
+
+/* Tenant nav and form polish: opacity zero must mean no visible menu panel. */
+.site-header nav,
+.site-header.tenant-admin-public-header nav {
+  background-color: var(--menu-bg-overlay, transparent) !important;
+  background-image: var(--menu-bg-image, none) !important;
+  border-radius: var(--menu-panel-radius, 0) !important;
+  box-shadow: var(--menu-panel-shadow, none) !important;
+  padding: var(--menu-panel-padding, 0) !important;
+}
+
+.site-header nav form,
+.site-header.tenant-admin-public-header nav form {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+}
+
+.site-header nav .link-button,
+.site-header.tenant-admin-public-header nav .link-button {
+  appearance: none !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  padding: 0.65rem 1rem !important;
+  border-radius: 999px !important;
+  font: inherit !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+}
+
+.site-header nav .link-button:hover,
+.site-header.tenant-admin-public-header nav .link-button:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* End of file. */

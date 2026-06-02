@@ -33,6 +33,7 @@ final class TenantAdminRepository
                 COUNT(td.id) AS domain_count
              FROM tenants t
              LEFT JOIN tenant_domains td ON td.tenant_id = t.id
+             WHERE t.status <> 'deleted'
              GROUP BY t.id, t.uuid, t.slug, t.name, t.status, t.created_at
              ORDER BY t.id DESC
              LIMIT :limit_count"
@@ -46,7 +47,7 @@ final class TenantAdminRepository
 
     public function setStatus(int $tenantId, string $status): void
     {
-        if (!in_array($status, ['trial', 'active', 'suspended', 'archived'], true)) {
+        if (!in_array($status, ['trial', 'active', 'suspended', 'archived', 'deleted'], true)) {
             throw new \InvalidArgumentException('Invalid tenant status.');
         }
 

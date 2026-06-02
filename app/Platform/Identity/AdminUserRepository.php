@@ -129,6 +129,29 @@ final class AdminUserRepository
     }
 
 
+
+    /**
+     * Creates or reuses a user and assigns the platform admin role in invited status.
+     */
+    public function invitePlatformUser(string $email, ?string $displayName = null): int
+    {
+        $email = strtolower(trim($email));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException('A valid invite email address is required.');
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $userId = $this->findOrCreateUser($email, $displayName);
+            $this->assignPlatformRole($userId, 'admin');
+            $this->pdo->commit();
+            return $userId;
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
     /**
      * Creates or reuses a user, attaches them to a tenant, assigns tenant admin,
      * and leaves membership in invited status until the user accepts.

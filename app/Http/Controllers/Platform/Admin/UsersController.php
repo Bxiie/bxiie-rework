@@ -10,6 +10,7 @@ use App\Http\Response;
 use App\Http\View\AdminLayout;
 use App\Http\View\ErrorPage;
 use App\Platform\Audit\AuditLogRepository;
+use App\Platform\Email\EmailOutboxRepository;
 use App\Platform\Identity\AdminUserRepository;
 use App\Platform\Identity\PasswordHasher;
 use App\Platform\Membership\Roles;
@@ -27,6 +28,7 @@ final class UsersController
         private readonly PasswordHasher $hasher,
         private readonly CsrfTokenService $csrf,
         private readonly ?AuditLogRepository $auditLog = null,
+        private readonly ?EmailOutboxRepository $emailOutbox = null,
     ) {
     }
 
@@ -37,7 +39,14 @@ final class UsersController
         }
 
         $csrf = AdminLayout::escape($this->csrf->getOrCreate());
-        $notice = isset($_GET['notice']) ? '<p class="admin-notice admin-notice-success">Platform user password updated.</p>' : '';
+        $noticeText = match ((string) ($_GET['notice'] ?? '')) {
+            'password-updated' => 'Platform user password updated.',
+            'status-updated' => 'Platform user status updated.',
+            'invite-queued' => 'Platform admin invite queued.',
+            'invite-resent' => 'Platform admin invite resent.',
+            default => '',
+        };
+        $notice = $noticeText !== '' ? '<p class="admin-notice admin-notice-success">' . AdminLayout::escape($noticeText) . '</p>' : '';
         $rows = '';
 
         foreach ($this->users->platformUsers() as $user) {
@@ -63,6 +72,11 @@ final class UsersController
             <input type="password" name="new_password" minlength="12" required placeholder="New password">
             <button type="submit">Change password</button>
         </form>
+        <form method="post" action="/platform/admin/users/resend-invite" class="admin-inline-form">
+            <input type="hidden" name="csrf_token" value="{$csrf}">
+            <input type="hidden" name="user_id" value="{$id}">
+            <button type="submit">Resend invite</button>
+        </form>
         {$statusActions}
     </td>
 </tr>
@@ -79,6 +93,15 @@ HTML;
             body: <<<HTML
 {$notice}
 <p class="admin-muted">This screen lists users with platform-scoped roles and allows platform admins to rotate local passwords. It does not edit roles.</p>
+<section class="admin-panel">
+    <h2>Invite platform admin</h2>
+    <form method="post" action="/platform/admin/users/invite" class="admin-form">
+        <input type="hidden" name="csrf_token" value="{$csrf}">
+        <label>Email<br><input type="email" name="email" required autocomplete="email"></label>
+        <label>Name<br><input type="text" name="display_name" autocomplete="name"></label>
+        <button type="submit">Send invite</button>
+    </form>
+</section>
 <table class="admin-table">
     <thead><tr><th>ID</th><th>User</th><th>Roles</th><th>Last log on</th><th>Created</th><th>Password</th><th>Lifecycle</th></tr></thead>
     <tbody>{$rows}</tbody>
@@ -86,6 +109,88 @@ HTML;
 <script>document.querySelectorAll('.confirm-platform-user-action').forEach(function(form){form.addEventListener('submit',function(event){var action=form.getAttribute('data-action')||'update';if(!confirm('Confirm '+action+' for this user. This affects access immediately.')){event.preventDefault();}});});</script>
 HTML,
         ));
+    }
+
+
+    public function invite(Request $request, ?array $currentUser): Response
+    {
+        if (!$this->canManageUsers($currentUser)) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+        $email = strtolower(trim((string) ($_POST['email'] ?? '')));
+        $displayName = trim((string) ($_POST['display_name'] ?? ''));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return Response::html('<h1>Invalid invite email address</h1>', 422);
+        }
+
+        $userId = $this->users->invitePlatformUser($email, $displayName !== '' ? $displayName : null);
+        $this->queueInviteEmail($email, $displayName !== '' ? $displayName : null);
+        $this->auditLog?->record('platform.user.invited_admin', null, (int) ($currentUser['user_id'] ?? 0), 'user', (string) $userId, ['email' => $email], $request->server('REMOTE_ADDR'));
+        FlashMessages::success('Platform admin invite queued.');
+
+        return new Response('', 303, ['Location' => '/platform/admin/users?notice=invite-queued']);
+    }
+
+    public function resendInvite(Request $request, ?array $currentUser): Response
+    {
+        if (!$this->canManageUsers($currentUser)) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+        $userId = (int) ($_POST['user_id'] ?? 0);
+        $user = $this->findPlatformUser($userId);
+        if (!$user) {
+            return Response::html('<h1>Invalid platform user invite resend request</h1>', 422);
+        }
+
+        $this->queueInviteEmail((string) $user['email'], $user['display_name'] !== null ? (string) $user['display_name'] : null);
+        $this->auditLog?->record('platform.user.invite_resent', null, (int) ($currentUser['user_id'] ?? 0), 'user', (string) $userId, ['email' => (string) $user['email']], $request->server('REMOTE_ADDR'));
+        FlashMessages::success('Platform admin invite resent.');
+
+        return new Response('', 303, ['Location' => '/platform/admin/users?notice=invite-resent']);
+    }
+
+    private function findPlatformUser(int $userId): ?array
+    {
+        foreach ($this->users->platformUsers() as $user) {
+            if ((int) $user['id'] === $userId) {
+                return $user;
+            }
+        }
+
+        return null;
+    }
+
+    private function queueInviteEmail(string $email, ?string $displayName): void
+    {
+        if ($this->emailOutbox === null) {
+            return;
+        }
+
+        $loginUrl = 'https://' . ($_SERVER['HTTP_HOST'] ?? 'artsfol.io') . '/login';
+        $nameLine = $displayName ? "Hello {$displayName}," : 'Hello,';
+        $bodyText = "{$nameLine}\n\nYou have been invited to administer ArtsFolio.\n\nOpen {$loginUrl} to sign in. If you do not have a local password yet, use the password reset flow to set one.\n\nArtsFolio";
+        $bodyHtml = '<p>' . htmlspecialchars($nameLine, ENT_QUOTES, 'UTF-8') . '</p>'
+            . '<p>You have been invited to administer ArtsFolio.</p>'
+            . '<p><a href="' . htmlspecialchars($loginUrl, ENT_QUOTES, 'UTF-8') . '">Open platform login</a></p>'
+            . '<p>If you do not have a local password yet, use the password reset flow to set one.</p>';
+
+        $this->emailOutbox->queue(
+            recipientEmail: $email,
+            subject: 'You have been invited to administer ArtsFolio',
+            bodyText: $bodyText,
+            bodyHtml: $bodyHtml,
+            recipientName: $displayName,
+            tenantId: null,
+            templateKey: 'platform_admin_invite',
+        );
     }
 
     public function updatePassword(Request $request, ?array $currentUser): Response

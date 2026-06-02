@@ -1194,3 +1194,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Free tenant pages show an ArtsFolio notification/link; public pricing explicitly notes this.
 - Platform stats location drill-down now opens IP detail scoped to the selected location rather than the global IP list.
 - Platform tenant status/lifecycle audit calls use the correct `AuditLogRepository::record()` argument order.
+
+## 2026-06-02 platform pricing, tenant lifecycle, and invite controls
+- Platform tenant deletion is soft-delete only, requires a typed `delete` confirmation, writes audit, and removes deleted tenants from the default platform tenant list.
+- Platform pricing is editable from `/platform/admin/pricing`; platform admins can create plans, update prices, set artwork/email limits, custom-domain inclusion, active state, display order, and platform sales commission disclosure.
+- Strawman plans are seeded for Free, Studio, Professional, and Collective; the Free plan includes an ArtsFolio notification/link disclosure.
+- Platform and tenant user admin screens support invite send/resend through the local email outbox.
+- Tenant menu visual settings now suppress the nav panel background and background image when menu opacity is zero or the menu panel is disabled.
+
+# End of file.

@@ -130,7 +130,7 @@ HTML;
         $textBgOpacity = self::safeOpacity((string) $settings->get($tenant, 'text_background_opacity', '0.72'));
         $menuColor = (string) $settings->get($tenant, 'menu_background_color', (string) $settings->get($tenant, 'topbar_background_color', '#fff8ec'));
         $menuOpacity = self::safeOpacity((string) $settings->get($tenant, 'menu_background_opacity', '0.86'));
-        $menuEnabled = (string) $settings->get($tenant, 'menu_background_enabled', '1') !== '0';
+        $menuEnabled = (string) $settings->get($tenant, 'menu_background_enabled', '1') !== '0' && (float) $menuOpacity > 0.0;
         $cardColor = (string) $settings->get($tenant, 'artwork_card_background_color', '#fffaf0');
         $cardOpacity = self::safeOpacity((string) $settings->get($tenant, 'artwork_card_background_opacity', '0.84'));
 
@@ -155,7 +155,7 @@ HTML;
         $vars .= '--artwork-card-bg-overlay:' . self::cssColorWithOpacity($cardColor, $cardOpacity) . ';';
         $vars .= '--artwork-card-bg-opacity:' . $cardOpacity . ';';
         $vars .= '--artwork-card-bg-size:' . self::safeCssSize((string) $settings->get($tenant, 'artwork_card_background_size', 'cover')) . ';';
-        $vars .= self::mediaVar((string) $settings->get($tenant, 'menu_media_uuid', ''), '--menu-bg-image');
+        $vars .= $menuEnabled ? self::mediaVar((string) $settings->get($tenant, 'menu_media_uuid', ''), '--menu-bg-image') : '--menu-bg-image:none;';
         $vars .= self::mediaVar((string) $settings->get($tenant, 'topbar_media_uuid', ''), '--topbar-bg-image');
         $vars .= self::mediaVar((string) $settings->get($tenant, 'artwork_card_media_uuid', ''), '--artwork-card-bg-image');
 

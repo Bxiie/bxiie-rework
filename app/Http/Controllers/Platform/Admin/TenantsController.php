@@ -174,7 +174,7 @@ HTML,
 
     private function tenantStatusActions(int $tenantId, string $status, string $csrf): string
     {
-        $targets = ['active' => 'Activate', 'suspended' => 'Suspend', 'archived' => 'Delete'];
+        $targets = ['active' => 'Activate', 'suspended' => 'Suspend'];
         $html = '';
         foreach ($targets as $target => $label) {
             if ($target === $status) {
@@ -187,6 +187,13 @@ HTML,
                 . '<button type="submit">' . $this->escape($label) . '</button>'
                 . '</form>';
         }
+
+        $html .= '<form method="post" action="/platform/admin/tenants/delete" class="admin-inline-form" onsubmit="this.confirm_delete.value = prompt(&quot;Type delete to remove this tenant from active platform lists. Data is soft-deleted, not physically destroyed.&quot;) || &quot;&quot;; return this.confirm_delete.value === &quot;delete&quot;;">'
+            . '<input type="hidden" name="csrf_token" value="' . $csrf . '">'
+            . '<input type="hidden" name="tenant_id" value="' . $tenantId . '">'
+            . '<input type="hidden" name="confirm_delete" value="">'
+            . '<button type="submit">Delete</button>'
+            . '</form>';
 
         return $html;
     }
@@ -212,6 +219,9 @@ HTML,
         $tenantId = (int) ($_POST['tenant_id'] ?? 0);
         if ($tenantId < 1) {
             return Response::html('<h1>Invalid tenant lifecycle request</h1>', 422);
+        }
+        if ($action === 'delete' && strtolower((string) ($_POST['confirm_delete'] ?? '')) !== 'delete') {
+            return Response::html('<h1>Tenant delete confirmation required</h1>', 422);
         }
         if ($action === 'delete') {
             $this->tenants->deleteTenant($tenantId);
