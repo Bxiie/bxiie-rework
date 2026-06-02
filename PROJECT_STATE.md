@@ -1174,28 +1174,7 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 # End of file.
 
-## 2026-05-31 email platform settings SMTP auth fix
+## Email branding
+- All queued outbound email is branded centrally through `App\Platform\Email\BrandedEmail` from `EmailOutboxRepository::queue()`.
+- Individual email templates should keep message-specific content only and avoid duplicating the shared ArtsFolio header/footer.
 
-- Production email delivery is controlled from Platform Admin > Settings > Email delivery via `platform_settings`; `/etc/artsfolio/artsfolio.env` is only a fallback/bootstrap source for development-style sender creation.
-- `EmailSenderFactory::fromPlatformSettings()` now passes SMTP username, password, and encryption into `SmtpEmailSender`.
-- `SmtpEmailSender` supports STARTTLS, implicit SSL, and SMTP AUTH PLAIN so Postmark and similar relays do not reject mail with relay-access errors when platform settings are complete.
-- SMTP relay failures should be diagnosed by checking Platform Admin SMTP settings, sender/domain verification, and worker logs before editing environment files.
-
-# End of file.
-
-## 2026-05-31 tenant contact styling and admin settings preview fix
-
-- Platform marketing headline changed from `Build the art site you meant to have.` to `A portfolio that works as hard as the art.`.
-- Tenant public contact forms now use shared tenant visual surface settings for panels, labels, inputs, CAPTCHA blocks, and buttons.
-- Tenant Admin > Settings now renders through `TenantAdminLayout`, not the platform `AdminLayout`, so page/top-bar/menu/heading/content/text visual settings apply in tenant admin.
-- `TenantAdminLayout` now exports `--primary`, `--accent`, and `--bg` in addition to tenant surface variables for admin preview consistency.
-
-# End of file.
-
-## 2026-06-01 tenant forms and invite resend correction
-
-- Tenant public contact and signup controllers return JSON for `Accept: application/json` or `X-Requested-With: XMLHttpRequest` submissions, preventing the enhanced form UI from rendering a redirected full page as a red error block after a successful send.
-- Tenant public pages emit one footer mailing-list form and no longer render the retired delayed prompt/modal signup interfaces.
-- Tenant and platform user-management screens include a `Resend invite` action that queues the relevant invite email and writes audit-log entries.
-
-# End of file.

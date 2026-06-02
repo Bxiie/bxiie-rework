@@ -27,6 +27,8 @@ final class EmailOutboxRepository
         ?string $templateKey = null,
         int $availableAfterSeconds = 0,
     ): int {
+        [$bodyText, $bodyHtml] = $this->brandBodies($subject, $bodyText, $bodyHtml);
+
         $stmt = $this->pdo->prepare(
             "INSERT INTO email_outbox (
                 tenant_id,
@@ -64,6 +66,28 @@ final class EmailOutboxRepository
         ]);
 
         return (int) $this->pdo->lastInsertId();
+    }
+
+
+    /**
+     * Ensures every queued email carries ArtsFolio identity, including older
+     * hard-coded invite and notification senders that do not use template files.
+     */
+    private function brandBodies(string $subject, string $bodyText, ?string $bodyHtml): array
+    {
+        $originalBodyText = $bodyText;
+
+        if (!str_contains($bodyText, 'Sent by ArtsFolio.')) {
+            $bodyText = BrandedEmail::text($subject, $bodyText);
+        }
+
+        if ($bodyHtml === null || trim($bodyHtml) === '') {
+            $bodyHtml = BrandedEmail::htmlFromText($subject, $originalBodyText);
+        } elseif (!str_contains($bodyHtml, 'Sent by ArtsFolio.')) {
+            $bodyHtml = BrandedEmail::html($subject, $bodyHtml);
+        }
+
+        return [$bodyText, $bodyHtml];
     }
 
     public function claimNext(): ?array
