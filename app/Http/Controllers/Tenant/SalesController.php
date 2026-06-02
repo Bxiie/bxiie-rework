@@ -75,7 +75,10 @@ final class SalesController
             $rows .= '<tr><td>' . $this->e((string) $item['title_snapshot']) . '</td><td><input type="number" name="quantity[' . (int) $item['id'] . ']" min="0" value="' . (int) $item['quantity'] . '"></td><td>' . $this->money((int) $item['unit_price_cents']) . '</td><td>' . $this->money($line) . '</td></tr>';
         }
 
-        $checkout = $items === [] ? '<p>Your cart is empty.</p>' : '<p><strong>Subtotal:</strong> ' . $this->money($subtotal) . '</p><button type="submit" formaction="/cart/update">Update cart</button> <button type="submit" formaction="/cart/checkout">Checkout with Stripe</button>';
+        $customerEmail = $cart ? $this->e((string) ($cart['customer_email'] ?? '')) : '';
+        $customerName = $cart ? $this->e((string) ($cart['customer_name'] ?? '')) : '';
+        $customerFields = '<fieldset class="tenant-form"><legend>Cart contact</legend><label>Name<input name="customer_name" value="' . $customerName . '" autocomplete="name"></label><label>Email<input type="email" name="customer_email" value="' . $customerEmail . '" autocomplete="email" required></label><p class="muted">Email lets ArtsFolio send checkout reminders for abandoned carts.</p></fieldset>';
+        $checkout = $items === [] ? '<p>Your cart is empty.</p>' : $customerFields . '<p><strong>Subtotal:</strong> ' . $this->money($subtotal) . '</p><button type="submit" formaction="/cart/update">Update cart</button> <button type="submit" formaction="/cart/checkout">Checkout with Stripe</button>';
         $body = '<!doctype html><html><head><meta charset="utf-8"><title>Cart</title><link rel="stylesheet" href="/assets/site.css"></head><body><main class="site-main tenant-content-surface"><h1>Shopping cart</h1><form method="post"><input type="hidden" name="csrf_token" value="' . $csrf . '"><table class="admin-table"><thead><tr><th>Artwork</th><th>Qty</th><th>Unit</th><th>Total</th></tr></thead><tbody>' . $rows . '</tbody></table>' . $checkout . '</form><p><a href="/portfolio">Continue browsing</a></p></main></body></html>';
 
         return Response::html($body, 200, $token !== '' ? ['Set-Cookie' => $this->cartCookie($token)] : []);
@@ -89,6 +92,7 @@ final class SalesController
         $token = $this->cartToken(false);
         if ($token !== '') {
             $cart = $this->sales->cartForToken($tenant, $token);
+            $this->saveCartContact((int) $cart['id']);
             foreach ((array) ($_POST['quantity'] ?? []) as $itemId => $qty) {
                 $this->sales->updateQuantity((int) $cart['id'], (int) $itemId, (int) $qty);
             }
@@ -111,6 +115,7 @@ final class SalesController
         }
 
         $cart = $this->sales->cartForToken($tenant, $token);
+        $this->saveCartContact((int) $cart['id']);
         $items = $this->sales->items($cart);
         $commissionCents = $this->commissionCents($items);
         $order = $this->sales->createOrderFromCart($tenant, $cart, $items, $commissionCents);
@@ -145,12 +150,27 @@ final class SalesController
         return Response::html('<!doctype html><html><head><meta charset="utf-8"><title>Order received</title><link rel="stylesheet" href="/assets/site.css"></head><body><main class="site-main tenant-content-surface"><h1>Order received</h1><p>Thank you. We received ' . $number . ' and the artist will follow up as it moves through the sales workflow.</p><p><a href="/portfolio">Return to portfolio</a></p></main></body></html>');
     }
 
+    private function saveCartContact(int $cartId): void
+    {
+        $email = strtolower(trim((string) ($_POST['customer_email'] ?? '')));
+        $name = trim((string) ($_POST['customer_name'] ?? ''));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return;
+        }
+        try {
+            $stmt = $this->pdo->prepare('UPDATE sales_carts SET customer_email = :email, customer_name = :name, updated_at = CURRENT_TIMESTAMP WHERE id = :id');
+            $stmt->execute(['id' => $cartId, 'email' => $email, 'name' => $name !== '' ? $name : null]);
+        } catch (Throwable) {
+            // Older deployments may not have the cart contact columns until migrations run.
+        }
+    }
+
     private function salesEnabled(TenantContext $tenant): bool
     {
-        $stmt = $this->pdo->prepare('SELECT p.monthly_price_cents FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id WHERE tpa.tenant_id = :tenant_id AND tpa.status IN ("trial", "active", "manual") LIMIT 1');
+        $stmt = $this->pdo->prepare('SELECT p.monthly_price_cents, COALESCE(p.allow_sales, 0) AS allow_sales FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id WHERE tpa.tenant_id = :tenant_id AND tpa.status IN ("trial", "active", "manual") LIMIT 1');
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
         $row = $stmt->fetch();
-        return $row && (int) ($row['monthly_price_cents'] ?? 0) > 0;
+        return $row && (int) ($row['monthly_price_cents'] ?? 0) > 0 && (int) ($row['allow_sales'] ?? 0) === 1;
     }
 
     private function priceCents(string $price): int

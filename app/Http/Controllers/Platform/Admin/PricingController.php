@@ -49,6 +49,10 @@ final class PricingController
             $monthly = number_format(((int) $plan['monthly_price_cents']) / 100, 2, '.', '');
             $artworks = (string) (int) ($plan['allowed_artworks'] ?? 0);
             $emails = (string) (int) ($plan['allowed_email_addresses'] ?? 0);
+            $storage = (string) (int) ($plan['allowed_storage_gb'] ?? 0);
+            $contacts = (string) (int) ($plan['allowed_contact_messages'] ?? 0);
+            $admins = (string) (int) ($plan['allowed_admin_users'] ?? 0);
+            $allowSales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? ' checked' : '';
             $order = (string) (int) ($plan['display_order'] ?? 100);
             $domain = ((int) $plan['custom_domain_included']) === 1 ? ' checked' : '';
             $active = ((int) $plan['is_active']) === 1 ? ' checked' : '';
@@ -60,7 +64,11 @@ final class PricingController
     <td><input type="number" name="plans[{$id}][monthly_price_dollars]" min="0" step="0.01" value="{$monthly}"></td>
     <td><input type="number" name="plans[{$id}][allowed_artworks]" min="0" value="{$artworks}"></td>
     <td><input type="number" name="plans[{$id}][allowed_email_addresses]" min="0" value="{$emails}"></td>
+    <td><input type="number" name="plans[{$id}][allowed_storage_gb]" min="0" value="{$storage}"></td>
+    <td><input type="number" name="plans[{$id}][allowed_contact_messages]" min="0" value="{$contacts}"></td>
+    <td><input type="number" name="plans[{$id}][allowed_admin_users]" min="0" value="{$admins}"></td>
     <td><label><input type="checkbox" name="plans[{$id}][custom_domain_included]" value="1"{$domain}> included</label></td>
+    <td><label><input type="checkbox" name="plans[{$id}][allow_sales]" value="1"{$allowSales}> enabled</label></td>
     <td><label><input type="checkbox" name="plans[{$id}][is_active]" value="1"{$active}> active</label></td>
     <td><input type="number" name="plans[{$id}][display_order]" min="0" value="{$order}"></td>
 </tr>
@@ -82,7 +90,7 @@ HTML;
 <p class="admin-muted">Set public pricing, plan limits, and platform sales commission disclosure. Commission is shown to prospective users on the pricing page and to current users through billing context.</p>
 {$formOpen}
 <section class="admin-panel"><h2>Platform sales commission</h2><label>Commission on sales, percent<input type="number" name="platform_sales_commission_percent" min="0" max="100" step="0.01" value="{$commissionPercent}"></label><p class="admin-muted">Current disclosure: ArtsFolio commission is {$commissionPercent}% of platform-processed sales.</p></section>
-<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Slug</th><th>Name</th><th>Monthly</th><th>Allowed artworks</th><th>Allowed email addresses</th><th>Custom domain</th><th>Status</th><th>Order</th></tr></thead><tbody>{$rows}</tbody></table></div>
+<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Slug</th><th>Name</th><th>Monthly</th><th>Allowed artworks</th><th>Allowed email addresses</th><th>Storage GB</th><th>Contact messages</th><th>Admin users</th><th>Custom domain</th><th>Sales</th><th>Status</th><th>Order</th></tr></thead><tbody>{$rows}</tbody></table></div>
 <section class="admin-panel"><h2>Create plan</h2>
 <div class="admin-form-grid three">
 <label>Slug<input name="new_plan[slug]" pattern="[a-z0-9-]+" placeholder="artist-plus"></label>
@@ -90,8 +98,12 @@ HTML;
 <label>Monthly price<input type="number" name="new_plan[monthly_price_dollars]" min="0" step="0.01" value="0.00"></label>
 <label>Allowed artworks<input type="number" name="new_plan[allowed_artworks]" min="0" value="100"></label>
 <label>Allowed email addresses<input type="number" name="new_plan[allowed_email_addresses]" min="0" value="500"></label>
+<label>Storage GB<input type="number" name="new_plan[allowed_storage_gb]" min="0" value="5"></label>
+<label>Contact messages<input type="number" name="new_plan[allowed_contact_messages]" min="0" value="100"></label>
+<label>Admin users<input type="number" name="new_plan[allowed_admin_users]" min="0" value="3"></label>
 <label>Display order<input type="number" name="new_plan[display_order]" min="0" value="50"></label>
 <label><input type="checkbox" name="new_plan[custom_domain_included]" value="1"> Custom domain included</label>
+<label><input type="checkbox" name="new_plan[allow_sales]" value="1"> Allow sales</label>
 <label><input type="checkbox" name="new_plan[is_active]" value="1" checked> Active</label>
 </div>
 <label>Description<textarea name="new_plan[description]" rows="2" placeholder="Who this plan is for and what it includes."></textarea></label>
@@ -132,10 +144,14 @@ HTML, active: 'pricing'));
             $allowedArtworks = max(0, (int) ($plan['allowed_artworks'] ?? 0));
             $allowedEmails = max(0, (int) ($plan['allowed_email_addresses'] ?? 0));
             $displayOrder = max(0, (int) ($plan['display_order'] ?? 100));
+            $storageGb = max(0, (int) ($plan['allowed_storage_gb'] ?? 0));
+            $contactMessages = max(0, (int) ($plan['allowed_contact_messages'] ?? 0));
+            $adminUsers = max(0, (int) ($plan['allowed_admin_users'] ?? 0));
+            $allowSales = isset($plan['allow_sales']) ? 1 : 0;
             $customDomain = isset($plan['custom_domain_included']) ? 1 : 0;
             $active = isset($plan['is_active']) ? 1 : 0;
-            $stmt = $this->pdo->prepare('UPDATE plans SET name = :name, monthly_price_cents = :monthly_price_cents, description = :description, custom_domain_included = :custom_domain_included, allowed_artworks = :allowed_artworks, allowed_email_addresses = :allowed_email_addresses, display_order = :display_order, is_active = :is_active WHERE id = :id');
-            $stmt->execute(['id' => $id, 'name' => $name, 'monthly_price_cents' => $priceCents, 'description' => $description, 'custom_domain_included' => $customDomain, 'allowed_artworks' => $allowedArtworks, 'allowed_email_addresses' => $allowedEmails, 'display_order' => $displayOrder, 'is_active' => $active]);
+            $stmt = $this->pdo->prepare('UPDATE plans SET name = :name, monthly_price_cents = :monthly_price_cents, description = :description, custom_domain_included = :custom_domain_included, allowed_artworks = :allowed_artworks, allowed_email_addresses = :allowed_email_addresses, allowed_storage_gb = :allowed_storage_gb, allowed_contact_messages = :allowed_contact_messages, allowed_admin_users = :allowed_admin_users, allow_sales = :allow_sales, display_order = :display_order, is_active = :is_active WHERE id = :id');
+            $stmt->execute(['id' => $id, 'name' => $name, 'monthly_price_cents' => $priceCents, 'description' => $description, 'custom_domain_included' => $customDomain, 'allowed_artworks' => $allowedArtworks, 'allowed_email_addresses' => $allowedEmails, 'allowed_storage_gb' => $storageGb, 'allowed_contact_messages' => $contactMessages, 'allowed_admin_users' => $adminUsers, 'allow_sales' => $allowSales, 'display_order' => $displayOrder, 'is_active' => $active]);
         }
 
         $newPlan = is_array($_POST['new_plan'] ?? null) ? $_POST['new_plan'] : [];
@@ -150,10 +166,14 @@ HTML, active: 'pricing'));
             $newAllowedArtworks = max(0, (int) ($newPlan['allowed_artworks'] ?? 0));
             $newAllowedEmails = max(0, (int) ($newPlan['allowed_email_addresses'] ?? 0));
             $newDisplayOrder = max(0, (int) ($newPlan['display_order'] ?? 100));
+            $newStorageGb = max(0, (int) ($newPlan['allowed_storage_gb'] ?? 0));
+            $newContactMessages = max(0, (int) ($newPlan['allowed_contact_messages'] ?? 0));
+            $newAdminUsers = max(0, (int) ($newPlan['allowed_admin_users'] ?? 0));
+            $newAllowSales = isset($newPlan['allow_sales']) ? 1 : 0;
             $newCustomDomain = isset($newPlan['custom_domain_included']) ? 1 : 0;
             $newActive = isset($newPlan['is_active']) ? 1 : 0;
-            $insert = $this->pdo->prepare('INSERT INTO plans (slug, name, monthly_price_cents, description, custom_domain_included, allowed_artworks, allowed_email_addresses, display_order, is_active) VALUES (:slug, :name, :monthly_price_cents, :description, :custom_domain_included, :allowed_artworks, :allowed_email_addresses, :display_order, :is_active) ON DUPLICATE KEY UPDATE name = VALUES(name), monthly_price_cents = VALUES(monthly_price_cents), description = VALUES(description), custom_domain_included = VALUES(custom_domain_included), allowed_artworks = VALUES(allowed_artworks), allowed_email_addresses = VALUES(allowed_email_addresses), display_order = VALUES(display_order), is_active = VALUES(is_active)');
-            $insert->execute(['slug' => $newSlug, 'name' => $newName, 'monthly_price_cents' => $newPriceCents, 'description' => $newDescription, 'custom_domain_included' => $newCustomDomain, 'allowed_artworks' => $newAllowedArtworks, 'allowed_email_addresses' => $newAllowedEmails, 'display_order' => $newDisplayOrder, 'is_active' => $newActive]);
+            $insert = $this->pdo->prepare('INSERT INTO plans (slug, name, monthly_price_cents, description, custom_domain_included, allowed_artworks, allowed_email_addresses, allowed_storage_gb, allowed_contact_messages, allowed_admin_users, allow_sales, display_order, is_active) VALUES (:slug, :name, :monthly_price_cents, :description, :custom_domain_included, :allowed_artworks, :allowed_email_addresses, :allowed_storage_gb, :allowed_contact_messages, :allowed_admin_users, :allow_sales, :display_order, :is_active) ON DUPLICATE KEY UPDATE name = VALUES(name), monthly_price_cents = VALUES(monthly_price_cents), description = VALUES(description), custom_domain_included = VALUES(custom_domain_included), allowed_artworks = VALUES(allowed_artworks), allowed_email_addresses = VALUES(allowed_email_addresses), allowed_storage_gb = VALUES(allowed_storage_gb), allowed_contact_messages = VALUES(allowed_contact_messages), allowed_admin_users = VALUES(allowed_admin_users), allow_sales = VALUES(allow_sales), display_order = VALUES(display_order), is_active = VALUES(is_active)');
+            $insert->execute(['slug' => $newSlug, 'name' => $newName, 'monthly_price_cents' => $newPriceCents, 'description' => $newDescription, 'custom_domain_included' => $newCustomDomain, 'allowed_artworks' => $newAllowedArtworks, 'allowed_email_addresses' => $newAllowedEmails, 'allowed_storage_gb' => $newStorageGb, 'allowed_contact_messages' => $newContactMessages, 'allowed_admin_users' => $newAdminUsers, 'allow_sales' => $newAllowSales, 'display_order' => $newDisplayOrder, 'is_active' => $newActive]);
         }
 
         $this->auditLog?->record('platform.pricing.updated', null, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, 'plans', 'pricing', ['before' => $before, 'after' => ['commission_basis_points' => $commissionBasisPoints, 'plans' => $this->plans()]], $request->server('REMOTE_ADDR'));
@@ -171,6 +191,10 @@ HTML, active: 'pricing'));
             . ($columns['description'] ? ', description' : ', NULL AS description')
             . ($columns['allowed_artworks'] ? ', allowed_artworks' : ', NULL AS allowed_artworks')
             . ($columns['allowed_email_addresses'] ? ', allowed_email_addresses' : ', NULL AS allowed_email_addresses')
+            . ($columns['allowed_storage_gb'] ? ', allowed_storage_gb' : ', 0 AS allowed_storage_gb')
+            . ($columns['allowed_contact_messages'] ? ', allowed_contact_messages' : ', 0 AS allowed_contact_messages')
+            . ($columns['allowed_admin_users'] ? ', allowed_admin_users' : ', 0 AS allowed_admin_users')
+            . ($columns['allow_sales'] ? ', allow_sales' : ', 0 AS allow_sales')
             . ($columns['display_order'] ? ', display_order' : ', 100 AS display_order');
         return $this->pdo->query("SELECT {$select} FROM plans ORDER BY display_order ASC, monthly_price_cents ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -182,7 +206,7 @@ HTML, active: 'pricing'));
 
     private function planColumns(): array
     {
-        $columns = ['description' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'display_order' => false];
+        $columns = ['description' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'allowed_storage_gb' => false, 'allowed_contact_messages' => false, 'allowed_admin_users' => false, 'allow_sales' => false, 'display_order' => false];
         $stmt = $this->pdo->prepare('SELECT column_name FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :table');
         $stmt->execute(['table' => 'plans']);
         foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $column) {

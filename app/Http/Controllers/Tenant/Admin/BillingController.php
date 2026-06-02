@@ -9,6 +9,7 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Http\View\AdminLayout;
 use App\Platform\Tenancy\TenantContext;
+use App\Support\Flash\FlashMessages;
 use PDO;
 use Throwable;
 
@@ -29,46 +30,53 @@ final class BillingController
             return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
         }
 
-        $planKey = $this->setting($tenant, 'billing_plan', 'studio');
+        $plan = $this->currentPlan($tenant) ?? $this->fallbackPlan();
         $plans = $this->plans();
-        $plan = $plans[$planKey] ?? $plans['studio'];
         $usage = $this->usage($tenant);
-
-        $rows = '';
-        foreach ($plan['limits'] as $key => $limit) {
-            $used = $usage[$key] ?? 0;
-            $rows .= '<tr><td>' . $this->e($this->label($key)) . '</td><td>' . $this->e((string) $limit) . '</td><td>' . $this->e((string) $used) . '</td><td>' . $this->e($this->status((float) $used, (float) $limit)) . '</td></tr>';
+        $featureRows = $this->featureRows($plan, $usage, $tenant);
+        $planOptions = '';
+        foreach ($plans as $candidate) {
+            $slug = $this->e((string) $candidate['slug']);
+            $name = $this->e((string) $candidate['name']);
+            $price = $this->money((int) ($candidate['monthly_price_cents'] ?? 0));
+            $selected = (string) $candidate['slug'] === (string) $plan['slug'] ? ' selected' : '';
+            $planOptions .= "<option value=\"{$slug}\"{$selected}>{$name} — {$price}</option>";
         }
 
-        $directory = $this->truthy($this->setting($tenant, 'platform_directory_opt_in', '0')) ? 'Enabled' : 'Off';
-        $analytics = $this->countRows('analytics_events', $tenant);
-        $rows .= '<tr><td>Directory/discovery listing</td><td>Opt-in</td><td>' . $directory . '</td><td>' . ($directory === 'Enabled' ? 'Visible when public content exists' : 'Off') . '</td></tr>';
-        $rows .= '<tr><td>Analytics events</td><td>' . ($planKey === 'starter' ? 'Basic' : 'Advanced') . '</td><td>' . $analytics . '</td><td>' . ($analytics > 0 ? 'Receiving events' : 'No events yet') . '</td></tr>';
         $commission = $this->platformCommissionPercent();
+        $complementary = $this->isComplementary($tenant) ? '<p class="admin-notice admin-notice-info"><strong>Complementary plan:</strong> platform service billing is waived. Platform commission still applies to sales.</p>' : '';
+        $csrf = $this->e($this->csrfToken());
+        $planName = $this->e((string) $plan['name']);
+        $price = $this->money((int) ($plan['monthly_price_cents'] ?? 0));
+        $summary = $this->e((string) ($plan['description'] ?? 'ArtsFolio artist portfolio plan.'));
 
         $body = <<<HTML
 <section class="admin-billing-summary">
   <div class="admin-panel">
     <p class="admin-muted">Current pricing tier</p>
-    <h2>{$this->e($plan['name'])}</h2>
-    <p class="billing-price">{$this->e($plan['price'])}</p>
-    <p>{$this->e($plan['summary'])}</p>
+    <h2>{$planName}</h2>
+    <p class="billing-price">{$price}</p>
+    <p>{$summary}</p>
     <p><strong>Platform sales commission:</strong> {$this->e($commission)}</p>
-    <p><a class="admin-button" href="/pricing">Review public pricing</a></p>
+    {$complementary}
   </div>
   <div class="admin-panel">
-    <p class="admin-muted">Billing status</p>
-    <h2>Manual / pending</h2>
-    <p>Billing-provider integration is not enabled yet. This page exposes the feature map and tenant usage so pricing gates can be added cleanly.</p>
+    <p class="admin-muted">Change plan</p>
+    <form method="post" action="/admin/billing/plan" class="admin-form">
+      <input type="hidden" name="csrf_token" value="{$csrf}">
+      <label>Plan<select name="plan_slug">{$planOptions}</select></label>
+      <button type="submit">Update plan</button>
+    </form>
+    <p class="admin-muted">Upgrade and downgrade changes are recorded immediately. External billing collection remains a platform operations task until subscription billing is connected.</p>
   </div>
 </section>
 
 <section class="admin-panel admin-panel-wide">
   <h2>Feature usage by selected pricing tier</h2>
-  <p class="admin-muted">Usage is calculated from tenant-scoped platform tables when available.</p>
+  <p class="admin-muted">These features match the platform-admin pricing setup fields.</p>
   <div class="admin-table-wrap"><table class="admin-table">
     <thead><tr><th>Feature</th><th>Included</th><th>Used</th><th>Status</th></tr></thead>
-    <tbody>{$rows}</tbody>
+    <tbody>{$featureRows}</tbody>
   </table></div>
 </section>
 HTML;
@@ -76,80 +84,97 @@ HTML;
         return Response::html(AdminLayout::render('Billing', $body));
     }
 
+    public function updatePlan(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'owner'])) {
+            return Response::html('<h1>Forbidden</h1><p>Only tenant owners may change plans.</p>', 403);
+        }
+        if (!$this->validCsrf((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+        $slug = strtolower(trim((string) ($_POST['plan_slug'] ?? '')));
+        $plan = $this->planBySlug($slug);
+        if (!$plan) {
+            return Response::html('<h1>Invalid plan</h1>', 422);
+        }
+        $this->assignPlan($tenant, (int) $plan['id']);
+        $this->setSetting($tenant, 'billing_plan', (string) $plan['slug']);
+        FlashMessages::success('Billing plan updated.');
+        return new Response('', 303, ['Location' => '/admin/billing?notice=plan-updated']);
+    }
+
+    private function featureRows(array $plan, array $usage, TenantContext $tenant): string
+    {
+        $features = [
+            'artworks' => ['Artwork records', (int) ($plan['allowed_artworks'] ?? 0), $usage['artworks']],
+            'storage_gb' => ['Media storage GB', (int) ($plan['allowed_storage_gb'] ?? 0), $usage['storage_gb']],
+            'email_signups' => ['Email subscribers', (int) ($plan['allowed_email_addresses'] ?? 0), $usage['email_signups']],
+            'contact_messages' => ['Contact messages', (int) ($plan['allowed_contact_messages'] ?? 0), $usage['contact_messages']],
+            'custom_domains' => ['Custom domains', (int) ($plan['custom_domain_included'] ?? 0), $usage['custom_domains']],
+            'admin_users' => ['Admin users', (int) ($plan['allowed_admin_users'] ?? 0), $usage['admin_users']],
+            'sales' => ['Online checkout', ((int) ($plan['allow_sales'] ?? 0) === 1 ? 'Included' : 'Paid-plan setting off'), ((int) ($plan['allow_sales'] ?? 0) === 1 ? 'Available' : 'Unavailable')],
+            'directory' => ['Directory/discovery listing', 'Opt-in', $this->truthy($this->setting($tenant, 'platform_directory_opt_in', '0')) ? 'Enabled' : 'Off'],
+            'analytics' => ['Analytics events', ((int) ($plan['monthly_price_cents'] ?? 0) === 0 ? 'Basic' : 'Advanced'), $usage['analytics_events']],
+        ];
+
+        $rows = '';
+        foreach ($features as $key => [$label, $included, $used]) {
+            $status = is_numeric($included) ? $this->status((float) $used, (float) $included) : 'OK';
+            if ($key === 'sales' && $included !== 'Included') {
+                $status = 'Upgrade required';
+            }
+            $rows .= '<tr><td>' . $this->e((string) $label) . '</td><td>' . $this->e((string) $included) . '</td><td>' . $this->e((string) $used) . '</td><td>' . $this->e($status) . '</td></tr>';
+        }
+
+        return $rows;
+    }
+
     private function plans(): array
     {
-        if ($this->tableExists('plans')) {
-            try {
-                $columns = $this->planColumns();
-                $select = 'slug, name, monthly_price_cents, custom_domain_included'
-                    . ($columns['description'] ? ', description' : ', NULL AS description')
-                    . ($columns['allowed_artworks'] ? ', allowed_artworks' : ', NULL AS allowed_artworks')
-                    . ($columns['allowed_email_addresses'] ? ', allowed_email_addresses' : ', NULL AS allowed_email_addresses')
-                    . ($columns['display_order'] ? ', display_order' : ', 100 AS display_order');
-                $stmt = $this->pdo->query("SELECT {$select} FROM plans WHERE is_active = 1 ORDER BY display_order ASC, monthly_price_cents ASC, id ASC");
-                $plans = [];
-                foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-                    $slug = (string) $row['slug'];
-                    $plans[$slug] = [
-                        'name' => (string) $row['name'],
-                        'price' => ((int) $row['monthly_price_cents']) === 0 ? '$0' : '$' . number_format(((int) $row['monthly_price_cents']) / 100, 2) . ' / month',
-                        'summary' => (string) ($row['description'] ?? 'ArtsFolio artist portfolio plan.'),
-                        'limits' => [
-                            'artworks' => (int) ($row['allowed_artworks'] ?? 0),
-                            'storage_gb' => 0,
-                            'email_signups' => (int) ($row['allowed_email_addresses'] ?? 0),
-                            'contact_messages' => 0,
-                            'custom_domains' => (int) $row['custom_domain_included'],
-                            'admin_users' => 0,
-                        ],
-                    ];
-                }
-                if ($plans !== []) {
-                    return $plans;
-                }
-            } catch (Throwable) {
-                // Fall back to static plan labels when a migration is mid-flight.
-            }
+        if (!$this->tableExists('plans')) {
+            return [$this->fallbackPlan()];
         }
-
-        return [
-            'free' => ['name' => 'Free', 'price' => '$0', 'summary' => 'For launching a compact artist portfolio.', 'limits' => ['artworks' => 25, 'storage_gb' => 0, 'email_signups' => 100, 'contact_messages' => 0, 'custom_domains' => 0, 'admin_users' => 1]],
-            'studio' => ['name' => 'Studio', 'price' => '$12.00 / month', 'summary' => 'For active artists who need analytics, subscribers, and sections.', 'limits' => ['artworks' => 250, 'storage_gb' => 0, 'email_signups' => 2500, 'contact_messages' => 0, 'custom_domains' => 0, 'admin_users' => 3]],
-            'pro' => ['name' => 'Professional', 'price' => '$24.00 / month', 'summary' => 'For artists who need a custom domain and advanced branding.', 'limits' => ['artworks' => 1000, 'storage_gb' => 0, 'email_signups' => 10000, 'contact_messages' => 0, 'custom_domains' => 1, 'admin_users' => 10]],
-        ];
+        $stmt = $this->pdo->query('SELECT * FROM plans WHERE is_active = 1 ORDER BY display_order ASC, monthly_price_cents ASC, id ASC');
+        $plans = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+        return $plans !== [] ? $plans : [$this->fallbackPlan()];
     }
 
-
-    private function platformCommissionPercent(): string
+    private function currentPlan(TenantContext $tenant): ?array
     {
-        if (!$this->tableExists('platform_settings')) {
-            return 'Configured by ArtsFolio';
+        if ($this->tableExists('tenant_plan_assignments')) {
+            $stmt = $this->pdo->prepare('SELECT p.* FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id WHERE tpa.tenant_id = :tenant_id AND tpa.status IN ("trial", "active", "manual") ORDER BY tpa.id DESC LIMIT 1');
+            $stmt->execute(['tenant_id' => $tenant->tenantId]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                return $row;
+            }
         }
-        try {
-            $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'platform_sales_commission_basis_points' LIMIT 1");
-            $stmt->execute();
-            $basisPoints = max(0, min(10000, (int) ($stmt->fetchColumn() ?: 500)));
-            return number_format($basisPoints / 100, 2) . '% of platform-processed sales';
-        } catch (Throwable) {
-            return 'Configured by ArtsFolio';
-        }
+        return $this->planBySlug($this->setting($tenant, 'billing_plan', 'studio'));
     }
 
-    private function planColumns(): array
+    private function planBySlug(string $slug): ?array
     {
-        $columns = ['description' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'display_order' => false];
-        try {
-            $stmt = $this->pdo->prepare('SELECT column_name FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :table');
-            $stmt->execute(['table' => 'plans']);
-            foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $column) {
-                if (array_key_exists((string) $column, $columns)) {
-                    $columns[(string) $column] = true;
-                }
-            }
-        } catch (Throwable) {
-            return $columns;
+        if (!$this->tableExists('plans')) {
+            return null;
         }
-        return $columns;
+        $stmt = $this->pdo->prepare('SELECT * FROM plans WHERE slug = :slug AND is_active = 1 LIMIT 1');
+        $stmt->execute(['slug' => $slug]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    private function assignPlan(TenantContext $tenant, int $planId): void
+    {
+        if (!$this->tableExists('tenant_plan_assignments')) {
+            return;
+        }
+        $stmt = $this->pdo->prepare('INSERT INTO tenant_plan_assignments (tenant_id, plan_id, status) VALUES (:tenant_id, :plan_id, "manual") ON DUPLICATE KEY UPDATE plan_id = VALUES(plan_id), status = "manual"');
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'plan_id' => $planId]);
+    }
+
+    private function fallbackPlan(): array
+    {
+        return ['id' => 0, 'slug' => 'studio', 'name' => 'Studio', 'monthly_price_cents' => 1200, 'description' => 'For active artists.', 'allowed_artworks' => 250, 'allowed_storage_gb' => 5, 'allowed_email_addresses' => 2500, 'allowed_contact_messages' => 250, 'custom_domain_included' => 0, 'allowed_admin_users' => 3, 'allow_sales' => 1];
     }
 
     private function usage(TenantContext $tenant): array
@@ -161,12 +186,30 @@ HTML;
             'contact_messages' => $this->countRows('contact_messages', $tenant),
             'custom_domains' => $this->countRows('tenant_domains', $tenant),
             'admin_users' => $this->countMemberships($tenant),
+            'analytics_events' => $this->countRows('analytics_events', $tenant),
         ];
     }
 
-    private function label(string $key): string
+    private function platformCommissionPercent(): string
     {
-        return ['artworks'=>'Artwork records','storage_gb'=>'Media storage GB','email_signups'=>'Email subscribers','contact_messages'=>'Contact messages','custom_domains'=>'Custom domains','admin_users'=>'Admin users'][$key] ?? $key;
+        try {
+            $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'platform_sales_commission_basis_points' LIMIT 1");
+            $stmt->execute();
+            $basisPoints = max(0, min(10000, (int) ($stmt->fetchColumn() ?: 500)));
+            return number_format($basisPoints / 100, 2) . '% of platform-processed sales';
+        } catch (Throwable) {
+            return 'Configured by ArtsFolio';
+        }
+    }
+
+    private function isComplementary(TenantContext $tenant): bool
+    {
+        if (!$this->columnExists('tenants', 'complementary')) {
+            return false;
+        }
+        $stmt = $this->pdo->prepare('SELECT complementary FROM tenants WHERE id = :tenant_id LIMIT 1');
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+        return (int) $stmt->fetchColumn() === 1;
     }
 
     private function status(float $used, float $limit): string
@@ -180,7 +223,6 @@ HTML;
         if ($limit > 0 && $used >= $limit * 0.8) {
             return 'Near limit';
         }
-
         return 'OK';
     }
 
@@ -211,7 +253,6 @@ HTML;
             } catch (Throwable) {
             }
         }
-
         return 0;
     }
 
@@ -225,40 +266,53 @@ HTML;
                 if (!$this->columnExists($table, $column)) {
                     continue;
                 }
-                try {
-                    $stmt = $this->pdo->prepare("SELECT COALESCE(SUM({$column}),0) FROM {$table} WHERE tenant_id = :tenant_id");
-                    $stmt->execute(['tenant_id' => $tenant->tenantId]);
-                    return round(((float) $stmt->fetchColumn()) / 1024 / 1024 / 1024, 2);
-                } catch (Throwable) {
-                }
+                $stmt = $this->pdo->prepare("SELECT COALESCE(SUM({$column}),0) FROM {$table} WHERE tenant_id = :tenant_id");
+                $stmt->execute(['tenant_id' => $tenant->tenantId]);
+                return round(((float) $stmt->fetchColumn()) / 1024 / 1024 / 1024, 2);
             }
         }
-
         return 0.0;
     }
 
     private function setting(TenantContext $tenant, string $key, string $default = ''): string
     {
-        foreach (['tenant_settings', 'settings'] as $table) {
-            if (!$this->tableExists($table)) {
-                continue;
-            }
-            try {
-                $stmt = $this->pdo->prepare("SELECT setting_value FROM {$table} WHERE tenant_id = :tenant_id AND setting_key = :setting_key LIMIT 1");
-                $stmt->execute(['tenant_id' => $tenant->tenantId, 'setting_key' => $key]);
-                $value = $stmt->fetchColumn();
-                return $value === false ? $default : (string) $value;
-            } catch (Throwable) {
-            }
+        if (!$this->tableExists('tenant_settings')) {
+            return $default;
         }
+        $stmt = $this->pdo->prepare('SELECT setting_value FROM tenant_settings WHERE tenant_id = :tenant_id AND setting_key = :setting_key LIMIT 1');
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'setting_key' => $key]);
+        $value = $stmt->fetchColumn();
+        return $value === false ? $default : (string) $value;
+    }
 
-        return $default;
+    private function setSetting(TenantContext $tenant, string $key, string $value): void
+    {
+        $stmt = $this->pdo->prepare('INSERT INTO tenant_settings (tenant_id, setting_key, setting_value, updated_at) VALUES (:tenant_id, :setting_key, :setting_value, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = CURRENT_TIMESTAMP');
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'setting_key' => $key, 'setting_value' => $value]);
+    }
+
+    private function validCsrf(string $token): bool
+    {
+        return isset($_SESSION['csrf_token']) && hash_equals((string) $_SESSION['csrf_token'], $token);
+    }
+
+    private function csrfToken(): string
+    {
+        if (empty($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return (string) $_SESSION['csrf_token'];
+    }
+
+    private function money(int $cents): string
+    {
+        return $cents === 0 ? '$0' : '$' . number_format($cents / 100, 2) . ' / month';
     }
 
     private function tableExists(string $table): bool
     {
         try {
-            $stmt = $this->pdo->query("SHOW TABLES LIKE " . $this->pdo->quote($table));
+            $stmt = $this->pdo->query('SHOW TABLES LIKE ' . $this->pdo->quote($table));
             return (bool) ($stmt && $stmt->fetchColumn());
         } catch (Throwable) {
             return false;
@@ -277,7 +331,7 @@ HTML;
 
     private function truthy(string $value): bool
     {
-        return in_array(strtolower(trim($value)), ['1','true','yes','on'], true);
+        return in_array(strtolower(trim($value)), ['1', 'true', 'yes', 'on'], true);
     }
 
     private function e(string $value): string

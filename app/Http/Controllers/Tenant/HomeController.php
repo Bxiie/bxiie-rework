@@ -495,11 +495,10 @@ HTML;
      */
     private function tenantAdminLink(): string
     {
-        $currentUser = $GLOBALS['artsfolio_current_user'] ?? null;
-        if (!is_array($currentUser) || empty($currentUser['user_id'])) {
-            return '';
-        }
-
+        // Always expose the tenant-admin entry point on tenant hosts so custom
+        // domains and artsfol.io subdomains behave the same. The /admin route
+        // still enforces tenant login and role authorization before showing
+        // private admin content.
         return '<a class="tenant-admin-top-link" href="/admin">Admin</a>';
     }
 
@@ -524,6 +523,7 @@ HTML;
         $contactSlug = $this->escape($this->settings->get($tenant, 'contact_slug', 'contact'));
         $backgroundStyle = $this->backgroundCssVariables($tenant);
         $footerSignupForm = $this->footerSignupForm($tenant, $contactSlug);
+        $socialLinks = $this->socialFooterLinks($tenant);
         $platformAdminLink = $this->tenantAdminLink();
 
         return <<<HTML
@@ -555,6 +555,7 @@ HTML;
 <footer class="site-footer tenant-public-footer">
     <span>© {$year} {$copyrightName}</span>
     {$this->artsfolioFreePlanLink($tenant)}
+    {$socialLinks}
     {$footerSignupForm}
 </footer>
 {$this->cookieConsentBanner()}
@@ -616,12 +617,51 @@ HTML;
      */
     private function artsfolioFreePlanLink(TenantContext $tenant): string
     {
-        $plan = strtolower((string) $this->settings->get($tenant, 'billing_plan', 'studio'));
+        $plan = strtolower($this->effectivePlanSlug($tenant));
         if (!in_array($plan, ['free', 'starter'], true)) {
             return '';
         }
 
         return '<span class="tenant-powered-by"><a href="https://artsfol.io/" rel="noopener">Created with ArtsFolio</a></span>';
+    }
+
+    /**
+     * Builds tenant social links from content settings.
+     */
+    private function socialFooterLinks(TenantContext $tenant): string
+    {
+        $links = [];
+        foreach ([
+            'instagram_url' => 'Instagram',
+            'facebook_url' => 'Facebook',
+            'linkedin_url' => 'LinkedIn',
+        ] as $key => $label) {
+            $url = trim((string) $this->settings->get($tenant, $key, ''));
+            if ($url === '' || !preg_match('#^https?://#i', $url)) {
+                continue;
+            }
+            $links[] = '<a href="' . $this->escape($url) . '" rel="me noopener" target="_blank">' . $this->escape($label) . '</a>';
+        }
+
+        return $links === [] ? '' : '<nav class="tenant-social-links" aria-label="Social links">' . implode(' ', $links) . '</nav>';
+    }
+
+    /**
+     * Returns the database-selected plan before falling back to legacy tenant settings.
+     */
+    private function effectivePlanSlug(TenantContext $tenant): string
+    {
+        try {
+            $stmt = $this->pdo->prepare('SELECT p.slug FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id WHERE tpa.tenant_id = :tenant_id AND tpa.status IN ("trial", "active", "manual") ORDER BY tpa.id DESC LIMIT 1');
+            $stmt->execute(['tenant_id' => $tenant->tenantId]);
+            $slug = $stmt->fetchColumn();
+            if (is_string($slug) && $slug !== '') {
+                return $slug;
+            }
+        } catch (Throwable) {
+        }
+
+        return (string) $this->settings->get($tenant, 'billing_plan', 'studio');
     }
 
     /**

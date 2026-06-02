@@ -1224,9 +1224,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 # End of file.
 
-## Sales phase 3 analytics
+## 2026-06-02 pricing, billing, auth, and social stabilization
+- Tenant custom domains and tenant subdomains share the same tenant route set; tenant `/signup` redirects to the tenant signup/contact surface instead of 404.
+- Tenant `/password/forgot` accepts POST, creates password reset tokens, and queues branded reset email through `email_outbox`.
+- Platform pricing setup now includes the same billing features shown in tenant usage: artwork records, media storage GB, email subscribers, contact messages, custom domains, admin users, and online checkout/allow-sales.
+- Tenant owners can upgrade or downgrade from `/admin/billing`; the change updates `tenant_plan_assignments` and legacy `tenant_settings.billing_plan`.
+- Platform tenant detail includes a complementary billing override. Complementary tenants do not pay platform service billing but still pay platform commission on sales.
+- Tenant footer renders configured Instagram, Facebook, and LinkedIn URLs.
+- Cart contact email is collected before checkout, and `scripts/email/queue_abandoned_cart_emails.php` queues 12-hour and 24-hour abandoned-cart reminders without sending SMTP directly.
+- Production smoke/predeploy tests must not send real emails; delivery remains worker-owned and should only be triggered manually against a safe SMTP sink.
 
-- Added tenant sales analytics at `/admin/sales/analytics`.
-- Added platform sales analytics at `/platform/admin/sales/analytics`.
-- Analytics use existing sales order and order item tables; no new migration is required.
-- Paid sales metrics count `payment_status = "paid"`; workflow summaries show operational order state.
+# End of file.

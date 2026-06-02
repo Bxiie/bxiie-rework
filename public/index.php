@@ -15,7 +15,6 @@ use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Platform\Admin\DashboardController as PlatformAdminDashboardController;
 use App\Http\Controllers\Platform\Admin\PricingController as PlatformAdminPricingController;
 use App\Http\Controllers\Platform\Admin\SalesController as PlatformAdminSalesController;
-use App\Http\Controllers\Platform\Admin\SalesAnalyticsController as PlatformAdminSalesAnalyticsController;
 use App\Http\Controllers\Platform\Admin\SettingsController as PlatformAdminSettingsController;
 use App\Http\Controllers\Platform\Admin\SignupCodesController as PlatformAdminSignupCodesController;
 use App\Http\Controllers\Platform\Admin\RoutesController as PlatformAdminRoutesController;
@@ -59,7 +58,6 @@ use App\Http\Controllers\Tenant\Admin\AuditLogController as TenantAdminAuditLogC
 use App\Http\Controllers\Tenant\Admin\ContactMessagesController as TenantAdminContactMessagesController;
 use App\Http\Controllers\Tenant\Admin\BillingController as TenantAdminBillingController;
 use App\Http\Controllers\Tenant\Admin\SalesController as TenantAdminSalesController;
-use App\Http\Controllers\Tenant\Admin\SalesAnalyticsController as TenantAdminSalesAnalyticsController;
 use App\Http\Controllers\Tenant\Admin\UsersController as TenantAdminUsersController;
 use App\Http\Controllers\Tenant\ContactController;
 use App\Http\Middleware\BearerTokenAuth;
@@ -84,6 +82,10 @@ use App\Platform\Workers\WorkerHeartbeatRepository;
 use App\Platform\Auth\OAuth\BearerTokenRepository;
 use App\Platform\Auth\OAuth\BearerTokenService;
 use App\Platform\Auth\Password\PasswordAuthService;
+use App\Platform\Auth\Password\PasswordResetService;
+use App\Platform\Auth\Password\PasswordResetTokenRepository;
+use App\Platform\Email\LifecycleEmailService;
+use App\Platform\Email\TemplateRenderer;
 use App\Platform\Auth\Session\SessionRepository;
 use App\Platform\Auth\Session\SessionTokenService;
 use App\Platform\Identity\PasswordHasher;
@@ -282,12 +284,28 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
         $router->get('/admin/login', fn (Request $request): Response => new Response('', 303, ['Location' => '/login']));
         $router->get('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), $csrf, $tenantSettings))->show($request, $tenant));
     $router->get('/register', fn (Request $request): Response => Response::html(AuthPage::register('/register')));
-    $router->get('/password/forgot', fn (Request $request): Response => Response::html(AuthPage::forgotPassword('/password/forgot')));
+    $router->get('/password/forgot', fn (Request $request): Response => Response::html(AuthPage::forgotPassword('/password/forgot', (new CsrfTokenService())->getOrCreate())));
+        $router->post('/password/forgot', function (Request $request) use ($pdo, $root): Response {
+            $csrf = new CsrfTokenService();
+            if (!$csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+                return Response::html(AuthPage::forgotPassword('/password/forgot', $csrf->getOrCreate()) . '<p class="error">The security check expired. Please try again.</p>', 419);
+            }
+            $email = strtolower(trim((string) ($_POST['email'] ?? '')));
+            if ($email !== '') {
+                $reset = (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->createResetTokenForEmail($email);
+                if ($reset) {
+                    $host = $request->host();
+                    $resetUrl = 'https://' . $host . '/password/reset?token=' . rawurlencode((string) $reset['reset_token']);
+                    (new LifecycleEmailService(new EmailOutboxRepository($pdo), new TemplateRenderer(), $root . '/template/email'))->queuePasswordReset($email, $resetUrl, (int) $reset['user_id']);
+                }
+            }
+            return Response::html(AuthPage::pageMessage('Password reset requested', 'If that email address exists, a reset link has been queued.'));
+        });
     $router->get('/admin/login', fn (Request $request): Response => new Response('', 303, ['Location' => '/login']));
     $router->get('/admin', fn (Request $request): Response => (new TenantAdminDashboardController($tenantSettings))->index($request, $tenant, $currentUser));
         $router->get('/admin/billing', fn (Request $request): Response => (new TenantAdminBillingController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->index($request, $tenant, $currentUser));
+        $router->post('/admin/billing/plan', fn (Request $request): Response => (new TenantAdminBillingController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->updatePlan($request, $tenant, $currentUser));
         $router->get('/admin/sales', fn (Request $request): Response => (new TenantAdminSalesController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new SalesRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $tenant, $currentUser));
-        $router->get('/admin/sales/analytics', fn (Request $request): Response => (new TenantAdminSalesAnalyticsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new SalesRepository($pdo)))->index($request, $tenant, $currentUser));
         $router->post('/admin/sales/update', fn (Request $request): Response => (new TenantAdminSalesController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new SalesRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->update($request, $tenant, $currentUser));
         $router->get('/admin/users', fn (Request $request): Response => (new TenantAdminUsersController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), $tenantSettings, new AuditLogRepository($pdo), new EmailOutboxRepository($pdo)))->index($request, $tenant, $currentUser));
         $router->post('/admin/users/password', fn (Request $request): Response => (new TenantAdminUsersController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), $tenantSettings, new AuditLogRepository($pdo), new EmailOutboxRepository($pdo)))->updatePassword($request, $tenant, $currentUser));
@@ -316,6 +334,7 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
         $router->post('/admin/settings', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo), $pdo))->update($request, $tenant, $currentUser));
         $router->get('/contact', fn (Request $request): Response => $tenantController->contact($request, $tenant));
         $router->post('/contact', fn (Request $request): Response => $contactController->submit($request, $tenant));
+        $router->get('/signup', fn (Request $request): Response => new Response('', 303, ['Location' => '/' . $contactSlug]));
         $router->post('/signup', fn (Request $request): Response => $signupController->submit($request, $tenant));
         $tenantSalesController = new TenantSalesController(new SalesRepository($pdo), new TenantSettingsRepository($pdo), new PlatformSettingsRepository($pdo), new CsrfTokenService(), $pdo);
         $router->get('/cart', fn (Request $request): Response => $tenantSalesController->cart($request, $tenant));
@@ -419,13 +438,13 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->get('/platform/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
     $router->get('/platform/admin/pricing', fn (Request $request): Response => (new PlatformAdminPricingController(new RequirePlatformRole(new MembershipRepository($pdo)), $pdo, new PlatformSettingsRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
     $router->get('/platform/admin/sales', fn (Request $request): Response => (new PlatformAdminSalesController(new RequirePlatformRole(new MembershipRepository($pdo)), new SalesRepository($pdo)))->index($request, $currentUser));
-    $router->get('/platform/admin/sales/analytics', fn (Request $request): Response => (new PlatformAdminSalesAnalyticsController(new RequirePlatformRole(new MembershipRepository($pdo)), new SalesRepository($pdo)))->index($request, $currentUser));
     $router->post('/platform/admin/pricing', fn (Request $request): Response => (new PlatformAdminPricingController(new RequirePlatformRole(new MembershipRepository($pdo)), $pdo, new PlatformSettingsRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->update($request, $currentUser));
     $router->get('/platform/admin/settings', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/platform-settings']));
     $router->get('/platform/admin/routes', fn (Request $request): Response => (new PlatformAdminRoutesController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
     $router->get('/platform/admin/tenants', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
     $router->get('/platform/admin/tenants/{id}', fn (Request $request, array $params): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->show($request, $currentUser, (int) ($params['id'] ?? 0)));
     $router->post('/platform/admin/tenants/users/password', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->updateTenantUserPassword($request, $currentUser));
+    $router->post('/platform/admin/tenants/complementary', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->updateComplementary($request, $currentUser));
     $router->post('/platform/admin/users/suspend', fn (Request $request): Response => (new PlatformAdminUsersController(new RequirePlatformRole(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->suspend($request, $currentUser));
     $router->post('/platform/admin/users/delete', fn (Request $request): Response => (new PlatformAdminUsersController(new RequirePlatformRole(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->delete($request, $currentUser));
     $router->post('/platform/admin/tenants/suspend', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->suspend($request, $currentUser));

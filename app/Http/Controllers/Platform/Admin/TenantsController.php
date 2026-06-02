@@ -118,12 +118,61 @@ HTML;
 {$notice}
 <p><strong>Slug:</strong> {$tenantSlug}</p>
 {$tenantLink}
+
+<section class="admin-panel">
+    <h2>Billing override</h2>
+    <form method="post" action="/platform/admin/tenants/complementary" class="admin-inline-form">
+        <input type="hidden" name="csrf_token" value="{$csrf}">
+        <input type="hidden" name="tenant_id" value="{$tenantId}">
+        <label><input type="checkbox" name="complementary" value="1"{$this->complementaryChecked($tenantId)}> Complementary tenant, no platform service billing</label>
+        <button type="submit">Save billing override</button>
+    </form>
+    <p class="admin-muted">Complementary tenants still pay platform commission on sales.</p>
+</section>
 <table class="admin-table">
     <thead><tr><th>ID</th><th>User</th><th>Membership</th><th>Roles</th><th>Last log on</th><th>Password</th></tr></thead>
     <tbody>{$rows}</tbody>
 </table>
 HTML,
         ));
+    }
+
+    public function updateComplementary(Request $request, ?array $currentUser): Response
+    {
+        if (!$this->canManageTenants($currentUser) || !$this->csrf) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+        $tenantId = (int) ($_POST['tenant_id'] ?? 0);
+        if ($tenantId < 1) {
+            return Response::html('<h1>Invalid tenant billing override request</h1>', 422);
+        }
+        $enabled = isset($_POST['complementary']) ? 1 : 0;
+        $stmt = $this->pdo()->prepare('UPDATE tenants SET complementary = :enabled, updated_at = CURRENT_TIMESTAMP WHERE id = :tenant_id');
+        $stmt->execute(['enabled' => $enabled, 'tenant_id' => $tenantId]);
+        $this->auditLog?->record('platform.tenant.complementary_updated', null, (int) ($currentUser['user_id'] ?? 0), 'tenant', (string) $tenantId, ['complementary' => $enabled], $request->server('REMOTE_ADDR'));
+        FlashMessages::success('Tenant billing override updated.');
+        return new Response('', 303, ['Location' => '/platform/admin/tenants/' . $tenantId . '?notice=complementary-updated']);
+    }
+
+    private function complementaryChecked(int $tenantId): string
+    {
+        try {
+            $stmt = $this->pdo()->prepare('SELECT complementary FROM tenants WHERE id = :tenant_id LIMIT 1');
+            $stmt->execute(['tenant_id' => $tenantId]);
+            return (int) $stmt->fetchColumn() === 1 ? ' checked' : '';
+        } catch (\Throwable) {
+            return '';
+        }
+    }
+
+    private function pdo(): \PDO
+    {
+        $ref = new \ReflectionProperty($this->tenants, 'pdo');
+        $ref->setAccessible(true);
+        return $ref->getValue($this->tenants);
     }
 
     public function updateTenantUserPassword(Request $request, ?array $currentUser): Response

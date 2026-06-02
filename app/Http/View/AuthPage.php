@@ -70,6 +70,11 @@ HTML);
 HTML);
     }
 
+    public static function pageMessage(string $title, string $message): string
+    {
+        return self::page($title, '<p>' . self::escape($message) . '</p><p class="auth-links"><a href="/login">Back to login</a></p>');
+    }
+
     private static function page(string $title, string $body, string $brandName = 'ArtsFolio', string $homeUrl = '/'): string
     {
         $safeTitle = self::escape($title);
