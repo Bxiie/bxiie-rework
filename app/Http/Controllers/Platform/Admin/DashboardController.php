@@ -99,10 +99,11 @@ HTML;
         $tenantsTotal = $this->scalarInt("SELECT COUNT(*) FROM tenants WHERE status <> 'deleted'");
         $activeTenants = $this->scalarInt("SELECT COUNT(*) FROM tenants WHERE status IN ('active','trial')");
         $complementaryTenants = $this->columnExists('tenants', 'complementary') ? $this->scalarInt('SELECT COUNT(*) FROM tenants WHERE complementary = 1 AND status <> "deleted"') : 0;
-        $paidTenants = $this->scalarInt('SELECT COUNT(DISTINCT tpa.tenant_id) FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id JOIN tenants t ON t.id = tpa.tenant_id WHERE t.status <> "deleted" AND p.monthly_price_cents > 0');
+        $paidTenants = $this->scalarInt('SELECT COUNT(DISTINCT t.id) FROM tenants t LEFT JOIN tenant_plan_assignments tpa ON tpa.tenant_id = t.id LEFT JOIN plans p ON p.id = tpa.plan_id LEFT JOIN tenant_settings ts ON ts.tenant_id = t.id AND ts.setting_key = "billing_plan" LEFT JOIN plans ps ON ps.slug = ts.setting_value WHERE t.status <> "deleted" AND COALESCE(p.monthly_price_cents, ps.monthly_price_cents, 0) > 0');
         $gmv30d = $this->scalarInt('SELECT COALESCE(SUM(total_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
         $commission30d = $this->scalarInt('SELECT COALESCE(SUM(commission_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
-        $sellerNet30d = $this->scalarInt('SELECT COALESCE(SUM(seller_net_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
+        $cardFees30d = $this->columnExists('sales_orders', 'credit_card_fee_cents') ? $this->scalarInt('SELECT COALESCE(SUM(credit_card_fee_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")') : 0;
+        $sellerNet30d = $this->columnExists('sales_orders', 'seller_net_cents') ? $this->scalarInt('SELECT COALESCE(SUM(seller_net_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")') : 0;
         $orders30d = $this->scalarInt('SELECT COUNT(*) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)');
         $openContacts = $this->scalarInt("SELECT COUNT(*) FROM contact_messages WHERE status IN ('new','read')");
         $jobsQueued = $this->scalarInt("SELECT COUNT(*) FROM background_jobs WHERE status IN ('queued','running')");
@@ -116,7 +117,7 @@ HTML;
             'gmv_30d' => $gmv30d,
             'sales_detail' => $this->number($orders30d) . ' orders in the last 30 days',
             'commission_30d' => $commission30d,
-            'commission_detail' => 'Seller net ' . $this->money($sellerNet30d) . ' in the last 30 days',
+            'commission_detail' => 'Card fees ' . $this->money($cardFees30d) . ' · seller net ' . $this->money($sellerNet30d),
             'open_contacts' => $this->number($openContacts),
             'contact_detail' => 'Tenant and platform contact follow-up queue',
             'jobs_attention' => $this->number($jobsQueued) . ' / ' . $this->number($jobsFailed),
@@ -156,9 +157,17 @@ HTML;
     private function recentTenantRows(): string
     {
         try {
-            $planSelect = $this->tableExists('tenant_plan_assignments') ? 'p.name AS plan_name,' : "'' AS plan_name,";
-            $join = $this->tableExists('tenant_plan_assignments') ? 'LEFT JOIN tenant_plan_assignments tpa ON tpa.tenant_id = t.id LEFT JOIN plans p ON p.id = tpa.plan_id' : '';
-            $stmt = $this->pdo()->query("SELECT t.name, t.slug, t.status, t.created_at, {$planSelect} COALESCE(t.complementary, 0) AS complementary FROM tenants t {$join} WHERE t.status <> 'deleted' ORDER BY t.created_at DESC LIMIT 8");
+            $hasComplementary = $this->columnExists('tenants', 'complementary');
+            $complementarySelect = $hasComplementary ? 'COALESCE(t.complementary, 0)' : '0';
+            $stmt = $this->pdo()->query("SELECT t.name, t.slug, t.status, t.created_at, COALESCE(p.name, ps.name, ts.setting_value, '') AS plan_name, {$complementarySelect} AS complementary
+                FROM tenants t
+                LEFT JOIN tenant_plan_assignments tpa ON tpa.tenant_id = t.id
+                LEFT JOIN plans p ON p.id = tpa.plan_id
+                LEFT JOIN tenant_settings ts ON ts.tenant_id = t.id AND ts.setting_key = 'billing_plan'
+                LEFT JOIN plans ps ON ps.slug = ts.setting_value
+                WHERE t.status <> 'deleted'
+                ORDER BY t.created_at DESC
+                LIMIT 8");
             $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
         } catch (Throwable) {
             $rows = [];
@@ -240,10 +249,15 @@ HTML;
 
     private function tableExists(string $table): bool
     {
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $table)) {
+            return false;
+        }
+
         try {
-            $stmt = $this->pdo()->prepare('SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table');
-            $stmt->execute(['table' => $table]);
-            return (int) $stmt->fetchColumn() > 0;
+            // SHOW TABLES has proven more reliable across MariaDB grants than
+            // information_schema during production preflight and dashboard reads.
+            $stmt = $this->pdo()->query("SHOW TABLES LIKE " . $this->pdo()->quote($table));
+            return $stmt !== false && $stmt->fetchColumn() !== false;
         } catch (Throwable) {
             return false;
         }
@@ -251,10 +265,15 @@ HTML;
 
     private function columnExists(string $table, string $column): bool
     {
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $table) || !preg_match('/^[A-Za-z0-9_]+$/', $column)) {
+            return false;
+        }
+
         try {
-            $stmt = $this->pdo()->prepare('SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table AND COLUMN_NAME = :column');
-            $stmt->execute(['table' => $table, 'column' => $column]);
-            return (int) $stmt->fetchColumn() > 0;
+            // Use SHOW COLUMNS so optional dashboard columns work even when the
+            // database user has limited information_schema visibility.
+            $stmt = $this->pdo()->query('SHOW COLUMNS FROM `' . $table . '` LIKE ' . $this->pdo()->quote($column));
+            return $stmt !== false && $stmt->fetchColumn() !== false;
         } catch (Throwable) {
             return false;
         }

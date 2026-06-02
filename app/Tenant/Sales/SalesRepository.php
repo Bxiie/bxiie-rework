@@ -216,6 +216,175 @@ final class SalesRepository
         }
     }
 
+
+    /**
+     * Returns tenant-scoped aggregate sales metrics for dashboards and analytics.
+     */
+    public function tenantSalesSummary(TenantContext $tenant): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT COUNT(*) AS order_count,
+                    COALESCE(SUM(total_cents), 0) AS gross_cents,
+                    COALESCE(SUM(commission_cents), 0) AS commission_cents,
+                    COALESCE(SUM(credit_card_fee_cents), 0) AS credit_card_fee_cents,
+                    COALESCE(SUM(seller_net_cents), 0) AS seller_net_cents,
+                    COALESCE(AVG(total_cents), 0) AS average_order_cents
+             FROM sales_orders
+             WHERE tenant_id = :tenant_id AND payment_status IN ("paid", "complete", "succeeded")'
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+        $summary = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        $status = $this->pdo->prepare(
+            'SELECT workflow_status, COUNT(*) AS order_count
+             FROM sales_orders
+             WHERE tenant_id = :tenant_id
+             GROUP BY workflow_status
+             ORDER BY workflow_status'
+        );
+        $status->execute(['tenant_id' => $tenant->tenantId]);
+
+        return [
+            'order_count' => (int) ($summary['order_count'] ?? 0),
+            'gross_cents' => (int) ($summary['gross_cents'] ?? 0),
+            'commission_cents' => (int) ($summary['commission_cents'] ?? 0),
+            'credit_card_fee_cents' => (int) ($summary['credit_card_fee_cents'] ?? 0),
+            'seller_net_cents' => (int) ($summary['seller_net_cents'] ?? 0),
+            'average_order_cents' => (int) round((float) ($summary['average_order_cents'] ?? 0)),
+            'workflow_counts' => $status->fetchAll(PDO::FETCH_KEY_PAIR),
+        ];
+    }
+
+    /**
+     * Returns recent paid sales by day for tenant analytics charts.
+     */
+    public function tenantSalesByDay(TenantContext $tenant, int $days = 30): array
+    {
+        $days = max(1, min(365, $days));
+        $stmt = $this->pdo->prepare(
+            'SELECT DATE(created_at) AS sale_day,
+                    COUNT(*) AS order_count,
+                    COALESCE(SUM(total_cents), 0) AS gross_cents,
+                    COALESCE(SUM(commission_cents), 0) AS commission_cents,
+                    COALESCE(SUM(credit_card_fee_cents), 0) AS credit_card_fee_cents,
+                    COALESCE(SUM(seller_net_cents), 0) AS seller_net_cents
+             FROM sales_orders
+             WHERE tenant_id = :tenant_id
+               AND payment_status IN ("paid", "complete", "succeeded")
+               AND created_at >= DATE_SUB(CURRENT_DATE, INTERVAL ' . $days . ' DAY)
+             GROUP BY DATE(created_at)
+             ORDER BY sale_day DESC'
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Returns tenant best sellers using paid order items.
+     */
+    public function tenantBestSellers(TenantContext $tenant, int $limit = 20): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT oi.artwork_id,
+                    oi.title_snapshot,
+                    COALESCE(SUM(oi.quantity), 0) AS units_sold,
+                    COALESCE(SUM(oi.line_total_cents), 0) AS gross_cents
+             FROM sales_order_items oi
+             JOIN sales_orders o ON o.id = oi.order_id
+             WHERE o.tenant_id = :tenant_id AND o.payment_status IN ("paid", "complete", "succeeded")
+             GROUP BY oi.artwork_id, oi.title_snapshot
+             ORDER BY gross_cents DESC, units_sold DESC
+             LIMIT ' . max(1, $limit)
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Returns platform-wide aggregate sales metrics for operator dashboards.
+     */
+    public function platformSalesSummary(): array
+    {
+        $summary = $this->pdo->query(
+            'SELECT COUNT(*) AS order_count,
+                    COUNT(DISTINCT tenant_id) AS tenant_count,
+                    COALESCE(SUM(total_cents), 0) AS gross_cents,
+                    COALESCE(SUM(commission_cents), 0) AS commission_cents,
+                    COALESCE(SUM(credit_card_fee_cents), 0) AS credit_card_fee_cents,
+                    COALESCE(SUM(seller_net_cents), 0) AS seller_net_cents,
+                    COALESCE(AVG(total_cents), 0) AS average_order_cents
+             FROM sales_orders
+             WHERE payment_status IN ("paid", "complete", "succeeded")'
+        )->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        $status = $this->pdo->query(
+            'SELECT workflow_status, COUNT(*) AS order_count
+             FROM sales_orders
+             GROUP BY workflow_status
+             ORDER BY workflow_status'
+        );
+
+        return [
+            'order_count' => (int) ($summary['order_count'] ?? 0),
+            'tenant_count' => (int) ($summary['tenant_count'] ?? 0),
+            'gross_cents' => (int) ($summary['gross_cents'] ?? 0),
+            'commission_cents' => (int) ($summary['commission_cents'] ?? 0),
+            'credit_card_fee_cents' => (int) ($summary['credit_card_fee_cents'] ?? 0),
+            'seller_net_cents' => (int) ($summary['seller_net_cents'] ?? 0),
+            'average_order_cents' => (int) round((float) ($summary['average_order_cents'] ?? 0)),
+            'workflow_counts' => $status ? $status->fetchAll(PDO::FETCH_KEY_PAIR) : [],
+        ];
+    }
+
+    /**
+     * Returns platform-wide paid sales by day.
+     */
+    public function platformSalesByDay(int $days = 30): array
+    {
+        $days = max(1, min(365, $days));
+        $stmt = $this->pdo->query(
+            'SELECT DATE(created_at) AS sale_day,
+                    COUNT(*) AS order_count,
+                    COALESCE(SUM(total_cents), 0) AS gross_cents,
+                    COALESCE(SUM(commission_cents), 0) AS commission_cents,
+                    COALESCE(SUM(credit_card_fee_cents), 0) AS credit_card_fee_cents,
+                    COALESCE(SUM(seller_net_cents), 0) AS seller_net_cents
+             FROM sales_orders
+             WHERE payment_status IN ("paid", "complete", "succeeded")
+               AND created_at >= DATE_SUB(CURRENT_DATE, INTERVAL ' . $days . ' DAY)
+             GROUP BY DATE(created_at)
+             ORDER BY sale_day DESC'
+        );
+
+        return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+    }
+
+    /**
+     * Returns platform sales totals grouped by tenant.
+     */
+    public function platformSalesByTenant(int $limit = 50): array
+    {
+        $stmt = $this->pdo->query(
+            'SELECT t.name AS tenant_name,
+                    t.slug AS tenant_slug,
+                    COUNT(o.id) AS order_count,
+                    COALESCE(SUM(o.total_cents), 0) AS gross_cents,
+                    COALESCE(SUM(o.commission_cents), 0) AS commission_cents,
+                    COALESCE(SUM(o.credit_card_fee_cents), 0) AS credit_card_fee_cents,
+                    COALESCE(SUM(o.seller_net_cents), 0) AS seller_net_cents
+             FROM sales_orders o
+             JOIN tenants t ON t.id = o.tenant_id
+             WHERE o.payment_status IN ("paid", "complete", "succeeded")
+             GROUP BY t.id, t.name, t.slug
+             ORDER BY gross_cents DESC
+             LIMIT ' . max(1, $limit)
+        );
+
+        return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+    }
+
     public function platformOrders(int $limit = 200): array
     {
         $stmt = $this->pdo->query('SELECT o.*, t.name AS tenant_name, t.slug AS tenant_slug FROM sales_orders o JOIN tenants t ON t.id = o.tenant_id ORDER BY o.created_at DESC LIMIT ' . max(1, $limit));

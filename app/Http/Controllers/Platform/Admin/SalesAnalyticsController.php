@@ -33,19 +33,19 @@ final class SalesAnalyticsController
 
         $dayRows = '';
         foreach ($byDay as $row) {
-            $dayRows .= '<tr><td>' . $this->e((string) $row['sale_day']) . '</td><td>' . (int) $row['order_count'] . '</td><td>' . $this->money((int) $row['gross_cents']) . '</td><td>' . $this->money((int) $row['commission_cents']) . '</td></tr>';
+            $dayRows .= '<tr><td>' . $this->e((string) $row['sale_day']) . '</td><td>' . (int) $row['order_count'] . '</td><td>' . $this->money((int) $row['gross_cents']) . '</td><td>' . $this->money((int) $row['commission_cents']) . '</td><td>' . $this->money((int) ($row['credit_card_fee_cents'] ?? 0)) . '</td><td>' . $this->money((int) ($row['seller_net_cents'] ?? 0)) . '</td></tr>';
         }
         if ($dayRows === '') {
-            $dayRows = '<tr><td colspan="4">No paid sales in this range.</td></tr>';
+            $dayRows = '<tr><td colspan="6">No paid sales in this range.</td></tr>';
         }
 
         $tenantRows = '';
         foreach ($byTenant as $row) {
             $tenantUrl = 'https://' . $this->e((string) $row['tenant_slug']) . '.artsfol.io/';
-            $tenantRows .= '<tr><td><a href="' . $tenantUrl . '">' . $this->e((string) $row['tenant_name']) . '</a></td><td>' . (int) $row['order_count'] . '</td><td>' . $this->money((int) $row['gross_cents']) . '</td><td>' . $this->money((int) $row['commission_cents']) . '</td></tr>';
+            $tenantRows .= '<tr><td><a href="' . $tenantUrl . '">' . $this->e((string) $row['tenant_name']) . '</a></td><td>' . (int) $row['order_count'] . '</td><td>' . $this->money((int) $row['gross_cents']) . '</td><td>' . $this->money((int) $row['commission_cents']) . '</td><td>' . $this->money((int) ($row['credit_card_fee_cents'] ?? 0)) . '</td><td>' . $this->money((int) ($row['seller_net_cents'] ?? 0)) . '</td></tr>';
         }
         if ($tenantRows === '') {
-            $tenantRows = '<tr><td colspan="4">No paid tenant sales yet.</td></tr>';
+            $tenantRows = '<tr><td colspan="6">No paid tenant sales yet.</td></tr>';
         }
 
         $workflow = $this->workflowList((array) $summary['workflow_counts']);
@@ -55,16 +55,18 @@ final class SalesAnalyticsController
   <div class="admin-panel"><p class="admin-muted">Selling tenants</p><h2>{$this->e((string) $summary['tenant_count'])}</h2></div>
   <div class="admin-panel"><p class="admin-muted">Gross sales</p><h2>{$this->money((int) $summary['gross_cents'])}</h2></div>
   <div class="admin-panel"><p class="admin-muted">Commission</p><h2>{$this->money((int) $summary['commission_cents'])}</h2></div>
+  <div class="admin-panel"><p class="admin-muted">Card fees</p><h2>{$this->money((int) ($summary['credit_card_fee_cents'] ?? 0))}</h2></div>
+  <div class="admin-panel"><p class="admin-muted">Seller net</p><h2>{$this->money((int) ($summary['seller_net_cents'] ?? 0))}</h2></div>
 </section>
 <section class="admin-panel"><h2>Workflow status</h2>{$workflow}</section>
 <section class="admin-panel">
   <h2>Platform sales by day</h2>
   <p class="admin-muted">Paid sales for the last {$days} days.</p>
-  <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Date</th><th>Orders</th><th>Gross</th><th>Commission</th></tr></thead><tbody>{$dayRows}</tbody></table></div>
+  <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Date</th><th>Orders</th><th>Gross</th><th>Commission</th><th>Card fees</th><th>Seller net</th></tr></thead><tbody>{$dayRows}</tbody></table></div>
 </section>
 <section class="admin-panel">
   <h2>Sales by tenant</h2>
-  <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Tenant</th><th>Orders</th><th>Gross</th><th>Commission</th></tr></thead><tbody>{$tenantRows}</tbody></table></div>
+  <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Tenant</th><th>Orders</th><th>Gross</th><th>Commission</th><th>Card fees</th><th>Seller net</th></tr></thead><tbody>{$tenantRows}</tbody></table></div>
 </section>
 HTML;
 

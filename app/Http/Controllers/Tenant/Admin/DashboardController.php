@@ -102,7 +102,7 @@ HTML;
         if ($subscribers === 0) {
             $subscribers = $this->tenantScalarInt('SELECT COUNT(*) FROM newsletter_subscribers WHERE tenant_id = :tenant_id AND status = "subscribed"', $tenantId);
         }
-        $openMessages = $this->tenantScalarInt('SELECT COUNT(*) FROM contact_messages WHERE tenant_id = :tenant_id AND status IN ("new", "read")', $tenantId);
+        $openMessages = $this->tenantScalarInt('SELECT COUNT(*) FROM contact_messages WHERE tenant_id = :tenant_id AND (status IS NULL OR status NOT IN ("closed", "archived", "deleted"))', $tenantId);
         $openOrders = $this->tenantScalarInt('SELECT COUNT(*) FROM sales_orders WHERE tenant_id = :tenant_id AND workflow_status NOT IN ("shipped", "cancelled", "refunded")', $tenantId);
         $gross30 = $this->tenantScalarInt('SELECT COALESCE(SUM(total_cents), 0) FROM sales_orders WHERE tenant_id = :tenant_id AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")', $tenantId);
         $net30 = $this->tenantScalarInt('SELECT COALESCE(SUM(seller_net_cents), 0) FROM sales_orders WHERE tenant_id = :tenant_id AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")', $tenantId);
@@ -292,10 +292,15 @@ HTML;
 
     private function tableExists(string $table): bool
     {
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $table)) {
+            return false;
+        }
+
         try {
-            $stmt = $this->pdo()->prepare('SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table');
-            $stmt->execute(['table' => $table]);
-            return (int) $stmt->fetchColumn() > 0;
+            // SHOW TABLES avoids false negatives seen from information_schema
+            // checks with the production MariaDB user.
+            $stmt = $this->pdo()->query("SHOW TABLES LIKE " . $this->pdo()->quote($table));
+            return $stmt !== false && $stmt->fetchColumn() !== false;
         } catch (Throwable) {
             return false;
         }

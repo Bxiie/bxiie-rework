@@ -1251,3 +1251,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Dashboard queries are defensive around optional sales/engagement tables so rolling deployments and local environments do not turn the admin landing page into a brick.
 
 # End of file.
+
+## 2026-06-02 Dashboard schema alignment
+
+- Platform and tenant dashboards use production MariaDB-compatible `SHOW TABLES` / `SHOW COLUMNS` capability checks instead of `information_schema` probes that produced false "not installed" messages.
+- Dashboard tenant plan detection now falls back to tenant `billing_plan` settings when no `tenant_plan_assignments` record is present.
+- Sales dashboard and analytics surfaces include credit-card fee and seller-net columns alongside gross sales and platform commission.
+- Platform tenant billing override layout clarifies that complementary status waives monthly service billing only; platform commission and credit-card charges still apply.
+
+# End of file.

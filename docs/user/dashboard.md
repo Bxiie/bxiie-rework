@@ -1,18 +1,7 @@
-# Dashboard
+# Dashboard overview
 
-The tenant dashboard is the starting point for managing an ArtsFolio site.
+Tenant admins use the dashboard as a working overview of the site. It highlights published artwork, drafts, sales readiness, recent traffic, subscribers, messages, open orders, and sales proceeds after commission and payment charges.
 
-It shows:
-
-- how many artworks are published
-- how many works are for sale
-- recent visitor activity
-- mailing list size
-- open contact messages
-- open orders
-- your current plan
-- whether online checkout is ready
-
-The dashboard also lists useful next actions, such as replying to messages, connecting Stripe, publishing draft work, or shipping paid orders.
+Sales analytics show gross sales, platform commission, credit-card charges, and seller net so artists can understand how proceeds are calculated.
 
 # End of file.

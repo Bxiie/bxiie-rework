@@ -119,15 +119,22 @@ HTML;
 <p><strong>Slug:</strong> {$tenantSlug}</p>
 {$tenantLink}
 
-<section class="admin-panel">
-    <h2>Billing override</h2>
-    <form method="post" action="/platform/admin/tenants/complementary" class="admin-inline-form">
+<section class="admin-panel admin-billing-override-panel">
+    <div class="admin-panel-heading">
+        <div>
+            <h2>Billing override</h2>
+            <p class="admin-muted">Waives the monthly platform subscription only. Sales economics still apply.</p>
+        </div>
+    </div>
+    <form method="post" action="/platform/admin/tenants/complementary" class="admin-stacked-form">
         <input type="hidden" name="csrf_token" value="{$csrf}">
         <input type="hidden" name="tenant_id" value="{$tenantId}">
-        <label><input type="checkbox" name="complementary" value="1"{$this->complementaryChecked($tenantId)}> Complementary tenant, no platform service billing</label>
-        <button type="submit">Save billing override</button>
+        <label class="admin-checkbox-card">
+            <input type="checkbox" name="complementary" value="1"{$this->complementaryChecked($tenantId)}>
+            <span><strong>Complementary tenant</strong><small>No monthly platform service billing. Tenant still pays platform commission and credit-card charges on sales.</small></span>
+        </label>
+        <div><button type="submit">Save billing override</button></div>
     </form>
-    <p class="admin-muted">Complementary tenants still pay platform commission on sales.</p>
 </section>
 <table class="admin-table">
     <thead><tr><th>ID</th><th>User</th><th>Membership</th><th>Roles</th><th>Last log on</th><th>Password</th></tr></thead>
