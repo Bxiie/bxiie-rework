@@ -1244,3 +1244,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Complementary tenants waive subscription billing only; platform commission and credit card charges still apply to sales.
 
 # End of file.
+
+## 2026-06-02 dashboard signal update
+- Platform Admin dashboard now shows operating and business signals: tenant counts, paid-capable tenants, complimentary tenants, 30-day GMV, platform commission, seller net, contact queue, background job attention, recent sales, recent tenants, and active plan economics.
+- Tenant Admin dashboard now shows site and sales action signals: published/draft artworks, for-sale inventory, low-stock multiples, 30-day views, subscribers, contact queue, open orders, current plan, sales readiness, and next-action guidance.
+- Dashboard queries are defensive around optional sales/engagement tables so rolling deployments and local environments do not turn the admin landing page into a brick.
+
+# End of file.
