@@ -44,6 +44,7 @@ final class BillingController
         $analytics = $this->countRows('analytics_events', $tenant);
         $rows .= '<tr><td>Directory/discovery listing</td><td>Opt-in</td><td>' . $directory . '</td><td>' . ($directory === 'Enabled' ? 'Visible when public content exists' : 'Off') . '</td></tr>';
         $rows .= '<tr><td>Analytics events</td><td>' . ($planKey === 'starter' ? 'Basic' : 'Advanced') . '</td><td>' . $analytics . '</td><td>' . ($analytics > 0 ? 'Receiving events' : 'No events yet') . '</td></tr>';
+        $commission = $this->platformCommissionPercent();
 
         $body = <<<HTML
 <section class="admin-billing-summary">
@@ -52,6 +53,7 @@ final class BillingController
     <h2>{$this->e($plan['name'])}</h2>
     <p class="billing-price">{$this->e($plan['price'])}</p>
     <p>{$this->e($plan['summary'])}</p>
+    <p><strong>Platform sales commission:</strong> {$this->e($commission)}</p>
     <p><a class="admin-button" href="/pricing">Review public pricing</a></p>
   </div>
   <div class="admin-panel">
@@ -76,11 +78,78 @@ HTML;
 
     private function plans(): array
     {
+        if ($this->tableExists('plans')) {
+            try {
+                $columns = $this->planColumns();
+                $select = 'slug, name, monthly_price_cents, custom_domain_included'
+                    . ($columns['description'] ? ', description' : ', NULL AS description')
+                    . ($columns['allowed_artworks'] ? ', allowed_artworks' : ', NULL AS allowed_artworks')
+                    . ($columns['allowed_email_addresses'] ? ', allowed_email_addresses' : ', NULL AS allowed_email_addresses')
+                    . ($columns['display_order'] ? ', display_order' : ', 100 AS display_order');
+                $stmt = $this->pdo->query("SELECT {$select} FROM plans WHERE is_active = 1 ORDER BY display_order ASC, monthly_price_cents ASC, id ASC");
+                $plans = [];
+                foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                    $slug = (string) $row['slug'];
+                    $plans[$slug] = [
+                        'name' => (string) $row['name'],
+                        'price' => ((int) $row['monthly_price_cents']) === 0 ? '$0' : '$' . number_format(((int) $row['monthly_price_cents']) / 100, 2) . ' / month',
+                        'summary' => (string) ($row['description'] ?? 'ArtsFolio artist portfolio plan.'),
+                        'limits' => [
+                            'artworks' => (int) ($row['allowed_artworks'] ?? 0),
+                            'storage_gb' => 0,
+                            'email_signups' => (int) ($row['allowed_email_addresses'] ?? 0),
+                            'contact_messages' => 0,
+                            'custom_domains' => (int) $row['custom_domain_included'],
+                            'admin_users' => 0,
+                        ],
+                    ];
+                }
+                if ($plans !== []) {
+                    return $plans;
+                }
+            } catch (Throwable) {
+                // Fall back to static plan labels when a migration is mid-flight.
+            }
+        }
+
         return [
-            'starter' => ['name' => 'Starter', 'price' => '$12 / month', 'summary' => 'For launching a clean artist portfolio with basic inquiries.', 'limits' => ['artworks' => 50, 'storage_gb' => 2, 'email_signups' => 500, 'contact_messages' => 250, 'custom_domains' => 0, 'admin_users' => 1]],
-            'studio' => ['name' => 'Studio', 'price' => '$29 / month', 'summary' => 'For active artists who need analytics, subscribers, sections, and a custom domain.', 'limits' => ['artworks' => 250, 'storage_gb' => 10, 'email_signups' => 5000, 'contact_messages' => 2500, 'custom_domains' => 1, 'admin_users' => 3]],
-            'pro' => ['name' => 'Pro', 'price' => '$79 / month', 'summary' => 'For large studios, represented artists, and sales-heavy practices.', 'limits' => ['artworks' => 1000, 'storage_gb' => 50, 'email_signups' => 25000, 'contact_messages' => 10000, 'custom_domains' => 3, 'admin_users' => 10]],
+            'free' => ['name' => 'Free', 'price' => '$0', 'summary' => 'For launching a compact artist portfolio.', 'limits' => ['artworks' => 25, 'storage_gb' => 0, 'email_signups' => 100, 'contact_messages' => 0, 'custom_domains' => 0, 'admin_users' => 1]],
+            'studio' => ['name' => 'Studio', 'price' => '$12.00 / month', 'summary' => 'For active artists who need analytics, subscribers, and sections.', 'limits' => ['artworks' => 250, 'storage_gb' => 0, 'email_signups' => 2500, 'contact_messages' => 0, 'custom_domains' => 0, 'admin_users' => 3]],
+            'pro' => ['name' => 'Professional', 'price' => '$24.00 / month', 'summary' => 'For artists who need a custom domain and advanced branding.', 'limits' => ['artworks' => 1000, 'storage_gb' => 0, 'email_signups' => 10000, 'contact_messages' => 0, 'custom_domains' => 1, 'admin_users' => 10]],
         ];
+    }
+
+
+    private function platformCommissionPercent(): string
+    {
+        if (!$this->tableExists('platform_settings')) {
+            return 'Configured by ArtsFolio';
+        }
+        try {
+            $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'platform_sales_commission_basis_points' LIMIT 1");
+            $stmt->execute();
+            $basisPoints = max(0, min(10000, (int) ($stmt->fetchColumn() ?: 500)));
+            return number_format($basisPoints / 100, 2) . '% of platform-processed sales';
+        } catch (Throwable) {
+            return 'Configured by ArtsFolio';
+        }
+    }
+
+    private function planColumns(): array
+    {
+        $columns = ['description' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'display_order' => false];
+        try {
+            $stmt = $this->pdo->prepare('SELECT column_name FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :table');
+            $stmt->execute(['table' => 'plans']);
+            foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $column) {
+                if (array_key_exists((string) $column, $columns)) {
+                    $columns[(string) $column] = true;
+                }
+            }
+        } catch (Throwable) {
+            return $columns;
+        }
+        return $columns;
     }
 
     private function usage(TenantContext $tenant): array

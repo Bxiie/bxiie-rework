@@ -1187,3 +1187,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `App\Http\Support\SessionCookie` includes plural `issueHeaders()` and `expireHeaders()` aliases used by platform login/logout controllers.
 
 # End of file.
+
+## 2026-06-02 pricing, commission, and platform stats patch
+- Platform Admin → Plans & Billing now edits plan price, description, active status, display order, custom-domain inclusion, allowed artwork count, and allowed email-address count.
+- Platform sales commission is stored in `platform_settings.platform_sales_commission_basis_points` and displayed on public pricing and tenant billing surfaces.
+- Free tenant pages show an ArtsFolio notification/link; public pricing explicitly notes this.
+- Platform stats location drill-down now opens IP detail scoped to the selected location rather than the global IP list.
+- Platform tenant status/lifecycle audit calls use the correct `AuditLogRepository::record()` argument order.

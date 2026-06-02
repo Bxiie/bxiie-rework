@@ -379,7 +379,7 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->get('/admin/email-outbox', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/email-outbox']));
     $router->get('/admin/audit-log', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/audit-log']));
     $router->get('/admin/audit-log.csv', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/audit-log.csv']));
-    $router->get('/pricing', fn (Request $request): Response => (new PricingController())->index($request));
+    $router->get('/pricing', fn (Request $request): Response => (new PricingController($pdo, new PlatformSettingsRepository($pdo)))->index($request));
     $router->get('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo, new PlatformSettingsRepository($pdo), new SignupCodeRepository($pdo)), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService()))->show($request));
     $router->post('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo, new PlatformSettingsRepository($pdo), new SignupCodeRepository($pdo)), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService()))->submit($request));
     $router->get('/', fn (Request $request): Response => $marketingController->home($request));
@@ -396,7 +396,8 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->get('/privacy', fn (Request $request): Response => $marketingController->privacy($request));
 
     $router->get('/platform/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
-    $router->get('/platform/admin/pricing', fn (Request $request): Response => (new PlatformAdminPricingController(new RequirePlatformRole(new MembershipRepository($pdo)), $pdo))->index($request, $currentUser));
+    $router->get('/platform/admin/pricing', fn (Request $request): Response => (new PlatformAdminPricingController(new RequirePlatformRole(new MembershipRepository($pdo)), $pdo, new PlatformSettingsRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
+    $router->post('/platform/admin/pricing', fn (Request $request): Response => (new PlatformAdminPricingController(new RequirePlatformRole(new MembershipRepository($pdo)), $pdo, new PlatformSettingsRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->update($request, $currentUser));
     $router->get('/platform/admin/settings', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/platform-settings']));
     $router->get('/platform/admin/routes', fn (Request $request): Response => (new PlatformAdminRoutesController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
     $router->get('/platform/admin/tenants', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));

@@ -406,6 +406,7 @@ HTML
 </main>
 <footer class="site-footer tenant-public-footer">
     <span>© {$year} {$copyrightName}</span>
+    {$this->artsfolioFreePlanLink($tenant)}
     {$footerSignupForm}
 </footer>
 </body>
@@ -458,6 +459,20 @@ HTML;
         $vars .= $this->mediaBackgroundVar($tenant, 'artwork_card_media_uuid', '--artwork-card-bg-image');
 
         return $vars;
+    }
+
+
+    /**
+     * Free tenant pages carry a small ArtsFolio notification/link as part of the free plan disclosure.
+     */
+    private function artsfolioFreePlanLink(TenantContext $tenant): string
+    {
+        $plan = strtolower((string) $this->settings->get($tenant, 'billing_plan', 'studio'));
+        if (!in_array($plan, ['free', 'starter'], true)) {
+            return '';
+        }
+
+        return '<span class="tenant-powered-by"><a href="https://artsfol.io/" rel="noopener">Created with ArtsFolio</a></span>';
     }
 
     /**

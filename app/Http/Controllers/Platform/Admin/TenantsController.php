@@ -143,7 +143,7 @@ HTML,
         }
 
         $this->users->updatePasswordHash($userId, $this->hasher->hash($password));
-        $this->auditLog?->record('platform.tenant_user.password_changed', (int) ($currentUser['user_id'] ?? 0), 'user', (string) $userId, ['tenant_id' => $tenantId], $request->server('REMOTE_ADDR'));
+        $this->auditLog?->record('platform.tenant_user.password_changed', $tenantId, (int) ($currentUser['user_id'] ?? 0), 'user', (string) $userId, ['tenant_id' => $tenantId], $request->server('REMOTE_ADDR'));
         FlashMessages::success('Tenant user password updated.');
 
         return new Response('', 303, ['Location' => '/platform/admin/tenants/' . $tenantId . '?notice=password-updated']);
@@ -166,7 +166,7 @@ HTML,
         }
 
         $this->tenants->setStatus($tenantId, $status);
-        $this->auditLog?->record('platform.tenant.status_changed', (int) ($currentUser['user_id'] ?? 0), 'tenant', (string) $tenantId, ['status' => $status], $request->server('REMOTE_ADDR'));
+        $this->auditLog?->record('platform.tenant.status_changed', $tenantId, (int) ($currentUser['user_id'] ?? 0), 'tenant', (string) $tenantId, ['status' => $status], $request->server('REMOTE_ADDR'));
         FlashMessages::success("Tenant {$tenantId} status changed to {$status}.");
 
         return new Response('', 303, ['Location' => '/platform/admin/tenants?notice=status-updated']);

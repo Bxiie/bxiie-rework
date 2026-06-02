@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Platform-wide analytics dashboard with bar charts and IP drill-down.
+ * Platform-wide analytics dashboard with bar charts and scoped IP drill-down.
  */
 
 declare(strict_types=1);
@@ -37,17 +37,17 @@ final class StatsController
         $locationRows = $this->rows("SELECT COALESCE(NULLIF(CONCAT_WS(', ', NULLIF(city, ''), NULLIF(region, ''), NULLIF(country, '')), ''), 'Unknown') AS label, country, region, city, COUNT(*) AS total, COUNT(DISTINCT COALESCE(NULLIF(ip_address, ''), ip_hash)) AS unique_ips FROM analytics_events WHERE created_at >= {$since} GROUP BY country, region, city ORDER BY total DESC LIMIT 25");
         $eventRows = $this->rows("SELECT event_type AS label, COUNT(*) AS total FROM analytics_events WHERE created_at >= {$since} GROUP BY event_type ORDER BY total DESC LIMIT 25");
         $platformPathRows = $this->rows("SELECT path AS label, COUNT(*) AS total FROM analytics_events WHERE tenant_id IS NULL AND created_at >= {$since} GROUP BY path ORDER BY total DESC LIMIT 25");
-        $ipRows = $this->rows("SELECT COALESCE(NULLIF(ip_address, ''), CONCAT('hash:', LEFT(ip_hash, 16))) AS ip, COALESCE(NULLIF(CONCAT_WS(', ', NULLIF(city, ''), NULLIF(region, ''), NULLIF(country, '')), ''), 'Unknown') AS location, COUNT(*) AS total, MIN(created_at) AS first_seen, MAX(created_at) AS last_seen FROM analytics_events WHERE created_at >= {$since} GROUP BY ip, location ORDER BY total DESC, last_seen DESC LIMIT 250");
+        $allIpRows = $this->ipRowsForDays($days);
 
         $body = '<form class="admin-filter-bar" method="get"><label>Range days<br><input type="number" min="1" max="365" name="days" value="' . $days . '"></label><button>Apply</button></form>'
-            . '<div class="admin-summary-grid"><div class="admin-summary-card"><strong>' . $total . '</strong><span>Total events</span></div><div class="admin-summary-card"><strong>' . $tenants . '</strong><span>Active tenants</span></div><button type="button" class="admin-summary-card stats-card-button" data-dialog="ip-dialog"><strong>' . $ips . '</strong><span>Unique IPs</span></button></div>'
+            . '<div class="admin-summary-grid"><div class="admin-summary-card"><strong>' . $total . '</strong><span>Total events</span></div><div class="admin-summary-card"><strong>' . $tenants . '</strong><span>Active tenants</span></div><button type="button" class="admin-summary-card stats-card-button" data-dialog="ip-dialog-all"><strong>' . $ips . '</strong><span>Unique IPs</span></button></div>'
             . '<section class="admin-panel"><h2>By tenant/platform</h2>' . $this->table($tenantRows, 'Tenant / Platform') . '</section>'
             . '<section class="admin-panel"><h2>Platform pages</h2>' . $this->table($platformPathRows, 'Path') . '</section>'
             . '<section class="admin-panel"><h2>By event type</h2>' . $this->table($eventRows, 'Event') . '</section>'
-            . '<section class="admin-panel"><h2>By location</h2>' . $this->locationTable($locationRows) . '</section>'
+            . '<section class="admin-panel"><h2>By location</h2>' . $this->locationTable($locationRows, $days) . '</section>'
             . '<section class="admin-panel"><h2>By day</h2>' . $this->barGraph($dayRows, 'Day') . $this->table($dayRows, 'Day') . '</section>'
             . '<section class="admin-panel"><h2>By hour</h2>' . $this->barGraph($hourRows, 'Hour') . $this->table($hourRows, 'Hour') . '</section>'
-            . $this->ipDialog($ipRows)
+            . $this->ipDialog('ip-dialog-all', 'All unique IP detail', $allIpRows)
             . $this->dialogScript();
 
         return Response::html(AdminLayout::render(title: 'Platform Stats', body: $body, active: 'stats'));
@@ -66,14 +66,39 @@ final class StatsController
         return $out . '</tbody></table>';
     }
 
-    private function locationTable(array $rows): string
+    private function locationTable(array $rows, int $days): string
     {
         if (!$rows) { return '<p>No data for this range.</p>'; }
         $out = '<table class="admin-table"><thead><tr><th>Location</th><th>Unique IPs</th><th>Total</th></tr></thead><tbody>';
-        foreach ($rows as $r) {
-            $out .= '<tr><td>' . AdminLayout::escape((string) $r['label']) . '</td><td><button type="button" class="link-button" data-dialog="ip-dialog">' . (int) $r['unique_ips'] . '</button></td><td>' . (int) $r['total'] . '</td></tr>';
+        $dialogs = '';
+        foreach ($rows as $index => $r) {
+            $dialogId = 'ip-dialog-location-' . $index;
+            $label = (string) $r['label'];
+            $out .= '<tr><td>' . AdminLayout::escape($label) . '</td><td><button type="button" class="link-button" data-dialog="' . $dialogId . '">' . (int) $r['unique_ips'] . '</button></td><td>' . (int) $r['total'] . '</td></tr>';
+            $dialogs .= $this->ipDialog($dialogId, 'Unique IP detail for ' . $label, $this->ipRowsForLocation($days, $r));
         }
-        return $out . '</tbody></table>';
+        return $out . '</tbody></table>' . $dialogs;
+    }
+
+    private function ipRowsForDays(int $days): array
+    {
+        $sql = "SELECT COALESCE(NULLIF(ip_address, ''), CONCAT('hash:', LEFT(ip_hash, 16))) AS ip, COALESCE(NULLIF(CONCAT_WS(', ', NULLIF(city, ''), NULLIF(region, ''), NULLIF(country, '')), ''), 'Unknown') AS location, COUNT(*) AS total, MIN(created_at) AS first_seen, MAX(created_at) AS last_seen FROM analytics_events WHERE created_at >= DATE_SUB(NOW(), INTERVAL :days DAY) GROUP BY ip, location ORDER BY total DESC, last_seen DESC LIMIT 250";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue('days', $days, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    private function ipRowsForLocation(int $days, array $location): array
+    {
+        $sql = "SELECT COALESCE(NULLIF(ip_address, ''), CONCAT('hash:', LEFT(ip_hash, 16))) AS ip, COALESCE(NULLIF(CONCAT_WS(', ', NULLIF(city, ''), NULLIF(region, ''), NULLIF(country, '')), ''), 'Unknown') AS location, COUNT(*) AS total, MIN(created_at) AS first_seen, MAX(created_at) AS last_seen FROM analytics_events WHERE created_at >= DATE_SUB(NOW(), INTERVAL :days DAY) AND (country <=> :country) AND (region <=> :region) AND (city <=> :city) GROUP BY ip, location ORDER BY total DESC, last_seen DESC LIMIT 250";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue('days', $days, PDO::PARAM_INT);
+        $stmt->bindValue('country', $location['country'] ?? null);
+        $stmt->bindValue('region', $location['region'] ?? null);
+        $stmt->bindValue('city', $location['city'] ?? null);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     private function barGraph(array $rows, string $label): string
@@ -88,14 +113,14 @@ final class StatsController
         return $out . '</div><style>.stats-bars{display:flex;align-items:end;gap:.5rem;min-height:170px;padding:1rem;border:1px solid #ddd;border-radius:12px;overflow:auto}.stats-bar-item{min-width:44px;text-align:center}.stats-bar{width:32px;margin:0 auto;background:currentColor;border-radius:8px 8px 0 0;opacity:.75}.stats-bar-label,.stats-bar-value{font-size:.78rem}.stats-card-button{text-align:left;cursor:pointer;border:0}.link-button{background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer;padding:0}.stats-dialog{max-width:900px;width:90vw;border:0;border-radius:16px;padding:1rem;box-shadow:0 20px 80px rgba(0,0,0,.25)}.stats-dialog::backdrop{background:rgba(0,0,0,.35)}</style>';
     }
 
-    private function ipDialog(array $rows): string
+    private function ipDialog(string $id, string $title, array $rows): string
     {
         $trs = '';
         foreach ($rows as $r) {
             $trs .= '<tr><td><code>' . AdminLayout::escape((string) $r['ip']) . '</code></td><td>' . AdminLayout::escape((string) $r['location']) . '</td><td>' . (int) $r['total'] . '</td><td>' . AdminLayout::escape((string) $r['first_seen']) . '</td><td>' . AdminLayout::escape((string) $r['last_seen']) . '</td></tr>';
         }
         if ($trs === '') { $trs = '<tr><td colspan="5">No IP details for this range.</td></tr>'; }
-        return '<dialog id="ip-dialog" class="stats-dialog"><form method="dialog" style="float:right"><button>Close</button></form><h2>Unique IP detail</h2><p class="admin-muted">Shows actual IP addresses for new analytics rows where available. Older rows show hash prefixes until new traffic is captured.</p><table class="admin-table"><thead><tr><th>IP</th><th>Location</th><th>Access count</th><th>First seen</th><th>Last seen</th></tr></thead><tbody>' . $trs . '</tbody></table></dialog>';
+        return '<dialog id="' . AdminLayout::escape($id) . '" class="stats-dialog"><form method="dialog" style="float:right"><button>Close</button></form><h2>' . AdminLayout::escape($title) . '</h2><p class="admin-muted">Shows only the IP rows for the selected scope. Older rows show hash prefixes until new traffic captures actual IP addresses.</p><table class="admin-table"><thead><tr><th>IP</th><th>Location</th><th>Access count</th><th>First seen</th><th>Last seen</th></tr></thead><tbody>' . $trs . '</tbody></table></dialog>';
     }
 
     private function dialogScript(): string
