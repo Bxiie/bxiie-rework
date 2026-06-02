@@ -6,15 +6,20 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Request;
 use App\Http\Response;
+use PDO;
+use Throwable;
 
 /**
  * Handles public platform marketing routes that do not need database content.
  */
 final class HomeController
 {
+    public function __construct(private readonly ?PDO $pdo = null) {}
+
     public function home(Request $request): Response
     {
-        return Response::html($this->layout('ArtsFolio', '<h1>ArtsFolio</h1><p>Artist portfolio software with sales-ready foundations.</p>'));
+        $body = '<h1>ArtsFolio</h1><p>Artist portfolio software with sales-ready foundations.</p>' . $this->recentSales();
+        return Response::html($this->layout('ArtsFolio', $body));
     }
 
     public function pricing(Request $request): Response
@@ -45,6 +50,36 @@ HTML;
     public function login(Request $request): Response
     {
         return Response::html($this->layout('Login | ArtsFolio', '<h1>Login</h1><p>Use email/password, Google, or Facebook to sign in.</p><p><a class="button primary" href="/login">Sign in</a></p>'));
+    }
+
+    /**
+     * Shows recent completed or in-progress sales on the public platform home.
+     */
+    private function recentSales(): string
+    {
+        if (!$this->pdo) {
+            return '';
+        }
+
+        try {
+            $stmt = $this->pdo->query('SELECT o.order_number, o.total_cents, o.created_at, t.name AS tenant_name, t.slug AS tenant_slug, MIN(oi.artwork_id) AS artwork_id, MIN(a.slug) AS artwork_slug, MIN(oi.title_snapshot) AS artwork_title FROM sales_orders o JOIN tenants t ON t.id = o.tenant_id JOIN sales_order_items oi ON oi.order_id = o.id LEFT JOIN artworks a ON a.id = oi.artwork_id WHERE o.payment_status IN ("checkout_pending", "paid", "payment_succeeded") GROUP BY o.id ORDER BY o.created_at DESC LIMIT 6');
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Throwable) {
+            return '';
+        }
+
+        if ($rows === []) {
+            return '';
+        }
+
+        $cards = '';
+        foreach ($rows as $row) {
+            $tenantHost = 'https://' . htmlspecialchars((string) $row['tenant_slug'], ENT_QUOTES, 'UTF-8') . '.artsfol.io';
+            $artworkUrl = $tenantHost . '/artwork/' . rawurlencode((string) ($row['artwork_slug'] ?? ''));
+            $cards .= '<article><h3><a href="' . $artworkUrl . '">' . htmlspecialchars((string) ($row['artwork_title'] ?? 'Artwork'), ENT_QUOTES, 'UTF-8') . '</a></h3><p>Sold by <a href="' . $tenantHost . '">' . htmlspecialchars((string) $row['tenant_name'], ENT_QUOTES, 'UTF-8') . '</a></p><p>' . htmlspecialchars('$' . number_format(((int) $row['total_cents']) / 100, 2), ENT_QUOTES, 'UTF-8') . '</p></article>';
+        }
+
+        return '<section class="platform-section"><h2>Recent sales</h2><div class="feature-grid">' . $cards . '</div></section>';
     }
 
     private function layout(string $title, string $body): string

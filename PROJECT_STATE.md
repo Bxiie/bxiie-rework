@@ -1213,3 +1213,13 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Stripe checkout, cart/order records, sales workflow, recent sales, commission calculation, and sales analytics remain phase-two/phase-three work.
 
 # End of file.
+
+## 2026-06-02 sales phase 2
+- Added tenant-scoped shopping carts, order records, order items, Stripe Checkout session creation, and Stripe webhook completion handling.
+- Stripe model: Stripe Checkout with destination charges when tenant setting `stripe_connected_account_id` is configured; platform settings hold Stripe keys and webhook secret.
+- Paid plans only: public add-to-cart and checkout are gated by active paid plan assignments.
+- Tenant admin now has a Sales workflow page for ordered, acknowledged, packed, and shipped status plus shipping details.
+- Platform admin now has a Sales overview with tenant visibility and commission totals.
+- Public platform home can show recent sales with tenant and artwork links.
+
+# End of file.

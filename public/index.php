@@ -14,6 +14,7 @@ use App\Http\Controllers\Auth\PasswordAuthController;
 use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Platform\Admin\DashboardController as PlatformAdminDashboardController;
 use App\Http\Controllers\Platform\Admin\PricingController as PlatformAdminPricingController;
+use App\Http\Controllers\Platform\Admin\SalesController as PlatformAdminSalesController;
 use App\Http\Controllers\Platform\Admin\SettingsController as PlatformAdminSettingsController;
 use App\Http\Controllers\Platform\Admin\SignupCodesController as PlatformAdminSignupCodesController;
 use App\Http\Controllers\Platform\Admin\RoutesController as PlatformAdminRoutesController;
@@ -28,6 +29,7 @@ use App\Http\Controllers\Platform\HelpController as PlatformHelpController;
 use App\Http\Controllers\Platform\Admin\StatsController as PlatformAdminStatsController;
 use App\Http\Controllers\Platform\Admin\ContactMessagesController as PlatformAdminContactMessagesController;
 use App\Http\Controllers\Platform\HomeController as PlatformHomeController;
+use App\Http\Controllers\Platform\StripeWebhookController;
 use App\Http\Controllers\Platform\MarketingController;
 use App\Http\Controllers\Platform\DirectoryController;
 use App\Http\Controllers\Platform\PricingController;
@@ -36,6 +38,7 @@ use App\Http\Controllers\Platform\PlatformCssController;
 use App\Http\Controllers\Platform\CaddyAskController;
 use App\Http\Controllers\Platform\SignupController as PlatformSignupController;
 use App\Http\Controllers\Tenant\HomeController as TenantHomeController;
+use App\Http\Controllers\Tenant\SalesController as TenantSalesController;
 use App\Http\Controllers\Tenant\TenantCssController;
 use App\Http\Controllers\Tenant\MediaController as TenantMediaController;
 use App\Http\Controllers\Tenant\SignupController;
@@ -54,6 +57,7 @@ use App\Http\Controllers\Tenant\Admin\EmailSignupsController as TenantAdminEmail
 use App\Http\Controllers\Tenant\Admin\AuditLogController as TenantAdminAuditLogController;
 use App\Http\Controllers\Tenant\Admin\ContactMessagesController as TenantAdminContactMessagesController;
 use App\Http\Controllers\Tenant\Admin\BillingController as TenantAdminBillingController;
+use App\Http\Controllers\Tenant\Admin\SalesController as TenantAdminSalesController;
 use App\Http\Controllers\Tenant\Admin\UsersController as TenantAdminUsersController;
 use App\Http\Controllers\Tenant\ContactController;
 use App\Http\Middleware\BearerTokenAuth;
@@ -101,6 +105,7 @@ use App\Tenant\Contact\ContactNotificationService;
 use App\Tenant\Contact\ContactMessageService;
 use App\Tenant\Contact\ContactMessageRepository;
 use App\Tenant\Settings\TenantSettingsRepository;
+use App\Tenant\Sales\SalesRepository;
 
 use App\Tenant\Artwork\ArtworkUploadService;
 
@@ -151,6 +156,11 @@ try {
     echo (new CaddyAskController($pdo))->ask($request)->send();
     exit;
 }
+    if ($request->path() === '/stripe/webhook') {
+        (new StripeWebhookController(new PlatformSettingsRepository($pdo), new SalesRepository($pdo)))->receive($request)->send();
+        exit;
+    }
+
 
 $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTTP_HOST') ?? '');
     if (!$tenant && $suspendedTenant) {
@@ -274,6 +284,8 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->get('/admin/login', fn (Request $request): Response => new Response('', 303, ['Location' => '/login']));
     $router->get('/admin', fn (Request $request): Response => (new TenantAdminDashboardController($tenantSettings))->index($request, $tenant, $currentUser));
         $router->get('/admin/billing', fn (Request $request): Response => (new TenantAdminBillingController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->index($request, $tenant, $currentUser));
+        $router->get('/admin/sales', fn (Request $request): Response => (new TenantAdminSalesController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new SalesRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $tenant, $currentUser));
+        $router->post('/admin/sales/update', fn (Request $request): Response => (new TenantAdminSalesController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new SalesRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->update($request, $tenant, $currentUser));
         $router->get('/admin/users', fn (Request $request): Response => (new TenantAdminUsersController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), $tenantSettings, new AuditLogRepository($pdo), new EmailOutboxRepository($pdo)))->index($request, $tenant, $currentUser));
         $router->post('/admin/users/password', fn (Request $request): Response => (new TenantAdminUsersController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), $tenantSettings, new AuditLogRepository($pdo), new EmailOutboxRepository($pdo)))->updatePassword($request, $tenant, $currentUser));
         $router->post('/admin/users/invite', fn (Request $request): Response => (new TenantAdminUsersController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), $tenantSettings, new AuditLogRepository($pdo), new EmailOutboxRepository($pdo)))->invite($request, $tenant, $currentUser));
@@ -302,13 +314,19 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
         $router->get('/contact', fn (Request $request): Response => $tenantController->contact($request, $tenant));
         $router->post('/contact', fn (Request $request): Response => $contactController->submit($request, $tenant));
         $router->post('/signup', fn (Request $request): Response => $signupController->submit($request, $tenant));
+        $tenantSalesController = new TenantSalesController(new SalesRepository($pdo), new TenantSettingsRepository($pdo), new PlatformSettingsRepository($pdo), new CsrfTokenService(), $pdo);
+        $router->get('/cart', fn (Request $request): Response => $tenantSalesController->cart($request, $tenant));
+        $router->post('/cart/add', fn (Request $request): Response => $tenantSalesController->add($request, $tenant));
+        $router->post('/cart/update', fn (Request $request): Response => $tenantSalesController->update($request, $tenant));
+        $router->post('/cart/checkout', fn (Request $request): Response => $tenantSalesController->checkout($request, $tenant));
+        $router->get('/checkout/success', fn (Request $request): Response => $tenantSalesController->success($request, $tenant));
         $router->get('/api/me', fn (Request $request): Response => (new TenantMeController(tenantRoles: new RequireTenantRole(new MembershipRepository($pdo)), auditLog: new AuditLogRepository($pdo)))->show($request, $bearerToken, $tenant));
 
         $router->dispatch($request)->send();
         exit;
     }
 
-    $platformController = new PlatformHomeController();
+    $platformController = new PlatformHomeController($pdo);
     $marketingController = new MarketingController($pdo);
     $helpController = new PlatformHelpController();
 
@@ -397,6 +415,7 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
 
     $router->get('/platform/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
     $router->get('/platform/admin/pricing', fn (Request $request): Response => (new PlatformAdminPricingController(new RequirePlatformRole(new MembershipRepository($pdo)), $pdo, new PlatformSettingsRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
+    $router->get('/platform/admin/sales', fn (Request $request): Response => (new PlatformAdminSalesController(new RequirePlatformRole(new MembershipRepository($pdo)), new SalesRepository($pdo)))->index($request, $currentUser));
     $router->post('/platform/admin/pricing', fn (Request $request): Response => (new PlatformAdminPricingController(new RequirePlatformRole(new MembershipRepository($pdo)), $pdo, new PlatformSettingsRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->update($request, $currentUser));
     $router->get('/platform/admin/settings', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/platform-settings']));
     $router->get('/platform/admin/routes', fn (Request $request): Response => (new PlatformAdminRoutesController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));

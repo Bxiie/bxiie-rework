@@ -310,9 +310,7 @@ HTML
         }
 
         $notesHtml = $salesNotes !== '' ? '<div class="prose sales-notes">' . $salesNotes . '</div>' : '';
-        $cartHtml = $this->tenantSalesEnabled($tenant)
-            ? '<button class="button add-to-cart-placeholder" type="button" disabled>Add to cart coming next</button><p class="sales-note-small">Checkout will use Stripe in the next sales phase.</p>'
-            : '<p class="sales-note-small">Online checkout is available on paid ArtsFolio plans.</p>';
+        $cartHtml = $this->cartForm($tenant, $artwork);
 
         return <<<HTML
 <section class="artwork-sales-panel">
@@ -322,6 +320,38 @@ HTML
     {$notesHtml}
     {$cartHtml}
 </section>
+HTML;
+    }
+
+    /**
+     * Renders a paid-plan cart form for purchasable artwork.
+     *
+     * @param array<string,mixed> $artwork
+     */
+    private function cartForm(TenantContext $tenant, array $artwork): string
+    {
+        if (!$this->tenantSalesEnabled($tenant)) {
+            return '<p class="sales-note-small">Online checkout is available on paid ArtsFolio plans.</p>';
+        }
+        if ((string) ($artwork['sale_status'] ?? '') !== 'for_sale' || trim((string) ($artwork['price'] ?? '')) === '') {
+            return '';
+        }
+
+        $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
+        $artworkId = (int) ($artwork['id'] ?? 0);
+        $isOneOff = ((int) ($artwork['is_one_off'] ?? 1)) === 1;
+        $quantity = $isOneOff
+            ? '<input type="hidden" name="quantity" value="1">'
+            : '<label>Quantity <input type="number" name="quantity" min="1" max="' . max(1, (int) ($artwork['inventory_quantity'] ?? 1)) . '" value="1"></label>';
+
+        return <<<HTML
+<form method="post" action="/cart/add" class="artwork-cart-form">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <input type="hidden" name="artwork_id" value="{$artworkId}">
+    {$quantity}
+    <button class="button" type="submit">Add to cart</button>
+</form>
+<p class="sales-note-small">Checkout is processed securely through Stripe.</p>
 HTML;
     }
 

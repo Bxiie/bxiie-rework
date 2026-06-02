@@ -47,6 +47,7 @@ final class SettingsController
         $copyrightName = $this->setting($tenant, 'copyright_name', $artistName);
         $homeIntro = $this->setting($tenant, 'home_intro', 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.');
         $salesNotes = $this->setting($tenant, 'sales_notes', 'Sales are handled directly by the artist. Contact the studio for shipping, pickup, installation, and timing details.');
+        $stripeConnectedAccountId = $this->setting($tenant, 'stripe_connected_account_id', '');
         $homeTab = $this->setting($tenant, 'home_tab', 'Home');
         $portfolioTab = $this->setting($tenant, 'portfolio_tab', 'Portfolio');
         $aboutTab = $this->setting($tenant, 'about_tab', 'About');
@@ -118,6 +119,8 @@ final class SettingsController
             <legend>Sales notes</legend>
             <label>Public sales explanation<textarea name="sales_notes" rows="5">{$salesNotes}</textarea></label>
             <p class="admin-help">Shown on artwork detail pages beside price/contact actions. Use this for shipping, pickup, edition, commission, and payment workflow notes.</p>
+            <label>Stripe connected account ID<input name="stripe_connected_account_id" value="{$stripeConnectedAccountId}" placeholder="acct_..."></label>
+            <p class="admin-help">Required for direct Stripe Connect payouts. Leave blank only during platform testing.</p>
         </fieldset>
 
         <fieldset>
@@ -243,7 +246,7 @@ HTML;
         }
 
         $keys = [
-            'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro', 'sales_notes',
+            'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro', 'sales_notes', 'stripe_connected_account_id',
             'home_tab', 'portfolio_tab', 'about_tab', 'contact_tab', 'portfolio_slug', 'about_slug', 'contact_slug',
             'primary_color', 'accent_color', 'text_color', 'background_color', 'topbar_background_color', 'topbar_background_opacity', 'topbar_media_uuid',
             'menu_background_color', 'menu_background_enabled', 'menu_background_opacity', 'menu_media_uuid', 'heading_background_color', 'heading_background_opacity',
