@@ -448,3 +448,20 @@ body.tenant-admin-page {
 }
 
 /* End of file. */
+
+/* ArtsFolio platform pricing economics input width fix. */
+.platform-admin-page input[name*="monthly_price_dollars"],
+.platform-admin-page input[name*="platform_sales_commission_percent"],
+.platform-admin-page input[name*="credit_card_percentage"],
+.platform-admin-page input[name*="credit_card_fixed_fee"],
+.platform-admin-page input[name*="payment_processor_percent"],
+.platform-admin-page input[name*="payment_processor_fixed_fee"],
+.platform-admin-page input[name*="commission_percent"] {
+  min-width: 9.5rem !important;
+  max-width: 12rem !important;
+  width: 100% !important;
+}
+
+.platform-admin-page .admin-table input[type="number"] {
+  min-width: 7.5rem !important;
+}
