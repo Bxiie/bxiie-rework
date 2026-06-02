@@ -81,7 +81,7 @@ final class SalesRepository
         $stmt->execute(['cart_id' => $cartId, 'id' => $itemId, 'quantity' => $quantity]);
     }
 
-    public function createOrderFromCart(TenantContext $tenant, array $cart, array $items, int $commissionCents): array
+    public function createOrderFromCart(TenantContext $tenant, array $cart, array $items, int $commissionCents, int $creditCardFeeCents = 0, int $sellerNetCents = 0): array
     {
         if ($items === []) {
             throw new RuntimeException('Cart is empty.');
@@ -95,8 +95,14 @@ final class SalesRepository
 
         $this->pdo->beginTransaction();
         try {
-            $stmt = $this->pdo->prepare('INSERT INTO sales_orders (tenant_id, cart_id, order_number, workflow_status, payment_status, currency, subtotal_cents, commission_cents, total_cents) VALUES (:tenant_id, :cart_id, :order_number, "ordered", "checkout_pending", "usd", :subtotal, :commission, :total)');
-            $stmt->execute(['tenant_id' => $tenant->tenantId, 'cart_id' => (int) $cart['id'], 'order_number' => $orderNumber, 'subtotal' => $subtotal, 'commission' => $commissionCents, 'total' => $subtotal]);
+            $sellerNetCents = $sellerNetCents > 0 ? $sellerNetCents : max(0, $subtotal - $commissionCents - $creditCardFeeCents);
+            if ($this->columnExists('sales_orders', 'credit_card_fee_cents') && $this->columnExists('sales_orders', 'seller_net_cents')) {
+                $stmt = $this->pdo->prepare('INSERT INTO sales_orders (tenant_id, cart_id, order_number, workflow_status, payment_status, currency, subtotal_cents, commission_cents, credit_card_fee_cents, seller_net_cents, total_cents) VALUES (:tenant_id, :cart_id, :order_number, "ordered", "checkout_pending", "usd", :subtotal, :commission, :credit_card_fee, :seller_net, :total)');
+                $stmt->execute(['tenant_id' => $tenant->tenantId, 'cart_id' => (int) $cart['id'], 'order_number' => $orderNumber, 'subtotal' => $subtotal, 'commission' => $commissionCents, 'credit_card_fee' => $creditCardFeeCents, 'seller_net' => $sellerNetCents, 'total' => $subtotal]);
+            } else {
+                $stmt = $this->pdo->prepare('INSERT INTO sales_orders (tenant_id, cart_id, order_number, workflow_status, payment_status, currency, subtotal_cents, commission_cents, total_cents) VALUES (:tenant_id, :cart_id, :order_number, "ordered", "checkout_pending", "usd", :subtotal, :commission, :total)');
+                $stmt->execute(['tenant_id' => $tenant->tenantId, 'cart_id' => (int) $cart['id'], 'order_number' => $orderNumber, 'subtotal' => $subtotal, 'commission' => $commissionCents, 'total' => $subtotal]);
+            }
             $orderId = (int) $this->pdo->lastInsertId();
 
             $itemStmt = $this->pdo->prepare('INSERT INTO sales_order_items (order_id, artwork_id, title_snapshot, media_uuid_snapshot, quantity, unit_price_cents, line_total_cents) VALUES (:order_id, :artwork_id, :title, :media_uuid, :quantity, :unit_price, :line_total)');
@@ -118,6 +124,13 @@ final class SalesRepository
         }
 
         return $this->order($tenant, $orderId) ?? throw new RuntimeException('Order was not created.');
+    }
+
+    private function columnExists(string $table, string $column): bool
+    {
+        $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :table AND column_name = :column');
+        $stmt->execute(['table' => $table, 'column' => $column]);
+        return (int) $stmt->fetchColumn() > 0;
     }
 
     public function attachCheckoutSession(int $orderId, string $sessionId, string $url): void
@@ -201,161 +214,6 @@ final class SalesRepository
             $this->pdo->rollBack();
             throw $e;
         }
-    }
-
-
-    /**
-     * Returns tenant-scoped aggregate sales metrics for dashboards and analytics.
-     */
-    public function tenantSalesSummary(TenantContext $tenant): array
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT COUNT(*) AS order_count,
-                    COALESCE(SUM(total_cents), 0) AS gross_cents,
-                    COALESCE(SUM(commission_cents), 0) AS commission_cents,
-                    COALESCE(AVG(total_cents), 0) AS average_order_cents
-             FROM sales_orders
-             WHERE tenant_id = :tenant_id AND payment_status = "paid"'
-        );
-        $stmt->execute(['tenant_id' => $tenant->tenantId]);
-        $summary = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
-
-        $status = $this->pdo->prepare(
-            'SELECT workflow_status, COUNT(*) AS order_count
-             FROM sales_orders
-             WHERE tenant_id = :tenant_id
-             GROUP BY workflow_status
-             ORDER BY workflow_status'
-        );
-        $status->execute(['tenant_id' => $tenant->tenantId]);
-
-        return [
-            'order_count' => (int) ($summary['order_count'] ?? 0),
-            'gross_cents' => (int) ($summary['gross_cents'] ?? 0),
-            'commission_cents' => (int) ($summary['commission_cents'] ?? 0),
-            'average_order_cents' => (int) round((float) ($summary['average_order_cents'] ?? 0)),
-            'workflow_counts' => $status->fetchAll(PDO::FETCH_KEY_PAIR),
-        ];
-    }
-
-    /**
-     * Returns recent paid sales by day for tenant analytics charts.
-     */
-    public function tenantSalesByDay(TenantContext $tenant, int $days = 30): array
-    {
-        $days = max(1, min(365, $days));
-        $stmt = $this->pdo->prepare(
-            'SELECT DATE(created_at) AS sale_day,
-                    COUNT(*) AS order_count,
-                    COALESCE(SUM(total_cents), 0) AS gross_cents,
-                    COALESCE(SUM(commission_cents), 0) AS commission_cents
-             FROM sales_orders
-             WHERE tenant_id = :tenant_id
-               AND payment_status = "paid"
-               AND created_at >= DATE_SUB(CURRENT_DATE, INTERVAL ' . $days . ' DAY)
-             GROUP BY DATE(created_at)
-             ORDER BY sale_day DESC'
-        );
-        $stmt->execute(['tenant_id' => $tenant->tenantId]);
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    /**
-     * Returns tenant best sellers using paid order items.
-     */
-    public function tenantBestSellers(TenantContext $tenant, int $limit = 20): array
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT oi.artwork_id,
-                    oi.title_snapshot,
-                    COALESCE(SUM(oi.quantity), 0) AS units_sold,
-                    COALESCE(SUM(oi.line_total_cents), 0) AS gross_cents
-             FROM sales_order_items oi
-             JOIN sales_orders o ON o.id = oi.order_id
-             WHERE o.tenant_id = :tenant_id AND o.payment_status = "paid"
-             GROUP BY oi.artwork_id, oi.title_snapshot
-             ORDER BY gross_cents DESC, units_sold DESC
-             LIMIT ' . max(1, $limit)
-        );
-        $stmt->execute(['tenant_id' => $tenant->tenantId]);
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    /**
-     * Returns platform-wide aggregate sales metrics for operator dashboards.
-     */
-    public function platformSalesSummary(): array
-    {
-        $summary = $this->pdo->query(
-            'SELECT COUNT(*) AS order_count,
-                    COUNT(DISTINCT tenant_id) AS tenant_count,
-                    COALESCE(SUM(total_cents), 0) AS gross_cents,
-                    COALESCE(SUM(commission_cents), 0) AS commission_cents,
-                    COALESCE(AVG(total_cents), 0) AS average_order_cents
-             FROM sales_orders
-             WHERE payment_status = "paid"'
-        )->fetch(PDO::FETCH_ASSOC) ?: [];
-
-        $status = $this->pdo->query(
-            'SELECT workflow_status, COUNT(*) AS order_count
-             FROM sales_orders
-             GROUP BY workflow_status
-             ORDER BY workflow_status'
-        );
-
-        return [
-            'order_count' => (int) ($summary['order_count'] ?? 0),
-            'tenant_count' => (int) ($summary['tenant_count'] ?? 0),
-            'gross_cents' => (int) ($summary['gross_cents'] ?? 0),
-            'commission_cents' => (int) ($summary['commission_cents'] ?? 0),
-            'average_order_cents' => (int) round((float) ($summary['average_order_cents'] ?? 0)),
-            'workflow_counts' => $status->fetchAll(PDO::FETCH_KEY_PAIR),
-        ];
-    }
-
-    /**
-     * Returns platform-wide paid sales by day.
-     */
-    public function platformSalesByDay(int $days = 30): array
-    {
-        $days = max(1, min(365, $days));
-        $stmt = $this->pdo->query(
-            'SELECT DATE(created_at) AS sale_day,
-                    COUNT(*) AS order_count,
-                    COALESCE(SUM(total_cents), 0) AS gross_cents,
-                    COALESCE(SUM(commission_cents), 0) AS commission_cents
-             FROM sales_orders
-             WHERE payment_status = "paid"
-               AND created_at >= DATE_SUB(CURRENT_DATE, INTERVAL ' . $days . ' DAY)
-             GROUP BY DATE(created_at)
-             ORDER BY sale_day DESC'
-        );
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    /**
-     * Returns platform sales totals grouped by tenant.
-     */
-    public function platformSalesByTenant(int $limit = 50): array
-    {
-        $stmt = $this->pdo->query(
-            'SELECT t.name AS tenant_name,
-                    t.slug AS tenant_slug,
-                    COUNT(o.id) AS order_count,
-                    COALESCE(SUM(o.total_cents), 0) AS gross_cents,
-                    COALESCE(SUM(o.commission_cents), 0) AS commission_cents
-             FROM sales_orders o
-             JOIN tenants t ON t.id = o.tenant_id
-             WHERE o.payment_status = "paid"
-             GROUP BY t.id, t.name, t.slug
-             ORDER BY gross_cents DESC
-             LIMIT ' . max(1, $limit)
-        );
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function platformOrders(int $limit = 200): array

@@ -77,8 +77,10 @@ final class SalesController
 
         $customerEmail = $cart ? $this->e((string) ($cart['customer_email'] ?? '')) : '';
         $customerName = $cart ? $this->e((string) ($cart['customer_name'] ?? '')) : '';
+        $fees = $this->saleEconomics($tenant, $items);
+        $feeDisclosure = $items === [] ? '' : '<div class="sales-fee-disclosure"><p><strong>Seller payout disclosure:</strong> the artist receives sale amount minus ArtsFolio commission and credit card charges.</p><p>On this cart: platform commission ' . $this->money($fees['commission_cents']) . ', estimated credit card charges ' . $this->money($fees['credit_card_fee_cents']) . ', estimated artist proceeds ' . $this->money($fees['seller_net_cents']) . '.</p></div>';
         $customerFields = '<fieldset class="tenant-form"><legend>Cart contact</legend><label>Name<input name="customer_name" value="' . $customerName . '" autocomplete="name"></label><label>Email<input type="email" name="customer_email" value="' . $customerEmail . '" autocomplete="email" required></label><p class="muted">Email lets ArtsFolio send checkout reminders for abandoned carts.</p></fieldset>';
-        $checkout = $items === [] ? '<p>Your cart is empty.</p>' : $customerFields . '<p><strong>Subtotal:</strong> ' . $this->money($subtotal) . '</p><button type="submit" formaction="/cart/update">Update cart</button> <button type="submit" formaction="/cart/checkout">Checkout with Stripe</button>';
+        $checkout = $items === [] ? '<p>Your cart is empty.</p>' : $customerFields . '<p><strong>Subtotal:</strong> ' . $this->money($subtotal) . '</p>' . $feeDisclosure . '<button type="submit" formaction="/cart/update">Update cart</button> <button type="submit" formaction="/cart/checkout">Checkout with Stripe</button>';
         $body = '<!doctype html><html><head><meta charset="utf-8"><title>Cart</title><link rel="stylesheet" href="/assets/site.css"></head><body><main class="site-main tenant-content-surface"><h1>Shopping cart</h1><form method="post"><input type="hidden" name="csrf_token" value="' . $csrf . '"><table class="admin-table"><thead><tr><th>Artwork</th><th>Qty</th><th>Unit</th><th>Total</th></tr></thead><tbody>' . $rows . '</tbody></table>' . $checkout . '</form><p><a href="/portfolio">Continue browsing</a></p></main></body></html>';
 
         return Response::html($body, 200, $token !== '' ? ['Set-Cookie' => $this->cartCookie($token)] : []);
@@ -117,8 +119,9 @@ final class SalesController
         $cart = $this->sales->cartForToken($tenant, $token);
         $this->saveCartContact((int) $cart['id']);
         $items = $this->sales->items($cart);
-        $commissionCents = $this->commissionCents($items);
-        $order = $this->sales->createOrderFromCart($tenant, $cart, $items, $commissionCents);
+        $fees = $this->saleEconomics($tenant, $items);
+        $commissionCents = (int) $fees['commission_cents'];
+        $order = $this->sales->createOrderFromCart($tenant, $cart, $items, $commissionCents, (int) $fees['credit_card_fee_cents'], (int) $fees['seller_net_cents']);
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'https';
         $host = $request->host();
         $successUrl = $scheme . '://' . $host . '/checkout/success?session_id={CHECKOUT_SESSION_ID}';
@@ -132,7 +135,7 @@ final class SalesController
                 $successUrl,
                 $cancelUrl,
                 trim((string) $this->tenantSettings->get($tenant, 'stripe_connected_account_id', '')) ?: null,
-                $commissionCents,
+                $commissionCents + (int) $fees['credit_card_fee_cents'],
             );
             $this->sales->attachCheckoutSession((int) $order['id'], (string) $session['id'], (string) $session['url']);
             $this->sales->markCartCheckedOut((int) $cart['id']);
@@ -182,14 +185,40 @@ final class SalesController
         return (int) round(((float) $normalized) * 100);
     }
 
-    private function commissionCents(array $items): int
+    private function saleEconomics(TenantContext $tenant, array $items): array
     {
         $subtotal = 0;
         foreach ($items as $item) {
             $subtotal += (int) $item['quantity'] * (int) $item['unit_price_cents'];
         }
-        $basisPoints = max(0, min(10000, (int) $this->platformSettings->get('platform_sales_commission_basis_points', '500')));
-        return (int) round($subtotal * ($basisPoints / 10000));
+        $commissionBasisPoints = max(0, min(10000, (int) $this->platformSettings->get('platform_sales_commission_basis_points', '500')));
+        $planFees = $this->planPaymentFees($tenant);
+        $commission = (int) round($subtotal * ($commissionBasisPoints / 10000));
+        $creditCardFee = (int) round($subtotal * (((int) $planFees['credit_card_fee_basis_points']) / 10000)) + (int) $planFees['credit_card_fixed_fee_cents'];
+        return [
+            'subtotal_cents' => $subtotal,
+            'commission_cents' => $commission,
+            'credit_card_fee_cents' => $creditCardFee,
+            'seller_net_cents' => max(0, $subtotal - $commission - $creditCardFee),
+        ];
+    }
+
+    private function planPaymentFees(TenantContext $tenant): array
+    {
+        try {
+            $stmt = $this->pdo->prepare('SELECT COALESCE(p.credit_card_fee_basis_points, 290) AS credit_card_fee_basis_points, COALESCE(p.credit_card_fixed_fee_cents, 30) AS credit_card_fixed_fee_cents FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id WHERE tpa.tenant_id = :tenant_id AND tpa.status IN ("trial", "active", "manual") ORDER BY tpa.id DESC LIMIT 1');
+            $stmt->execute(['tenant_id' => $tenant->tenantId]);
+            $row = $stmt->fetch();
+            if ($row) {
+                return [
+                    'credit_card_fee_basis_points' => max(0, min(10000, (int) ($row['credit_card_fee_basis_points'] ?? 290))),
+                    'credit_card_fixed_fee_cents' => max(0, (int) ($row['credit_card_fixed_fee_cents'] ?? 30)),
+                ];
+            }
+        } catch (Throwable) {
+            // Migration may not have reached older environments yet. Use Stripe's common public baseline.
+        }
+        return ['credit_card_fee_basis_points' => 290, 'credit_card_fixed_fee_cents' => 30];
     }
 
     private function cartToken(bool $create = true): string

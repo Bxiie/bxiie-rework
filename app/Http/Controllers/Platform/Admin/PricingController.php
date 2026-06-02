@@ -39,7 +39,7 @@ final class PricingController
 
         $csrf = $this->csrf ? AdminLayout::escape($this->csrf->getOrCreate()) : '';
         $canEdit = $this->roles->allows($currentUser, [Roles::PLATFORM_OWNER, Roles::PLATFORM_ADMIN]) && $this->csrf !== null && $this->settings !== null;
-        $commission = $this->commissionBasisPoints();
+        $commissionPercent = number_format($this->commissionBasisPoints() / 100, 2, '.', '');
         $rows = '';
         foreach ($this->plans() as $plan) {
             $id = (int) $plan['id'];
@@ -52,6 +52,8 @@ final class PricingController
             $storage = (string) (int) ($plan['allowed_storage_gb'] ?? 0);
             $contacts = (string) (int) ($plan['allowed_contact_messages'] ?? 0);
             $admins = (string) (int) ($plan['allowed_admin_users'] ?? 0);
+            $ccPercent = number_format(((int) ($plan['credit_card_fee_basis_points'] ?? 290)) / 100, 2, '.', '');
+            $ccFixed = number_format(((int) ($plan['credit_card_fixed_fee_cents'] ?? 30)) / 100, 2, '.', '');
             $allowSales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? ' checked' : '';
             $order = (string) (int) ($plan['display_order'] ?? 100);
             $domain = ((int) $plan['custom_domain_included']) === 1 ? ' checked' : '';
@@ -69,28 +71,31 @@ final class PricingController
     <td><input type="number" name="plans[{$id}][allowed_admin_users]" min="0" value="{$admins}"></td>
     <td><label><input type="checkbox" name="plans[{$id}][custom_domain_included]" value="1"{$domain}> included</label></td>
     <td><label><input type="checkbox" name="plans[{$id}][allow_sales]" value="1"{$allowSales}> enabled</label></td>
+    <td><input type="number" name="plans[{$id}][credit_card_fee_percent]" min="0" max="100" step="0.01" value="{$ccPercent}"></td>
+    <td><input type="number" name="plans[{$id}][credit_card_fixed_fee_dollars]" min="0" step="0.01" value="{$ccFixed}"></td>
     <td><label><input type="checkbox" name="plans[{$id}][is_active]" value="1"{$active}> active</label></td>
     <td><input type="number" name="plans[{$id}][display_order]" min="0" value="{$order}"></td>
 </tr>
-<tr><td></td><td colspan="7"><label>Description<textarea name="plans[{$id}][description]" rows="2">{$description}</textarea></label></td></tr>
+<tr><td></td><td colspan="13"><label>Description<textarea name="plans[{$id}][description]" rows="2">{$description}</textarea></label></td></tr>
 HTML;
             } else {
                 $price = '$' . number_format(((int) $plan['monthly_price_cents']) / 100, 2);
-                $rows .= '<tr><td><code>' . $slug . '</code></td><td>' . $name . '</td><td>' . $price . '</td><td>' . $artworks . '</td><td>' . $emails . '</td><td>' . (((int) $plan['custom_domain_included']) ? 'yes' : 'no') . '</td><td>' . (((int) $plan['is_active']) ? 'active' : 'inactive') . '</td><td>' . $order . '</td></tr>';
+                $rows .= '<tr><td><code>' . $slug . '</code></td><td>' . $name . '</td><td>' . $price . '</td><td>' . $artworks . '</td><td>' . $emails . '</td><td>' . $ccPercent . '% + $' . $ccFixed . '</td><td>' . (((int) $plan['is_active']) ? 'active' : 'inactive') . '</td><td>' . $order . '</td></tr>';
             }
         }
-        if ($rows === '') { $rows = '<tr><td colspan="8">No plans found.</td></tr>'; }
+        if ($rows === '') {
+            $rows = '<tr><td colspan="14">No plans found.</td></tr>';
+        }
 
         $button = $canEdit ? '<button type="submit">Save pricing</button>' : '';
         $formOpen = $canEdit ? '<form class="admin-form" method="post" action="/platform/admin/pricing"><input type="hidden" name="csrf_token" value="' . $csrf . '">' : '';
         $formClose = $canEdit ? '</form>' : '';
-        $commissionPercent = number_format($commission / 100, 2, '.', '');
 
         return Response::html(AdminLayout::render(title: 'Platform Pricing', body: <<<HTML
-<p class="admin-muted">Set public pricing, plan limits, and platform sales commission disclosure. Commission is shown to prospective users on the pricing page and to current users through billing context.</p>
+<p class="admin-muted">Set public pricing, plan limits, platform sales commission, and plan-specific card processing fee disclosure. Complimentary tenants waive only subscription billing; they still pay platform commission and card processing fees on sales.</p>
 {$formOpen}
 <section class="admin-panel"><h2>Platform sales commission</h2><label>Commission on sales, percent<input type="number" name="platform_sales_commission_percent" min="0" max="100" step="0.01" value="{$commissionPercent}"></label><p class="admin-muted">Current disclosure: ArtsFolio commission is {$commissionPercent}% of platform-processed sales.</p></section>
-<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Slug</th><th>Name</th><th>Monthly</th><th>Allowed artworks</th><th>Allowed email addresses</th><th>Storage GB</th><th>Contact messages</th><th>Admin users</th><th>Custom domain</th><th>Sales</th><th>Status</th><th>Order</th></tr></thead><tbody>{$rows}</tbody></table></div>
+<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Slug</th><th>Name</th><th>Monthly</th><th>Allowed artworks</th><th>Allowed email addresses</th><th>Storage GB</th><th>Contact messages</th><th>Admin users</th><th>Custom domain</th><th>Sales</th><th>CC %</th><th>CC fixed</th><th>Status</th><th>Order</th></tr></thead><tbody>{$rows}</tbody></table></div>
 <section class="admin-panel"><h2>Create plan</h2>
 <div class="admin-form-grid three">
 <label>Slug<input name="new_plan[slug]" pattern="[a-z0-9-]+" placeholder="artist-plus"></label>
@@ -101,6 +106,8 @@ HTML;
 <label>Storage GB<input type="number" name="new_plan[allowed_storage_gb]" min="0" value="5"></label>
 <label>Contact messages<input type="number" name="new_plan[allowed_contact_messages]" min="0" value="100"></label>
 <label>Admin users<input type="number" name="new_plan[allowed_admin_users]" min="0" value="3"></label>
+<label>Credit card percent<input type="number" name="new_plan[credit_card_fee_percent]" min="0" max="100" step="0.01" value="2.90"></label>
+<label>Credit card fixed fee<input type="number" name="new_plan[credit_card_fixed_fee_dollars]" min="0" step="0.01" value="0.30"></label>
 <label>Display order<input type="number" name="new_plan[display_order]" min="0" value="50"></label>
 <label><input type="checkbox" name="new_plan[custom_domain_included]" value="1"> Custom domain included</label>
 <label><input type="checkbox" name="new_plan[allow_sales]" value="1"> Allow sales</label>
@@ -129,29 +136,14 @@ HTML, active: 'pricing'));
         $before = ['commission_basis_points' => $this->commissionBasisPoints(), 'plans' => $this->plans()];
         $this->settings->set('platform_sales_commission_basis_points', (string) $commissionBasisPoints);
 
-        $plans = is_array($_POST['plans'] ?? null) ? $_POST['plans'] : [];
-        foreach ($plans as $plan) {
+        foreach ((array) ($_POST['plans'] ?? []) as $plan) {
             $id = (int) ($plan['id'] ?? 0);
-            if ($id < 1) {
-                continue;
-            }
             $name = trim((string) ($plan['name'] ?? ''));
-            if ($name === '') {
+            if ($id < 1 || $name === '') {
                 continue;
             }
-            $priceCents = max(0, (int) round(((float) ($plan['monthly_price_dollars'] ?? 0)) * 100));
-            $description = trim((string) ($plan['description'] ?? ''));
-            $allowedArtworks = max(0, (int) ($plan['allowed_artworks'] ?? 0));
-            $allowedEmails = max(0, (int) ($plan['allowed_email_addresses'] ?? 0));
-            $displayOrder = max(0, (int) ($plan['display_order'] ?? 100));
-            $storageGb = max(0, (int) ($plan['allowed_storage_gb'] ?? 0));
-            $contactMessages = max(0, (int) ($plan['allowed_contact_messages'] ?? 0));
-            $adminUsers = max(0, (int) ($plan['allowed_admin_users'] ?? 0));
-            $allowSales = isset($plan['allow_sales']) ? 1 : 0;
-            $customDomain = isset($plan['custom_domain_included']) ? 1 : 0;
-            $active = isset($plan['is_active']) ? 1 : 0;
-            $stmt = $this->pdo->prepare('UPDATE plans SET name = :name, monthly_price_cents = :monthly_price_cents, description = :description, custom_domain_included = :custom_domain_included, allowed_artworks = :allowed_artworks, allowed_email_addresses = :allowed_email_addresses, allowed_storage_gb = :allowed_storage_gb, allowed_contact_messages = :allowed_contact_messages, allowed_admin_users = :allowed_admin_users, allow_sales = :allow_sales, display_order = :display_order, is_active = :is_active WHERE id = :id');
-            $stmt->execute(['id' => $id, 'name' => $name, 'monthly_price_cents' => $priceCents, 'description' => $description, 'custom_domain_included' => $customDomain, 'allowed_artworks' => $allowedArtworks, 'allowed_email_addresses' => $allowedEmails, 'allowed_storage_gb' => $storageGb, 'allowed_contact_messages' => $contactMessages, 'allowed_admin_users' => $adminUsers, 'allow_sales' => $allowSales, 'display_order' => $displayOrder, 'is_active' => $active]);
+            $stmt = $this->pdo->prepare('UPDATE plans SET name = :name, monthly_price_cents = :monthly_price_cents, description = :description, custom_domain_included = :custom_domain_included, allowed_artworks = :allowed_artworks, allowed_email_addresses = :allowed_email_addresses, allowed_storage_gb = :allowed_storage_gb, allowed_contact_messages = :allowed_contact_messages, allowed_admin_users = :allowed_admin_users, allow_sales = :allow_sales, credit_card_fee_basis_points = :credit_card_fee_basis_points, credit_card_fixed_fee_cents = :credit_card_fixed_fee_cents, display_order = :display_order, is_active = :is_active WHERE id = :id');
+            $stmt->execute($this->planParams($plan, $id, $name));
         }
 
         $newPlan = is_array($_POST['new_plan'] ?? null) ? $_POST['new_plan'] : [];
@@ -161,24 +153,40 @@ HTML, active: 'pricing'));
             if (!preg_match('/^[a-z0-9-]+$/', $newSlug) || $newName === '') {
                 return Response::html('<h1>New plan requires a lowercase slug and name</h1>', 422);
             }
-            $newPriceCents = max(0, (int) round(((float) ($newPlan['monthly_price_dollars'] ?? 0)) * 100));
-            $newDescription = trim((string) ($newPlan['description'] ?? ''));
-            $newAllowedArtworks = max(0, (int) ($newPlan['allowed_artworks'] ?? 0));
-            $newAllowedEmails = max(0, (int) ($newPlan['allowed_email_addresses'] ?? 0));
-            $newDisplayOrder = max(0, (int) ($newPlan['display_order'] ?? 100));
-            $newStorageGb = max(0, (int) ($newPlan['allowed_storage_gb'] ?? 0));
-            $newContactMessages = max(0, (int) ($newPlan['allowed_contact_messages'] ?? 0));
-            $newAdminUsers = max(0, (int) ($newPlan['allowed_admin_users'] ?? 0));
-            $newAllowSales = isset($newPlan['allow_sales']) ? 1 : 0;
-            $newCustomDomain = isset($newPlan['custom_domain_included']) ? 1 : 0;
-            $newActive = isset($newPlan['is_active']) ? 1 : 0;
-            $insert = $this->pdo->prepare('INSERT INTO plans (slug, name, monthly_price_cents, description, custom_domain_included, allowed_artworks, allowed_email_addresses, allowed_storage_gb, allowed_contact_messages, allowed_admin_users, allow_sales, display_order, is_active) VALUES (:slug, :name, :monthly_price_cents, :description, :custom_domain_included, :allowed_artworks, :allowed_email_addresses, :allowed_storage_gb, :allowed_contact_messages, :allowed_admin_users, :allow_sales, :display_order, :is_active) ON DUPLICATE KEY UPDATE name = VALUES(name), monthly_price_cents = VALUES(monthly_price_cents), description = VALUES(description), custom_domain_included = VALUES(custom_domain_included), allowed_artworks = VALUES(allowed_artworks), allowed_email_addresses = VALUES(allowed_email_addresses), allowed_storage_gb = VALUES(allowed_storage_gb), allowed_contact_messages = VALUES(allowed_contact_messages), allowed_admin_users = VALUES(allowed_admin_users), allow_sales = VALUES(allow_sales), display_order = VALUES(display_order), is_active = VALUES(is_active)');
-            $insert->execute(['slug' => $newSlug, 'name' => $newName, 'monthly_price_cents' => $newPriceCents, 'description' => $newDescription, 'custom_domain_included' => $newCustomDomain, 'allowed_artworks' => $newAllowedArtworks, 'allowed_email_addresses' => $newAllowedEmails, 'allowed_storage_gb' => $newStorageGb, 'allowed_contact_messages' => $newContactMessages, 'allowed_admin_users' => $newAdminUsers, 'allow_sales' => $newAllowSales, 'display_order' => $newDisplayOrder, 'is_active' => $newActive]);
+            $insert = $this->pdo->prepare('INSERT INTO plans (slug, name, monthly_price_cents, description, custom_domain_included, allowed_artworks, allowed_email_addresses, allowed_storage_gb, allowed_contact_messages, allowed_admin_users, allow_sales, credit_card_fee_basis_points, credit_card_fixed_fee_cents, display_order, is_active) VALUES (:slug, :name, :monthly_price_cents, :description, :custom_domain_included, :allowed_artworks, :allowed_email_addresses, :allowed_storage_gb, :allowed_contact_messages, :allowed_admin_users, :allow_sales, :credit_card_fee_basis_points, :credit_card_fixed_fee_cents, :display_order, :is_active) ON DUPLICATE KEY UPDATE name = VALUES(name), monthly_price_cents = VALUES(monthly_price_cents), description = VALUES(description), custom_domain_included = VALUES(custom_domain_included), allowed_artworks = VALUES(allowed_artworks), allowed_email_addresses = VALUES(allowed_email_addresses), allowed_storage_gb = VALUES(allowed_storage_gb), allowed_contact_messages = VALUES(allowed_contact_messages), allowed_admin_users = VALUES(allowed_admin_users), allow_sales = VALUES(allow_sales), credit_card_fee_basis_points = VALUES(credit_card_fee_basis_points), credit_card_fixed_fee_cents = VALUES(credit_card_fixed_fee_cents), display_order = VALUES(display_order), is_active = VALUES(is_active)');
+            $params = $this->planParams($newPlan, null, $newName);
+            $params['slug'] = $newSlug;
+            unset($params['id']);
+            $insert->execute($params);
         }
 
         $this->auditLog?->record('platform.pricing.updated', null, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, 'plans', 'pricing', ['before' => $before, 'after' => ['commission_basis_points' => $commissionBasisPoints, 'plans' => $this->plans()]], $request->server('REMOTE_ADDR'));
         FlashMessages::success('Platform pricing saved.');
         return new Response('', 303, ['Location' => '/platform/admin/pricing?notice=saved']);
+    }
+
+    private function planParams(array $plan, ?int $id, string $name): array
+    {
+        $params = [
+            'name' => $name,
+            'monthly_price_cents' => max(0, (int) round(((float) ($plan['monthly_price_dollars'] ?? 0)) * 100)),
+            'description' => trim((string) ($plan['description'] ?? '')),
+            'custom_domain_included' => isset($plan['custom_domain_included']) ? 1 : 0,
+            'allowed_artworks' => max(0, (int) ($plan['allowed_artworks'] ?? 0)),
+            'allowed_email_addresses' => max(0, (int) ($plan['allowed_email_addresses'] ?? 0)),
+            'allowed_storage_gb' => max(0, (int) ($plan['allowed_storage_gb'] ?? 0)),
+            'allowed_contact_messages' => max(0, (int) ($plan['allowed_contact_messages'] ?? 0)),
+            'allowed_admin_users' => max(0, (int) ($plan['allowed_admin_users'] ?? 0)),
+            'allow_sales' => isset($plan['allow_sales']) ? 1 : 0,
+            'credit_card_fee_basis_points' => max(0, min(10000, (int) round(((float) ($plan['credit_card_fee_percent'] ?? 2.9)) * 100))),
+            'credit_card_fixed_fee_cents' => max(0, (int) round(((float) ($plan['credit_card_fixed_fee_dollars'] ?? 0.30)) * 100)),
+            'display_order' => max(0, (int) ($plan['display_order'] ?? 100)),
+            'is_active' => isset($plan['is_active']) ? 1 : 0,
+        ];
+        if ($id !== null) {
+            $params['id'] = $id;
+        }
+        return $params;
     }
 
     private function plans(): array
@@ -195,6 +203,8 @@ HTML, active: 'pricing'));
             . ($columns['allowed_contact_messages'] ? ', allowed_contact_messages' : ', 0 AS allowed_contact_messages')
             . ($columns['allowed_admin_users'] ? ', allowed_admin_users' : ', 0 AS allowed_admin_users')
             . ($columns['allow_sales'] ? ', allow_sales' : ', 0 AS allow_sales')
+            . ($columns['credit_card_fee_basis_points'] ? ', credit_card_fee_basis_points' : ', 290 AS credit_card_fee_basis_points')
+            . ($columns['credit_card_fixed_fee_cents'] ? ', credit_card_fixed_fee_cents' : ', 30 AS credit_card_fixed_fee_cents')
             . ($columns['display_order'] ? ', display_order' : ', 100 AS display_order');
         return $this->pdo->query("SELECT {$select} FROM plans ORDER BY display_order ASC, monthly_price_cents ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -206,7 +216,7 @@ HTML, active: 'pricing'));
 
     private function planColumns(): array
     {
-        $columns = ['description' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'allowed_storage_gb' => false, 'allowed_contact_messages' => false, 'allowed_admin_users' => false, 'allow_sales' => false, 'display_order' => false];
+        $columns = ['description' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'allowed_storage_gb' => false, 'allowed_contact_messages' => false, 'allowed_admin_users' => false, 'allow_sales' => false, 'credit_card_fee_basis_points' => false, 'credit_card_fixed_fee_cents' => false, 'display_order' => false];
         $stmt = $this->pdo->prepare('SELECT column_name FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :table');
         $stmt->execute(['table' => 'plans']);
         foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $column) {

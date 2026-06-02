@@ -148,8 +148,11 @@ if (
     failWith('Platform route area is missing an expected login POST route.');
 }
 
-if (str_contains($tenantBlock, "\$router->get('/signup'")) {
-    failWith('Tenant GET /signup exists unexpectedly. Signup form is currently embedded on tenant home and submitted with POST /signup.');
+if (!str_contains($tenantBlock, "\$router->get('/signup'")) {
+    failWith('Tenant GET /signup is missing. Tenant signup must support GET /signup and POST /signup.');
+}
+if (!str_contains($tenantBlock, "\$router->post('/signup'")) {
+    failWith('Tenant POST /signup is missing. Tenant signup must support GET /signup and POST /signup.');
 }
 
 echo json_encode([

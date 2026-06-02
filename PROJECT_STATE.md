@@ -1235,3 +1235,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Production smoke/predeploy tests must not send real emails; delivery remains worker-owned and should only be triggered manually against a safe SMTP sink.
 
 # End of file.
+
+## Billing economics update - 2026-06-02
+- Tenant signup now intentionally supports both GET /signup and POST /signup; route preflight expects both.
+- Plan pricing includes plan-scoped credit card percentage and fixed fee settings.
+- Sales orders persist platform commission, estimated credit card fees, and estimated seller net revenue.
+- Stripe Checkout application fees include platform commission plus estimated card fees so tenants receive sale amount minus commission and card charges.
+- Complementary tenants waive subscription billing only; platform commission and credit card charges still apply to sales.
+
+# End of file.

@@ -43,8 +43,12 @@ final class BillingController
             $planOptions .= "<option value=\"{$slug}\"{$selected}>{$name} — {$price}</option>";
         }
 
-        $commission = $this->platformCommissionPercent();
-        $complementary = $this->isComplementary($tenant) ? '<p class="admin-notice admin-notice-info"><strong>Complementary plan:</strong> platform service billing is waived. Platform commission still applies to sales.</p>' : '';
+        $economics = $this->salesEconomics($plan);
+        $commission = $economics['commission_label'];
+        $cardFees = $economics['card_label'];
+        $payout100 = $this->payoutExample(10000, $economics);
+        $payout1000 = $this->payoutExample(100000, $economics);
+        $complementary = $this->isComplementary($tenant) ? '<p class="admin-notice admin-notice-info"><strong>Complementary plan:</strong> platform service billing is waived. Platform commission and credit card charges still apply to sales.</p>' : '';
         $csrf = $this->e($this->csrfToken());
         $planName = $this->e((string) $plan['name']);
         $price = $this->money((int) ($plan['monthly_price_cents'] ?? 0));
@@ -58,6 +62,8 @@ final class BillingController
     <p class="billing-price">{$price}</p>
     <p>{$summary}</p>
     <p><strong>Platform sales commission:</strong> {$this->e($commission)}</p>
+    <p><strong>Credit card charges:</strong> {$this->e($cardFees)}</p>
+    <div class="admin-panel-subtle"><h3>Estimated seller proceeds</h3><p>On a $100 sale, estimated payout is <strong>{$this->e($payout100)}</strong>.</p><p>On a $1,000 sale, estimated payout is <strong>{$this->e($payout1000)}</strong>.</p><p class="admin-muted">Seller receives sale amount minus platform commission, minus credit card percentage, minus fixed credit card charge. Shipping, tax, refunds, and chargebacks are not included in this estimate.</p></div>
     {$complementary}
   </div>
   <div class="admin-panel">
@@ -113,6 +119,8 @@ HTML;
             'custom_domains' => ['Custom domains', (int) ($plan['custom_domain_included'] ?? 0), $usage['custom_domains']],
             'admin_users' => ['Admin users', (int) ($plan['allowed_admin_users'] ?? 0), $usage['admin_users']],
             'sales' => ['Online checkout', ((int) ($plan['allow_sales'] ?? 0) === 1 ? 'Included' : 'Paid-plan setting off'), ((int) ($plan['allow_sales'] ?? 0) === 1 ? 'Available' : 'Unavailable')],
+            'platform_commission' => ['Platform sales commission', $this->salesEconomics($plan)['commission_label'], 'Shown at checkout/billing'],
+            'credit_card_fees' => ['Credit card charges', $this->salesEconomics($plan)['card_label'], 'Deducted from sales'],
             'directory' => ['Directory/discovery listing', 'Opt-in', $this->truthy($this->setting($tenant, 'platform_directory_opt_in', '0')) ? 'Enabled' : 'Off'],
             'analytics' => ['Analytics events', ((int) ($plan['monthly_price_cents'] ?? 0) === 0 ? 'Basic' : 'Advanced'), $usage['analytics_events']],
         ];
@@ -174,7 +182,7 @@ HTML;
 
     private function fallbackPlan(): array
     {
-        return ['id' => 0, 'slug' => 'studio', 'name' => 'Studio', 'monthly_price_cents' => 1200, 'description' => 'For active artists.', 'allowed_artworks' => 250, 'allowed_storage_gb' => 5, 'allowed_email_addresses' => 2500, 'allowed_contact_messages' => 250, 'custom_domain_included' => 0, 'allowed_admin_users' => 3, 'allow_sales' => 1];
+        return ['id' => 0, 'slug' => 'studio', 'name' => 'Studio', 'monthly_price_cents' => 1200, 'description' => 'For active artists.', 'allowed_artworks' => 250, 'allowed_storage_gb' => 5, 'allowed_email_addresses' => 2500, 'allowed_contact_messages' => 250, 'custom_domain_included' => 0, 'allowed_admin_users' => 3, 'allow_sales' => 1, 'credit_card_fee_basis_points' => 290, 'credit_card_fixed_fee_cents' => 30];
     }
 
     private function usage(TenantContext $tenant): array
@@ -190,16 +198,38 @@ HTML;
         ];
     }
 
-    private function platformCommissionPercent(): string
+    private function salesEconomics(array $plan): array
     {
+        $commissionBasisPoints = 500;
         try {
             $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'platform_sales_commission_basis_points' LIMIT 1");
             $stmt->execute();
-            $basisPoints = max(0, min(10000, (int) ($stmt->fetchColumn() ?: 500)));
-            return number_format($basisPoints / 100, 2) . '% of platform-processed sales';
+            $commissionBasisPoints = max(0, min(10000, (int) ($stmt->fetchColumn() ?: 500)));
         } catch (Throwable) {
-            return 'Configured by ArtsFolio';
+            // Keep the billing screen available even if platform settings are not ready.
         }
+
+        $cardBasisPoints = max(0, min(10000, (int) ($plan['credit_card_fee_basis_points'] ?? 290)));
+        $cardFixedCents = max(0, (int) ($plan['credit_card_fixed_fee_cents'] ?? 30));
+        return [
+            'commission_basis_points' => $commissionBasisPoints,
+            'card_basis_points' => $cardBasisPoints,
+            'card_fixed_cents' => $cardFixedCents,
+            'commission_label' => number_format($commissionBasisPoints / 100, 2) . '% of platform-processed sales',
+            'card_label' => number_format($cardBasisPoints / 100, 2) . '% + $' . number_format($cardFixedCents / 100, 2),
+        ];
+    }
+
+    private function payoutExample(int $saleCents, array $economics): string
+    {
+        $commission = (int) round($saleCents * (((int) $economics['commission_basis_points']) / 10000));
+        $card = (int) round($saleCents * (((int) $economics['card_basis_points']) / 10000)) + (int) $economics['card_fixed_cents'];
+        return $this->plainMoney(max(0, $saleCents - $commission - $card));
+    }
+
+    private function plainMoney(int $cents): string
+    {
+        return '$' . number_format($cents / 100, 2);
     }
 
     private function isComplementary(TenantContext $tenant): bool
