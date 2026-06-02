@@ -99,11 +99,10 @@ HTML;
         $tenantsTotal = $this->scalarInt("SELECT COUNT(*) FROM tenants WHERE status <> 'deleted'");
         $activeTenants = $this->scalarInt("SELECT COUNT(*) FROM tenants WHERE status IN ('active','trial')");
         $complementaryTenants = $this->columnExists('tenants', 'complementary') ? $this->scalarInt('SELECT COUNT(*) FROM tenants WHERE complementary = 1 AND status <> "deleted"') : 0;
-        $paidTenants = $this->scalarInt('SELECT COUNT(DISTINCT t.id) FROM tenants t LEFT JOIN tenant_plan_assignments tpa ON tpa.tenant_id = t.id LEFT JOIN plans p ON p.id = tpa.plan_id LEFT JOIN tenant_settings ts ON ts.tenant_id = t.id AND ts.setting_key = "billing_plan" LEFT JOIN plans ps ON ps.slug = ts.setting_value WHERE t.status <> "deleted" AND COALESCE(p.monthly_price_cents, ps.monthly_price_cents, 0) > 0');
+        $paidTenants = $this->scalarInt('SELECT COUNT(DISTINCT tpa.tenant_id) FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id JOIN tenants t ON t.id = tpa.tenant_id WHERE t.status <> "deleted" AND p.monthly_price_cents > 0');
         $gmv30d = $this->scalarInt('SELECT COALESCE(SUM(total_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
         $commission30d = $this->scalarInt('SELECT COALESCE(SUM(commission_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
-        $cardFees30d = $this->columnExists('sales_orders', 'credit_card_fee_cents') ? $this->scalarInt('SELECT COALESCE(SUM(credit_card_fee_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")') : 0;
-        $sellerNet30d = $this->columnExists('sales_orders', 'seller_net_cents') ? $this->scalarInt('SELECT COALESCE(SUM(seller_net_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")') : 0;
+        $sellerNet30d = $this->scalarInt('SELECT COALESCE(SUM(seller_net_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
         $orders30d = $this->scalarInt('SELECT COUNT(*) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)');
         $openContacts = $this->scalarInt("SELECT COUNT(*) FROM contact_messages WHERE status IN ('new','read')");
         $jobsQueued = $this->scalarInt("SELECT COUNT(*) FROM background_jobs WHERE status IN ('queued','running')");
@@ -117,7 +116,7 @@ HTML;
             'gmv_30d' => $gmv30d,
             'sales_detail' => $this->number($orders30d) . ' orders in the last 30 days',
             'commission_30d' => $commission30d,
-            'commission_detail' => 'Card fees ' . $this->money($cardFees30d) . ' · seller net ' . $this->money($sellerNet30d),
+            'commission_detail' => 'Seller net ' . $this->money($sellerNet30d) . ' in the last 30 days',
             'open_contacts' => $this->number($openContacts),
             'contact_detail' => 'Tenant and platform contact follow-up queue',
             'jobs_attention' => $this->number($jobsQueued) . ' / ' . $this->number($jobsFailed),
@@ -134,8 +133,8 @@ HTML;
         try {
             $stmt = $this->pdo()->query('SELECT so.created_at, so.order_number, so.workflow_status, so.payment_status, so.total_cents, so.seller_net_cents, t.name AS tenant_name, t.slug AS tenant_slug FROM sales_orders so JOIN tenants t ON t.id = so.tenant_id ORDER BY so.created_at DESC LIMIT 8');
             $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
-        } catch (Throwable) {
-            $rows = [];
+        } catch (Throwable $exception) {
+            return $this->emptyRow(6, 'Sales dashboard query failed: ' . $exception->getMessage());
         }
 
         if ($rows === []) {
@@ -157,20 +156,12 @@ HTML;
     private function recentTenantRows(): string
     {
         try {
-            $hasComplementary = $this->columnExists('tenants', 'complementary');
-            $complementarySelect = $hasComplementary ? 'COALESCE(t.complementary, 0)' : '0';
-            $stmt = $this->pdo()->query("SELECT t.name, t.slug, t.status, t.created_at, COALESCE(p.name, ps.name, ts.setting_value, '') AS plan_name, {$complementarySelect} AS complementary
-                FROM tenants t
-                LEFT JOIN tenant_plan_assignments tpa ON tpa.tenant_id = t.id
-                LEFT JOIN plans p ON p.id = tpa.plan_id
-                LEFT JOIN tenant_settings ts ON ts.tenant_id = t.id AND ts.setting_key = 'billing_plan'
-                LEFT JOIN plans ps ON ps.slug = ts.setting_value
-                WHERE t.status <> 'deleted'
-                ORDER BY t.created_at DESC
-                LIMIT 8");
+            $planSelect = $this->tableExists('tenant_plan_assignments') ? 'p.name AS plan_name,' : "'' AS plan_name,";
+            $join = $this->tableExists('tenant_plan_assignments') ? 'LEFT JOIN tenant_plan_assignments tpa ON tpa.tenant_id = t.id LEFT JOIN plans p ON p.id = tpa.plan_id' : '';
+            $stmt = $this->pdo()->query("SELECT t.name, t.slug, t.status, t.created_at, {$planSelect} COALESCE(t.complementary, 0) AS complementary FROM tenants t {$join} WHERE t.status <> 'deleted' ORDER BY t.created_at DESC LIMIT 8");
             $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
-        } catch (Throwable) {
-            $rows = [];
+        } catch (Throwable $exception) {
+            return $this->emptyRow(4, 'Tenant dashboard query failed: ' . $exception->getMessage());
         }
 
         if ($rows === []) {
@@ -201,8 +192,8 @@ HTML;
         try {
             $stmt = $this->pdo()->query('SELECT status, COUNT(*) AS c, MIN(created_at) AS oldest FROM background_jobs GROUP BY status ORDER BY FIELD(status, "failed", "running", "queued", "complete", "cancelled"), status');
             $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
-        } catch (Throwable) {
-            $rows = [];
+        } catch (Throwable $exception) {
+            return $this->emptyRow(3, 'Background job dashboard query failed: ' . $exception->getMessage());
         }
 
         if ($rows === []) {
@@ -219,14 +210,18 @@ HTML;
     private function planRows(): string
     {
         if (!$this->tableExists('plans')) {
-            return $this->emptyRow(5, 'Pricing plans are not installed.');
+            return $this->emptyRow(5, 'Plans table is not installed.');
         }
 
+        $commissionSelect = $this->columnExists('plans', 'platform_commission_basis_points')
+            ? 'platform_commission_basis_points'
+            : ((string) $this->platformCommissionBasisPoints()) . ' AS platform_commission_basis_points';
+
         try {
-            $stmt = $this->pdo()->query('SELECT name, monthly_price_cents, allow_sales, platform_commission_basis_points, credit_card_fee_basis_points, credit_card_fixed_fee_cents FROM plans WHERE is_active = 1 ORDER BY display_order ASC, monthly_price_cents ASC, id ASC LIMIT 8');
+            $stmt = $this->pdo()->query('SELECT name, monthly_price_cents, allow_sales, ' . $commissionSelect . ', credit_card_fee_basis_points, credit_card_fixed_fee_cents FROM plans WHERE is_active = 1 ORDER BY display_order ASC, monthly_price_cents ASC, id ASC LIMIT 8');
             $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
-        } catch (Throwable) {
-            $rows = [];
+        } catch (Throwable $exception) {
+            return $this->emptyRow(5, 'Plan dashboard query failed: ' . $exception->getMessage());
         }
 
         if ($rows === []) {
@@ -242,6 +237,18 @@ HTML;
         return $html;
     }
 
+    private function platformCommissionBasisPoints(): int
+    {
+        try {
+            $stmt = $this->pdo()->prepare('SELECT setting_value FROM platform_settings WHERE setting_key = :setting_key LIMIT 1');
+            $stmt->execute(['setting_key' => 'platform_sales_commission_basis_points']);
+            $value = $stmt->fetchColumn();
+            return $value === false || $value === null ? 0 : max(0, (int) $value);
+        } catch (Throwable) {
+            return 0;
+        }
+    }
+
     private function metricCard(string $label, string|int $value, string $detail, string $href): string
     {
         return '<a class="dashboard-metric-card" href="' . $this->e($href) . '"><span>' . $this->e($label) . '</span><strong>' . $this->e((string) $value) . '</strong><small>' . $this->e($detail) . '</small></a>';
@@ -254,9 +261,7 @@ HTML;
         }
 
         try {
-            // SHOW TABLES has proven more reliable across MariaDB grants than
-            // information_schema during production preflight and dashboard reads.
-            $stmt = $this->pdo()->query("SHOW TABLES LIKE " . $this->pdo()->quote($table));
+            $stmt = $this->pdo()->query('SHOW TABLES LIKE ' . $this->pdo()->quote($table));
             return $stmt !== false && $stmt->fetchColumn() !== false;
         } catch (Throwable) {
             return false;
@@ -270,8 +275,6 @@ HTML;
         }
 
         try {
-            // Use SHOW COLUMNS so optional dashboard columns work even when the
-            // database user has limited information_schema visibility.
             $stmt = $this->pdo()->query('SHOW COLUMNS FROM `' . $table . '` LIKE ' . $this->pdo()->quote($column));
             return $stmt !== false && $stmt->fetchColumn() !== false;
         } catch (Throwable) {

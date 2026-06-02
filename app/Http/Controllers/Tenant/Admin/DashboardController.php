@@ -102,7 +102,7 @@ HTML;
         if ($subscribers === 0) {
             $subscribers = $this->tenantScalarInt('SELECT COUNT(*) FROM newsletter_subscribers WHERE tenant_id = :tenant_id AND status = "subscribed"', $tenantId);
         }
-        $openMessages = $this->tenantScalarInt('SELECT COUNT(*) FROM contact_messages WHERE tenant_id = :tenant_id AND (status IS NULL OR status NOT IN ("closed", "archived", "deleted"))', $tenantId);
+        $openMessages = $this->tenantScalarInt('SELECT COUNT(*) FROM contact_messages WHERE tenant_id = :tenant_id AND status IN ("new", "read")', $tenantId);
         $openOrders = $this->tenantScalarInt('SELECT COUNT(*) FROM sales_orders WHERE tenant_id = :tenant_id AND workflow_status NOT IN ("shipped", "cancelled", "refunded")', $tenantId);
         $gross30 = $this->tenantScalarInt('SELECT COALESCE(SUM(total_cents), 0) FROM sales_orders WHERE tenant_id = :tenant_id AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")', $tenantId);
         $net30 = $this->tenantScalarInt('SELECT COALESCE(SUM(seller_net_cents), 0) FROM sales_orders WHERE tenant_id = :tenant_id AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")', $tenantId);
@@ -143,8 +143,8 @@ HTML;
             $stmt = $this->pdo()->prepare('SELECT created_at, order_number, workflow_status, payment_status, total_cents, seller_net_cents FROM sales_orders WHERE tenant_id = :tenant_id ORDER BY created_at DESC LIMIT 6');
             $stmt->execute(['tenant_id' => $tenant->tenantId]);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Throwable) {
-            $rows = [];
+        } catch (Throwable $exception) {
+            return $this->emptyRow(5, 'Sales dashboard query failed: ' . $exception->getMessage());
         }
 
         if ($rows === []) {
@@ -201,8 +201,8 @@ HTML;
             $stmt = $this->pdo()->prepare('SELECT created_at, name, email, subject, status FROM contact_messages WHERE tenant_id = :tenant_id ORDER BY created_at DESC LIMIT 6');
             $stmt->execute(['tenant_id' => $tenant->tenantId]);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Throwable) {
-            $rows = [];
+        } catch (Throwable $exception) {
+            return $this->emptyRow(4, 'Contact message dashboard query failed: ' . $exception->getMessage());
         }
 
         if ($rows === []) {
@@ -297,9 +297,7 @@ HTML;
         }
 
         try {
-            // SHOW TABLES avoids false negatives seen from information_schema
-            // checks with the production MariaDB user.
-            $stmt = $this->pdo()->query("SHOW TABLES LIKE " . $this->pdo()->quote($table));
+            $stmt = $this->pdo()->query('SHOW TABLES LIKE ' . $this->pdo()->quote($table));
             return $stmt !== false && $stmt->fetchColumn() !== false;
         } catch (Throwable) {
             return false;
