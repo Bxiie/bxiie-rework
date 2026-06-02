@@ -1,9 +1,110 @@
 ## Now
 
+- Saving billing override returns 'Tenant user password updated.'
+
+##
+
+- https://artsfol.io/platform/admin/sales/analytics
+- platform dashboard - stats are incorrect.  Recent sales
+View sales
+When	Tenant	Order	Status	Gross	Seller net
+Sales tables are not installed yet.
+Recent tenants
+View tenants
+Tenant	Status	Plan	Created
+No tenant records found.
+Plans and selling controls
+Edit pricing
+Plan	Monthly	Sales	Commission	Card fee
+Pricing plans are not installed.
+Background jobs
+Inspect jobs
+Status	Count	Oldest
+Background job table is not installed.
+- Billing override
+Complementary tenant, no platform service billing
+Save billing override
+Complementary tenants still pay platform commission on sales. - layout is confusing
+- tenant dashboard - stats are incorrect
+
+##
+
+- https://bxiie.com/signup - No route for GET /signup
+- add 'allow sales' checkbox to https://artsfol.io/platform/admin/pricing
+- bxiie.artsfol.io and bxiie.com should behave the same.  In fact, bxiie.artsfol.io shows an admin tab while bxiie.com does not.  The tenant admin should be able to use either URL interchangeably.
+- Make sure tenant admin billing feature usage by selected tier is accurate.  Make sure intems shown on billingfeature usage are called out on platform admin pricing setup.
+- Allow upgrade/downgrade of plan from tenant admin billing
+- do not send emails as part of smoke or predeployment testing
+- https://bxiie.artsfol.io/password/forgot: No route for POST /password/forgot
+- add branding to invite - and all other - email templates
+- Online checkout is available on paid ArtsFolio plans. - but bxiie.com is paid
+- send email about abandoned cart after 12 and 24 hours
+- add 'complementary' check box to platform admin tenant.  If set, the tenant will not be billed for platform service.  Tenant will still pay ommission on sales.  If selected, 'complementary' should be noted on tenant admin billing.
+- I have configured insta and facebook URLS.  These should show up in the footer of each page.
+
+##
+
+- Portfolio should show prices on unsold for sale artworks
+- Artwork detail should include link to contact arts about the specific artwork
+- Tenant admin artwok should include checkbox indicating if artwork is one-off (traditional artwork) or multiple (postcard, t-shirt)
+- Tenants should have a 'Sales Notes' section where the artist can explain details about how sales work.
+- Artwork detail should have add to cart option
+- Users should have acess to tenant-scoped shopping cart
+- Users should be asked to confirm use of cookies
+- artsfol.io home should have listing of recent sales with links to tenant and artwork
+- tenant should have sales work page showing sales, sale and customer details, and workflow - ordered, acknowledged, packed, shipped (with shiping details).
+- platform admin should have visibility into tenant sales and workflow
+- platform admin and tenant admin should have analytics pages for sales details
+
+##
+
+- deleting a tenant should remove the tenant from the list
+- deleting a tenant must require confirmation
+- unable to create or save plans and pricing
+- create several strawman plans with features and pricing
+[Feature	Included	Used	Status
+Artwork records	250	210	Near limit
+Media storage GB	0	0	OK
+Email subscribers	2500	12	OK
+Contact messages	0	10	Upgrade required
+Custom domains	0	3	Upgrade required
+Admin users	3	3	At or over limit
+Directory/discovery listing	Opt-in	Enabled	Visible when public content exists
+Analytics events	Advanced	4220	Receiving events]
+- create resend invite button for platform and tenant users
+- create send invite button for platform users
+- nav bar background still visible even when menu opacity is set to zero
+- nav bar logout button does not match  styling
+
+##
+
+- platform admin stats - the IP detail should only show IPs for that lsepecte location
+- platform admin tenant delete: App\Platform\Audit\AuditLogRepository::record(): Argument #3 ($userId) must be of type ?int, string given, called in /var/www/artsfolio/app/Http/Controllers/Platform/Admin/TenantsController.php on line 169
+- update pricing:
+  - add section to platform admin to allow setting pricing
+  - add setting/display of allowed artworks/email addresses per pricing tier
+  - Show pricing amount on pricing page
+- All platform admin to set platform commission on sales.  Show this commission amount to prospective and current users
+- Add link to artsfol.io to free tenant pages
+- Update plan details to note that free plans do include artsfol.io notification
+- platform admin tenant activate: App\Platform\Audit\AuditLogRepository::record(): Argument #3 ($userId) must be of type ?int, string given, called in /var/www/artsfolio/app/Http/Controllers/Platform/Admin/TenantsController.php on line 169
+
+##
+
+- Build the art site you meant to have.' - Not sure about this.  Please suggest alternatives.
+- Style the forms at https://bxiie.artsfol.io/contact
+- page settings are not applied on tenant admin
+- https://artsfol.io/logout - Call to undefined method App\Http\Support\SessionCookie::expireHeaders()
+- https://artsfol.io/login:  Call to undefined method App\Http\Support\SessionCookie::issueHeaders()
+
+##
+
+- Header background and other attributes need to be included on https://bxiie.artsfol.io/ as well as bxiie.com
+- Header should have a configurable drop shadow over the content area
 - Tenant portfolio artwork cards should have configurable background image, opacity, and size
 - Text colors should default to a value that is stylish but high-contrast.  This color should be overwriteable.
 - Text should have background spread color and opacity in order that the text be more visible against the background or image.
-- https://bxiie.artsfol.io/portfolio: botoom of page: [Join James Payne Art's email list
+- https://bxiie.artsfol.io/portfolio: bottom of page: [Join James Payne Art's email list
 Get occasional updates and new work announcements.
 
 Sign up Not now
@@ -24,6 +125,10 @@ Subscribing…].  This should be cleaned up.
 - Content background should be shown on tenant content as well as admin pages.
 - Add menu background image and opacity
 - Menu background  should be shown on tenant content as well as admin pages.
+- tenant admin artworks content [Artworks
+← Admin
+
+Artworks].  Fix.
 
 ##
 
