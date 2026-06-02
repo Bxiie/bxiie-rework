@@ -242,6 +242,7 @@ HTML;
             'domains' => ['/platform/admin/domains', 'Domains'],
             'pricing' => ['/platform/admin/pricing', 'Plans & Billing'],
             'sales' => ['/platform/admin/sales', 'Sales'],
+            'sales_analytics' => ['/platform/admin/sales/analytics', 'Sales Analytics'],
             'jobs' => ['/platform/admin/jobs', 'Jobs'],
             'workers' => ['/platform/admin/workers', 'Workers'],
             'email' => ['/platform/admin/email-outbox', 'Email Outbox'],

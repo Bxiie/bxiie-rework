@@ -1223,3 +1223,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Public platform home can show recent sales with tenant and artwork links.
 
 # End of file.
+
+## Sales phase 3 analytics
+
+- Added tenant sales analytics at `/admin/sales/analytics`.
+- Added platform sales analytics at `/platform/admin/sales/analytics`.
+- Analytics use existing sales order and order item tables; no new migration is required.
+- Paid sales metrics count `payment_status = "paid"`; workflow summaries show operational order state.

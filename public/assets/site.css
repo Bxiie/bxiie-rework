@@ -1349,3 +1349,25 @@ body:not(.platform-page) {
 }
 
 /* End of file. */
+
+/* Sales analytics panels use existing admin surfaces with compact KPI/readout spacing. */
+.af-sales-kpis .admin-panel h2 {
+    margin: 0.25rem 0 0;
+}
+
+.af-sales-workflow-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.af-sales-workflow-list li {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 999px;
+    padding: 0.45rem 0.75rem;
+}
+
+/* End of file. */
