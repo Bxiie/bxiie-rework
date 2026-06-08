@@ -52,6 +52,8 @@ $outboxNeedles = [
     'outbox body_html generation' => 'BrandedEmail::render',
     'outbox body_text storage' => 'body_text',
     'outbox body_html storage' => 'body_html',
+    'outbox associative body_text read' => "['body_text']",
+    'outbox associative body_html read' => "['body_html']",
 ];
 
 foreach ($outboxNeedles as $label => $needle) {
@@ -59,6 +61,11 @@ foreach ($outboxNeedles as $label => $needle) {
         fwrite(STDERR, "Missing outbox email marker: {$label}\n");
         exit(1);
     }
+}
+
+if (strpos($outbox, '$this->brandBodies') !== false && strpos($outbox, '[$bodyText, $bodyHtml]') !== false) {
+    fwrite(STDERR, "EmailOutboxRepository still destructures branded bodies numerically\n");
+    exit(1);
 }
 
 echo "Email HTML/logo pipeline static checks passed.\n";

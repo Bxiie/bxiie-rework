@@ -27,7 +27,9 @@ final class EmailOutboxRepository
         ?string $templateKey = null,
         int $availableAfterSeconds = 0,
     ): int {
-        [$bodyText, $bodyHtml] = $this->brandBodies($subject, $bodyText, $bodyHtml);
+        $brandedBodies = $this->brandBodies($subject, $bodyText, $bodyHtml);
+        $bodyText = $brandedBodies['body_text'];
+        $bodyHtml = $brandedBodies['body_html'];
 
         $stmt = $this->pdo->prepare(
             "INSERT INTO email_outbox (
