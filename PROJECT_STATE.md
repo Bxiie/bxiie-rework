@@ -1267,3 +1267,7 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Printable application checklists and comprehensive test-stack guidance were added under `docs/admin`, `docs/dev`, and `docs/user`.
 
 # End of file.
+
+## Recent operational fixes
+
+- 2026-06-08 dashboard counts hotfix: Platform and tenant admin dashboard controllers must use `Database::connect(dirname(__DIR__, 5))`; using level 6 points outside the project and makes metrics/table checks falsely report zero or missing tables.

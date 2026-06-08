@@ -307,7 +307,7 @@ HTML;
     private function pdo(): PDO
     {
         if ($this->pdo === null) {
-            $this->pdo = Database::connect(dirname(__DIR__, 6));
+            $this->pdo = Database::connect(dirname(__DIR__, 5));
         }
         return $this->pdo;
     }
