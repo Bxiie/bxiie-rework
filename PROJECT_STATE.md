@@ -934,6 +934,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The picker lists only non-private media attached to published artwork so `/media?uuid=...` can serve the selected image through the existing public media safety gate.
 - Public rendering uses CSS variables consumed by `public/assets/site.css`: `--site-bg-image`, `--site-bg-repeat`, `--site-bg-size`, and `--site-bg-opacity`.
 
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
 <!-- End of file. -->
 
 ## 2026-05-29 admin user/config/email repair
@@ -1018,6 +1026,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Session creation stores `expires_at` as a bound timestamp computed in PHP instead of relying on a MariaDB `INTERVAL :ttl_seconds SECOND` placeholder.
 - Added `scripts/test/session_repository_no_user_status.php` as a regression check for this specific schema-drift failure.
 
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
 <!-- End of file. -->
 
 ## 2026-05-30 auth cookie multi-header fix
@@ -1027,6 +1043,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform password login/logout and platform signup now use the same multi-header cookie helper.
 - Added `scripts/test/auth_cookie_headers.php` to prevent regressions where browser auth succeeds server-side but stale duplicate cookies keep admin pages inaccessible.
 
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
 <!-- End of file. -->
 
 ## Email SMTP custom headers
@@ -1035,6 +1059,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `SMTP_EXTRA_HEADERS` accepts semicolon- or newline-separated `Name: value` entries, such as `X-PM-Tag: lifecycle; X-PM-Metadata-tenant: bxiie`.
 - Header names and values are validated to prevent CRLF/header injection before SMTP DATA is sent.
 - Secret SMTP credentials remain in environment/secrets files and must not be recorded in `PROJECT_STATE.md`.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
 
 <!-- End of file. -->
 
@@ -1084,6 +1116,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Failure banners include the failed deploy stage, exit code, branch, and commit so preflight failures are no longer confused with completed deploys.
 - The deploy stage order remains unchanged: git update, env verification, PHP lint, migrations, migration integrity, preflight, service restarts, then health check.
 
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
 <!-- End of file. -->
 
 ## Production deploy worker requirement
@@ -1096,6 +1136,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `scripts/deploy/healthcheck.sh` now treats the background worker as a required service instead of warning and passing.
 - SIGINT/SIGTERM during deploy now exit with code 130 and produce a `DEPLOY FAILED` banner rather than a false success banner.
 - Required production services are `php8.4-fpm`, `caddy`, `mariadb`, `artsfolio-email-worker.service`, and `artsfolio-background-worker.service`.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
 
 <!-- End of file. -->
 
@@ -1276,6 +1324,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Added `database/migrations/0031_contact_engagement_location_schema_repair.sql` to repair schema drift where contact/signup repositories write `country`, `region`, and `city`, but older databases may not have those columns.
 - Migration is additive and idempotent; it does not delete or rewrite production contact or signup data.
 
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
 <!-- End of file. -->
 
 ## 2026-06-08 Email list management and custom-domain admin sessions
@@ -1284,5 +1340,30 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Added one-time tenant session bridge tickets so an admin logged in on a tenant `artsfol.io` subdomain can enter the same tenant admin on a verified custom domain without a second password prompt.
 - Admin tab on tenant public pages is shown only when a browser user is signed in.
 - Cross-domain auth uses short-lived one-time tickets because browsers cannot share ordinary cookies between unrelated domains such as `bxiie.artsfol.io` and `bxiie.com`.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+<!-- End of file. -->
+
+## 2026-06-08 Email list management and custom-domain admin sessions
+
+- Added tenant email signup source/notes management, CSV import, deletion, search, sort, and filtered export.
+- Added one-time tenant session bridge tickets so an admin logged in on a tenant `artsfol.io` subdomain can enter the same tenant admin on a verified custom domain without a second password prompt.
+- Admin tab on tenant public pages is shown only when a browser user is signed in.
+- Cross-domain auth uses short-lived one-time tickets because browsers cannot share ordinary cookies between unrelated domains such as `bxiie.artsfol.io` and `bxiie.com`.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
 
 <!-- End of file. -->

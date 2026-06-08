@@ -18,8 +18,8 @@ use App\Platform\Auth\Session\SessionTokenService;
 use App\Platform\Tenancy\TenantContext;
 
 /**
- * Issues a short-lived one-time ticket on the artsfol.io tenant subdomain and
- * consumes it on the tenant custom domain to set a host-local admin cookie.
+ * Issues a short-lived one-time ticket on one tenant-owned host and
+ * consumes it on another tenant-owned host to set a host-local admin cookie.
  */
 final class TenantSessionBridgeController
 {
@@ -85,9 +85,14 @@ final class TenantSessionBridgeController
         ]);
     }
 
-    public function customDomainBridgeRedirect(Request $request, TenantContext $tenant): Response
+    public function tenantDomainBridgeRedirect(Request $request, TenantContext $tenant): Response
     {
         $host = strtolower(trim(explode(':', $request->host(), 2)[0]));
+        $issuerHost = $this->bridges->preferredBridgeIssuerHost($tenant->tenantId, $host);
+        if (!$issuerHost) {
+            return new Response('', 303, ['Location' => '/login?return_to=' . rawurlencode($request->path())]);
+        }
+
         $scheme = $this->isSecureRequest($request) ? 'https' : 'http';
         $returnUrl = $scheme . '://' . $host . $request->path();
         $query = $_GET;
@@ -96,8 +101,8 @@ final class TenantSessionBridgeController
             $returnUrl .= '?' . http_build_query($query);
         }
 
-        $canonical = 'https://' . rawurlencode($tenant->slug) . '.artsfol.io/auth/tenant-session/bridge?return_to=' . rawurlencode($returnUrl);
-        return new Response('', 303, ['Location' => $canonical]);
+        $issuer = 'https://' . $issuerHost . '/auth/tenant-session/bridge?return_to=' . rawurlencode($returnUrl);
+        return new Response('', 303, ['Location' => $issuer]);
     }
 
     private function isHttpsUrl(string $url): bool

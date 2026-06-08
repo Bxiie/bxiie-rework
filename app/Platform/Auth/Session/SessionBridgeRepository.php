@@ -114,6 +114,54 @@ final class SessionBridgeRepository
 
         return (int) $stmt->fetchColumn() > 0;
     }
+
+    /**
+     * Returns every verified host that belongs to the same tenant, including
+     * tenant custom domains and the platform subdomain. This keeps the bridge
+     * generic for any artist slug/custom-domain pairing.
+     *
+     * @return list<string>
+     */
+    public function tenantHosts(int $tenantId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT t.slug, d.hostname AS domain
+             FROM tenants t
+             LEFT JOIN tenant_domains d
+               ON d.tenant_id = t.id
+              AND d.status IN (\'active\', \'dns_verified\')
+             WHERE t.id = :tenant_id'
+        );
+        $stmt->execute(['tenant_id' => $tenantId]);
+
+        $hosts = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $slug = strtolower(trim((string) ($row['slug'] ?? '')));
+            if ($slug !== '') {
+                $hosts[$slug . '.artsfol.io'] = true;
+            }
+
+            $domain = strtolower(trim((string) ($row['domain'] ?? '')));
+            if ($domain !== '') {
+                $hosts[$domain] = true;
+            }
+        }
+
+        return array_keys($hosts);
+    }
+
+    public function preferredBridgeIssuerHost(int $tenantId, string $currentHost): ?string
+    {
+        $currentHost = strtolower(trim(explode(':', $currentHost, 2)[0]));
+        foreach ($this->tenantHosts($tenantId) as $host) {
+            if ($host !== $currentHost) {
+                return $host;
+            }
+        }
+
+        return null;
+    }
+
 }
 
 // End of file.

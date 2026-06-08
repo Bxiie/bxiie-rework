@@ -156,8 +156,8 @@ try {
         exit;
     }
 
-    if ($tenant && !$currentUser && str_starts_with($request->path(), '/admin') && !str_ends_with(strtolower(explode(':', $request->host(), 2)[0]), '.artsfol.io')) {
-        $sessionBridgeController->customDomainBridgeRedirect($request, $tenant)->send();
+    if ($tenant && !$currentUser && str_starts_with($request->path(), '/admin')) {
+        $sessionBridgeController->tenantDomainBridgeRedirect($request, $tenant)->send();
         exit;
     }
 
