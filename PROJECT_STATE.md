@@ -1277,3 +1277,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Migration is additive and idempotent; it does not delete or rewrite production contact or signup data.
 
 <!-- End of file. -->
+
+## 2026-06-08 Email list management and custom-domain admin sessions
+
+- Added tenant email signup source/notes management, CSV import, deletion, search, sort, and filtered export.
+- Added one-time tenant session bridge tickets so an admin logged in on a tenant `artsfol.io` subdomain can enter the same tenant admin on a verified custom domain without a second password prompt.
+- Admin tab on tenant public pages is shown only when a browser user is signed in.
+- Cross-domain auth uses short-lived one-time tickets because browsers cannot share ordinary cookies between unrelated domains such as `bxiie.artsfol.io` and `bxiie.com`.
+
+<!-- End of file. -->

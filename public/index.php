@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Api\TenantMeController;
 use App\Http\Controllers\Auth\PasswordAuthController;
 use App\Http\Controllers\Auth\OAuthController;
+use App\Http\Controllers\Auth\TenantSessionBridgeController;
 use App\Http\Controllers\Platform\Admin\DashboardController as PlatformAdminDashboardController;
 use App\Http\Controllers\Platform\Admin\PricingController as PlatformAdminPricingController;
 use App\Http\Controllers\Platform\Admin\SalesController as PlatformAdminSalesController;
@@ -89,6 +90,7 @@ use App\Platform\Auth\Password\PasswordResetTokenRepository;
 use App\Platform\Email\LifecycleEmailService;
 use App\Platform\Email\TemplateRenderer;
 use App\Platform\Auth\Session\SessionRepository;
+use App\Platform\Auth\Session\SessionBridgeRepository;
 use App\Platform\Auth\Session\SessionTokenService;
 use App\Platform\Identity\PasswordHasher;
 use App\Platform\Identity\UserIdentityRepository;
@@ -137,6 +139,28 @@ try {
     $sessionTokens = new SessionTokenService();
     $currentUser = (new CurrentUser($sessionRepository, $sessionTokens))->resolve($request);
     $GLOBALS['artsfolio_current_user'] = $currentUser;
+
+    $sessionBridgeController = new TenantSessionBridgeController(
+        new SessionBridgeRepository($pdo),
+        $sessionRepository,
+        $sessionTokens,
+    );
+
+    if ($tenant && $request->path() === '/auth/tenant-session/bridge') {
+        $sessionBridgeController->bridge($request, $tenant, $currentUser)->send();
+        exit;
+    }
+
+    if ($request->query('af_session_bridge') !== null) {
+        $sessionBridgeController->consume($request)->send();
+        exit;
+    }
+
+    if ($tenant && !$currentUser && str_starts_with($request->path(), '/admin') && !str_ends_with(strtolower(explode(':', $request->host(), 2)[0]), '.artsfol.io')) {
+        $sessionBridgeController->customDomainBridgeRedirect($request, $tenant)->send();
+        exit;
+    }
+
     $helpController = new HelpController();
 
     $passwordAuthController = new PasswordAuthController(
@@ -332,6 +356,8 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
         $router->get('/admin/email-signups', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->index($request, $tenant, $currentUser));
         $router->get('/admin/email-signups.csv', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->export($request, $tenant, $currentUser));
         $router->post('/admin/email-signups/consent', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->updateConsent($request, $tenant, $currentUser));
+        $router->post('/admin/email-signups/update', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->update($request, $tenant, $currentUser));
+        $router->post('/admin/email-signups/import', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->import($request, $tenant, $currentUser));
         $router->post('/admin/email-signups/delete', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->delete($request, $tenant, $currentUser));
         $router->get('/admin/settings', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo), $pdo))->edit($request, $tenant, $currentUser));
         $router->post('/admin/settings', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo), $pdo))->update($request, $tenant, $currentUser));
