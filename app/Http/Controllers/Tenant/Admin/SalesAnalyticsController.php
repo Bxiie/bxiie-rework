@@ -66,7 +66,7 @@ final class SalesAnalyticsController
 </section>
 HTML;
 
-        return Response::html(AdminLayout::render('Sales analytics', $body, 'sales'));
+        return Response::html(AdminLayout::render('Sales analytics', $body, 'sales_analytics'));
     }
 
     private function dayRows(array $rows, bool $includeCommission): string

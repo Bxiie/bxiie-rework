@@ -94,11 +94,11 @@ HTML;
         $tenantId = $tenant->tenantId;
         $published = $this->tenantScalarInt('SELECT COUNT(*) FROM artworks WHERE tenant_id = :tenant_id AND status = "published"', $tenantId);
         $drafts = $this->tenantScalarInt('SELECT COUNT(*) FROM artworks WHERE tenant_id = :tenant_id AND status = "draft"', $tenantId);
-        $forSale = $this->tenantScalarInt('SELECT COUNT(*) FROM artworks WHERE tenant_id = :tenant_id AND status = "published" AND is_for_sale = 1', $tenantId);
-        $lowStock = $this->tenantScalarInt('SELECT COUNT(*) FROM artworks WHERE tenant_id = :tenant_id AND status = "published" AND is_for_sale = 1 AND is_one_off = 0 AND inventory_quantity <= 2', $tenantId);
+        $forSale = $this->tenantScalarInt('SELECT COUNT(*) FROM artworks WHERE tenant_id = :tenant_id AND status = "published" AND sale_status = "for_sale"', $tenantId);
+        $lowStock = $this->tenantScalarInt('SELECT COUNT(*) FROM artworks WHERE tenant_id = :tenant_id AND status = "published" AND sale_status = "for_sale" AND is_one_off = 0 AND inventory_quantity <= 2', $tenantId);
         $views30 = $this->tenantScalarInt('SELECT COUNT(*) FROM analytics_events WHERE tenant_id = :tenant_id AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)', $tenantId);
         $topPath = $this->topPath($tenant);
-        $subscribers = $this->tenantScalarInt('SELECT COUNT(*) FROM email_signups WHERE tenant_id = :tenant_id AND status IN ("subscribed", "active")', $tenantId);
+        $subscribers = $this->tenantScalarInt('SELECT COUNT(*) FROM email_signups WHERE tenant_id = :tenant_id AND consent_status IN ("pending", "confirmed")', $tenantId);
         if ($subscribers === 0) {
             $subscribers = $this->tenantScalarInt('SELECT COUNT(*) FROM newsletter_subscribers WHERE tenant_id = :tenant_id AND status = "subscribed"', $tenantId);
         }

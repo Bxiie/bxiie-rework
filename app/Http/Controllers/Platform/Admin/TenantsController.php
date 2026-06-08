@@ -88,7 +88,13 @@ HTML,
         $tenantLink = $tenantUrl !== null
             ? '<p><a class="button secondary" target="_blank" rel="noopener" href="' . $this->escape($tenantUrl) . '">Open tenant site in new tab</a></p>'
             : '<p class="admin-muted">No active tenant subdomain is currently available.</p>';
-        $notice = isset($_GET['notice']) ? '<p class="admin-notice admin-notice-success">Tenant user password updated.</p>' : '';
+        $noticeCode = (string) ($_GET['notice'] ?? '');
+        $noticeText = match ($noticeCode) {
+            'complementary-updated' => 'Tenant billing override updated.',
+            'password-updated' => 'Tenant user password updated.',
+            default => '',
+        };
+        $notice = $noticeText !== '' ? '<p class="admin-notice admin-notice-success">' . $this->escape($noticeText) . '</p>' : '';
         $rows = '';
 
         foreach ($this->users->tenantUsers($tenantId) as $user) {

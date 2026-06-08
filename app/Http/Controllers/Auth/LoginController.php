@@ -57,7 +57,15 @@ final class LoginController
                 userAgent: $request->server('HTTP_USER_AGENT'),
             );
         } catch (\Throwable $e) {
-            return Response::html('<h1>Invalid login</h1>', 401);
+            $brand = 'ArtsFolio';
+            if ($tenant !== null && $this->settings !== null) {
+                $brand = $this->settings->get($tenant, 'artist_name', $this->settings->get($tenant, 'site_title', $tenant->name));
+            }
+
+            return Response::html(
+                AuthPage::login('/login', 'Invalid email or password. Please sign in again.', $brand, '/', $this->csrf->getOrCreate()),
+                401
+            );
         }
 
         $token = $this->extractSessionToken($result);

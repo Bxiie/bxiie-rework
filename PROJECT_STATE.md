@@ -1257,4 +1257,13 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Dashboard optional table checks use MariaDB `SHOW TABLES` / `SHOW COLUMNS` instead of fragile assumptions.
 - Dashboard sections now report concise admin-visible query failures instead of misleading missing-table empty states.
 
+## 2026-06-08 admin dashboard, sales analytics, login, and release checklist fixes
+- Tenant dashboard sales inventory counts now use `artworks.sale_status = 'for_sale'` instead of the nonexistent `artworks.is_for_sale` column.
+- Tenant dashboard subscriber counts now use `email_signups.consent_status` from the production schema.
+- Platform dashboard tenant counts are null-safe and continue to exclude deleted tenants.
+- Tenant and platform sales analytics routes are wired to the existing SalesAnalyticsController classes.
+- Tenant login failure now returns the branded login page with a retry invitation instead of an unbranded raw `Invalid login` page.
+- Tenant public Admin tab is hidden for anonymous visitors and shown only when a browser session user is present.
+- Printable application checklists and comprehensive test-stack guidance were added under `docs/admin`, `docs/dev`, and `docs/user`.
+
 # End of file.

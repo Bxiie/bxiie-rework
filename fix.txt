@@ -1,6 +1,13 @@
 ## Now
 
 - Saving billing override returns 'Tenant user password updated.'
+- Platform dashboard  shows 0 tenants - false.  
+- Tenant admin (bxiie) shows 0 published artworks - false.  0 for sale - false.  0 views - false.  0 subscribers - false.
+- https://bxiie.artsfol.io/admin/sales/analytics: No route for GET /admin/sales/analytics
+- https://artsfol.io/platform/admin/sales/analytics: No route for GET /platform/admin/sales/analytics
+- https://bxiie.com/login - Unbranded 'Invalid Login' on login failure.  Needs to be branded and invite re-login.
+- create checklist dosuments that can be printed that check all application functionality as per a comprehensive application and unit test.  Is there a free or inexpensive way to run this sort of comprehesive test including UI-based tests.
+- admin tab navigation should only appear to logged in users
 
 ##
 

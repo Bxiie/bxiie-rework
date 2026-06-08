@@ -495,10 +495,11 @@ HTML;
      */
     private function tenantAdminLink(): string
     {
-        // Always expose the tenant-admin entry point on tenant hosts so custom
-        // domains and artsfol.io subdomains behave the same. The /admin route
-        // still enforces tenant login and role authorization before showing
-        // private admin content.
+        $currentUser = $GLOBALS['artsfolio_current_user'] ?? null;
+        if (!is_array($currentUser) || empty($currentUser['user_id'])) {
+            return '';
+        }
+
         return '<a class="tenant-admin-top-link" href="/admin">Admin</a>';
     }
 

@@ -96,10 +96,10 @@ HTML;
      */
     private function platformMetrics(): array
     {
-        $tenantsTotal = $this->scalarInt("SELECT COUNT(*) FROM tenants WHERE status <> 'deleted'");
-        $activeTenants = $this->scalarInt("SELECT COUNT(*) FROM tenants WHERE status IN ('active','trial')");
-        $complementaryTenants = $this->columnExists('tenants', 'complementary') ? $this->scalarInt('SELECT COUNT(*) FROM tenants WHERE complementary = 1 AND status <> "deleted"') : 0;
-        $paidTenants = $this->scalarInt('SELECT COUNT(DISTINCT tpa.tenant_id) FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id JOIN tenants t ON t.id = tpa.tenant_id WHERE t.status <> "deleted" AND p.monthly_price_cents > 0');
+        $tenantsTotal = $this->scalarInt("SELECT COUNT(*) FROM tenants WHERE status IS NULL OR status <> 'deleted'");
+        $activeTenants = $this->scalarInt("SELECT COUNT(*) FROM tenants WHERE status IS NULL OR status IN ('pending_setup','trial','active')");
+        $complementaryTenants = $this->columnExists('tenants', 'complementary') ? $this->scalarInt('SELECT COUNT(*) FROM tenants WHERE complementary = 1 AND (status IS NULL OR status <> "deleted")') : 0;
+        $paidTenants = $this->scalarInt('SELECT COUNT(DISTINCT tpa.tenant_id) FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id JOIN tenants t ON t.id = tpa.tenant_id WHERE (t.status IS NULL OR t.status <> "deleted") AND p.monthly_price_cents > 0');
         $gmv30d = $this->scalarInt('SELECT COALESCE(SUM(total_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
         $commission30d = $this->scalarInt('SELECT COALESCE(SUM(commission_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
         $sellerNet30d = $this->scalarInt('SELECT COALESCE(SUM(seller_net_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
@@ -158,7 +158,7 @@ HTML;
         try {
             $planSelect = $this->tableExists('tenant_plan_assignments') ? 'p.name AS plan_name,' : "'' AS plan_name,";
             $join = $this->tableExists('tenant_plan_assignments') ? 'LEFT JOIN tenant_plan_assignments tpa ON tpa.tenant_id = t.id LEFT JOIN plans p ON p.id = tpa.plan_id' : '';
-            $stmt = $this->pdo()->query("SELECT t.name, t.slug, t.status, t.created_at, {$planSelect} COALESCE(t.complementary, 0) AS complementary FROM tenants t {$join} WHERE t.status <> 'deleted' ORDER BY t.created_at DESC LIMIT 8");
+            $stmt = $this->pdo()->query("SELECT t.name, t.slug, t.status, t.created_at, {$planSelect} COALESCE(t.complementary, 0) AS complementary FROM tenants t {$join} WHERE t.status IS NULL OR t.status <> 'deleted' ORDER BY t.created_at DESC LIMIT 8");
             $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
         } catch (Throwable $exception) {
             return $this->emptyRow(4, 'Tenant dashboard query failed: ' . $exception->getMessage());
