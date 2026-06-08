@@ -17,6 +17,7 @@ final class BrandedEmail
     private const BRAND_NAME = 'ArtsFolio';
     private const BRAND_TAGLINE = 'Artist portfolios, sites, and audience tools.';
     private const PLATFORM_URL = 'https://artsfol.io';
+    private const LOGO_URL = 'https://artsfol.io/assets/logo_2.png';
 
     /**
      * Builds a plain-text message with consistent brand header and footer.
@@ -29,6 +30,7 @@ final class BrandedEmail
         return implode("\n", [
             self::BRAND_NAME,
             self::BRAND_TAGLINE,
+            self::PLATFORM_URL,
             str_repeat('=', 52),
             '',
             $cleanHeading,
@@ -61,6 +63,7 @@ final class BrandedEmail
             . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f0e8;padding:28px 12px;">'
             . '<tr><td align="center"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#fffaf2;border:1px solid #d8cbb7;border-radius:18px;overflow:hidden;">'
             . '<tr><td style="padding:24px 28px;background:#171411;color:#fffaf2;">'
+            . '<img src="' . self::LOGO_URL . '" width="96" alt="ArtsFolio" style="display:block;width:96px;max-width:96px;height:auto;margin:0 0 14px;border:0;">'
             . '<div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;">ArtsFolio</div>'
             . '<div style="margin-top:6px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#d9c9af;">Artist portfolios, sites, and audience tools.</div>'
             . '</td></tr>'
