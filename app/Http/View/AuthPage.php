@@ -70,6 +70,31 @@ HTML);
 HTML);
     }
 
+
+    public static function resetPassword(string $action = '/password/reset', string $token = '', string $csrfToken = '', string $message = ''): string
+    {
+        $safeAction = self::escape($action);
+        $safeToken = self::escape($token);
+        $safeCsrf = self::escape($csrfToken);
+        $notice = $message !== '' ? '<p class="auth-notice">' . self::escape($message) . '</p>' : '';
+        $csrf = $safeCsrf !== '' ? '<input type="hidden" name="csrf_token" value="' . $safeCsrf . '">' : '';
+
+        return self::page('Choose a new password', <<<HTML
+<p class="auth-eyebrow">Password reset</p>
+<h1>Choose a new password</h1>
+<p class="auth-copy">Enter a new password for your ArtsFolio account.</p>
+{$notice}
+<form method="post" action="{$safeAction}" class="auth-form">
+    {$csrf}
+    <input type="hidden" name="token" value="{$safeToken}">
+    <label>New password<input type="password" name="password" autocomplete="new-password" minlength="10" required></label>
+    <label>Confirm new password<input type="password" name="password_confirm" autocomplete="new-password" minlength="10" required></label>
+    <button type="submit">Reset password</button>
+</form>
+<p class="auth-links"><a href="/login">Back to login</a></p>
+HTML);
+    }
+
     public static function pageMessage(string $title, string $message): string
     {
         return self::page($title, '<p>' . self::escape($message) . '</p><p class="auth-links"><a href="/login">Back to login</a></p>');

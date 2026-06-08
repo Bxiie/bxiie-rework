@@ -117,14 +117,22 @@ final class SmtpEmailSender implements EmailSenderInterface
 
     private function buildMessage(array $email): string
     {
+        $hasHtml = isset($email['body_html']) && trim((string) $email['body_html']) !== '';
+        $boundary = 'artsfolio-' . bin2hex(random_bytes(16));
+
         $headers = [
             'From' => $this->encodeHeader($this->fromName) . " <{$this->fromEmail}>",
             'To' => '<' . (string) $email['recipient_email'] . '>',
             'Subject' => $this->encodeHeader((string) $email['subject']),
             'MIME-Version' => '1.0',
-            'Content-Type' => 'text/plain; charset=UTF-8',
-            'Content-Transfer-Encoding' => '8bit',
         ];
+
+        if ($hasHtml) {
+            $headers['Content-Type'] = 'multipart/alternative; boundary="' . $boundary . '"';
+        } else {
+            $headers['Content-Type'] = 'text/plain; charset=UTF-8';
+            $headers['Content-Transfer-Encoding'] = '8bit';
+        }
 
         foreach ($this->headers as $name => $value) {
             $headerName = (string) $name;
@@ -140,10 +148,52 @@ final class SmtpEmailSender implements EmailSenderInterface
             $lines[] = "{$name}: {$value}";
         }
 
-        $body = str_replace(["\r\n", "\r"], "\n", (string) $email['body_text']);
-        $body = str_replace("\n", "\r\n", $body);
+        $bodyText = $this->normalizeMessageBody((string) ($email['body_text'] ?? ''));
 
-        return implode("\r\n", $lines) . "\r\n\r\n" . $body;
+        if (!$hasHtml) {
+            return implode("
+", $lines) . "
+
+" . $bodyText;
+        }
+
+        $bodyHtml = $this->normalizeMessageBody((string) $email['body_html']);
+
+        $body = '--' . $boundary . "
+"
+            . "Content-Type: text/plain; charset=UTF-8
+"
+            . "Content-Transfer-Encoding: 8bit
+
+"
+            . $bodyText . "
+"
+            . '--' . $boundary . "
+"
+            . "Content-Type: text/html; charset=UTF-8
+"
+            . "Content-Transfer-Encoding: 8bit
+
+"
+            . $bodyHtml . "
+"
+            . '--' . $boundary . '--';
+
+        return implode("
+", $lines) . "
+
+" . $body;
+    }
+
+    private function normalizeMessageBody(string $body): string
+    {
+        $body = str_replace(["
+", ""], "
+", $body);
+
+        return str_replace("
+", "
+", $body);
     }
 
     private function assertSafeHeader(string $name, string $value): void

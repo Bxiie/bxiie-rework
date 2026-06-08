@@ -307,7 +307,49 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
         $router->get('/admin/getting-started', fn (Request $request): Response => (new TenantAdminGettingStartedController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
         $router->get('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), $csrf, $tenantSettings))->show($request, $tenant));
         $router->get('/help/{topic}', fn (Request $request, array $params): Response => $helpController->topic($request, (string) $params['topic']));
-        $router->get('/admin/login', fn (Request $request): Response => new Response('', 303, ['Location' => '/login']));
+        
+        $router->get('/password/reset', function (Request $request): Response {
+            $csrf = new CsrfTokenService();
+            $token = (string) ($_GET['token'] ?? '');
+
+            if ($token === '') {
+                return Response::html(AuthPage::pageMessage('Password reset link missing', 'This password reset link is missing its token. Please request a new reset link.'), 400);
+            }
+
+            return Response::html(AuthPage::resetPassword('/password/reset', $token, $csrf->getOrCreate()));
+        });
+
+        $router->post('/password/reset', function (Request $request) use ($pdo): Response {
+            $csrf = new CsrfTokenService();
+            $token = (string) ($_POST['token'] ?? '');
+            $password = (string) ($_POST['password'] ?? '');
+            $confirm = (string) ($_POST['password_confirm'] ?? '');
+
+            if (!$csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+                return Response::html(AuthPage::resetPassword('/password/reset', $token, $csrf->getOrCreate(), 'The security check expired. Please try again.'), 419);
+            }
+
+            if ($token === '') {
+                return Response::html(AuthPage::pageMessage('Password reset link missing', 'This password reset link is missing its token. Please request a new reset link.'), 400);
+            }
+
+            if ($password === '' || strlen($password) < 10) {
+                return Response::html(AuthPage::resetPassword('/password/reset', $token, $csrf->getOrCreate(), 'Password must be at least 10 characters.'), 422);
+            }
+
+            if ($password !== $confirm) {
+                return Response::html(AuthPage::resetPassword('/password/reset', $token, $csrf->getOrCreate(), 'Passwords do not match.'), 422);
+            }
+
+            try {
+                (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->resetPassword($token, $password);
+            } catch (Throwable $e) {
+                return Response::html(AuthPage::pageMessage('Password reset failed', 'This password reset link is invalid or expired. Please request a new reset link.'), 400);
+            }
+
+            return Response::html(AuthPage::pageMessage('Password updated', 'Your password has been updated. You can now sign in with your new password.'));
+        });
+    $router->get('/admin/login', fn (Request $request): Response => new Response('', 303, ['Location' => '/login']));
         $router->get('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), $csrf, $tenantSettings))->show($request, $tenant));
     $router->get('/register', fn (Request $request): Response => Response::html(AuthPage::register('/register')));
     $router->get('/password/forgot', fn (Request $request): Response => Response::html(AuthPage::forgotPassword('/password/forgot', (new CsrfTokenService())->getOrCreate())));
