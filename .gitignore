@@ -43,3 +43,7 @@ storage/imports/site_images.xlsx
 # End of file.
 
 /storage/debug/
+
+# Generated local repair/debug artifacts
+debug/
+*.bak
