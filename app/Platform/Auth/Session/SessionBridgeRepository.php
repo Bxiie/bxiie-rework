@@ -104,7 +104,7 @@ final class SessionBridgeRepository
             'SELECT COUNT(*)
              FROM tenant_domains
              WHERE tenant_id = :tenant_id
-               AND LOWER(domain) = :domain
+               AND LOWER(hostname) = :domain
                AND status IN (\'active\', \'verified\', \'primary\')'
         );
         $stmt->execute([

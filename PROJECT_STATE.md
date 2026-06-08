@@ -942,6 +942,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
 - Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
 
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
 <!-- End of file. -->
 
 ## 2026-05-29 admin user/config/email repair
@@ -1034,6 +1039,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
 - Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
 
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
 <!-- End of file. -->
 
 ## 2026-05-30 auth cookie multi-header fix
@@ -1051,6 +1061,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
 - Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
 
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
 <!-- End of file. -->
 
 ## Email SMTP custom headers
@@ -1067,6 +1082,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 ## 2026-06-08 Tenant session bridge hostname hotfix
 - Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
 - Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
 
 <!-- End of file. -->
 
@@ -1124,6 +1144,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
 - Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
 
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
 <!-- End of file. -->
 
 ## Production deploy worker requirement
@@ -1144,6 +1169,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 ## 2026-06-08 Tenant session bridge hostname hotfix
 - Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
 - Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
 
 <!-- End of file. -->
 
@@ -1332,22 +1362,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
 - Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
 
-<!-- End of file. -->
 
-## 2026-06-08 Email list management and custom-domain admin sessions
-
-- Added tenant email signup source/notes management, CSV import, deletion, search, sort, and filtered export.
-- Added one-time tenant session bridge tickets so an admin logged in on a tenant `artsfol.io` subdomain can enter the same tenant admin on a verified custom domain without a second password prompt.
-- Admin tab on tenant public pages is shown only when a browser user is signed in.
-- Cross-domain auth uses short-lived one-time tickets because browsers cannot share ordinary cookies between unrelated domains such as `bxiie.artsfol.io` and `bxiie.com`.
-
-## 2026-06-08 Generic tenant session bridge
-- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
-
-
-## 2026-06-08 Tenant session bridge hostname hotfix
-- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
-- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
 
 <!-- End of file. -->
 
@@ -1365,5 +1383,32 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 ## 2026-06-08 Tenant session bridge hostname hotfix
 - Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
 - Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
+<!-- End of file. -->
+
+## 2026-06-08 Email list management and custom-domain admin sessions
+
+- Added tenant email signup source/notes management, CSV import, deletion, search, sort, and filtered export.
+- Added one-time tenant session bridge tickets so an admin logged in on a tenant `artsfol.io` subdomain can enter the same tenant admin on a verified custom domain without a second password prompt.
+- Admin tab on tenant public pages is shown only when a browser user is signed in.
+- Cross-domain auth uses short-lived one-time tickets because browsers cannot share ordinary cookies between unrelated domains such as `bxiie.artsfol.io` and `bxiie.com`.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
 
 <!-- End of file. -->
