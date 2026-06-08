@@ -241,6 +241,38 @@ final class AdminUserRepository
         $stmt->execute(['tenant_id' => $tenantId, 'user_id' => $userId, 'status' => $status]);
     }
 
+
+    /**
+     * Assigns a platform-scoped role to a user exactly once.
+     *
+     * MySQL unique indexes allow multiple NULL tenant_id values, so platform
+     * assignments must check for an existing row before inserting rather than
+     * relying on INSERT IGNORE against uq_role_assignment.
+     */
+    private function assignPlatformRole(int $userId, string $roleSlug): void
+    {
+        $roleId = $this->roleId('platform', $roleSlug);
+
+        $existing = $this->pdo->prepare(
+            "SELECT 1
+             FROM role_assignments
+             WHERE role_id = :role_id
+               AND user_id = :user_id
+               AND tenant_id IS NULL
+             LIMIT 1"
+        );
+        $existing->execute(['role_id' => $roleId, 'user_id' => $userId]);
+        if ($existing->fetchColumn()) {
+            return;
+        }
+
+        $insert = $this->pdo->prepare(
+            "INSERT INTO role_assignments (role_id, user_id, tenant_id, created_at)
+             VALUES (:role_id, :user_id, NULL, CURRENT_TIMESTAMP)"
+        );
+        $insert->execute(['role_id' => $roleId, 'user_id' => $userId]);
+    }
+
     private function assignTenantRole(int $tenantId, int $userId, string $roleSlug): void
     {
         $roleId = $this->roleId('tenant', $roleSlug);

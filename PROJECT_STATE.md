@@ -947,8 +947,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
 - Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
 
-<!-- End of file. -->
-
 ## 2026-05-29 admin user/config/email repair
 
 - Platform admin shell logout now includes a CSRF token generated from `CsrfTokenService`.
@@ -1044,8 +1042,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
 - Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
 
-<!-- End of file. -->
-
 ## 2026-05-30 auth cookie multi-header fix
 - Browser login/logout now supports multiple `Set-Cookie` headers through `App\Http\Response`.
 - `App\Http\Support\SessionCookie` now clears stale host-only and `.artsfol.io` cookie variants before setting the canonical browser session cookie.
@@ -1066,8 +1062,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
 - Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
 
-<!-- End of file. -->
-
 ## Email SMTP custom headers
 - SMTP sender supports static custom message headers configured through environment variables.
 - `SMTP_X_PM_MESSAGE_STREAM` sets `X-PM-Message-Stream` for Postmark SMTP message streams.
@@ -1087,8 +1081,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 ## 2026-06-08 Tenant session bridge domain-column repair
 - Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
 - Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
-
-<!-- End of file. -->
 
 
 ## 2026-05-31 - Tenant login and platform SMTP message-stream setting
@@ -1149,8 +1141,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
 - Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
 
-<!-- End of file. -->
-
 ## Production deploy worker requirement
 
 `artsfolio-background-worker.service` is deploy-critical. `scripts/deploy/deploy_production.sh` must fail if the unit is missing or inactive. The deploy script checks the unit with `systemctl cat artsfolio-background-worker.service` and verifies activity with `systemctl is-active --quiet artsfolio-background-worker.service`.
@@ -1174,8 +1164,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 ## 2026-06-08 Tenant session bridge domain-column repair
 - Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
 - Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
-
-<!-- End of file. -->
 
 # End of file.
 
@@ -1367,7 +1355,25 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
 - Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
 
-<!-- End of file. -->
+## 2026-06-08 Email list management and custom-domain admin sessions
+
+- Added tenant email signup source/notes management, CSV import, deletion, search, sort, and filtered export.
+- Added one-time tenant session bridge tickets so an admin logged in on a tenant `artsfol.io` subdomain can enter the same tenant admin on a verified custom domain without a second password prompt.
+- Admin tab on tenant public pages is shown only when a browser user is signed in.
+- Cross-domain auth uses short-lived one-time tickets because browsers cannot share ordinary cookies between unrelated domains such as `bxiie.artsfol.io` and `bxiie.com`.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
 
 ## 2026-06-08 Email list management and custom-domain admin sessions
 
@@ -1389,26 +1395,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
 - Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
 
-<!-- End of file. -->
+## 2026-06-08 Platform admin invite repository repair
 
-## 2026-06-08 Email list management and custom-domain admin sessions
-
-- Added tenant email signup source/notes management, CSV import, deletion, search, sort, and filtered export.
-- Added one-time tenant session bridge tickets so an admin logged in on a tenant `artsfol.io` subdomain can enter the same tenant admin on a verified custom domain without a second password prompt.
-- Admin tab on tenant public pages is shown only when a browser user is signed in.
-- Cross-domain auth uses short-lived one-time tickets because browsers cannot share ordinary cookies between unrelated domains such as `bxiie.artsfol.io` and `bxiie.com`.
-
-## 2026-06-08 Generic tenant session bridge
-- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
-
-
-## 2026-06-08 Tenant session bridge hostname hotfix
-- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
-- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
-
-
-## 2026-06-08 Tenant session bridge domain-column repair
-- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
-- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+- Added `AdminUserRepository::assignPlatformRole()` so `/platform/admin/users/invite` can create/reuse a user and assign the platform admin role without a fatal method error.
+- Platform role assignment checks for an existing `tenant_id IS NULL` row before inserting because MySQL unique indexes do not de-duplicate NULL tenant IDs reliably for this purpose.
+- Added `scripts/test/platform_user_invite_repository_static.php` and wired it into preflight.
 
 <!-- End of file. -->
