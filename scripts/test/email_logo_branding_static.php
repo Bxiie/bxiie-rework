@@ -25,6 +25,8 @@ if ($source === false) {
 
 $required = [
     'html wrapper method' => 'htmlFromText',
+    'text compatibility method' => 'public static function text',
+    'html compatibility method' => 'public static function html',
     'multipart render method' => 'body_html',
     'logo URL helper' => 'artsfolioLogoUrl',
     'logo HTML helper' => 'logoHtml',

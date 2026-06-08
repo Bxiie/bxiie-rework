@@ -14,6 +14,23 @@ namespace App\Platform\Email;
 final class BrandedEmail
 {
     /**
+     * Returns the plain-text body unchanged for callers that expect the older
+     * BrandedEmail::text() API.
+     */
+    public static function text(string $bodyText): string
+    {
+        return $bodyText;
+    }
+
+    /**
+     * Backward-compatible HTML renderer for callers that pass only body text.
+     */
+    public static function html(string $bodyText, string $subject = 'ArtsFolio'): string
+    {
+        return self::htmlFromText($subject, $bodyText);
+    }
+
+    /**
      * Wraps plain text email content in a consistent ArtsFolio HTML shell.
      */
     public static function htmlFromText(string $subject, string $bodyText): string
