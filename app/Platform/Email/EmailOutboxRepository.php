@@ -73,21 +73,14 @@ final class EmailOutboxRepository
      * Ensures every queued email carries ArtsFolio identity, including older
      * hard-coded invite and notification senders that do not use template files.
      */
-    private function brandBodies(string $subject, string $bodyText, ?string $bodyHtml): array
+    /**
+     * Produces plain-text and branded HTML bodies for outbox rows.
+     *
+     * The SMTP worker sends multipart/alternative when body_html is populated.
+     */
+    private function brandBodies(string $subject, string $bodyText): array
     {
-        $originalBodyText = $bodyText;
-
-        if (!str_contains($bodyText, 'Sent by ArtsFolio.')) {
-            $bodyText = BrandedEmail::text($subject, $bodyText);
-        }
-
-        if ($bodyHtml === null || trim($bodyHtml) === '') {
-            $bodyHtml = BrandedEmail::htmlFromText($subject, $originalBodyText);
-        } elseif (!str_contains($bodyHtml, 'Sent by ArtsFolio.')) {
-            $bodyHtml = BrandedEmail::html($subject, $bodyHtml);
-        }
-
-        return [$bodyText, $bodyHtml];
+        return BrandedEmail::render($subject, $bodyText);
     }
 
     public function claimNext(): ?array

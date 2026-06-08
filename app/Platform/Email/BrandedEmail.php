@@ -5,25 +5,34 @@ declare(strict_types=1);
 namespace App\Platform\Email;
 
 /**
- * Builds branded text and HTML email bodies for ArtsFolio outbound messages.
+ * Builds plain-text and HTML ArtsFolio email bodies.
  *
- * Every HTML email rendered through this helper includes the ArtsFolio logo.
- * Email clients require absolute image URLs, so the logo URL is based on
- * ARTSFOLIO_PUBLIC_URL when present and falls back to https://artsfol.io.
+ * All HTML bodies rendered through this helper include the ArtsFolio logo.
+ * The public text(), html(), htmlFromText(), and render() methods are retained
+ * because older mailer and outbox code may call any of them.
  */
 final class BrandedEmail
 {
     /**
-     * Returns the plain-text body unchanged for callers that expect the older
-     * BrandedEmail::text() API.
+     * Returns plain-text email content with a stable ArtsFolio footer.
      */
     public static function text(string $bodyText): string
     {
-        return $bodyText;
+        $bodyText = trim($bodyText);
+
+        if ($bodyText === '') {
+            return "ArtsFolio\n";
+        }
+
+        if (str_contains($bodyText, 'ArtsFolio')) {
+            return $bodyText;
+        }
+
+        return $bodyText . "\n\nArtsFolio";
     }
 
     /**
-     * Backward-compatible HTML renderer for callers that pass only body text.
+     * Backward-compatible HTML renderer.
      */
     public static function html(string $bodyText, string $subject = 'ArtsFolio'): string
     {
@@ -31,12 +40,11 @@ final class BrandedEmail
     }
 
     /**
-     * Wraps plain text email content in a consistent ArtsFolio HTML shell.
+     * Wraps plain text in a branded HTML email shell.
      */
     public static function htmlFromText(string $subject, string $bodyText): string
     {
         $safeSubject = htmlspecialchars($subject, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-        $paragraphs = self::paragraphsFromText($bodyText);
 
         return '<!doctype html>'
             . '<html lang="en">'
@@ -50,7 +58,7 @@ final class BrandedEmail
             . '<div style="background:#ffffff;border:1px solid #e6dfd5;border-radius:18px;padding:28px;box-shadow:0 12px 40px rgba(0,0,0,0.06);">'
             . self::logoHtml()
             . '<h1 style="font-size:24px;line-height:1.25;margin:0 0 18px 0;color:#141414;">' . $safeSubject . '</h1>'
-            . '<div style="font-size:16px;line-height:1.6;color:#2c2c2c;">' . $paragraphs . '</div>'
+            . '<div style="font-size:16px;line-height:1.6;color:#2c2c2c;">' . self::paragraphsFromText($bodyText) . '</div>'
             . '</div>'
             . '<p style="font-size:12px;line-height:1.5;color:#746f67;margin:18px 4px 0 4px;">ArtsFolio</p>'
             . '</div>'
@@ -59,18 +67,20 @@ final class BrandedEmail
     }
 
     /**
-     * Returns a multipart-ready payload with text and branded HTML bodies.
+     * Returns a payload compatible with email_outbox storage.
+     *
+     * @return array{body_text:string,body_html:string}
      */
     public static function render(string $subject, string $bodyText): array
     {
         return [
-            'body_text' => $bodyText,
+            'body_text' => self::text($bodyText),
             'body_html' => self::htmlFromText($subject, $bodyText),
         ];
     }
 
     /**
-     * Returns an absolute logo URL suitable for email clients.
+     * Returns the public absolute logo URL used by email clients.
      */
     private static function artsfolioLogoUrl(): string
     {
@@ -80,7 +90,7 @@ final class BrandedEmail
     }
 
     /**
-     * Returns the branded logo block used by every HTML email.
+     * Returns the logo block injected into every HTML email.
      */
     private static function logoHtml(): string
     {
@@ -92,7 +102,7 @@ final class BrandedEmail
     }
 
     /**
-     * Converts plain-text paragraphs and URLs into safe HTML.
+     * Converts plain text paragraphs and URLs to safe HTML.
      */
     private static function paragraphsFromText(string $bodyText): string
     {
