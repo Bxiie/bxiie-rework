@@ -1402,3 +1402,9 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Added `scripts/test/platform_user_invite_repository_static.php` and wired it into preflight.
 
 <!-- End of file. -->
+
+## 2026-06-10
+
+- Added tenant admin artwork placement matrix at `/admin/artworks/placement` for assigning artwork to the home page and portfolio sections with thumbnail-first rows.
+- Added portfolio/home artwork ordering workflow at `/admin/portfolio-sections/order`; ordering writes to `homepage_artwork_assignments.sort_order` and `artwork_section_assignments.sort_order`.
+- Tenant password reset requests are now scoped to users attached to the current tenant through `tenant_memberships` or legacy `tenant_users`; unrelated users and mailing-list-only addresses do not receive tenant reset links.

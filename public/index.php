@@ -129,6 +129,41 @@ if ($artsfolioEarlyHost !== 'artsfol.io' && str_starts_with($artsfolioEarlyPath,
     exit;
 }
 
+
+/**
+ * Returns true only when the requested password reset address belongs to the
+ * current tenant. Tenant password-reset forms must not mint tokens for random
+ * platform users or public mailing-list subscribers.
+ */
+function tenantPasswordResetRecipientExists(PDO $pdo, int $tenantId, string $email): bool
+{
+    $stmt = $pdo->prepare(
+        "SELECT u.id
+         FROM users u
+         WHERE LOWER(u.email) = LOWER(:email)
+           AND (
+               EXISTS (
+                   SELECT 1
+                   FROM tenant_memberships tm
+                   WHERE tm.user_id = u.id
+                     AND tm.tenant_id = :tenant_id
+                     AND tm.status IN ('active', 'invited')
+               )
+               OR EXISTS (
+                   SELECT 1
+                   FROM tenant_users tu
+                   WHERE tu.user_id = u.id
+                     AND tu.tenant_id = :tenant_id
+                     AND tu.status IN ('active', 'invited')
+               )
+           )
+         LIMIT 1"
+    );
+    $stmt->execute(['tenant_id' => $tenantId, 'email' => $email]);
+
+    return (bool) $stmt->fetchColumn();
+}
+
 $root = dirname(__DIR__);
 
 require $root . '/bootstrap/app.php';
@@ -423,13 +458,14 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
         $router->get('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), $csrf, $tenantSettings))->show($request, $tenant));
     $router->get('/register', fn (Request $request): Response => Response::html(AuthPage::register('/register')));
     $router->get('/password/forgot', fn (Request $request): Response => Response::html(AuthPage::forgotPassword('/password/forgot', (new CsrfTokenService())->getOrCreate())));
-        $router->post('/password/forgot', function (Request $request) use ($pdo, $root): Response {
+        $router->post('/password/forgot', function (Request $request) use ($pdo, $root, $tenant): Response {
             $csrf = new CsrfTokenService();
             if (!$csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
                 return Response::html(AuthPage::forgotPassword('/password/forgot', $csrf->getOrCreate()) . '<p class="error">The security check expired. Please try again.</p>', 419);
             }
+
             $email = strtolower(trim((string) ($_POST['email'] ?? '')));
-            if ($email !== '') {
+            if ($email !== '' && tenantPasswordResetRecipientExists($pdo, (int) $tenant->tenantId, $email)) {
                 $reset = (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->createResetTokenForEmail($email);
                 if ($reset) {
                     $host = $request->host();
@@ -437,7 +473,8 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
                     (new LifecycleEmailService(new EmailOutboxRepository($pdo), new TemplateRenderer(), $root . '/template/email'))->queuePasswordReset($email, $resetUrl, (int) $reset['user_id']);
                 }
             }
-            return Response::html(AuthPage::pageMessage('Password reset requested', 'If that email address exists, a reset link has been queued.'));
+
+            return Response::html(AuthPage::pageMessage('Password reset requested', 'If that email address exists for this artist site, a reset link has been queued.'));
         });
     $router->get('/admin/login', fn (Request $request): Response => new Response('', 303, ['Location' => '/login']));
     $router->get('/admin', fn (Request $request): Response => (new TenantAdminDashboardController($tenantSettings))->index($request, $tenant, $currentUser));

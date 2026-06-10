@@ -1,5 +1,15 @@
 ## Now
 
+- https://artsfol.io/password/forgot: No route for GET /password/forgot
+- the signup passcode must be verified before moving to the site details entry
+
+##
+
+- Create an alternate tenant admin artworks page.  The page should have a thumbnail of each image in the left column and then checkboxes for each portfolio section plus home page.  The checkboxes can be used to move artworks into or out of each section.
+- Portfolio sections page should show artworks and allow dragging to set order of artworks in the section.  Portfolio sections page should include home page.
+
+##
+
 - https://bxiie.com/password/forgot: Template file not found: /var/www/artsfolio/template/email/auth/password-reset-request.md
 - Email templates should include logo image
 - Create an alternate tenant admin artworks page.  The page should have a thumbnail of each image in the left column and then checkboxes for each portfolio section plus home page.  The checkboxes can be used to move artworks into or out of each section.

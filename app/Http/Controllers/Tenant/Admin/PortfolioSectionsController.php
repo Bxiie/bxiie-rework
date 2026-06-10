@@ -81,7 +81,7 @@ HTML;
     <h1>Portfolio Sections</h1>
     {$notice}
     <p>Use sections to group artwork and optionally show selected sections as public portfolio tabs.</p>
-    <p><a href="/admin/portfolio-sections/edit">Add portfolio section</a></p>
+    <p><a href="/admin/portfolio-sections/edit">Add portfolio section</a> · <a href="/admin/portfolio-sections/order">Order artwork in sections and home page</a> · <a href="/admin/artworks/placement">Artwork placement matrix</a></p>
     <table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;">
         <thead>
             <tr>
