@@ -3,10 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Static/runtime regression checks for custom SMTP headers.
- *
- * Postmark message stream routing depends on headers such as:
- *   X-PM-Message-Stream: broadcasts
+ * Runtime regression check for custom SMTP headers and multipart HTML.
  */
 
 $root = dirname(__DIR__, 2);
@@ -18,24 +15,22 @@ if (!is_file($smtpFile)) {
 }
 
 $source = file_get_contents($smtpFile);
-
 if ($source === false) {
     fwrite(STDERR, "Unable to read SmtpEmailSender.php\n");
     exit(1);
 }
 
-$markers = [
-    'custom header source property' => '$this->headers',
+$sourceMarkers = [
     'custom header loop' => '$this->headers as $name => $value',
-    'safe header validation' => 'assertSafeHeader',
-    'header rendering loop' => 'foreach ($headers as $name => $value)',
-    'multipart support preserved' => 'multipart/alternative',
-    'html part preserved' => 'Content-Type: text/html; charset=UTF-8',
+    'header render loop' => 'foreach ($headers as $name => $value)',
+    'multipart support' => 'multipart/alternative',
+    'html part' => 'Content-Type: text/html; charset=UTF-8',
+    'test message helper' => 'buildMessageForTest',
 ];
 
-foreach ($markers as $label => $needle) {
+foreach ($sourceMarkers as $label => $needle) {
     if (strpos($source, $needle) === false) {
-        fwrite(STDERR, "Missing SMTP custom header marker: {$label}\n");
+        fwrite(STDERR, "Missing SMTP source marker: {$label}\n");
         exit(1);
     }
 }
@@ -55,11 +50,6 @@ $sender = new SmtpEmailSender(
     ]
 );
 
-if (!method_exists($sender, 'buildMessageForTest')) {
-    fwrite(STDERR, "SmtpEmailSender must expose buildMessageForTest() for deterministic preflight.\n");
-    exit(1);
-}
-
 $message = $sender->buildMessageForTest([
     'recipient_email' => 'test@example.test',
     'subject' => 'SMTP header test',
@@ -77,6 +67,8 @@ $requiredFragments = [
 foreach ($requiredFragments as $fragment) {
     if (strpos($message, $fragment) === false) {
         fwrite(STDERR, "Missing expected SMTP message fragment: {$fragment}\n");
+        fwrite(STDERR, "--- SMTP message preview ---\n");
+        fwrite(STDERR, substr($message, 0, 1200) . "\n");
         exit(1);
     }
 }

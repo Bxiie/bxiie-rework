@@ -152,38 +152,22 @@ final class SmtpEmailSender implements EmailSenderInterface
         $bodyText = $this->normalizeMessageBody((string) ($email['body_text'] ?? ''));
 
         if (!$hasHtml) {
-            return implode("
-", $lines) . "
-
-" . $bodyText;
+            return implode("\r\n", $lines) . "\r\n\r\n" . $bodyText;
         }
 
         $bodyHtml = $this->normalizeMessageBody((string) $email['body_html']);
 
-        $body = '--' . $boundary . "
-"
-            . "Content-Type: text/plain; charset=UTF-8
-"
-            . "Content-Transfer-Encoding: 8bit
-
-"
-            . $bodyText . "
-"
-            . '--' . $boundary . "
-"
-            . "Content-Type: text/html; charset=UTF-8
-"
-            . "Content-Transfer-Encoding: 8bit
-
-"
-            . $bodyHtml . "
-"
+        $body = '--' . $boundary . "\r\n"
+            . "Content-Type: text/plain; charset=UTF-8\r\n"
+            . "Content-Transfer-Encoding: 8bit\r\n\r\n"
+            . $bodyText . "\r\n"
+            . '--' . $boundary . "\r\n"
+            . "Content-Type: text/html; charset=UTF-8\r\n"
+            . "Content-Transfer-Encoding: 8bit\r\n\r\n"
+            . $bodyHtml . "\r\n"
             . '--' . $boundary . '--';
 
-        return implode("
-", $lines) . "
-
-" . $body;
+        return implode("\r\n", $lines) . "\r\n\r\n" . $body;
     }
 
     private function normalizeMessageBody(string $body): string
