@@ -1,5 +1,25 @@
 ## Now
 
+- https://bxiie.com/password/forgot: Template file not found: /var/www/artsfolio/template/email/auth/password-reset-request.md
+- Email templates should include logo image
+- Create an alternate tenant admin artworks page.  The page should have a thumbnail of each image in the left column and then checkboxes for each portfolio section plus home page.  The checkboxes can be used to move artworks into or out of each section.
+- Portfolio sections page should show artworks and allow dragging to set order of artworks in the section.  Portfolio sections page should include home page.
+- if Require a signup passcode to create new tenant sites is set, the user should be prompted for a passcode before they can enter new site details.
+- the logo image is broken on emails
+- https://artsfol.io/password/forgot: No route for GET /password/forgot
+
+
+##
+
+- allow deletion of email addresses from list
+- allow import of email addresses from csv
+- add source field to email addresses
+- add notes field to email addresses
+- allow sort and search on email addresses
+- my login should extend across artsfolio and custom domein, for example, logged in bxiie admin should be able to access https://bxiie.artsfol.io/admin and https://bxiie.com/admin, and see the admin tab on both domains
+
+##
+
 - Saving billing override returns 'Tenant user password updated.'
 - Platform dashboard  shows 0 tenants - false.  
 - Tenant admin (bxiie) shows 0 published artworks - false.  0 for sale - false.  0 views - false.  0 subscribers - false.

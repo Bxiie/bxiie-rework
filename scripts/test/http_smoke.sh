@@ -6,16 +6,30 @@ assert_redirect_location() {
   local host="$2"
   local path="$3"
   local expected_location="$4"
+  local headers
   local location
 
-  location="$(curl -fsSI -H "Host: ${host}" "http://127.0.0.1:18080${path}" | awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/, "", $0); print substr($0, 11); exit}')"
+  # Use curl's parsed redirect target instead of manually parsing HTTP headers.
+  # This is portable across macOS/BSD and GNU userlands and is immune to CRLF,
+  # header-name case, and awk implementation differences.
+  location="$(curl -sS -o /dev/null -w '%{redirect_url}' -H "Host: ${host}" "${BASE_URL}${path}")"
+
   if [[ "${location}" != "${expected_location}" ]]; then
+    headers="$(curl -sS -D - -o /dev/null -H "Host: ${host}" "${BASE_URL}${path}")"
     echo "FAILED: ${description}" >&2
     echo "Expected Location: ${expected_location}" >&2
     echo "Actual Location: ${location}" >&2
-    return 1
+    echo "Response headers:" >&2
+    printf '%s
+' "${headers}" >&2
+    echo "Server log:" >&2
+    cat "${LOG_FILE}" >&2
+    exit 1
   fi
+
+  echo "PASS: ${description}"
 }
+
 
 
 # HTTP smoke tests for the platform/tenant split.
@@ -32,7 +46,11 @@ ENV_FILE="${ARTSFOLIO_ENV_FILE:-.env.local}"
 BASE_URL="http://127.0.0.1:${PORT}"
 LOG_FILE="/tmp/artsfolio-http-smoke-${PORT}.log"
 TENANT_HOST="${ARTSFOLIO_SMOKE_TENANT_HOST:-bxiie.com}"
-TENANT_EXPECTED_TITLE="${ARTSFOLIO_SMOKE_TENANT_TITLE:-James Payne Art}"
+if [[ -n "${ARTSFOLIO_SMOKE_TENANT_TITLE:-}" ]]; then
+  TENANT_EXPECTED_TITLE="${ARTSFOLIO_SMOKE_TENANT_TITLE}"
+else
+  TENANT_EXPECTED_TITLE="$(ARTSFOLIO_ENV_FILE="${ENV_FILE}" php scripts/test/tenant_expected_title.php "${TENANT_HOST}")"
+fi
 
 cleanup() {
   if [[ -n "${SERVER_PID:-}" ]] && kill -0 "${SERVER_PID}" 2>/dev/null; then
@@ -185,3 +203,7 @@ if fetch_body "bxiie.artsfol.io" "/" | grep -q 'href="/platform/admin"'; then
   echo "FAILED: tenant public nav does not expose platform admin" >&2
   exit 1
 fi
+
+# End of file.
+
+# End of file.
