@@ -201,14 +201,17 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     }
 
     // Platform-admin routes are canonical to the platform host. Tenant hosts such as
-    // bxiie.artsfol.io must not try to dispatch /platform/admin through the tenant
-    // router, because that produces confusing unbranded tenant 404s. Redirect browser
-    // requests to the platform host and preserve the path/query string.
+    // Tenant and custom hosts must never dispatch platform-admin routes locally.
+    // Redirect to the canonical platform host before tenant routing continues.
     if ($tenant && str_starts_with($request->path(), '/platform/admin')) {
+        $target = 'https://artsfol.io' . $request->path();
         $queryString = (string) ($_SERVER['QUERY_STRING'] ?? '');
-        $target = 'https://artsfol.io' . $request->path() . ($queryString !== '' ? '?' . $queryString : '');
-        Response::html('', 302, ['Location' => $target])->send();
-        exit;
+
+        if ($queryString !== '') {
+            $target .= '?' . $queryString;
+        }
+
+        return new Response('', 302, ['Location' => $target]);
     }
 
     if ($tenant) {
