@@ -27,13 +27,29 @@ foreach ($loginFiles as $file) {
 }
 
 $jobsOk = false;
-$files = array_merge(
-    glob($root . '/app/**/*Jobs*Controller.php') ?: [],
-    glob($root . '/app/**/*Background*Controller.php') ?: []
+$appRoot = $root . '/app';
+
+$iterator = new RecursiveIteratorIterator(
+    new RecursiveDirectoryIterator($appRoot, FilesystemIterator::SKIP_DOTS)
 );
 
-foreach ($files as $file) {
-    $content = (string) file_get_contents($file);
+foreach ($iterator as $fileInfo) {
+    if (!$fileInfo->isFile()) {
+        continue;
+    }
+
+    $path = $fileInfo->getPathname();
+    $basename = $fileInfo->getBasename();
+
+    if (!str_ends_with($basename, '.php')) {
+        continue;
+    }
+
+    if (!str_contains($basename, 'Jobs') && !str_contains($basename, 'Background')) {
+        continue;
+    }
+
+    $content = (string) file_get_contents($path);
     if (str_contains($content, 'Execution time') && str_contains($content, 'formatJobExecutionTime')) {
         $jobsOk = true;
         break;
