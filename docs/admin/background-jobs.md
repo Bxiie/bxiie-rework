@@ -1,5 +1,5 @@
 # Background Jobs
 
-The background jobs admin page shows job status, attempts, and execution timestamps. The execution column shows when job attempts started and when they finished, when attempt data is available.
+The background jobs admin page shows execution timestamps for job attempts.
 
 # End of file.

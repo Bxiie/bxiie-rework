@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Request;
 use App\Http\Response;
+use App\Http\View\ErrorPage;
 
 /**
  * Renders the combined ArtsFolio help and developer reference section.
@@ -88,6 +89,10 @@ final class HelpController
 
     public function developer(Request $request, ?array $currentUser = null): Response
     {
+        if ($this->isDeveloperResourceRequest($request) && !$currentUser) {
+            return new Response('', 302, ['Location' => '/login']);
+        }
+
         if (!$currentUser && isset($GLOBALS['artsfolio_current_user']) && is_array($GLOBALS['artsfolio_current_user'])) {
             $currentUser = $GLOBALS['artsfolio_current_user'];
         }
@@ -276,6 +281,20 @@ HTML;
     {
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
-}
 
-// End of file.
+    /**
+     * Developer resources are internal operational documentation and require login.
+     */
+    private function isDeveloperResourceRequest(Request $request): bool
+    {
+        $path = $request->path();
+        $topic = (string) ($_GET['topic'] ?? $_GET['article'] ?? '');
+
+        return str_contains($path, 'developer')
+            || str_contains($path, 'resources')
+            || str_contains($topic, 'developer')
+            || str_contains($topic, 'api')
+            || str_contains($topic, 'webhook');
+    }
+
+}

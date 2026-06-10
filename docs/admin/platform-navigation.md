@@ -1,5 +1,5 @@
 # Platform Navigation
 
-Pricing is shown in the top navigation on platform marketing pages. Developer resources are login-gated and are not advertised to anonymous users.
+Pricing is available from platform top navigation. Developer resources require login.
 
 # End of file.
