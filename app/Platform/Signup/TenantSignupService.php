@@ -31,6 +31,26 @@ final class TenantSignupService
             && in_array(strtolower((string) $this->settings->get('tenant_signup_code_required', '0')), ['1', 'true', 'yes', 'on'], true);
     }
 
+    /**
+     * Validates a signup passcode before the site details form is displayed.
+     */
+    public function validateSignupEntryCode(string $signupCode): ?array
+    {
+        $signupCode = strtoupper(trim($signupCode));
+
+        if (!$this->requiresSignupCode() && $signupCode === '') {
+            return null;
+        }
+        if ($this->signupCodes === null) {
+            throw new RuntimeException('Signup code validation is not configured.');
+        }
+        if ($signupCode === '') {
+            throw new RuntimeException('A signup passcode is required to create a new site.');
+        }
+
+        return $this->signupCodes->validateForEntry($signupCode);
+    }
+
     public function register(
         string $slug,
         string $siteName,

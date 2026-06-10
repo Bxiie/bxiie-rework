@@ -58,9 +58,11 @@ final class ArtworkReadRepository
             $stmt->bindValue('tenant_id', $tenant->tenantId, PDO::PARAM_INT);
             $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
             $stmt->execute();
-            $rows = $stmt->fetchAll();
-            if ($rows) { return $rows; }
+            return $stmt->fetchAll();
         }
+
+        // Older databases may not have the home assignment table yet. In that
+        // compatibility case only, preserve the legacy latest-published fallback.
         return $this->publishedOrdered($tenant, $limit, 'manual');
     }
 

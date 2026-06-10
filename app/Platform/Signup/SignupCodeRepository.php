@@ -71,6 +71,28 @@ final class SignupCodeRepository
         return $row ?: null;
     }
 
+    /**
+     * Validates that a signup code can start the tenant signup flow.
+     *
+     * Recipient-email restrictions are enforced later during final submission,
+     * after the prospective tenant has entered an email address.
+     */
+    public function validateForEntry(string $code): array
+    {
+        $row = $this->findByCode($code);
+        if (!$row) {
+            throw new RuntimeException('Signup code is invalid.');
+        }
+        if ((string) ($row['status'] ?? '') !== 'active') {
+            throw new RuntimeException('Signup code is not active.');
+        }
+        if ((int) ($row['redemption_count'] ?? 0) >= (int) ($row['max_redemptions'] ?? 1)) {
+            throw new RuntimeException('Signup code has already been fully redeemed.');
+        }
+
+        return $row;
+    }
+
     public function validateForSignup(string $code, string $email): array
     {
         $row = $this->findByCode($code);

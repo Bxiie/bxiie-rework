@@ -47,6 +47,21 @@ final class PasswordAuthService
         return $userId;
     }
 
+    /**
+     * Revokes the active browser session represented by the raw cookie token.
+     *
+     * Logout must invalidate server-side state as well as expire cookies. This
+     * prevents a stale cookie on another host/domain from re-opening admin pages.
+     */
+    public function logoutToken(?string $rawToken): void
+    {
+        if (!is_string($rawToken) || $rawToken === '') {
+            return;
+        }
+
+        $this->sessions->revokeByHash($this->tokens->hashToken($rawToken));
+    }
+
     public function login(
         string $email,
         string $password,

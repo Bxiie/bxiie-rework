@@ -1408,3 +1408,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Added tenant admin artwork placement matrix at `/admin/artworks/placement` for assigning artwork to the home page and portfolio sections with thumbnail-first rows.
 - Added portfolio/home artwork ordering workflow at `/admin/portfolio-sections/order`; ordering writes to `homepage_artwork_assignments.sort_order` and `artwork_section_assignments.sort_order`.
 - Tenant password reset requests are now scoped to users attached to the current tenant through `tenant_memberships` or legacy `tenant_users`; unrelated users and mailing-list-only addresses do not receive tenant reset links.
+
+## 2026-06-10 signup, logout, and home artwork visibility
+- Signup passcodes are verified before the platform signup flow displays site detail fields.
+- Tenant logout revokes the active server-side session in addition to expiring session cookies.
+- Tenant artwork admin links to the artwork placement matrix and section artwork order UI.
+- Tenant home pages render only artworks explicitly assigned to the home page when homepage_artwork_assignments exists.
+

@@ -31,10 +31,13 @@ final class SignupController
     public function show(Request $request): Response
     {
         // ARTSFOLIO_SIGNUP_PASSCODE_PREPROMPT
-        if ($this->signups->requiresSignupCode() && trim((string) ($_GET['code'] ?? '')) === '') {
-            return Response::html(<<<HTML
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Signup passcode required | ArtsFolio</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/auth.css"></head><body><main class="auth-page"><section class="auth-card"><a href="/" class="auth-logo-link"><img src="/assets/logo_2.png" alt="ArtsFolio" class="auth-logo"></a><p class="auth-eyebrow">Private signup</p><h1>Enter your signup passcode</h1><p class="auth-copy">A passcode is required before new site details can be entered.</p><form method="get" action="/signup" class="auth-form"><label>Signup passcode<input type="text" name="code" autocomplete="off" required autofocus></label><button type="submit">Continue</button></form></section></main></body></html>
-HTML);
+        $signupEntryCode = trim((string) ($_GET['code'] ?? ''));
+        if ($this->signups->requiresSignupCode()) {
+            try {
+                $this->signups->validateSignupEntryCode($signupEntryCode);
+            } catch (\Throwable $e) {
+                return $this->signupCodePrompt($signupEntryCode === '' ? '' : $e->getMessage());
+            }
         }
 
         $csrfToken = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
@@ -130,6 +133,20 @@ HTML);
         }
 
         return new Response('', 302, $headers);
+    }
+
+    /**
+     * Renders the signup-code gate before collecting tenant details.
+     */
+    private function signupCodePrompt(string $error = ''): Response
+    {
+        $errorHtml = $error !== ''
+            ? '<p class="auth-error">' . htmlspecialchars($error, ENT_QUOTES, 'UTF-8') . '</p>'
+            : '';
+
+        return Response::html(<<<HTML
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Signup passcode required | ArtsFolio</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/auth.css"></head><body><main class="auth-page"><section class="auth-card"><a href="/" class="auth-logo-link"><img src="/assets/logo_2.png" alt="ArtsFolio" class="auth-logo"></a><p class="auth-eyebrow">Private signup</p><h1>Enter your signup passcode</h1><p class="auth-copy">A passcode is required before new site details can be entered.</p>{$errorHtml}<form method="get" action="/signup" class="auth-form"><label>Signup passcode<input type="text" name="code" autocomplete="off" required autofocus></label><button type="submit">Continue</button></form></section></main></body></html>
+HTML);
     }
 
     private function createBrowserSession(int $userId): string

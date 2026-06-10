@@ -155,7 +155,7 @@ HTML;
         $body = <<<HTML
 <main>
     <div id="artwork-action-notice">{$notice}</div>
-    <p><a href="/admin/artwork/upload">Upload artwork</a></p>
+    <p><a href="/admin/artwork/upload">Upload artwork</a> · <a href="/admin/artworks/placement">Artwork placement matrix</a> · <a href="/admin/portfolio-sections/order">Section artwork order</a></p>
 
     <form method="get" action="/admin/artworks" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin:1rem 0;">
         <label>Filter by name or medium<br>

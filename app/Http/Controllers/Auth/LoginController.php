@@ -83,6 +83,9 @@ final class LoginController
 
     public function logout(Request $request): Response
     {
+        $rawToken = $_COOKIE[self::COOKIE_NAME] ?? null;
+        $this->passwordAuth->logoutToken(is_string($rawToken) ? $rawToken : null);
+
         FlashMessages::success('Signed out.');
 
         return new Response('', 302, [
