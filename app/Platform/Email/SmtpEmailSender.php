@@ -188,7 +188,8 @@ final class SmtpEmailSender implements EmailSenderInterface
     private function normalizeMessageBody(string $body): string
     {
         $body = str_replace(["
-", ""], "
+", "
+"], "
 ", $body);
 
         return str_replace("

@@ -1,9 +1,14 @@
 # Reset your ArtsFolio password
 
-Use the link below to reset your ArtsFolio password.
+We received a request to reset your ArtsFolio password.
 
-{{ reset_url }}
+Use this link to choose a new password:
 
-This link expires soon. If you did not request a password reset, you can ignore this message.
+{{reset_url}}
+
+If you did not request this, you can ignore this email.
+
+Thanks,  
+ArtsFolio
 
 <!-- End of file. -->

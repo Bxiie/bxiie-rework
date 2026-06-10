@@ -38,6 +38,29 @@ final class ArtworkReadRepository
 
     public function latestPublished(TenantContext $tenant, int $limit = 12): array
     {
+        if ($this->tableExists('homepage_artwork_assignments')) {
+            $stmt = $this->pdo->prepare(
+                "SELECT a.id, a.uuid, a.title, a.slug, a.medium, a.dimensions, a.year_created, a.status,
+                        a.sale_status, a.price,
+                        COALESCE(a.is_one_off, 1) AS is_one_off,
+                        COALESCE(a.inventory_quantity, 1) AS inventory_quantity,
+                        m.uuid AS media_uuid, m.alt_text AS media_alt_text
+                 FROM homepage_artwork_assignments h
+                 JOIN artworks a ON a.id = h.artwork_id
+                 LEFT JOIN media_assets m ON m.id = a.primary_media_id
+                 WHERE h.tenant_id = :tenant_id
+                   AND a.tenant_id = :tenant_id
+                   AND a.status = 'published'
+                   AND " . $this->portfolioTypeExistsSql('a') . "
+                 ORDER BY h.sort_order ASC, a.sort_order ASC, a.id DESC
+                 LIMIT :limit_count"
+            );
+            $stmt->bindValue('tenant_id', $tenant->tenantId, PDO::PARAM_INT);
+            $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            $rows = $stmt->fetchAll();
+            if ($rows) { return $rows; }
+        }
         return $this->publishedOrdered($tenant, $limit, 'manual');
     }
 
@@ -124,6 +147,13 @@ final class ArtworkReadRepository
             WHERE ata.artwork_id = {$alias}.id
               AND atype.code = 'portfolio_images'
         )";
+    }
+
+    private function tableExists(string $table): bool
+    {
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :table_name");
+        $stmt->execute(['table_name' => $table]);
+        return (int) $stmt->fetchColumn() > 0;
     }
 
     /**

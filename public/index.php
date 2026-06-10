@@ -50,6 +50,7 @@ use App\Http\Controllers\Tenant\Admin\StatsController as TenantAdminStatsControl
 use App\Http\Controllers\Tenant\Admin\GettingStartedController as TenantAdminGettingStartedController;
 use App\Http\Controllers\Tenant\Admin\ArtworkUploadController as TenantAdminArtworkUploadController;
 use App\Http\Controllers\Tenant\Admin\ArtworksController as TenantAdminArtworksController;
+use App\Http\Controllers\Tenant\Admin\ArtworkPlacementController as TenantAdminArtworkPlacementController;
 use App\Http\Controllers\Tenant\Admin\ContentController as TenantAdminContentController;
 use App\Http\Controllers\Tenant\Admin\EventsController as TenantAdminEventsController;
 use App\Http\Controllers\Tenant\Admin\PortfolioSectionsController as TenantAdminPortfolioSectionsController;
@@ -249,6 +250,56 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
 
         $router = new Router();
 
+
+        // ARTSFOLIO_GLOBAL_PASSWORD_ROUTES
+        $router->get('/password/forgot', fn (Request $request): Response => Response::html(AuthPage::forgotPassword('/password/forgot', (new CsrfTokenService())->getOrCreate())));
+        $router->post('/password/forgot', function (Request $request) use ($pdo, $root): Response {
+            $csrf = new CsrfTokenService();
+            if (!$csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+                return Response::html(AuthPage::forgotPassword('/password/forgot', $csrf->getOrCreate()) . '<p class="error">The security check expired. Please try again.</p>', 419);
+            }
+            $email = strtolower(trim((string) ($_POST['email'] ?? '')));
+            if ($email !== '') {
+                $reset = (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->createResetTokenForEmail($email);
+                if ($reset) {
+                    $resetUrl = 'https://' . $request->host() . '/password/reset?token=' . rawurlencode((string) $reset['reset_token']);
+                    (new LifecycleEmailService(new EmailOutboxRepository($pdo), new TemplateRenderer(), $root . '/template/email'))->queuePasswordReset($email, $resetUrl, (int) $reset['user_id']);
+                }
+            }
+            return Response::html(AuthPage::pageMessage('Password reset requested', 'If that email address exists, a reset link has been queued.'));
+        });
+        $router->get('/password/reset', function (Request $request): Response {
+            $token = (string) ($_GET['token'] ?? '');
+            if ($token === '') {
+                return Response::html(AuthPage::pageMessage('Password reset link missing', 'This password reset link is missing its token. Please request a new reset link.'), 400);
+            }
+            return Response::html(AuthPage::resetPassword('/password/reset', $token, (new CsrfTokenService())->getOrCreate()));
+        });
+        $router->post('/password/reset', function (Request $request) use ($pdo): Response {
+            $csrf = new CsrfTokenService();
+            $token = (string) ($_POST['token'] ?? '');
+            $password = (string) ($_POST['password'] ?? '');
+            $confirm = (string) ($_POST['password_confirm'] ?? '');
+            if (!$csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+                return Response::html(AuthPage::resetPassword('/password/reset', $token, $csrf->getOrCreate(), 'The security check expired. Please try again.'), 419);
+            }
+            if ($token === '') {
+                return Response::html(AuthPage::pageMessage('Password reset link missing', 'This password reset link is missing its token. Please request a new reset link.'), 400);
+            }
+            if (strlen($password) < 10) {
+                return Response::html(AuthPage::resetPassword('/password/reset', $token, $csrf->getOrCreate(), 'Password must be at least 10 characters.'), 422);
+            }
+            if ($password !== $confirm) {
+                return Response::html(AuthPage::resetPassword('/password/reset', $token, $csrf->getOrCreate(), 'Passwords do not match.'), 422);
+            }
+            try {
+                (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->resetPassword($token, $password);
+            } catch (Throwable $e) {
+                return Response::html(AuthPage::pageMessage('Password reset failed', 'This password reset link is invalid or expired. Please request a new reset link.'), 400);
+            }
+            return Response::html(AuthPage::pageMessage('Password updated', 'Your password has been updated. You can now sign in with your new password.'));
+        });
+
         // Protect every tenant-admin route before route dispatch so unauthenticated
         // users get a login redirect instead of a raw forbidden page.
         if (str_starts_with($request->path(), '/admin') && !in_array($request->path(), ['/admin/login'], true)) {
@@ -296,6 +347,10 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
         $router->post('/admin/events/order', fn (Request $request): Response => (new TenantAdminEventsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new CsrfTokenService()))->order($request, $tenant, $currentUser));
         $router->get('/admin/content', fn (Request $request): Response => (new TenantAdminContentController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, $pdo))->edit($request, $tenant, $currentUser));
         $router->post('/admin/content', fn (Request $request): Response => (new TenantAdminContentController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, $pdo))->update($request, $tenant, $currentUser));
+        $router->get('/admin/artworks/placement', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->index($request, $tenant, $currentUser));
+        $router->post('/admin/artworks/placement', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->update($request, $tenant, $currentUser));
+        $router->get('/admin/portfolio-sections/order', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->order($request, $tenant, $currentUser));
+        $router->post('/admin/portfolio-sections/order', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->updateOrder($request, $tenant, $currentUser));
         $router->get('/admin/artworks', fn (Request $request): Response => (new TenantAdminArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new AuditLogRepository($pdo)))->index($request, $tenant, $currentUser));
         $router->get('/admin/artworks/edit', fn (Request $request): Response => (new TenantAdminArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new AuditLogRepository($pdo)))->edit($request, $tenant, $currentUser));
         $router->post('/admin/artworks/edit', fn (Request $request): Response => (new TenantAdminArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new AuditLogRepository($pdo)))->update($request, $tenant, $currentUser));

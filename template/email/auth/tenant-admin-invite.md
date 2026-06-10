@@ -1,14 +1,10 @@
 # You have been invited to administer {{tenant_name}}
 
-Hello {{display_name}},
-
 You have been invited to administer {{tenant_name}} on ArtsFolio.
 
-Use this link to accept the invitation and sign in:
+Use this link to sign in:
 
 {{action_url}}
-
-If you were not expecting this invitation, you can ignore this email.
 
 Thanks,  
 ArtsFolio

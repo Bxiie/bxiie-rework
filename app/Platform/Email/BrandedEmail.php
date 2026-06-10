@@ -86,7 +86,7 @@ final class BrandedEmail
     {
         $baseUrl = (string) ($_ENV['ARTSFOLIO_PUBLIC_URL'] ?? getenv('ARTSFOLIO_PUBLIC_URL') ?: 'https://artsfol.io');
 
-        return rtrim($baseUrl, '/') . '/assets/images/logo_2.png';
+        return rtrim($baseUrl, '/') . '/assets/logo_2.png';
     }
 
     /**

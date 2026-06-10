@@ -24,6 +24,13 @@ final class TenantSignupService
     ) {
     }
 
+
+    public function requiresSignupCode(): bool
+    {
+        return $this->settings !== null
+            && in_array(strtolower((string) $this->settings->get('tenant_signup_code_required', '0')), ['1', 'true', 'yes', 'on'], true);
+    }
+
     public function register(
         string $slug,
         string $siteName,

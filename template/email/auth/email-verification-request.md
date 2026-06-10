@@ -1,9 +1,12 @@
-# Verify your ArtsFolio email
+# Verify your ArtsFolio email address
 
-Use the link below to verify your ArtsFolio email address.
+Please verify your ArtsFolio email address:
 
-{{ verification_url }}
+{{verification_url}}
 
-This link expires soon. If you did not create an ArtsFolio account, you can ignore this message.
+If you did not request this, you can ignore this email.
+
+Thanks,  
+ArtsFolio
 
 <!-- End of file. -->
