@@ -1,0 +1,11 @@
+{
+  "name": "bxiie/artsfolio",
+  "description": "Arts Folio multi-tenant artist operating platform.",
+  "type": "project",
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    }
+  },
+  "require": {}
+}

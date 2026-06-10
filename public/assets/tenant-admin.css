@@ -1,0 +1,499 @@
+body.tenant-admin-page{margin:0;min-height:100vh;background:#f4efe7;color:#171717}.tenant-admin-public-header{background:var(--tenant-topbar-bg,#f7f2e8)!important;color:var(--tenant-topbar-text,#111)!important}.tenant-admin-shell{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:calc(100vh - 150px)}.tenant-admin-sidebar{padding:24px 18px;background:#111;color:#fff;border-right:1px solid rgba(255,255,255,.08)}.tenant-admin-sidebar-title{display:grid;gap:4px;margin-bottom:22px}.tenant-admin-sidebar-title strong{font-size:1.5rem;letter-spacing:-.04em}.tenant-admin-sidebar-title span{color:rgba(255,255,255,.68);font-size:.92rem}.tenant-admin-sidebar nav{display:grid;gap:7px}.tenant-admin-sidebar a{display:block;padding:10px 12px;border-radius:11px;color:#fff;text-decoration:none}.tenant-admin-sidebar a:hover,.tenant-admin-sidebar a.active{background:rgba(255,255,255,.14)}.tenant-admin-main{min-width:0;padding:28px}.tenant-admin-main-header{display:flex;justify-content:space-between;gap:16px;max-width:1200px;margin:0 auto 18px}.tenant-admin-panel{max-width:1200px;margin:0 auto;padding:32px;border:1px solid rgba(0,0,0,.10);border-radius:24px;background:rgba(255,255,255,.92);box-shadow:0 24px 70px rgba(0,0,0,.06);overflow-x:auto}.tenant-admin-panel h1{margin:0 0 24px;font-size:clamp(2rem,5vw,4rem);line-height:.92;letter-spacing:-.08em}.dashboard-grid,.admin-card-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))!important;gap:18px!important}.dashboard-card,.admin-card{display:block!important;position:static!important;min-height:124px!important;padding:22px!important;border:1px solid rgba(0,0,0,.10)!important;border-radius:18px!important;background:#fff!important;color:#171717!important;text-decoration:none!important;box-shadow:0 10px 28px rgba(0,0,0,.06)!important}.dashboard-card h3,.dashboard-card p,.admin-card h3,.admin-card p{position:static!important;margin-left:0!important}.admin-toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:0 0 18px;padding:16px;border-radius:16px;background:#fff;border:1px solid rgba(0,0,0,.08)}.admin-form,.tenant-admin-panel form{display:grid;gap:18px}.admin-form-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))!important;gap:18px!important}.admin-form-grid.three{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important}.admin-panel,fieldset{min-width:0!important;padding:20px!important;border:1px solid rgba(0,0,0,.12)!important;border-radius:18px!important;background:#fff!important}.admin-panel-wide{grid-column:1 / -1!important}.admin-form label,.admin-panel label,fieldset label,.admin-toolbar label{display:grid!important;gap:8px!important;font-weight:800!important}.admin-form input,.admin-form select,.admin-form textarea,.admin-panel input,.admin-panel select,.admin-panel textarea,fieldset input,fieldset select,fieldset textarea,.admin-toolbar input,.admin-toolbar select{width:100%!important;max-width:100%!important;box-sizing:border-box!important;padding:12px!important;border:1px solid #cfc7ba!important;border-radius:12px!important;background:#fff!important;font:inherit!important}.admin-form textarea,.admin-panel textarea,fieldset textarea{min-height:150px!important;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important}.admin-form button,.admin-panel button,fieldset button,.tenant-admin-panel button,.admin-toolbar button{padding:12px 18px!important;border:0!important;border-radius:999px!important;background:#111!important;color:#fff!important;font-weight:900!important;cursor:pointer!important}.admin-notice,.notice{padding:12px 16px!important;border-radius:12px!important;background:#eef8ee!important;border:1px solid #99c999!important}.admin-error,.error{padding:12px 16px!important;border-radius:12px!important;background:#fff0f0!important;border:1px solid #d88!important}.admin-table-wrap{width:100%!important;overflow-x:auto!important;border:1px solid rgba(0,0,0,.08)!important;border-radius:16px!important;background:#fff!important}.admin-table,.audit-table,.tenant-admin-panel table{width:100%!important;min-width:860px!important;border-collapse:collapse!important;table-layout:auto!important}.admin-table th,.admin-table td,.audit-table th,.audit-table td,.tenant-admin-panel th,.tenant-admin-panel td{padding:12px!important;border-bottom:1px solid rgba(0,0,0,.08)!important;vertical-align:top!important;text-align:left!important;white-space:normal!important}.admin-table th,.audit-table th,.tenant-admin-panel th{background:#efe9df!important;text-transform:uppercase!important;font-size:.78rem!important;letter-spacing:.08em!important}.tenant-admin-footer{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;border-top:1px solid rgba(0,0,0,.08)}.tenant-admin-footer nav{display:flex;gap:14px;flex-wrap:wrap}@media(max-width:900px){.tenant-admin-shell{grid-template-columns:1fr}.tenant-admin-sidebar{border-right:0}.tenant-admin-main{padding:16px}.tenant-admin-panel{padding:20px}}
+
+/* Inline-admin conversion safety layer. */
+.tenant-admin-panel > nav:first-child,
+.tenant-admin-panel > p:first-child {
+  margin-top: 0;
+}
+
+.tenant-admin-panel .admin-shell,
+.tenant-admin-panel main.admin-shell {
+  display: block !important;
+  min-height: auto !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.tenant-admin-panel header,
+.tenant-admin-panel .admin-header {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+}
+
+.tenant-admin-panel .admin-shell > * {
+  max-width: 100% !important;
+}
+
+.tenant-admin-panel a[href="/admin"] {
+  font-weight: 800;
+}
+
+/* End inline-admin conversion safety layer. */
+
+.tenant-admin-main-header:empty{display:none!important}.tenant-admin-main-header{justify-content:flex-end!important}
+
+.admin-billing-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:1rem}.billing-price{font-size:2rem;font-weight:950;margin:.25rem 0 1rem}.admin-button{display:inline-flex;padding:.75rem 1rem;border-radius:999px;background:#111;color:#fff;text-decoration:none;font-weight:900}
+
+/* Larger admin logos and platform/help shell adjustments. */
+.platform-admin-header .platform-admin-logo,
+.platform-help-header .platform-help-logo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.platform-admin-page .tenant-admin-panel,
+.platform-help-page .tenant-admin-panel {
+  max-width: 1240px;
+}
+
+/* End larger admin logos and platform/help shell adjustments. */
+
+/* Route/UI hotfix: admin logo and dashboard cards. */
+.tenant-admin-public-header .brand img,
+.tenant-admin-public-header .logo-brand img,
+.site-header.tenant-admin-public-header img {
+    max-height: 72px;
+    width: auto;
+}
+
+.admin-card-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    margin-top: 1.25rem;
+}
+
+.admin-card {
+    display: block;
+    padding: 1.1rem;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.78);
+    color: inherit;
+    text-decoration: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+.admin-card:hover,
+.admin-card:focus {
+    transform: translateY(-1px);
+    border-color: rgba(0, 0, 0, 0.24);
+}
+
+.admin-card h2 {
+    margin-top: 0;
+    margin-bottom: 0.4rem;
+    font-size: 1.1rem;
+}
+
+.admin-card p {
+    margin: 0;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.inline-form button {
+    font: inherit;
+}
+
+
+/* Tenant visual correction shared with public header. */
+.tenant-admin-public-header{isolation:isolate;background-color:var(--topbar-bg-overlay,var(--tenant-topbar-bg,rgba(255,248,236,.86)))!important;background-image:var(--topbar-bg-image);background-position:center;background-size:cover;background-repeat:no-repeat}.tenant-admin-public-header::before{z-index:0;background-color:var(--topbar-bg-overlay,rgba(255,248,236,.86));background-image:none}.tenant-admin-public-header>*{position:relative;z-index:1}.tenant-admin-panel{background-color:var(--content-bg-overlay,rgba(255,250,240,0))!important;box-shadow:0 20px 60px rgba(0,0,0,calc(var(--content-bg-opacity,0) * .10))}
+/* End tenant visual correction shared with public header. */
+
+/* End of file. */
+
+/* Platform/tenant separation and directory thumbnail picker. */
+.platform-admin-page {
+    --tenant-topbar-bg: #111827;
+    --tenant-topbar-text: #f8efe1;
+    background:
+        radial-gradient(circle at 12% 8%, rgba(255, 177, 72, 0.22), transparent 34rem),
+        linear-gradient(135deg, #111827 0%, #1f2937 34%, #f2eadc 34%, #f7f2e8 100%) !important;
+}
+
+.platform-admin-header {
+    border-bottom: 4px solid #f0a83a !important;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18) !important;
+}
+
+.platform-admin-logo img {
+    max-height: 54px !important;
+    width: auto !important;
+}
+
+.platform-admin-context {
+    display: grid;
+    gap: 0.1rem;
+    margin-right: auto;
+    color: var(--tenant-topbar-text, #f8efe1);
+}
+
+.platform-admin-context strong {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.platform-admin-context span {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.platform-admin-sidebar {
+    background: #101827 !important;
+    border-right: 5px solid #f0a83a !important;
+}
+
+.platform-admin-panel {
+    border-top: 6px solid #f0a83a !important;
+}
+
+.directory-thumbnail-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 1rem;
+}
+
+.directory-thumbnail-option {
+    display: grid !important;
+    gap: 0.55rem !important;
+    align-content: start;
+    padding: 0.8rem;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    border-radius: 16px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.directory-thumbnail-option input {
+    width: auto !important;
+}
+
+.directory-thumbnail-option img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #f6f1e9;
+}
+
+.directory-thumbnail-option:has(input:checked) {
+    outline: 3px solid #111;
+    border-color: #111;
+}
+
+.directory-thumbnail-option-none {
+    min-height: 130px;
+    place-content: center;
+    text-align: center;
+    background: repeating-linear-gradient(135deg, #fff, #fff 10px, #f6f1e9 10px, #f6f1e9 20px);
+}
+
+/* End platform/tenant separation and directory thumbnail picker. */
+
+/* Platform and tenant admin UI enhancements. */
+.admin-color-field { display: inline-flex; align-items: center; gap: .5rem; width: 100%; }
+.admin-color-field > input:not(.admin-color-picker) { flex: 1 1 auto; }
+.admin-color-picker { width: 3rem; min-width: 3rem; height: 2.25rem; padding: 0; border: 1px solid #bbb; border-radius: .35rem; background: #fff; }
+.admin-color-swatch { width: 2.25rem; height: 2.25rem; border: 1px solid #999; border-radius: .35rem; box-shadow: inset 0 0 0 1px rgba(255,255,255,.45); }
+.admin-bar-chart { display: grid; gap: .5rem; margin: 1rem 0; }
+.admin-bar-row { display: grid; grid-template-columns: minmax(5rem, 11rem) 1fr 4rem; gap: .75rem; align-items: center; }
+.admin-bar-track { min-height: 1rem; background: rgba(0,0,0,.08); border-radius: 999px; overflow: hidden; }
+.admin-bar-fill { display: block; min-height: 1rem; background: currentColor; border-radius: 999px; opacity: .72; }
+.admin-section-artwork-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: .75rem; margin: 1rem 0; }
+.admin-section-artwork-card { border: 1px solid rgba(0,0,0,.16); border-radius: .5rem; padding: .5rem; background: #fff; }
+.admin-section-artwork-card img { width: 100%; height: 110px; object-fit: contain; background: #f5f2ea; display: block; }
+.admin-drag-handle { cursor: grab; font-weight: 700; }
+.directory-card-thumb img { width: var(--directory-thumb-size, 180px); height: var(--directory-thumb-size, 180px); object-fit: cover; }
+.platform-admin-top-link { font-weight: 700; }
+.g-recaptcha { margin: 1rem 0; }
+
+
+/* Tenant visual correction shared with public header. */
+.tenant-admin-public-header{isolation:isolate;background-color:var(--topbar-bg-overlay,var(--tenant-topbar-bg,rgba(255,248,236,.86)))!important;background-image:var(--topbar-bg-image);background-position:center;background-size:cover;background-repeat:no-repeat}.tenant-admin-public-header::before{z-index:0;background-color:var(--topbar-bg-overlay,rgba(255,248,236,.86));background-image:none}.tenant-admin-public-header>*{position:relative;z-index:1}.tenant-admin-panel{background-color:var(--content-bg-overlay,rgba(255,250,240,0))!important;box-shadow:0 20px 60px rgba(0,0,0,calc(var(--content-bg-opacity,0) * .10))}
+/* End tenant visual correction shared with public header. */
+
+/* End of file. */
+
+/* Tenant admin readability and site-image picker controls. */
+.tenant-admin-brand {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.8rem !important;
+    line-height: 1.05 !important;
+    letter-spacing: normal !important;
+}
+
+.tenant-admin-brand span {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 0.28rem 0.55rem !important;
+    border-radius: 999px !important;
+    background: rgba(0, 0, 0, 0.12) !important;
+    font-size: 0.82rem !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+}
+
+.site-image-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.9rem;
+    margin: 0.75rem 0 1rem;
+}
+
+.site-image-picker-card {
+    display: grid !important;
+    gap: 0.45rem !important;
+    align-content: start;
+    padding: 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    border-radius: 16px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.site-image-picker-card input {
+    width: auto !important;
+}
+
+.site-image-picker-card img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #f6f1e9;
+}
+
+
+/* Tenant visual correction shared with public header. */
+.tenant-admin-public-header{isolation:isolate;background-color:var(--topbar-bg-overlay,var(--tenant-topbar-bg,rgba(255,248,236,.86)))!important;background-image:var(--topbar-bg-image);background-position:center;background-size:cover;background-repeat:no-repeat}.tenant-admin-public-header::before{z-index:0;background-color:var(--topbar-bg-overlay,rgba(255,248,236,.86));background-image:none}.tenant-admin-public-header>*{position:relative;z-index:1}.tenant-admin-panel{background-color:var(--content-bg-overlay,rgba(255,250,240,0))!important;box-shadow:0 20px 60px rgba(0,0,0,calc(var(--content-bg-opacity,0) * .10))}
+/* End tenant visual correction shared with public header. */
+
+/* End of file. */
+
+
+/* Tenant-admin surface variables shared with public tenant pages. */
+.tenant-admin-public-header {
+    background-color: var(--tenant-topbar-bg, var(--topbar-bg, #f7f2e8)) !important;
+    box-shadow: inset 0 0 0 999px rgba(255, 255, 255, calc(1 - var(--topbar-bg-opacity, 0.86))) !important;
+}
+
+.tenant-admin-sidebar {
+    background-color: var(--menu-bg, #111) !important;
+    background-image: var(--menu-bg-image) !important;
+    background-position: center !important;
+    background-size: cover !important;
+    box-shadow: inset 0 0 0 999px rgba(0, 0, 0, calc(1 - var(--menu-bg-opacity, 0.92))) !important;
+}
+
+.tenant-admin-main {
+    background-color: var(--content-bg, #f4efe7) !important;
+    box-shadow: inset 0 0 0 999px rgba(255, 255, 255, calc(1 - var(--content-bg-opacity, 0.72))) !important;
+}
+
+.tenant-admin-panel {
+    background-color: var(--content-bg, rgba(255, 255, 255, 0.92)) !important;
+    box-shadow: inset 0 0 0 999px rgba(255, 255, 255, calc(1 - var(--content-bg-opacity, 0.92))), 0 24px 70px rgba(0,0,0,.06) !important;
+}
+
+/* Hide legacy nested admin-shell headings so pages read as one title, not a breadcrumb echo chamber. */
+.tenant-admin-panel > h1 + main.admin-shell > h1,
+.tenant-admin-panel > h1 + .admin-shell > h1 {
+    display: none !important;
+}
+
+/* End tenant-admin surface variables. */
+
+/* End of file. */
+/* Tenant admin settings must preview the same page surfaces as the public site. */
+body.tenant-admin-page {
+  color: var(--text-color, #1f1a14) !important;
+  background-color: var(--bg, #f7f2e8) !important;
+}
+
+.site-header.tenant-admin-public-header {
+  background-color: var(--topbar-bg-overlay, var(--tenant-topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image) !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  box-shadow: var(--tenant-header-shadow, none) !important;
+}
+
+.site-header.tenant-admin-public-header nav {
+  background-color: var(--menu-bg-overlay, rgba(255, 248, 236, 0.82)) !important;
+  background-image: var(--menu-bg-image) !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  border-radius: 999px !important;
+  padding: 0.35rem 0.55rem !important;
+}
+
+.tenant-admin-main {
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+}
+
+.tenant-admin-panel {
+  color: var(--text-color, #1f1a14) !important;
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+}
+
+.tenant-admin-panel h1,
+.tenant-admin-panel h2,
+.tenant-admin-panel h3,
+.tenant-admin-panel legend {
+  color: var(--text-color, #1f1a14) !important;
+  background-color: var(--heading-bg-overlay, rgba(255, 248, 236, 0.72)) !important;
+  box-shadow: 0.18em 0 0 var(--heading-bg-overlay, rgba(255, 248, 236, 0.72)), -0.18em 0 0 var(--heading-bg-overlay, rgba(255, 248, 236, 0.72)) !important;
+}
+
+.tenant-settings-form fieldset,
+.tenant-admin-panel .admin-panel,
+.tenant-admin-panel .admin-toolbar,
+.tenant-admin-panel .admin-table-wrap {
+  background-color: var(--text-bg-overlay, rgba(255, 247, 232, 0.72)) !important;
+}
+
+/* End tenant admin surface preview. */
+
+/* Tenant admin visual authority repair. */
+body.tenant-admin-page {
+  color: var(--text-color, #1f1a14) !important;
+  background-color: var(--bg, #f7f2e8) !important;
+}
+
+.site-header.tenant-admin-public-header {
+  background-color: var(--topbar-bg-overlay, var(--tenant-topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image) !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  box-shadow: var(--tenant-header-shadow, none) !important;
+}
+
+.site-header.tenant-admin-public-header nav {
+  background-color: var(--menu-bg-overlay, transparent) !important;
+  background-image: var(--menu-bg-image) !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  border-radius: var(--menu-panel-radius, 0) !important;
+  box-shadow: var(--menu-panel-shadow, none) !important;
+  padding: var(--menu-panel-padding, 0) !important;
+}
+
+.tenant-admin-main,
+.tenant-admin-panel {
+  color: var(--text-color, #1f1a14) !important;
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+}
+
+.tenant-admin-panel h1,
+.tenant-admin-panel h2,
+.tenant-admin-panel h3,
+.tenant-admin-panel legend {
+  color: var(--text-color, #1f1a14) !important;
+  background-color: var(--heading-bg-overlay, transparent) !important;
+  box-shadow: 0.18em 0 0 var(--heading-bg-overlay, transparent), -0.18em 0 0 var(--heading-bg-overlay, transparent) !important;
+}
+
+.tenant-admin-panel label,
+.tenant-admin-panel p,
+.tenant-admin-panel td,
+.tenant-admin-panel th {
+  color: var(--text-color, #1f1a14) !important;
+}
+
+.tenant-settings-form fieldset,
+.tenant-admin-panel .admin-panel,
+.tenant-admin-panel .admin-toolbar,
+.tenant-admin-panel .admin-table-wrap {
+  background-color: var(--text-bg-overlay, rgba(255, 247, 232, 0.72)) !important;
+}
+
+/* End tenant admin visual authority repair. */
+
+/* End of file. */
+
+/* Tenant admin header buttons match link styling. */
+.site-header.tenant-admin-public-header nav form {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+}
+
+.site-header.tenant-admin-public-header nav .link-button {
+  appearance: none !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  padding: 0.65rem 1rem !important;
+  border-radius: 999px !important;
+  font: inherit !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+}
+
+/* End of file. */
+
+/* Dashboard signal panels shared by platform and tenant admin home pages. */
+.dashboard-metric-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))!important;gap:16px!important;margin:0 0 22px!important}.dashboard-metric-card{display:grid!important;gap:8px!important;min-height:132px!important;padding:20px!important;border:1px solid rgba(0,0,0,.10)!important;border-radius:20px!important;background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(250,245,236,.94))!important;color:#171717!important;text-decoration:none!important;box-shadow:0 14px 34px rgba(0,0,0,.07)!important}.dashboard-metric-card:hover{transform:translateY(-1px);box-shadow:0 18px 42px rgba(0,0,0,.10)!important}.dashboard-metric-card span{font-size:.78rem!important;line-height:1.2!important;text-transform:uppercase!important;letter-spacing:.09em!important;color:#716858!important;font-weight:900!important}.dashboard-metric-card strong{font-size:clamp(1.75rem,4vw,2.9rem)!important;line-height:.95!important;letter-spacing:-.06em!important}.dashboard-metric-card small{font-size:.9rem!important;line-height:1.35!important;color:#5d5549!important}.dashboard-split-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))!important;gap:18px!important;margin:0 0 22px!important}.dashboard-section-head{display:flex!important;justify-content:space-between!important;gap:12px!important;align-items:center!important;margin:0 0 12px!important}.dashboard-section-head h2{margin:0!important;font-size:1.35rem!important;letter-spacing:-.03em!important}.dashboard-section-head a{font-weight:900!important;color:var(--primary,#111)!important}.dashboard-action-grid{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))!important}.dashboard-plan-panel{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))!important;gap:18px!important;margin:0 0 22px!important}.dashboard-plan-panel h2{margin:.15rem 0!important;font-size:clamp(1.35rem,3vw,2.2rem)!important;letter-spacing:-.05em!important}
+
+/* End of file. */
+
+/* Dashboard and tenant billing override refinements. */
+.admin-panel-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.admin-stacked-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.admin-checkbox-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid rgba(120, 95, 60, 0.28);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.68);
+}
+
+.admin-checkbox-card input[type="checkbox"] {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-top: 0.15rem;
+    flex: 0 0 auto;
+}
+
+.admin-checkbox-card small {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--af-muted, #665f55);
+    line-height: 1.4;
+}
+
+.admin-billing-override-panel button {
+    min-width: 11rem;
+}
+
+/* End of file. */

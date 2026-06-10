@@ -1,0 +1,252 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Tenant\Admin;
+
+
+use App\Http\View\ErrorPage;
+use App\Http\View\AdminLayout;
+use App\Http\Middleware\RequireTenantRoleBrowser;
+use App\Http\Request;
+use App\Http\Response;
+use App\Platform\Tenancy\TenantContext;
+use App\Platform\Audit\AuditLogRepository;
+use App\Support\Security\CsrfTokenService;
+use App\Tenant\Artwork\ArtworkUploadService;
+use PDO;
+
+/**
+ * Minimal tenant-admin artwork upload screen.
+ */
+final class ArtworkUploadController
+{
+    public function __construct(
+        private readonly RequireTenantRoleBrowser $roles,
+        private readonly CsrfTokenService $csrf,
+        private readonly ArtworkUploadService $uploads,
+        private readonly ?AuditLogRepository $auditLog = null,
+        private readonly ?PDO $pdo = null,
+    ) {
+    }
+
+    public function form(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+
+        $csrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
+
+        $body = <<<HTML
+<style>
+    .upload-status {
+        display: none;
+        margin-top: 1rem;
+        font-weight: 600;
+    }
+
+    .spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        margin-right: .5rem;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 999px;
+        vertical-align: -0.15em;
+        animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    button[disabled] {
+        opacity: .65;
+        cursor: wait;
+    }
+</style>
+
+<form id="artwork-upload-form" method="post" action="/admin/artwork/upload" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <p><label>Title<br><input type="text" name="title" required></label></p>
+    <p><label>Date / year<br><input type="text" name="artwork_date" placeholder="2026, 2021-2024, or exact date"></label></p>
+    <p><label>Medium<br><input type="text" name="medium" placeholder="3D printed plastic, steel, wood, digital media"></label></p>
+    <p><label>Notes<br><textarea name="notes" rows="5"></textarea></label></p>
+    <p>
+        <label>Sale status<br>
+            <select name="sale_status">
+                <option value="nfs">NFS</option>
+                <option value="for_sale">For sale</option>
+                <option value="sold">Sold</option>
+            </select>
+        </label>
+    </p>
+    <fieldset>
+        <legend>Artwork types</legend>
+        <p>Images can be public portfolio work, site-only material for about/contact/background pickers, or both.</p>
+        <label><input type="checkbox" name="artwork_types[]" value="portfolio_images" checked> Portfolio Images</label>
+        <label><input type="checkbox" name="artwork_types[]" value="site_images"> Site Images</label>
+    </fieldset>
+    <p><label>Price<br><input type="text" name="price" placeholder="1200, 1200 USD, contact for price"></label></p>
+    <fieldset>
+        <legend>Sales inventory</legend>
+        <p>Use one-off for an original work. Use multiple for inventory-backed items such as postcards, shirts, prints, or editions.</p>
+        <label><input type="radio" name="sales_inventory_mode" value="one_off" checked> One-off artwork</label>
+        <label><input type="radio" name="sales_inventory_mode" value="multiple"> Multiple / inventory item</label>
+        <p><label>Inventory quantity<br><input type="number" name="inventory_quantity" min="1" step="1" value="1"></label></p>
+    </fieldset>
+    <p><label>Image<br><input type="file" name="artwork" accept="image/jpeg,image/png,image/webp,image/gif" required></label></p>
+    <button id="artwork-upload-button" type="submit">Upload artwork</button>
+    <p id="artwork-upload-status" class="upload-status" role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        Uploading artwork…
+    </p>
+</form>
+
+<script>
+    const form = document.getElementById('artwork-upload-form');
+    const button = document.getElementById('artwork-upload-button');
+    const status = document.getElementById('artwork-upload-status');
+
+    form?.addEventListener('submit', () => {
+        button.disabled = true;
+        button.textContent = 'Uploading…';
+        status.style.display = 'block';
+    });
+</script>
+HTML;
+
+        return Response::html(AdminLayout::render('Upload artwork', $body, 'artworks'));
+    }
+
+    public function submit(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+
+        if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+        try {
+            $record = $this->uploads->store($tenant, $_FILES['artwork'] ?? [], [
+                'title' => (string) ($_POST['title'] ?? ''),
+                'artwork_date' => (string) ($_POST['artwork_date'] ?? ''),
+                'medium' => (string) ($_POST['medium'] ?? ''),
+                'notes' => (string) ($_POST['notes'] ?? ''),
+                'sale_status' => (string) ($_POST['sale_status'] ?? 'nfs'),
+                'price' => (string) ($_POST['price'] ?? ''),
+            ]);
+        } catch (\Throwable $e) {
+            return Response::html('<h1>Upload failed</h1><p>' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>', 422);
+        }
+
+        if (!empty($record['artwork_id'])) {
+            $artworkId = (int) $record['artwork_id'];
+            $this->replaceArtworkTypes($artworkId, $_POST['artwork_types'] ?? ['portfolio_images']);
+            $this->updateSalesInventory($artworkId, $_POST['sales_inventory_mode'] ?? 'one_off', $_POST['inventory_quantity'] ?? 1);
+        }
+
+        if ($this->auditLog !== null) {
+            try {
+                $this->auditLog->record(
+                    action: 'tenant.artwork.uploaded',
+                    tenantId: $tenant->tenantId,
+                    userId: $this->validAuditUserId($currentUser),
+                    entityType: 'artwork',
+                    entityId: (string) ($record['artwork_id'] ?? ''),
+                    details: $record,
+                    ipAddress: $_SERVER['REMOTE_ADDR'] ?? null,
+                );
+            } catch (\Throwable) {
+                // Upload success must not be rolled back by non-critical audit logging.
+            }
+        }
+
+        $title = htmlspecialchars((string) $record['title'], ENT_QUOTES, 'UTF-8');
+
+        return Response::html("<h1>Artwork uploaded</h1><p>{$title} has been saved as a draft.</p><p><a href=\"/admin/artworks\">Review artworks</a></p>");
+    }
+
+    /**
+     * @param mixed $rawTypes
+     */
+    private function replaceArtworkTypes(int $artworkId, mixed $rawTypes): void
+    {
+        if ($this->pdo === null) {
+            return;
+        }
+
+        $allowed = ['portfolio_images', 'site_images'];
+        $codes = [];
+        if (is_array($rawTypes)) {
+            foreach ($rawTypes as $code) {
+                $code = (string) $code;
+                if (in_array($code, $allowed, true)) {
+                    $codes[] = $code;
+                }
+            }
+        }
+        if (!$codes) {
+            $codes = ['portfolio_images'];
+        }
+        $codes = array_values(array_unique($codes));
+
+        $this->pdo->prepare('DELETE FROM artwork_type_assignments WHERE artwork_id = :artwork_id')->execute(['artwork_id' => $artworkId]);
+        $lookup = $this->pdo->prepare('SELECT id FROM artwork_types WHERE code = :code LIMIT 1');
+        $insert = $this->pdo->prepare('INSERT IGNORE INTO artwork_type_assignments (artwork_id, type_id, created_at) VALUES (:artwork_id, :type_id, CURRENT_TIMESTAMP)');
+
+        foreach ($codes as $code) {
+            $lookup->execute(['code' => $code]);
+            $row = $lookup->fetch();
+            if (!$row) {
+                continue;
+            }
+            $insert->execute(['artwork_id' => $artworkId, 'type_id' => (int) $row['id']]);
+        }
+    }
+
+
+    /**
+     * Persists first-pass sales inventory metadata after the artwork row is created.
+     *
+     * The upload service owns file/media creation. Sales inventory is admin form
+     * metadata, so it is patched onto the row here until the broader sales
+     * subsystem centralizes catalog writes.
+     */
+    private function updateSalesInventory(int $artworkId, mixed $mode, mixed $quantity): void
+    {
+        if ($this->pdo === null) {
+            return;
+        }
+
+        $isOneOff = (string) $mode === 'multiple' ? 0 : 1;
+        $inventoryQuantity = $isOneOff === 1 ? 1 : max(1, (int) $quantity);
+
+        $stmt = $this->pdo->prepare(
+            'UPDATE artworks SET is_one_off = :is_one_off, inventory_quantity = :inventory_quantity, updated_at = CURRENT_TIMESTAMP WHERE id = :id'
+        );
+        $stmt->execute([
+            'is_one_off' => $isOneOff,
+            'inventory_quantity' => $inventoryQuantity,
+            'id' => $artworkId,
+        ]);
+    }
+
+    private function validAuditUserId(?array $currentUser): ?int
+    {
+        if (!isset($currentUser['id'])) {
+            return null;
+        }
+
+        $id = (int) $currentUser['id'];
+
+        return $id > 0 ? $id : null;
+    }
+
+}
+
+// End of file.

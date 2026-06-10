@@ -7,7 +7,7 @@
 
 :root {
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  color: var(--primary);
+  color: var(--text-color, #1f1a14);
   background: var(--bg);
 }
 
@@ -332,3 +332,1042 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+/*
+ * Bxiie public mobile and tablet refinements.
+ * Kept outside tenant CSS so the site remains usable if edited CSS breaks.
+ */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}img{max-width:100%;height:auto}.site-header{gap:1rem}.site-header nav{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}.site-header nav a{white-space:nowrap}.portfolio-tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 2rem}.portfolio-tabs a{border:1px solid currentColor;border-radius:999px;padding:.45rem .8rem;text-decoration:none}.portfolio-tabs a.active{background:var(--primary);color:var(--bg)}.page-image-small{max-width:280px}.stats-graph{display:grid;gap:.5rem;margin:1rem 0 2rem}.stats-bar-row{display:grid;grid-template-columns:90px 1fr 70px;gap:.75rem;align-items:center}.stats-bar-track{background:rgba(0,0,0,.08);border-radius:999px;min-height:14px;overflow:hidden}.stats-bar-fill{display:block;min-height:14px;background:var(--primary,#111)}@media(max-width:900px){.site-main{width:min(100% - 2rem,1180px);margin:2rem auto}.site-header{padding:1rem}.brand{font-size:clamp(2rem,13vw,4rem);line-height:.95}.hero h1,h1{font-size:clamp(2.4rem,16vw,5.5rem);line-height:.95}.grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}.event-row{grid-template-columns:1fr}.events-table{display:block;overflow-x:auto;white-space:nowrap}.form input,.form textarea,.form select,button{min-height:44px}.modal-card{max-height:calc(100vh - 2rem);overflow:auto}.stats-bar-row{grid-template-columns:64px 1fr 50px;font-size:.9rem}}@media(max-width:520px){.site-header{align-items:stretch}.site-header nav{display:flex;flex-wrap:nowrap}.grid{grid-template-columns:1fr 1fr}.card img{border-radius:14px}.portfolio-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:.35rem}}
+
+/* Tenant-selected public background image overlay. */
+body[style*="--background-image"]::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: var(--background-image);
+    background-repeat: var(--background-repeat, no-repeat);
+    background-position: center center;
+    background-size: var(--background-size, cover);
+    opacity: var(--background-opacity, 0.12);
+}
+
+
+/* Tenant visual correction: preserve public headers and keep overlays configurable. */
+.site-header,
+.tenant-admin-public-header {
+  isolation: isolate;
+  background-color: var(--topbar-bg-overlay, var(--tenant-topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.site-header::before,
+.tenant-admin-public-header::before {
+  z-index: 0;
+  background-color: var(--topbar-bg-overlay, rgba(255, 248, 236, 0.86));
+  background-image: none;
+}
+
+.site-header > *,
+.tenant-admin-public-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tenant-content-surface,
+.tenant-admin-panel {
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, calc(var(--content-bg-opacity, 0) * 0.10));
+}
+
+.artwork-card {
+  background-color: var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+  box-shadow: inset 0 0 0 999px var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+}
+
+/* End tenant visual correction. */
+
+/* End of file. */
+
+
+/* Stable navigation, contact/signup progress indicators, and signup modal. */
+.site-header nav,
+.platform-header nav {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.site-header nav a,
+.platform-header nav a {
+  display: inline-flex;
+  justify-content: center;
+  min-width: 7.5rem;
+  padding: 0.35rem 0.45rem;
+  text-align: center;
+}
+
+.form-progress {
+  display: none;
+  margin: 0.5rem 0 0;
+  font-weight: 700;
+}
+
+.is-submitting .form-progress {
+  display: block;
+}
+
+.is-submitting button[type="submit"]::after {
+  content: "";
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-left: 0.5em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: artsfolio-spin 0.8s linear infinite;
+}
+
+.contact-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.signup-modal[hidden] { display: none; }
+.signup-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+.signup-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+.signup-modal__panel {
+  position: relative;
+  width: min(520px, 92vw);
+  padding: 2rem;
+  border-radius: 24px;
+  background: var(--bg, #fff);
+  color: var(--primary, #111);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28);
+}
+.signup-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1.75rem;
+}
+.signup-modal-open { overflow: hidden; }
+
+@keyframes artsfolio-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 760px) {
+  .contact-layout { grid-template-columns: 1fr; }
+  .site-header nav a,
+  .platform-header nav a { min-width: auto; }
+}
+
+
+/* Tenant visual correction: preserve public headers and keep overlays configurable. */
+.site-header,
+.tenant-admin-public-header {
+  isolation: isolate;
+  background-color: var(--topbar-bg-overlay, var(--tenant-topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.site-header::before,
+.tenant-admin-public-header::before {
+  z-index: 0;
+  background-color: var(--topbar-bg-overlay, rgba(255, 248, 236, 0.86));
+  background-image: none;
+}
+
+.site-header > *,
+.tenant-admin-public-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tenant-content-surface,
+.tenant-admin-panel {
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, calc(var(--content-bg-opacity, 0) * 0.10));
+}
+
+.artwork-card {
+  background-color: var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+  box-shadow: inset 0 0 0 999px var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+}
+
+/* End tenant visual correction. */
+
+/* End of file. */
+
+/* First-party CAPTCHA form-fix hardening. */
+.af-honeypot {
+    position: absolute !important;
+    left: -10000px !important;
+    top: auto !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.af-form-result.info {
+    border: 1px solid #777;
+    background: #f6f6f6;
+}
+
+button[aria-busy="true"],
+input[type="submit"][aria-busy="true"] {
+    cursor: progress;
+    opacity: 0.72;
+}
+
+
+/* Tenant visual correction: preserve public headers and keep overlays configurable. */
+.site-header,
+.tenant-admin-public-header {
+  isolation: isolate;
+  background-color: var(--topbar-bg-overlay, var(--tenant-topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.site-header::before,
+.tenant-admin-public-header::before {
+  z-index: 0;
+  background-color: var(--topbar-bg-overlay, rgba(255, 248, 236, 0.86));
+  background-image: none;
+}
+
+.site-header > *,
+.tenant-admin-public-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tenant-content-surface,
+.tenant-admin-panel {
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, calc(var(--content-bg-opacity, 0) * 0.10));
+}
+
+.artwork-card {
+  background-color: var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+  box-shadow: inset 0 0 0 999px var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+}
+
+/* End tenant visual correction. */
+
+/* End of file. */
+
+/* Optional about/contact site images. */
+.site-content-image {
+    margin: 0 0 1.5rem;
+    opacity: var(--site-content-image-opacity, 1);
+}
+
+.site-content-image img {
+    display: block;
+    max-width: min(100%, 680px);
+    height: auto;
+    border-radius: 18px;
+}
+
+
+/* Tenant visual correction: preserve public headers and keep overlays configurable. */
+.site-header,
+.tenant-admin-public-header {
+  isolation: isolate;
+  background-color: var(--topbar-bg-overlay, var(--tenant-topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.site-header::before,
+.tenant-admin-public-header::before {
+  z-index: 0;
+  background-color: var(--topbar-bg-overlay, rgba(255, 248, 236, 0.86));
+  background-image: none;
+}
+
+.site-header > *,
+.tenant-admin-public-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tenant-content-surface,
+.tenant-admin-panel {
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, calc(var(--content-bg-opacity, 0) * 0.10));
+}
+
+.artwork-card {
+  background-color: var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+  box-shadow: inset 0 0 0 999px var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+}
+
+/* End tenant visual correction. */
+
+/* End of file. */
+
+
+/* Tenant readable surfaces, menu imagery, and footer signup. */
+.site-header,
+.tenant-admin-public-header {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--topbar-bg, var(--tenant-topbar-bg, var(--bg))), transparent calc((1 - var(--topbar-bg-opacity, 0.86)) * 100%)) !important;
+}
+
+.site-header::before,
+.tenant-admin-public-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--topbar-bg-image);
+  background-position: center;
+  background-size: cover;
+  opacity: var(--topbar-bg-opacity, 0.86);
+}
+
+.site-header nav,
+.tenant-admin-public-header nav {
+  padding: 0.35rem;
+  border-radius: 999px;
+  background-color: var(--menu-bg, rgba(255, 255, 255, 0.72));
+  background-image: var(--menu-bg-image);
+  background-position: center;
+  background-size: cover;
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, calc(1 - var(--menu-bg-opacity, 0.82)));
+}
+
+.tenant-content-surface {
+  padding: clamp(1rem, 2vw, 2rem);
+  border-radius: 24px;
+  background-color: var(--content-bg, rgba(255, 255, 255, 0.72));
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, calc(1 - var(--content-bg-opacity, 0.72)));
+}
+
+.tenant-content-surface h1,
+.tenant-content-surface h2,
+.tenant-content-surface h3,
+.tenant-admin-panel h1,
+.tenant-admin-panel h2,
+.tenant-admin-panel h3 {
+  display: inline-block;
+  padding: 0.08em 0.18em 0.14em;
+  border-radius: 0.18em;
+  background-color: var(--heading-bg, rgba(255, 255, 255, 0.72));
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, calc(1 - var(--heading-bg-opacity, 0.72)));
+}
+
+.tenant-content-surface p,
+.tenant-content-surface li,
+.tenant-content-surface .prose,
+.tenant-content-surface figcaption {
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  background-color: var(--text-bg, rgba(255, 255, 255, 0.68));
+  box-shadow: 0.35em 0 0 var(--text-bg, rgba(255, 255, 255, 0.68)), -0.35em 0 0 var(--text-bg, rgba(255, 255, 255, 0.68));
+  opacity: max(var(--text-bg-opacity, 0.68), 0.35);
+}
+
+.tenant-public-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  border-top: 1px solid color-mix(in srgb, var(--primary), transparent 86%);
+  background: color-mix(in srgb, var(--bg), white 52%);
+}
+
+.tenant-footer-signup {
+  display: grid;
+  gap: 0.55rem;
+  min-width: min(100%, 420px);
+}
+
+.tenant-footer-signup label {
+  font-weight: 800;
+}
+
+.tenant-footer-signup-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tenant-footer-signup input[type="email"] {
+  flex: 1 1 220px;
+  min-height: 42px;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--primary), transparent 70%);
+  border-radius: 999px;
+  font: inherit;
+}
+
+.tenant-footer-signup button {
+  min-height: 42px;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--bg);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tenant-footer-captcha {
+  max-width: 420px;
+}
+
+.af-signup-prompt,
+.signup-modal {
+  display: none !important;
+}
+
+@media (max-width: 720px) {
+  .tenant-public-footer,
+  .tenant-footer-signup-row {
+    display: grid;
+  }
+}
+
+/* End tenant readable surfaces, menu imagery, and footer signup. */
+
+
+
+/* Tenant visual-surface controls. */
+.site-header,
+.tenant-admin-public-header {
+  z-index: 2;
+  box-shadow: var(--tenant-header-shadow, none);
+}
+
+.site-header nav,
+.tenant-admin-public-header nav {
+  background-color: var(--menu-bg-overlay, rgba(255, 248, 236, 0.86));
+  box-shadow: none;
+}
+
+.tenant-content-surface,
+.tenant-admin-panel {
+  color: var(--text-color, #1f1a14);
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0.76)) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+}
+
+.tenant-content-surface h1,
+.tenant-content-surface h2,
+.tenant-content-surface h3,
+.tenant-admin-panel h1,
+.tenant-admin-panel h2,
+.tenant-admin-panel h3 {
+  color: var(--text-color, #1f1a14);
+  background-color: var(--heading-bg-overlay, rgba(255, 248, 236, 0.78));
+  box-shadow: 0.18em 0 0 var(--heading-bg-overlay, rgba(255, 248, 236, 0.78)), -0.18em 0 0 var(--heading-bg-overlay, rgba(255, 248, 236, 0.78));
+}
+
+.tenant-content-surface p,
+.tenant-content-surface li,
+.tenant-content-surface .prose,
+.tenant-content-surface figcaption,
+.tenant-admin-panel p,
+.tenant-admin-panel li {
+  color: var(--text-color, #1f1a14);
+  background-color: var(--text-bg-overlay, rgba(255, 247, 232, 0.72));
+  box-shadow: 0.35em 0 0 var(--text-bg-overlay, rgba(255, 247, 232, 0.72)), -0.35em 0 0 var(--text-bg-overlay, rgba(255, 247, 232, 0.72));
+  opacity: 1;
+}
+
+.artwork-card {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0.84));
+  background-image: var(--artwork-card-bg-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: var(--artwork-card-bg-size, cover);
+  box-shadow: inset 0 0 0 999px var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0.84));
+}
+
+.artwork-card img,
+.artwork-card span,
+.artwork-card small {
+  position: relative;
+  z-index: 1;
+}
+
+.af-signup-prompt,
+.signup-modal,
+[data-af-signup-prompt] {
+  display: none !important;
+}
+
+/* End tenant visual-surface controls. */
+
+
+/* Tenant visual correction: preserve public headers and keep overlays configurable. */
+.site-header,
+.tenant-admin-public-header {
+  isolation: isolate;
+  background-color: var(--topbar-bg-overlay, var(--tenant-topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.site-header::before,
+.tenant-admin-public-header::before {
+  z-index: 0;
+  background-color: var(--topbar-bg-overlay, rgba(255, 248, 236, 0.86));
+  background-image: none;
+}
+
+.site-header > *,
+.tenant-admin-public-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tenant-content-surface,
+.tenant-admin-panel {
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, calc(var(--content-bg-opacity, 0) * 0.10));
+}
+
+.artwork-card {
+  background-color: var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+  box-shadow: inset 0 0 0 999px var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0));
+}
+
+/* End tenant visual correction. */
+
+/* End of file. */
+
+/* Tenant public form and surface cleanup. */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: start;
+}
+
+.contact-grid form,
+.platform-form,
+.tenant-footer-signup {
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 1.25rem;
+  background: var(--content-bg-overlay, rgba(255, 250, 240, 0.88));
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.10);
+}
+
+.contact-grid form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.contact-grid form p,
+.contact-grid form label,
+.platform-form label,
+.tenant-footer-signup label {
+  margin: 0;
+  color: var(--text-color, #1f1a14);
+}
+
+.contact-grid form label,
+.platform-form label {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 800;
+}
+
+.contact-grid input[type="text"],
+.contact-grid input[type="email"],
+.contact-grid textarea,
+.platform-form input,
+.platform-form textarea,
+.tenant-footer-signup input[type="email"] {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 2.8rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(0, 0, 0, 0.22);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text-color, #1f1a14);
+  font: inherit;
+}
+
+.contact-grid textarea,
+.platform-form textarea {
+  min-height: 10rem;
+  resize: vertical;
+}
+
+.contact-grid button,
+.platform-form button,
+.tenant-footer-signup button {
+  justify-self: start;
+  min-height: 2.8rem;
+  padding: 0.75rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary, #111111);
+  color: var(--bg, #f7f2e8);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.contact-grid .af-captcha,
+.tenant-footer-captcha,
+.platform-form .af-captcha {
+  padding: 0.75rem;
+  border-radius: 0.9rem;
+  background: var(--text-bg-overlay, rgba(255, 247, 232, 0.72));
+}
+
+.af-signup-prompt,
+.signup-modal,
+[data-af-signup-prompt],
+[data-af-signup-modal] {
+  display: none !important;
+}
+
+/* Make the header/menu/content variables authoritative on public tenant pages. */
+.site-header {
+  background-color: var(--topbar-bg-overlay, var(--topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image) !important;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: var(--tenant-header-shadow, none);
+}
+
+.site-header nav {
+  background-color: var(--menu-bg-overlay, rgba(255, 248, 236, 0.82));
+  background-image: var(--menu-bg-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 999px;
+  padding: 0.35rem 0.55rem;
+}
+
+.tenant-content-surface {
+  color: var(--text-color, #1f1a14);
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+}
+
+.artwork-card {
+  background-color: var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0)) !important;
+  background-image: var(--artwork-card-bg-image) !important;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: var(--artwork-card-bg-size, cover);
+  box-shadow: inset 0 0 0 999px var(--artwork-card-bg-overlay, rgba(255, 250, 240, 0)) !important;
+}
+
+/* End tenant public form and surface cleanup. */
+
+/* Single footer mailing-list form used on public tenant pages. */
+.site-footer {
+  display: grid;
+  gap: 1rem;
+  padding: 2rem clamp(1rem, 4vw, 4rem);
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  background: var(--content-bg-overlay, rgba(255, 250, 240, 0.42));
+  color: var(--text-color, #1f1a14);
+}
+
+.footer-signup {
+  display: grid;
+  gap: 0.65rem;
+  max-width: 42rem;
+}
+
+.footer-signup label {
+  display: grid;
+  gap: 0.5rem;
+  font-weight: 800;
+}
+
+.footer-signup-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.footer-signup input[type="email"] {
+  flex: 1 1 16rem;
+  min-height: 2.75rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(0, 0, 0, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--text-color, #1f1a14);
+  font: inherit;
+}
+
+.footer-signup button {
+  min-height: 2.75rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary, #111111);
+  color: var(--bg, #f7f2e8);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.footer-signup .af-captcha {
+  max-width: 28rem;
+  padding: 0.65rem;
+  border-radius: 0.9rem;
+  background: var(--text-bg-overlay, rgba(255, 247, 232, 0.72));
+}
+
+.site-footer-copyright {
+  font-size: 0.9rem;
+  opacity: 0.78;
+}
+
+/* End of file. */
+
+/* Tenant visual authority repair: public and admin headers, nav panel, contact forms. */
+body.tenant-admin-page,
+body:not(.platform-page) {
+  color: var(--text-color, #1f1a14);
+  background-color: var(--bg, #f7f2e8);
+}
+
+.site-header,
+.site-header.tenant-admin-public-header {
+  background-color: var(--topbar-bg-overlay, var(--topbar-bg, rgba(255, 248, 236, 0.86))) !important;
+  background-image: var(--topbar-bg-image) !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  box-shadow: var(--tenant-header-shadow, none) !important;
+}
+
+.site-header nav,
+.site-header.tenant-admin-public-header nav {
+  background-color: var(--menu-bg-overlay, transparent) !important;
+  background-image: var(--menu-bg-image) !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  border-radius: var(--menu-panel-radius, 0) !important;
+  box-shadow: var(--menu-panel-shadow, none) !important;
+  padding: var(--menu-panel-padding, 0) !important;
+}
+
+.tenant-content-surface,
+.tenant-admin-main,
+.tenant-admin-panel {
+  color: var(--text-color, #1f1a14) !important;
+  background-color: var(--content-bg-overlay, rgba(255, 250, 240, 0)) !important;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: start;
+  margin-top: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.contact-grid form {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 1.75rem) !important;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  border-radius: 1.4rem;
+  background: var(--text-bg-overlay, rgba(255, 247, 232, 0.78)) !important;
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.10);
+  backdrop-filter: blur(4px);
+}
+
+.contact-grid h2 {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  letter-spacing: -0.04em;
+}
+
+.contact-grid p {
+  margin: 0;
+}
+
+.contact-grid label {
+  display: grid;
+  gap: 0.45rem;
+  font-weight: 850;
+}
+
+.contact-grid input[type="text"],
+.contact-grid input[type="email"],
+.contact-grid textarea {
+  width: 100%;
+  min-height: 2.9rem;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid rgba(0, 0, 0, 0.26);
+  border-radius: 0.95rem;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--text-color, #1f1a14);
+  font: inherit;
+}
+
+.contact-grid textarea {
+  min-height: 10rem;
+  resize: vertical;
+}
+
+.contact-grid input[type="checkbox"] {
+  width: auto;
+  min-height: 0;
+}
+
+.contact-grid button,
+.tenant-footer-signup button,
+.footer-signup button {
+  justify-self: start;
+  min-height: 2.8rem;
+  padding: 0.78rem 1.2rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary, #111111);
+  color: var(--bg, #f7f2e8);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.af-form-result.success,
+.notice {
+  background: rgba(219, 255, 226, 0.92) !important;
+  color: #12351b !important;
+}
+
+.af-form-result.error,
+.form-error,
+.error {
+  background: rgba(255, 216, 216, 0.92) !important;
+  color: #3d1111 !important;
+}
+
+.tenant-admin-panel h1,
+.tenant-admin-panel h2,
+.tenant-admin-panel h3,
+.tenant-admin-panel legend,
+.tenant-content-surface h1,
+.tenant-content-surface h2,
+.tenant-content-surface h3 {
+  color: var(--text-color, #1f1a14);
+  background-color: var(--heading-bg-overlay, transparent);
+  box-shadow: 0.18em 0 0 var(--heading-bg-overlay, transparent), -0.18em 0 0 var(--heading-bg-overlay, transparent);
+}
+
+.tenant-content-surface p,
+.tenant-content-surface li,
+.tenant-content-surface .prose,
+.tenant-content-surface figcaption,
+.tenant-admin-panel label,
+.tenant-admin-panel p,
+.tenant-admin-panel td,
+.tenant-admin-panel th {
+  color: var(--text-color, #1f1a14);
+}
+
+/* End tenant visual authority repair. */
+
+/* End of file. */
+
+/* Tenant nav and form polish: opacity zero must mean no visible menu panel. */
+.site-header nav,
+.site-header.tenant-admin-public-header nav {
+  background-color: var(--menu-bg-overlay, transparent) !important;
+  background-image: var(--menu-bg-image, none) !important;
+  border-radius: var(--menu-panel-radius, 0) !important;
+  box-shadow: var(--menu-panel-shadow, none) !important;
+  padding: var(--menu-panel-padding, 0) !important;
+}
+
+.site-header nav form,
+.site-header.tenant-admin-public-header nav form {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+}
+
+.site-header nav .link-button,
+.site-header.tenant-admin-public-header nav .link-button {
+  appearance: none !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  padding: 0.65rem 1rem !important;
+  border-radius: 999px !important;
+  font: inherit !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+}
+
+.site-header nav .link-button:hover,
+.site-header.tenant-admin-public-header nav .link-button:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* End of file. */
+
+/* Sales readiness and cookie consent. */
+.artwork-price {
+  display: inline-block;
+  margin: 0.5rem 0 0;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: var(--text-bg-overlay, rgba(255, 247, 232, 0.72));
+  font-weight: 800;
+}
+
+.artwork-sales-panel {
+  margin: 2rem 0;
+  padding: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--primary), transparent 78%);
+  border-radius: 22px;
+  background: var(--content-bg-overlay, rgba(255, 250, 240, 0.72));
+}
+
+.artwork-inventory-mode,
+.sales-note-small {
+  color: color-mix(in srgb, var(--text-color, #1f1a14), transparent 22%);
+  font-size: 0.95rem;
+}
+
+.artwork-inquiry-link,
+.add-to-cart-placeholder,
+.cookie-consent button {
+  display: inline-block;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary, #111111);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.add-to-cart-placeholder[disabled] {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.cookie-consent {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1000;
+  display: grid;
+  gap: 0.75rem;
+  max-width: 420px;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--primary, #111111), transparent 70%);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg, #f7f2e8), white 82%);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.2);
+}
+
+.cookie-consent[hidden] {
+  display: none;
+}
+
+.cookie-consent p {
+  margin: 0;
+}
+
+/* End of file. */
+
+/* Sales checkout and order workflow surfaces. */
+.artwork-cart-form {
+    display: flex;
+    gap: 0.75rem;
+    align-items: end;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+}
+
+.artwork-cart-form input[type="number"] {
+    max-width: 6rem;
+}
+
+.cookie-consent {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 1000;
+    max-width: 26rem;
+    padding: 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+}
+
+/* End of file. */
+
+/* Sales analytics panels use existing admin surfaces with compact KPI/readout spacing. */
+.af-sales-kpis .admin-panel h2 {
+    margin: 0.25rem 0 0;
+}
+
+.af-sales-workflow-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.af-sales-workflow-list li {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 999px;
+    padding: 0.45rem 0.75rem;
+}
+
+/* End of file. */

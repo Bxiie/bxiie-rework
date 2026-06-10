@@ -1,0 +1,33 @@
+#!/bin/bash
+# Creates a deploy/debug source bundle for ArtsFolio from the workstation tcdev directory.
+
+set -euo pipefail
+
+TCDEV_ROOT="/Users/bxiie/Dropbox/tcdev"
+PROJECT_DIR="${TCDEV_ROOT}/artsfolio"
+BUNDLE_DIR="${PROJECT_DIR}/bundle"
+STAMP="$(date +%Y%m%d%H%M)"
+OUTPUT_NAME="artsfolio_${STAMP}.tar.gz"
+OUTPUT_PATH="${BUNDLE_DIR}/${OUTPUT_NAME}"
+
+if [[ ! -d "${PROJECT_DIR}" ]]; then
+  echo "ArtsFolio project directory not found: ${PROJECT_DIR}" >&2
+  exit 1
+fi
+
+mkdir -p "${BUNDLE_DIR}"
+cd "${TCDEV_ROOT}"
+
+tar \
+  --exclude-vcs \
+  --exclude 'artsfolio/storage/uploads' \
+  --exclude 'artsfolio/bundle' \
+  --exclude 'artsfolio/.patch-backups' \
+  -czf "${OUTPUT_PATH}" \
+  artsfolio
+
+cd "${TCDEV_ROOT}"
+echo "Created bundle: ${OUTPUT_PATH}"
+pwd
+
+# End of file.

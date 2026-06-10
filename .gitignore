@@ -3,6 +3,9 @@
 .env.*
 !.env.example
 
+# trash files
+t.t
+
 # SQLite databases.
 database/*.sqlite
 database/*.sqlite-*
@@ -13,6 +16,9 @@ database/*.db-*
 storage/uploads/*
 storage/cache/*
 storage/private/*
+
+.patch-backups/*
+bundle/*
 
 # Keep storage directories.
 !storage/uploads/.gitkeep
@@ -31,4 +37,13 @@ storage/private/*
 # Logs.
 *.log
 
+storage/imports/bxiie-spreadsheet-match-audit.json
+storage/imports/site_images.xlsx
+
 # End of file.
+
+/storage/debug/
+
+# Generated local repair/debug artifacts
+debug/
+*.bak
