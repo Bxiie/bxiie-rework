@@ -34,8 +34,8 @@ $checks = [
     'tenant password reset requires active tenant membership' => [
         'file' => $root . '/app/Platform/Auth/Password/PasswordResetService.php',
         'needles' => [
-            'public function createResetTokenForTenantEmail(string $email, int $tenantId): ?array',
-            'public function resetPasswordForTenant(string $rawToken, string $newPassword, int $tenantId): int',
+            'public function createResetTokenForTenantEmail(string $email, ?int $tenantId): ?array',
+            'public function resetPasswordForTenant(string $rawToken, string $newPassword, ?int $tenantId): int',
             'private function userBelongsToTenant(int $userId, int $tenantId): bool',
             'FROM tenant_memberships',
             "AND status = 'active'",
@@ -45,8 +45,8 @@ $checks = [
     'tenant password routes use tenant-scoped reset APIs' => [
         'file' => $root . '/public/index.php',
         'needles' => [
-            'createResetTokenForTenantEmail($email, $tenant->tenantId)',
-            'resetPasswordForTenant($token, $password, $tenant->tenantId)',
+            'createResetTokenForTenantEmail($email, (int) ($tenant->tenantId ?? $tenant->id ?? 0))',
+            'resetPasswordForTenant($token, $password, (int) ($tenant->tenantId ?? $tenant->id ?? 0))',
         ],
         'forbidden' => [],
     ],

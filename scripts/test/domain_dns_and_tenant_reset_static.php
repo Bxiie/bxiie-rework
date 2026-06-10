@@ -9,6 +9,9 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
 
+$defensiveForgotCall = 'createResetTokenForTenantEmail($email, (int) ($tenant->tenantId ?? $tenant->id ?? 0))';
+$defensiveResetCall = 'resetPasswordForTenant($token, $password, (int) ($tenant->tenantId ?? $tenant->id ?? 0))';
+
 $checks = [
     'tenant reset accepts nullable tenant id and fails closed' => [
         'file' => $root . '/app/Platform/Auth/Password/PasswordResetService.php',
@@ -16,14 +19,19 @@ $checks = [
             'createResetTokenForTenantEmail(string $email, ?int $tenantId): ?array',
             'resetPasswordForTenant(string $rawToken, string $newPassword, ?int $tenantId): int',
             'if ($tenantId === null || $tenantId < 1)',
+            'FROM tenant_memberships',
+            "AND status = 'active'",
         ],
-        'must_not' => [],
+        'must_not' => [
+            'createResetTokenForTenantEmail(string $email, int $tenantId): ?array',
+            'resetPasswordForTenant(string $rawToken, string $newPassword, int $tenantId): int',
+        ],
     ],
     'tenant reset routes resolve tenant id defensively' => [
         'file' => $root . '/public/index.php',
         'must' => [
-            'createResetTokenForTenantEmail($email, (int) ($tenant->tenantId ?? $tenant->id ?? 0))',
-            'resetPasswordForTenant($token, $password, (int) ($tenant->tenantId ?? $tenant->id ?? 0))',
+            $defensiveForgotCall,
+            $defensiveResetCall,
         ],
         'must_not' => [
             'createResetTokenForTenantEmail($email, $tenant->tenantId)',
@@ -38,9 +46,9 @@ $checks = [
             "return '153.75.250.37';",
         ],
         'must_not' => [
-            "'expected_ipv4' => ['SERVER_PUBLIC_IP']",
             '"expected_ipv4":["SERVER_PUBLIC_IP"]',
-            "expectedIpv4 = ['SERVER_PUBLIC_IP']",
+            "'expected_ipv4' => ['SERVER_PUBLIC_IP']",
+            'expectedIpv4 = [\'SERVER_PUBLIC_IP\']',
         ],
     ],
     'platform custom domain accepts tenant slug or id' => [
