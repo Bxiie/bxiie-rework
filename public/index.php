@@ -118,6 +118,17 @@ use App\Tenant\Sales\SalesRepository;
 
 use App\Tenant\Artwork\ArtworkUploadService;
 
+// ARTSFOLIO_EARLY_PLATFORM_ADMIN_CANONICAL_REDIRECT
+$artsfolioEarlyHost = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+$artsfolioEarlyHost = preg_replace('/:\d+$/', '', $artsfolioEarlyHost) ?? $artsfolioEarlyHost;
+$artsfolioEarlyUri = (string) ($_SERVER['REQUEST_URI'] ?? '/');
+$artsfolioEarlyPath = parse_url($artsfolioEarlyUri, PHP_URL_PATH) ?: '/';
+
+if ($artsfolioEarlyHost !== 'artsfol.io' && str_starts_with($artsfolioEarlyPath, '/platform/admin')) {
+    header('Location: https://artsfol.io' . $artsfolioEarlyUri, true, 302);
+    exit;
+}
+
 $root = dirname(__DIR__);
 
 require $root . '/bootstrap/app.php';
