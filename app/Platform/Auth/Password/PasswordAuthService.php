@@ -87,6 +87,17 @@ final class PasswordAuthService
     }
 
     /**
+     * Backward-compatible wrapper for older auth/static checks.
+     *
+     * New code should call logoutSessionToken(), but this method keeps older
+     * callers and deployed regression checks from drifting out of sync.
+     */
+    public function logoutToken(string $rawToken): void
+    {
+        $this->logoutSessionToken($rawToken);
+    }
+
+    /**
      * Revoke a browser session from the raw cookie token.
      *
      * This service does not own a PDO connection. It must revoke through the
