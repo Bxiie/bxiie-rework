@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 /**
  * Runtime regression check for custom SMTP headers and multipart HTML.
+ *
+ * SMTP messages are CRLF-normalized. Body assertions normalize CRLF back to LF
+ * before checking readable content so the test does not fail on correct SMTP
+ * line endings.
  */
 
 $root = dirname(__DIR__, 2);
@@ -53,22 +57,37 @@ $sender = new SmtpEmailSender(
 $message = $sender->buildMessageForTest([
     'recipient_email' => 'test@example.test',
     'subject' => 'SMTP header test',
-    'body_text' => 'Plain text body.',
+    'body_text' => "Hello\nWorld",
     'body_html' => '<p>HTML body with logo_2.png.</p>',
 ]);
 
-$requiredFragments = [
+$requiredRawFragments = [
     'X-PM-Message-Stream: broadcasts',
     'Content-Type: multipart/alternative',
     'Content-Type: text/html; charset=UTF-8',
     'logo_2.png',
 ];
 
-foreach ($requiredFragments as $fragment) {
+foreach ($requiredRawFragments as $fragment) {
     if (strpos($message, $fragment) === false) {
         fwrite(STDERR, "Missing expected SMTP message fragment: {$fragment}\n");
         fwrite(STDERR, "--- SMTP message preview ---\n");
         fwrite(STDERR, substr($message, 0, 1200) . "\n");
+        exit(1);
+    }
+}
+
+$normalizedMessage = str_replace(["\r\n", "\r"], "\n", $message);
+$requiredNormalizedFragments = [
+    "Hello\nWorld",
+    '<p>HTML body with logo_2.png.</p>',
+];
+
+foreach ($requiredNormalizedFragments as $fragment) {
+    if (strpos($normalizedMessage, $fragment) === false) {
+        fwrite(STDERR, "Missing expected normalized SMTP message fragment: {$fragment}\n");
+        fwrite(STDERR, "--- SMTP message preview ---\n");
+        fwrite(STDERR, substr($normalizedMessage, 0, 1200) . "\n");
         exit(1);
     }
 }
