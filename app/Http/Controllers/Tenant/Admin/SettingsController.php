@@ -98,7 +98,7 @@ final class SettingsController
 
         $body = <<<HTML
 {$notice}
-<form method="post" action="/admin/settings" class="admin-form tenant-settings-form">
+<form class="plan-edit-form" method="post" action="/admin/settings" class="admin-form tenant-settings-form">
         <input type="hidden" name="csrf_token" value="{$csrf}">
 
         <fieldset>

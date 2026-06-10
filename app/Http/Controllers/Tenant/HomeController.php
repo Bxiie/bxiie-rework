@@ -219,7 +219,7 @@ HTML;
 {$this->siteImageFigure($tenant, 'contact_media_uuid', 'contact_image_opacity', 'Contact image')}
 <article class="prose">{$this->settings->get($tenant, 'contact_details', '')}</article>
 <section class="contact-grid">
-<form method="post" action="/contact" data-af-async-form data-af-result="contact-form-result" data-af-busy-label="Sending..." data-af-busy-message="Sending your message..." data-af-form-purpose="contact" data-af-success-message="Thank you. Your message has been sent.">
+<form class="plan-edit-form" method="post" action="/contact" data-af-async-form data-af-result="contact-form-result" data-af-busy-label="Sending..." data-af-busy-message="Sending your message..." data-af-form-purpose="contact" data-af-success-message="Thank you. Your message has been sent.">
     <h2>Send a message</h2>
     <div id="contact-form-result" data-af-form-result class="af-form-result" hidden></div>
     <input type="hidden" name="csrf_token" value="{$csrf}">

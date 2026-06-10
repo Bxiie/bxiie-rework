@@ -32,6 +32,7 @@ final class HomeController
 </section>
 <section class="pricing-grid">
     <article class="pricing-card"><p class="eyebrow">Free</p><h2>Starter</h2><p class="price">$0</p><p>For testing the platform or publishing a small artist profile.</p><ul><li>ArtsFolio subdomain</li><li>Basic portfolio pages</li><li>Contact form</li><li>Limited artwork inventory</li></ul><a class="button secondary" href="/signup">Start free</a></article>
+            . '<li>' . $this->escape($this->formatAdminUsers($plan['admin_user_limit'] ?? 1)) . '</li>'
     <article class="pricing-card featured"><p class="eyebrow">Most artists</p><h2>Studio</h2><p class="price">Affordable monthly</p><p>For working artists who need a serious public portfolio and admin tools.</p><ul><li>Expanded artwork inventory</li><li>Portfolio sections and event history</li><li>Email signup and contact-message admin</li><li>Tenant CSS editor</li><li>Tenant analytics</li></ul><a class="button primary" href="/signup">Choose Studio</a></article>
     <article class="pricing-card"><p class="eyebrow">Professional</p><h2>Custom Domain</h2><p class="price">Higher tier</p><p>For artists who need their own domain and more formal collector-facing presentation.</p><ul><li>Everything in Studio</li><li>Custom domain support</li><li>DNS verification workflow</li><li>Priority setup help</li><li>Advanced branding controls</li></ul><a class="button secondary" href="/contact">Discuss domain setup</a></article>
     <article class="pricing-card"><p class="eyebrow">Teams</p><h2>Collective</h2><p class="price">By scope</p><p>For galleries, artist groups, estates, and multi-person practices.</p><ul><li>Multi-user administration</li><li>Larger portfolio capacity</li><li>Operational support</li><li>Migration planning</li><li>Custom onboarding</li></ul><a class="button secondary" href="/contact">Contact ArtsFolio</a></article>
@@ -106,6 +107,16 @@ HTML;
 </html>
 HTML;
     }
-}
+    /**
+     * Format plan admin-user limits for pricing display.
+     */
+    private function formatAdminUsers(mixed $value): string
+    {
+        if ($value === null || $value === '' || (int) $value < 0) {
+            return 'Unlimited admin users';
+        }
 
-// End of file.
+        $count = (int) $value;
+        return $count === 1 ? '1 admin user' : $count . ' admin users';
+    }
+}

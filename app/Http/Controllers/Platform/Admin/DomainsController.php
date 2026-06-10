@@ -54,7 +54,7 @@ final class DomainsController
             $domainId = (int) $domain['id'];
             $status = (string) $domain['status'];
             $actions = <<<HTML
-<form class="admin-inline-form" method="post" action="/platform/admin/domains/action">
+<form class="plan-edit-form" class="admin-inline-form" method="post" action="/platform/admin/domains/action">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <input type="hidden" name="domain_id" value="{$domainId}">
     <input type="hidden" name="custom_domain_action" value="verify_dns">

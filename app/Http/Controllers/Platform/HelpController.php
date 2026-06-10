@@ -217,7 +217,7 @@ HTML;
         $nav = $this->nav($active, $currentUser !== null);
         $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
         $auth = $currentUser
-            ? '<form method="post" action="/logout" class="inline-form"><button type="submit">Log out</button></form>'
+            ? '<form class="plan-edit-form" method="post" action="/logout" class="inline-form"><button type="submit">Log out</button></form>'
             : '<a href="/login">Sign in</a>';
 
         return <<<HTML

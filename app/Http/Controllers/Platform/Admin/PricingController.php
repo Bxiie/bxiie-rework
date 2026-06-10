@@ -88,7 +88,7 @@ HTML;
         }
 
         $button = $canEdit ? '<button type="submit">Save pricing</button>' : '';
-        $formOpen = $canEdit ? '<form class="admin-form" method="post" action="/platform/admin/pricing"><input type="hidden" name="csrf_token" value="' . $csrf . '">' : '';
+        $formOpen = $canEdit ? '<form class="plan-edit-form" class="admin-form" method="post" action="/platform/admin/pricing"><input type="hidden" name="csrf_token" value="' . $csrf . '">' : '';
         $formClose = $canEdit ? '</form>' : '';
 
         return Response::html(AdminLayout::render(title: 'Platform Pricing', body: <<<HTML
@@ -233,6 +233,16 @@ HTML, active: 'pricing'));
         $stmt->execute(['table' => $table]);
         return (int) $stmt->fetchColumn() > 0;
     }
-}
+    /**
+     * Format plan admin-user limits for pricing display.
+     */
+    private function formatAdminUsers(mixed $value): string
+    {
+        if ($value === null || $value === '' || (int) $value < 0) {
+            return 'Unlimited admin users';
+        }
 
-// End of file.
+        $count = (int) $value;
+        return $count === 1 ? '1 admin user' : $count . ' admin users';
+    }
+}

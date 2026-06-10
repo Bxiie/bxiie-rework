@@ -68,7 +68,7 @@ final class BillingController
   </div>
   <div class="admin-panel">
     <p class="admin-muted">Change plan</p>
-    <form method="post" action="/admin/billing/plan" class="admin-form">
+    <form class="plan-edit-form" method="post" action="/admin/billing/plan" class="admin-form">
       <input type="hidden" name="csrf_token" value="{$csrf}">
       <label>Plan<select name="plan_slug">{$planOptions}</select></label>
       <button type="submit">Update plan</button>

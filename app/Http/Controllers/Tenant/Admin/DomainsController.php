@@ -45,7 +45,7 @@ final class DomainsController
             $status = AdminLayout::escape((string) $domain['status']);
             $delete = ((string) $domain['domain_type'] === 'subdomain' || str_ends_with((string) $domain['hostname'], '.artsfol.io'))
                 ? '<span class="admin-muted">Default domain</span>'
-                : '<form method="post" action="/admin/domains/action" class="admin-inline-form" onsubmit="return confirm(&quot;Delete this custom domain?&quot;);"><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="domain_id" value="' . $id . '"><input type="hidden" name="custom_domain_action" value="delete"><button type="submit">Delete</button></form>';
+                : '<form class="plan-edit-form" method="post" action="/admin/domains/action" class="admin-inline-form" onsubmit="return confirm(&quot;Delete this custom domain?&quot;);"><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="domain_id" value="' . $id . '"><input type="hidden" name="custom_domain_action" value="delete"><button type="submit">Delete</button></form>';
             $verify = ((string) $domain['domain_type'] === 'subdomain')
                 ? ''
                 : '<form method="post" action="/admin/domains/action" class="admin-inline-form"><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="domain_id" value="' . $id . '"><input type="hidden" name="custom_domain_action" value="verify_dns"><button type="submit">Verify DNS</button></form>';

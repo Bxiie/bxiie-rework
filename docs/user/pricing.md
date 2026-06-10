@@ -1,5 +1,5 @@
 # Pricing
 
-Pricing cards show the tier price, included limits, and number of admin users available for the plan.
+Pricing cards show tier limits and use high-contrast text on highlighted cards.
 
 # End of file.

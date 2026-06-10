@@ -185,7 +185,7 @@ HTML;
     <p>For platform questions, onboarding help, billing, custom domains, or partnership inquiries, contact the ArtsFolio team.</p>
 </section>
 {$notice}
-<form class="platform-form js-submit-form" method="post" action="/contact">
+<form class="plan-edit-form" class="platform-form js-submit-form" method="post" action="/contact">
     <label>Name <input name="name" autocomplete="name"></label>
     <label>Email <input name="email" type="email" autocomplete="email" required></label>
     <label>Message <textarea name="message" rows="8" required></textarea></label>
