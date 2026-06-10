@@ -1417,3 +1417,4 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - 2026-06-10: Patched tenant logout to revoke server-side session tokens, mounted platform `/password/forgot`, refreshed artwork publish/unpublish AJAX state, and added default `$` display for bare numeric public artwork prices.
 # End of file.
 - Tenant auth security: tenant logout revokes the server-side session row through `SessionRepository`, and tenant password reset token issue/redeem paths require active tenant membership.
+- Auth/domain security: tenant logout uses `SessionRepository`, tenant password reset requires active tenant membership, domain plan usage ignores default `artsfol.io` subdomains and `www` aliases, and tenant deletion removes tenant domain rows for reuse.

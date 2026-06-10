@@ -1,7 +1,7 @@
 # Password Reset
 
-Use **Forgot password** from the site where you normally sign in. If the email address belongs to an active user for that site, ArtsFolio queues a reset email.
+Password reset emails show the email address the reset was requested for. For privacy, the reset request page uses the same confirmation message whether or not a reset email was sent.
 
-For privacy, the page always shows the same confirmation message whether or not an email was sent.
+Tenant password reset works only for users attached to that tenant.
 
 # End of file.

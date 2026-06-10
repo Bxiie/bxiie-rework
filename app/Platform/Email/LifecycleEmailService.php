@@ -23,7 +23,7 @@ final class LifecycleEmailService
     ): int {
         $body = $this->renderer->renderFile(
             $this->templateRoot . '/auth/password-reset-request.md',
-            ['reset_url' => $resetUrl],
+            ['reset_url' => $resetUrl, 'recipient_email' => $recipientEmail],
         );
 
         return $this->outbox->queue(

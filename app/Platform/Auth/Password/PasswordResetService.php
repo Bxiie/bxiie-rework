@@ -89,6 +89,28 @@ final class PasswordResetService
      * Create a reset token only when the email belongs to an active user of the
      * tenant that received the reset request.
      */
+    /**
+     * Reset a password from a tenant reset form only when the active token is
+     * tied to a user who still belongs to the same tenant.
+     */
+    /**
+     * Determine whether a user is an active member of a tenant.
+     */
+    /**
+     * Create a reset token only when the email belongs to an active user of the
+     * tenant that received the reset request.
+     */
+    /**
+     * Reset a password from a tenant reset form only when the token belongs to
+     * a user who is still active on that tenant.
+     */
+    /**
+     * Check active tenant membership before issuing or consuming tenant reset tokens.
+     */
+    /**
+     * Create a reset token only when the email belongs to an active user of the
+     * tenant that received the reset request.
+     */
     public function createResetTokenForTenantEmail(string $email, int $tenantId): ?array
     {
         $user = $this->users->findByEmail($email);
@@ -115,8 +137,8 @@ final class PasswordResetService
     }
 
     /**
-     * Reset a password from a tenant reset form only when the active token is
-     * tied to a user who still belongs to the same tenant.
+     * Reset a password from a tenant reset form only when the token belongs to
+     * a user who is still active on that tenant.
      */
     public function resetPasswordForTenant(string $rawToken, string $newPassword, int $tenantId): int
     {
@@ -131,7 +153,15 @@ final class PasswordResetService
     }
 
     /**
-     * Determine whether a user is an active member of a tenant.
+     * Check active tenant membership before issuing or consuming tenant reset tokens.
+     */
+    public function hashToken(string $rawToken): string
+    {
+        return hash('sha256', $rawToken);
+    }
+
+    /**
+     * Check active tenant membership before issuing or consuming tenant reset tokens.
      */
     private function userBelongsToTenant(int $userId, int $tenantId): bool
     {
@@ -150,11 +180,6 @@ final class PasswordResetService
         ]);
 
         return (bool) $stmt->fetchColumn();
-    }
-
-    public function hashToken(string $rawToken): string
-    {
-        return hash('sha256', $rawToken);
     }
 
     private function generateToken(): string

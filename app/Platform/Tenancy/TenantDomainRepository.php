@@ -142,6 +142,76 @@ final class TenantDomainRepository
         return $stmt->fetchAll();
     }
 
+    /**
+     * Delete a tenant-owned custom domain by id.
+     */
+    public function deleteDomain(int $tenantId, int $domainId, bool $allowSubdomain = false): void
+    {
+        $extra = $allowSubdomain ? '' : " AND domain_type <> 'subdomain' AND hostname NOT LIKE '%.artsfol.io'";
+        $stmt = $this->pdo->prepare(
+            "DELETE FROM tenant_domains
+             WHERE tenant_id = :tenant_id
+               AND id = :id{$extra}"
+        );
+        $stmt->execute(['tenant_id' => $tenantId, 'id' => $domainId]);
+    }
+
+    /**
+     * Delete all domains for a tenant so slug and hostnames can be reused.
+     */
+    public function deleteAllForTenant(int $tenantId): void
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM tenant_domains WHERE tenant_id = :tenant_id');
+        $stmt->execute(['tenant_id' => $tenantId]);
+    }
+
+    /**
+     * Count billable custom-domain groups.
+     */
+    public function billableCustomDomainCount(int $tenantId): int
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT hostname
+             FROM tenant_domains
+             WHERE tenant_id = :tenant_id
+               AND domain_type <> 'subdomain'
+               AND hostname NOT LIKE '%.artsfol.io'"
+        );
+        $stmt->execute(['tenant_id' => $tenantId]);
+
+        $groups = [];
+        foreach ($stmt->fetchAll(\PDO::FETCH_COLUMN) as $hostname) {
+            $hostname = $this->normalizeHostname((string) $hostname);
+            $groups[preg_replace('/^www\./', '', $hostname)] = true;
+        }
+
+        return count($groups);
+    }
+
+    /**
+     * Returns true when this hostname would create a new billable custom-domain group.
+     */
+    public function isNewBillableCustomDomainGroup(int $tenantId, string $hostname): bool
+    {
+        $hostname = preg_replace('/^www\./', '', $this->normalizeHostname($hostname));
+        $stmt = $this->pdo->prepare(
+            "SELECT hostname
+             FROM tenant_domains
+             WHERE tenant_id = :tenant_id
+               AND domain_type <> 'subdomain'
+               AND hostname NOT LIKE '%.artsfol.io'"
+        );
+        $stmt->execute(['tenant_id' => $tenantId]);
+
+        foreach ($stmt->fetchAll(\PDO::FETCH_COLUMN) as $existing) {
+            if (preg_replace('/^www\./', '', $this->normalizeHostname((string) $existing)) === $hostname) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private function normalizeHostname(string $hostname): string
     {
         $hostname = strtolower(trim($hostname));

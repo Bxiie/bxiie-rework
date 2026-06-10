@@ -49,6 +49,97 @@ final class DomainAdminService
         );
     }
 
+    /**
+     * Add a custom domain for a tenant when the current plan allows another billable group.
+     */
+    public function addCustomDomain(int $tenantId, string $hostname, bool $skipPlanCheck = false): int
+    {
+        $hostname = $this->normalizeHostname($hostname);
+        if ($hostname === '' || str_ends_with($hostname, '.artsfol.io')) {
+            throw new \RuntimeException('Enter a non-ArtsFolio custom hostname.');
+        }
+
+        if (!$skipPlanCheck && !$this->planAllowsDomain($tenantId, $hostname)) {
+            throw new \RuntimeException('The tenant plan does not allow another custom domain.');
+        }
+
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO tenant_domains (tenant_id, hostname, domain_type, status, is_primary)
+             VALUES (:tenant_id, :hostname, 'custom', 'pending_dns', 0)"
+        );
+        $stmt->execute(['tenant_id' => $tenantId, 'hostname' => $hostname]);
+
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    /**
+     * Delete a domain row. Used by platform admins.
+     */
+    public function deleteDomain(int $domainId): void
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM tenant_domains WHERE id = :id');
+        $stmt->execute(['id' => $domainId]);
+    }
+
+    /**
+     * Plan check that ignores default artsfol.io and treats www/apex as one group.
+     */
+    private function planAllowsDomain(int $tenantId, string $hostname): bool
+    {
+        $plan = $this->currentPlan($tenantId);
+        $allowed = (int) ($plan['custom_domain_included'] ?? 0);
+        if ($allowed < 1) {
+            return false;
+        }
+
+        $newGroup = preg_replace('/^www\./', '', $hostname);
+        $groups = [];
+        $stmt = $this->pdo->prepare(
+            "SELECT hostname
+             FROM tenant_domains
+             WHERE tenant_id = :tenant_id
+               AND domain_type <> 'subdomain'
+               AND hostname NOT LIKE '%.artsfol.io'"
+        );
+        $stmt->execute(['tenant_id' => $tenantId]);
+
+        foreach ($stmt->fetchAll(\PDO::FETCH_COLUMN) as $existing) {
+            $groups[preg_replace('/^www\./', '', $this->normalizeHostname((string) $existing))] = true;
+        }
+
+        if (isset($groups[$newGroup])) {
+            return true;
+        }
+
+        return count($groups) < $allowed;
+    }
+
+    private function currentPlan(int $tenantId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT p.*
+             FROM tenant_plan_assignments tpa
+             JOIN plans p ON p.id = tpa.plan_id
+             WHERE tpa.tenant_id = :tenant_id
+             ORDER BY tpa.id DESC
+             LIMIT 1"
+        );
+        $stmt->execute(['tenant_id' => $tenantId]);
+        $plan = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $plan ?: null;
+    }
+
+    private function normalizeHostname(string $hostname): string
+    {
+        $hostname = strtolower(trim($hostname));
+        $hostname = preg_replace('#^https?://#', '', $hostname) ?? $hostname;
+        $hostname = explode('/', $hostname, 2)[0];
+        $hostname = explode(':', $hostname, 2)[0];
+
+        return rtrim($hostname, '.');
+    }
+
     private function findDomain(int $domainId): ?array
     {
         $stmt = $this->pdo->prepare(

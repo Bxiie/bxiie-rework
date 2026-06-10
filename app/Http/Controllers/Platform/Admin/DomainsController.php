@@ -60,6 +60,12 @@ final class DomainsController
     <input type="hidden" name="custom_domain_action" value="verify_dns">
     <button type="submit">Verify DNS</button>
 </form>
+<form class="admin-inline-form" method="post" action="/platform/admin/domains/action" onsubmit="return confirm(&quot;Delete this domain?&quot;);">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <input type="hidden" name="domain_id" value="{$domainId}">
+    <input type="hidden" name="custom_domain_action" value="delete">
+    <button type="submit">Delete</button>
+</form>
 HTML;
             $dnsResult = $this->dnsResultSummary($domain);
 
@@ -97,6 +103,14 @@ HTML;
     <h2>Custom domains</h2>
     {$notice}
     <p>Verify DNS for custom domains. Verification queues a background job and returns a visible confirmation.</p>
+    <form method="post" action="/platform/admin/domains/action" class="admin-form">
+        <input type="hidden" name="csrf_token" value="{$csrf}">
+        <input type="hidden" name="custom_domain_action" value="add">
+        <label>Tenant ID<input type="number" name="tenant_id" min="1" required></label>
+        <label>Custom domain<input type="text" name="hostname" placeholder="example.com" required></label>
+        <label><input type="checkbox" name="skip_plan_check" value="1"> Platform override plan limit</label>
+        <button type="submit">Add custom domain</button>
+    </form>
 </section>
 <table class="admin-table">
     <thead>
@@ -139,12 +153,27 @@ HTML,
         $domainId = (int) ($_POST['domain_id'] ?? 0);
         $action = (string) ($_POST['custom_domain_action'] ?? '');
 
-        if ($domainId <= 0) {
-            return Response::html('<h1>Invalid domain id</h1>', 422);
-        }
-
         try {
-            if ($action === 'verify_dns') {
+            if ($action === 'add') {
+                $tenantId = (int) ($_POST['tenant_id'] ?? 0);
+                $hostname = (string) ($_POST['hostname'] ?? '');
+                if ($tenantId < 1) {
+                    return Response::html('<h1>Invalid tenant id</h1>', 422);
+                }
+                $domainId = $this->service->addCustomDomain($tenantId, $hostname, isset($_POST['skip_plan_check']));
+                FlashMessages::success("Custom domain {$domainId} added.");
+                $this->auditAction($request, $currentUser, 'platform.custom_domain.added', (string) $domainId, ['tenant_id' => $tenantId, 'hostname' => $hostname]);
+            } elseif ($action === 'delete') {
+                if ($domainId <= 0) {
+                    return Response::html('<h1>Invalid domain id</h1>', 422);
+                }
+                $this->service->deleteDomain($domainId);
+                FlashMessages::success('Custom domain deleted.');
+                $this->auditAction($request, $currentUser, 'platform.custom_domain.deleted', (string) $domainId);
+            } elseif ($action === 'verify_dns') {
+                if ($domainId <= 0) {
+                    return Response::html('<h1>Invalid domain id</h1>', 422);
+                }
                 $jobId = $this->service->queueDnsVerification($domainId);
                 FlashMessages::success("Queued DNS verification job {$jobId}. Caddy will serve the domain after verification marks it active.");
                 $this->auditAction($request, $currentUser, 'platform.custom_domain.verify_dns_queued', (string) $domainId, ['job_id' => $jobId]);

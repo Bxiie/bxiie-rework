@@ -11,7 +11,7 @@ use App\Platform\Identity\UserIdentityRepository;
 use App\Platform\Identity\UserRepository;
 
 /**
- * Coordinates local email/password registration and login.
+ * Coordinates local email/password registration, login, and logout.
  */
 final class PasswordAuthService
 {
@@ -47,25 +47,6 @@ final class PasswordAuthService
         return $userId;
     }
 
-    /**
-     * Revokes the active browser session represented by the raw cookie token.
-     *
-     * Logout must invalidate server-side state as well as expire cookies. This
-     * prevents a stale cookie on another host/domain from re-opening admin pages.
-     */
-    public function logoutToken(?string $rawToken): void
-    {
-        if (!is_string($rawToken) || $rawToken === '') {
-            return;
-        }
-
-        $this->sessions->revokeByHash($this->tokens->hashToken($rawToken));
-    }
-
-
-    /**
-     * Revokes a browser session by the raw cookie token.
-     */
     public function login(
         string $email,
         string $password,
@@ -104,42 +85,12 @@ final class PasswordAuthService
             'email' => (string) $user['email'],
         ];
     }
-    /**
-     * Revokes a browser session by its raw cookie token.
-     *
-     * Logout must invalidate server-side session state, not merely expire the
-     * browser cookie, because stale or sibling cookies can otherwise continue
-     * to authenticate tenant admin requests.
-     */
-/**
-     * Revoke a browser session by its raw cookie token.
-     *
-     * Session cookies store the raw token while user_sessions stores only the
-     * SHA-256 hash. Logout must therefore hash the cookie value before marking
-     * the backing server-side session revoked.
-     */
 
     /**
      * Revoke a browser session from the raw cookie token.
      *
-     * Logout links clear browser cookies, but the server-side session row must
-     * also be revoked so back-button or cross-domain admin access cannot reuse
-     * the old token.
-     */
-
-    /**
-     * Revoke a browser session from the raw cookie token.
-     *
-     * Logout links clear browser cookies, but the server-side session row must
-     * also be revoked so back-button or cross-domain admin access cannot reuse
-     * the old token.
-     */
-    /**
-     * Revoke a browser session from the raw cookie token.
-     *
-     * The password auth service does not own a PDO connection. It must use the
-     * injected token service and session repository so logout works in both
-     * tenant and platform runtime paths.
+     * This service does not own a PDO connection. It must revoke through the
+     * injected session repository so tenant logout cannot fail on a null PDO.
      */
     public function logoutSessionToken(string $rawToken): void
     {
@@ -149,6 +100,6 @@ final class PasswordAuthService
 
         $this->sessions->revokeByHash($this->tokens->hashToken($rawToken));
     }
-
-
 }
+
+// End of file.

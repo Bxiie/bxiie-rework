@@ -22,6 +22,7 @@ use App\Http\Controllers\Platform\Admin\SignupCodesController as PlatformAdminSi
 use App\Http\Controllers\Platform\Admin\RoutesController as PlatformAdminRoutesController;
 use App\Http\Controllers\Platform\Admin\EmailOutboxController as PlatformAdminEmailOutboxController;
 use App\Http\Controllers\Platform\Admin\DomainsController as PlatformAdminDomainsController;
+use App\Http\Controllers\Tenant\Admin\DomainsController as TenantAdminDomainsController;
 use App\Http\Controllers\Platform\Admin\JobsController as PlatformAdminJobsController;
 use App\Http\Controllers\Platform\Admin\WorkersController as PlatformAdminWorkersController;
 use App\Http\Controllers\Platform\Admin\AuditLogController as PlatformAdminAuditLogController;
@@ -310,7 +311,7 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
             }
             $email = strtolower(trim((string) ($_POST['email'] ?? '')));
             if ($email !== '') {
-                $reset = (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->createResetTokenForEmail($email);
+                $reset = (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->createResetTokenForTenantEmail($email, $tenant->tenantId);
                 if ($reset) {
                     $resetUrl = 'https://' . $request->host() . '/password/reset?token=' . rawurlencode((string) $reset['reset_token']);
                     (new LifecycleEmailService(new EmailOutboxRepository($pdo), new TemplateRenderer(), $root . '/template/email'))->queuePasswordReset($email, $resetUrl, (int) $reset['user_id']);
@@ -590,8 +591,8 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->get('/admin/tenants', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/tenants']));
     $router->get('/admin/stats', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/stats']));
     $router->get('/admin/contact-messages', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/contact-messages']));
-    $router->get('/admin/domains', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/domains']));
-    $router->post('/admin/domains/action', fn (Request $request): Response => (new PlatformAdminDomainsController(new RequirePlatformRole(new MembershipRepository($pdo)), new DomainAdminRepository($pdo), new DomainAdminService($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->action($request, $currentUser));
+    $router->get('/admin/domains', fn (Request $request): Response => (new TenantAdminDomainsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), $pdo))->index($request, $tenant, $currentUser));
+    $router->post('/admin/domains/action', fn (Request $request): Response => (new TenantAdminDomainsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), $pdo))->action($request, $tenant, $currentUser));
     $router->get('/admin/jobs', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/jobs']));
     $router->get('/admin/workers', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/workers']));
     $router->get('/admin/email-outbox', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/email-outbox']));
@@ -608,7 +609,7 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
 
         $email = strtolower(trim((string) ($_POST['email'] ?? '')));
         if ($email !== '') {
-            $reset = (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->createResetTokenForEmail($email);
+            $reset = (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->createResetTokenForTenantEmail($email, $tenant->tenantId);
             if ($reset) {
                 $resetUrl = 'https://' . $request->host() . '/password/reset?token=' . rawurlencode((string) $reset['reset_token']);
                 (new LifecycleEmailService(new EmailOutboxRepository($pdo), new TemplateRenderer(), $root . '/template/email'))->queuePasswordReset($email, $resetUrl, (int) $reset['user_id']);

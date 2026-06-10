@@ -111,8 +111,20 @@ final class TenantAdminRepository
      */
     public function deleteTenant(int $tenantId): void
     {
-        $stmt = $this->pdo->prepare("UPDATE tenants SET status = 'deleted', deleted_at = CURRENT_TIMESTAMP WHERE id = :tenant_id");
-        $stmt->execute(['tenant_id' => $tenantId]);
+        $this->pdo->beginTransaction();
+
+        try {
+            $domains = $this->pdo->prepare('DELETE FROM tenant_domains WHERE tenant_id = :tenant_id');
+            $domains->execute(['tenant_id' => $tenantId]);
+
+            $stmt = $this->pdo->prepare("UPDATE tenants SET status = 'deleted', deleted_at = CURRENT_TIMESTAMP WHERE id = :tenant_id");
+            $stmt->execute(['tenant_id' => $tenantId]);
+
+            $this->pdo->commit();
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 }
 

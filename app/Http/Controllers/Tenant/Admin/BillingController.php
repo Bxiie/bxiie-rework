@@ -109,6 +109,28 @@ HTML;
         return new Response('', 303, ['Location' => '/admin/billing?notice=plan-updated']);
     }
 
+    /**
+     * Count billable custom-domain groups for plan usage.
+     */
+    private function countCustomDomainGroups(TenantContext $tenant): int
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT hostname
+             FROM tenant_domains
+             WHERE tenant_id = :tenant_id
+               AND domain_type <> 'subdomain'
+               AND hostname NOT LIKE '%.artsfol.io'"
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+
+        $groups = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $hostname) {
+            $groups[preg_replace('/^www\./', '', strtolower((string) $hostname))] = true;
+        }
+
+        return count($groups);
+    }
+
     private function featureRows(array $plan, array $usage, TenantContext $tenant): string
     {
         $features = [
@@ -192,7 +214,7 @@ HTML;
             'storage_gb' => $this->storageGb($tenant),
             'email_signups' => $this->countRows('email_signups', $tenant),
             'contact_messages' => $this->countRows('contact_messages', $tenant),
-            'custom_domains' => $this->countRows('tenant_domains', $tenant),
+            'custom_domains' => $this->countCustomDomainGroups($tenant),
             'admin_users' => $this->countMemberships($tenant),
             'analytics_events' => $this->countRows('analytics_events', $tenant),
         ];

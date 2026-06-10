@@ -1,6 +1,6 @@
 # Reset your ArtsFolio password
 
-Use the link below to reset your ArtsFolio password.
+Use the link below to reset the ArtsFolio password for {{ recipient_email }}.
 
 ```text
 {{ reset_url }}
