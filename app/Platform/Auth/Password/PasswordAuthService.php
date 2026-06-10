@@ -62,6 +62,10 @@ final class PasswordAuthService
         $this->sessions->revokeByHash($this->tokens->hashToken($rawToken));
     }
 
+
+    /**
+     * Revokes a browser session by the raw cookie token.
+     */
     public function login(
         string $email,
         string $password,
@@ -114,25 +118,37 @@ final class PasswordAuthService
      * SHA-256 hash. Logout must therefore hash the cookie value before marking
      * the backing server-side session revoked.
      */
+
     /**
-     * Revoke a persistent login session by the raw cookie token value.
+     * Revoke a browser session from the raw cookie token.
      *
-     * Browser cookie removal alone is not sufficient because tenant domains and
-     * subdomains can retain bridge cookies. Revoking the hashed token in
-     * user_sessions prevents a logged-out browser from reusing an old cookie to
-     * regain admin access.
+     * Logout links clear browser cookies, but the server-side session row must
+     * also be revoked so back-button or cross-domain admin access cannot reuse
+     * the old token.
+     */
+
+    /**
+     * Revoke a browser session from the raw cookie token.
+     *
+     * Logout links clear browser cookies, but the server-side session row must
+     * also be revoked so back-button or cross-domain admin access cannot reuse
+     * the old token.
      */
     public function logoutSessionToken(string $rawToken): void
     {
-        $rawToken = trim($rawToken);
         if ($rawToken === '') {
             return;
         }
 
-        $this->sessions->revokeByTokenHash(hash('sha256', $rawToken));
+        $tokenHash = hash('sha256', $rawToken);
+
+        $statement = $this->pdo->prepare(
+            'UPDATE user_sessions
+             SET revoked_at = CURRENT_TIMESTAMP
+             WHERE token_hash = :token_hash
+               AND revoked_at IS NULL'
+        );
+        $statement->execute(['token_hash' => $tokenHash]);
     }
 
-
 }
-
-// End of file.

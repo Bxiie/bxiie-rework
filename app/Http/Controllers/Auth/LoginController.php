@@ -84,9 +84,16 @@ final class LoginController
 
     public function logout(Request $request): Response
     {
+        $rawToken = $request->cookies['artsfolio_session'] ?? $request->cookies['ARTSFOLIO_SESSION'] ?? null;
+        if (is_string($rawToken) && $rawToken !== '') {
+            $this->passwordAuth->logoutSessionToken($rawToken);
+        }
+
         if (isset($_COOKIE[self::COOKIE_NAME]) && is_string($_COOKIE[self::COOKIE_NAME])) {
             $this->passwordAuth->logoutSessionToken((string) $_COOKIE[self::COOKIE_NAME]);
         }
+
+        $rawToken = $_COOKIE[self::COOKIE_NAME] ?? null;
 
         FlashMessages::success('Signed out.');
 
