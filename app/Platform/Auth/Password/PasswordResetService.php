@@ -111,8 +111,12 @@ final class PasswordResetService
      * Create a reset token only when the email belongs to an active user of the
      * tenant that received the reset request.
      */
-    public function createResetTokenForTenantEmail(string $email, int $tenantId): ?array
+    public function createResetTokenForTenantEmail(string $email, ?int $tenantId): ?array
     {
+        if ($tenantId === null || $tenantId < 1) {
+            return null;
+        }
+
         $user = $this->users->findByEmail($email);
 
         if (!$user || !$this->userBelongsToTenant((int) $user['id'], $tenantId)) {
@@ -140,8 +144,12 @@ final class PasswordResetService
      * Reset a password from a tenant reset form only when the token belongs to
      * a user who is still active on that tenant.
      */
-    public function resetPasswordForTenant(string $rawToken, string $newPassword, int $tenantId): int
+    public function resetPasswordForTenant(string $rawToken, string $newPassword, ?int $tenantId): int
     {
+        if ($tenantId === null || $tenantId < 1) {
+            throw new \RuntimeException('Password reset token is invalid for this tenant.');
+        }
+
         $tokenHash = $this->hashToken($rawToken);
         $token = $this->tokens->findActiveByHash($tokenHash);
 

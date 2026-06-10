@@ -144,3 +144,4 @@ php scripts/test/signup_logout_home_visibility_static.php
 php scripts/test/auth_artwork_followup_static.php
 php scripts/test/tenant_auth_security_static.php
 php scripts/test/auth_domain_security_static.php
+php scripts/test/domain_dns_and_tenant_reset_static.php

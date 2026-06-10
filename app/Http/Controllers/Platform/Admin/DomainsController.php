@@ -106,7 +106,7 @@ HTML;
     <form method="post" action="/platform/admin/domains/action" class="admin-form">
         <input type="hidden" name="csrf_token" value="{$csrf}">
         <input type="hidden" name="custom_domain_action" value="add">
-        <label>Tenant ID<input type="number" name="tenant_id" min="1" required></label>
+        <label>Tenant ID or slug<input type="text" name="tenant_ref" placeholder="1 or bxiie" required></label>
         <label>Custom domain<input type="text" name="hostname" placeholder="example.com" required></label>
         <label><input type="checkbox" name="skip_plan_check" value="1"> Platform override plan limit</label>
         <button type="submit">Add custom domain</button>
@@ -155,11 +155,8 @@ HTML,
 
         try {
             if ($action === 'add') {
-                $tenantId = (int) ($_POST['tenant_id'] ?? 0);
+                $tenantId = $this->service->resolveTenantId((string) ($_POST['tenant_ref'] ?? $_POST['tenant_id'] ?? ''));
                 $hostname = (string) ($_POST['hostname'] ?? '');
-                if ($tenantId < 1) {
-                    return Response::html('<h1>Invalid tenant id</h1>', 422);
-                }
                 $domainId = $this->service->addCustomDomain($tenantId, $hostname, isset($_POST['skip_plan_check']));
                 FlashMessages::success("Custom domain {$domainId} added.");
                 $this->auditAction($request, $currentUser, 'platform.custom_domain.added', (string) $domainId, ['tenant_id' => $tenantId, 'hostname' => $hostname]);

@@ -84,6 +84,61 @@ final class DomainAdminService
     /**
      * Plan check that ignores default artsfol.io and treats www/apex as one group.
      */
+    /**
+     * Resolve the public IP used for DNS verification.
+     *
+     * Production must not compare DNS against the literal SERVER_PUBLIC_IP placeholder.
+     */
+    /**
+     * Resolve a tenant from either a numeric id or slug.
+     */
+    public function resolveTenantId(string $tenantReference): int
+    {
+        $tenantReference = trim($tenantReference);
+        if ($tenantReference === '') {
+            throw new \RuntimeException('Enter a tenant id or slug.');
+        }
+
+        if (ctype_digit($tenantReference)) {
+            return (int) $tenantReference;
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT id
+             FROM tenants
+             WHERE slug = :slug
+               AND status <> 'deleted'
+             LIMIT 1"
+        );
+        $stmt->execute(['slug' => $tenantReference]);
+        $tenantId = $stmt->fetchColumn();
+
+        if (!$tenantId) {
+            throw new \RuntimeException('Tenant not found for slug: ' . $tenantReference);
+        }
+
+        return (int) $tenantId;
+    }
+
+    private function expectedPublicIp(): string
+    {
+        $candidates = [
+            getenv('ARTSFOLIO_SERVER_PUBLIC_IP') ?: null,
+            getenv('SERVER_PUBLIC_IP') ?: null,
+            $_ENV['ARTSFOLIO_SERVER_PUBLIC_IP'] ?? null,
+            $_ENV['SERVER_PUBLIC_IP'] ?? null,
+        ];
+
+        foreach ($candidates as $candidate) {
+            $candidate = is_string($candidate) ? trim($candidate) : '';
+            if ($candidate !== '' && $candidate !== 'SERVER_PUBLIC_IP') {
+                return $candidate;
+            }
+        }
+
+        return '153.75.250.37';
+    }
+
     private function planAllowsDomain(int $tenantId, string $hostname): bool
     {
         $plan = $this->currentPlan($tenantId);

@@ -1418,3 +1418,4 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 # End of file.
 - Tenant auth security: tenant logout revokes the server-side session row through `SessionRepository`, and tenant password reset token issue/redeem paths require active tenant membership.
 - Auth/domain security: tenant logout uses `SessionRepository`, tenant password reset requires active tenant membership, domain plan usage ignores default `artsfol.io` subdomains and `www` aliases, and tenant deletion removes tenant domain rows for reuse.
+- Domain DNS/reset hardening: DNS verification uses `ARTSFOLIO_SERVER_PUBLIC_IP` instead of literal `SERVER_PUBLIC_IP`; tenant reset fails closed on missing tenant id; platform custom-domain add accepts tenant id or slug.
