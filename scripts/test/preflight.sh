@@ -137,3 +137,5 @@ php scripts/test/email_html_logo_pipeline_static.php
 php scripts/test/password_reset_route_email_static.php
 
 php scripts/test/admin_auth_content_static.php
+
+php scripts/test/smtp_custom_headers_static.php
