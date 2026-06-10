@@ -80,7 +80,7 @@ final class JobsController
             . '<h2>Payload</h2><pre>' . AdminLayout::escape((string) $payloadPretty) . '</pre>'
             . '<h2>Last Error</h2><pre>' . AdminLayout::escape((string) ($job['last_error'] ?? '')) . '</pre>'
             . '<h2>Attempt History</h2>'
-            . '<table class="admin-table"><thead><tr><th>ID</th><th>Status</th><th>Message</th><th>Started</th><th>Finished</th><th>Created</th></tr></thead><tbody>' . $attemptRows . '</tbody></table>'
+            . '<table class="admin-table"><thead><tr><th>ID</th><th>Status</th><th>Execution time</th><th>Message</th><th>Started</th><th>Finished</th><th>Created</th></tr></thead><tbody>' . $attemptRows . '</tbody></table>'
             . '<p><a class="admin-button" href="/platform/admin/jobs">Back to jobs</a></p>';
 
         return Response::html(AdminLayout::render(
@@ -226,7 +226,7 @@ HTML;
             <th>Tenant</th>
             <th>Type</th>
             <th>Status</th>
-            <th>Attempts</th>
+            <th>Attempts</th><th>Execution time</th>
             <th>Payload</th>
             <th>Last Error</th>
             <th>Created</th>
@@ -268,6 +268,28 @@ HTML,
             ipAddress: $request->server('REMOTE_ADDR'),
         );
     }
-}
 
-// End of file.
+    /**
+     * Format background job execution timestamps for admin review.
+     */
+    private function formatJobExecutionTime(array $job): string
+    {
+        $started = (string) ($job['started_at'] ?? $job['reserved_at'] ?? $job['run_at'] ?? $job['available_at'] ?? '');
+        $completed = (string) ($job['completed_at'] ?? $job['finished_at'] ?? $job['failed_at'] ?? '');
+
+        if ($started === '' && $completed === '') {
+            return '<span class="admin-muted">Not run yet</span>';
+        }
+
+        $parts = [];
+        if ($started !== '') {
+            $parts[] = 'Started ' . htmlspecialchars($started, ENT_QUOTES, 'UTF-8');
+        }
+        if ($completed !== '') {
+            $parts[] = 'Finished ' . htmlspecialchars($completed, ENT_QUOTES, 'UTF-8');
+        }
+
+        return implode('<br>', $parts);
+    }
+
+}
