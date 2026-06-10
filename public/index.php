@@ -125,6 +125,20 @@ require $root . '/bootstrap/app.php';
 session_start();
 
 $request = Request::fromGlobals();
+    // ARTSFOLIO_PLATFORM_ADMIN_CANONICAL_HOST
+    // Platform admin is global ArtsFolio operations. Never serve it from
+    // tenant subdomains or custom tenant domains.
+    if (str_starts_with($request->path(), '/platform/admin') && $request->host() !== 'artsfol.io') {
+        $target = 'https://artsfol.io' . $request->path();
+        $queryString = (string) ($_SERVER['QUERY_STRING'] ?? '');
+
+        if ($queryString !== '') {
+            $target .= '?' . $queryString;
+        }
+
+        return new Response('', 302, ['Location' => $target]);
+    }
+
 
 try {
     $pdo = Database::connect($root);
@@ -201,19 +215,6 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     }
 
     // Platform-admin routes are canonical to the platform host. Tenant hosts such as
-    // Tenant and custom hosts must never dispatch platform-admin routes locally.
-    // Redirect to the canonical platform host before tenant routing continues.
-    if ($tenant && str_starts_with($request->path(), '/platform/admin')) {
-        $target = 'https://artsfol.io' . $request->path();
-        $queryString = (string) ($_SERVER['QUERY_STRING'] ?? '');
-
-        if ($queryString !== '') {
-            $target .= '?' . $queryString;
-        }
-
-        return new Response('', 302, ['Location' => $target]);
-    }
-
     if ($tenant) {
 // Tenant login is intentionally mounted at /login on each tenant domain; the tenant root remains public content.
         $tenantSettings = new TenantSettingsRepository($pdo);
