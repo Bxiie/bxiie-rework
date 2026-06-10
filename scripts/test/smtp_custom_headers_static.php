@@ -48,7 +48,6 @@ $sender = new SmtpEmailSender(
     'info@artsfol.io',
     'ArtsFolio',
     30,
-    null,
     [
         'X-PM-Message-Stream' => 'broadcasts',
     ]
