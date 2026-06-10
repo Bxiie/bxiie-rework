@@ -134,21 +134,21 @@ final class PasswordAuthService
      * also be revoked so back-button or cross-domain admin access cannot reuse
      * the old token.
      */
+    /**
+     * Revoke a browser session from the raw cookie token.
+     *
+     * The password auth service does not own a PDO connection. It must use the
+     * injected token service and session repository so logout works in both
+     * tenant and platform runtime paths.
+     */
     public function logoutSessionToken(string $rawToken): void
     {
         if ($rawToken === '') {
             return;
         }
 
-        $tokenHash = hash('sha256', $rawToken);
-
-        $statement = $this->pdo->prepare(
-            'UPDATE user_sessions
-             SET revoked_at = CURRENT_TIMESTAMP
-             WHERE token_hash = :token_hash
-               AND revoked_at IS NULL'
-        );
-        $statement->execute(['token_hash' => $tokenHash]);
+        $this->sessions->revokeByHash($this->tokens->hashToken($rawToken));
     }
+
 
 }

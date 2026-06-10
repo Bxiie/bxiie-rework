@@ -466,7 +466,7 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
 
             $email = strtolower(trim((string) ($_POST['email'] ?? '')));
             if ($email !== '' && tenantPasswordResetRecipientExists($pdo, (int) $tenant->tenantId, $email)) {
-                $reset = (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->createResetTokenForEmail($email);
+                $reset = (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->createResetTokenForTenantEmail($email, $tenant->tenantId);
                 if ($reset) {
                     $host = $request->host();
                     $resetUrl = 'https://' . $host . '/password/reset?token=' . rawurlencode((string) $reset['reset_token']);
@@ -643,7 +643,7 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
             return Response::html(AuthPage::resetPassword('/password/reset', $token, $csrf->getOrCreate(), 'Passwords do not match.'), 422);
         }
         try {
-            (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->resetPassword($token, $password);
+            (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->resetPasswordForTenant($token, $password, $tenant->tenantId);
         } catch (Throwable $e) {
             return Response::html(AuthPage::pageMessage('Password reset failed', 'This password reset link is invalid or expired. Please request a new reset link.'), 400);
         }

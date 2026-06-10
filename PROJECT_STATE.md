@@ -1416,3 +1416,4 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant home pages render only artworks explicitly assigned to the home page when homepage_artwork_assignments exists.
 - 2026-06-10: Patched tenant logout to revoke server-side session tokens, mounted platform `/password/forgot`, refreshed artwork publish/unpublish AJAX state, and added default `$` display for bare numeric public artwork prices.
 # End of file.
+- Tenant auth security: tenant logout revokes the server-side session row through `SessionRepository`, and tenant password reset token issue/redeem paths require active tenant membership.

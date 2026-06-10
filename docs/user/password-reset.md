@@ -1,13 +1,7 @@
 # Password Reset
 
-ArtsFolio will support password reset for local email/password accounts.
+Use **Forgot password** from the site where you normally sign in. If the email address belongs to an active user for that site, ArtsFolio queues a reset email.
 
-Current implementation status:
+For privacy, the page always shows the same confirmation message whether or not an email was sent.
 
-```text
-backend token creation exists
-backend token consumption exists
-email and browser reset forms are not wired yet
-```
-
-<!-- End of file. -->
+# End of file.
