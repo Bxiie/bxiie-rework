@@ -1,7 +1,18 @@
 ## Now
 
+- not fixed...  - after logging out from the tenant site using the log out link, I can then navigate back to the admin page and am allowed access without logging in.
+- not fixed - https://artsfol.io/password/forgot: No route for GET /password/forgot
+- add 'save order' button under each section in the portfolio section artwork order page
+- when publishing or unpublishing and artwork, the publish/unpublish button should change to reflect the artwork status.
+- when showing prices, include currency indicator, e.g., '$'.
+
+##
+
 - https://artsfol.io/password/forgot: No route for GET /password/forgot
 - the signup passcode must be verified before moving to the site details entry
+- after logging out from the tenant site using the log out link, I can then navigate back to the admin page and am allowed access without logging in.
+- artwork placement matrix should be linked from the artworks page
+- images should not be shown on the home page is they have not been added to the page via the artwork or placement pages
 
 ##
 

@@ -141,3 +141,4 @@ php scripts/test/admin_auth_content_static.php
 
 php scripts/test/smtp_custom_headers_static.php
 php scripts/test/signup_logout_home_visibility_static.php
+php scripts/test/auth_artwork_followup_static.php

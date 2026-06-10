@@ -100,6 +100,39 @@ final class PasswordAuthService
             'email' => (string) $user['email'],
         ];
     }
+    /**
+     * Revokes a browser session by its raw cookie token.
+     *
+     * Logout must invalidate server-side session state, not merely expire the
+     * browser cookie, because stale or sibling cookies can otherwise continue
+     * to authenticate tenant admin requests.
+     */
+/**
+     * Revoke a browser session by its raw cookie token.
+     *
+     * Session cookies store the raw token while user_sessions stores only the
+     * SHA-256 hash. Logout must therefore hash the cookie value before marking
+     * the backing server-side session revoked.
+     */
+    /**
+     * Revoke a persistent login session by the raw cookie token value.
+     *
+     * Browser cookie removal alone is not sufficient because tenant domains and
+     * subdomains can retain bridge cookies. Revoking the hashed token in
+     * user_sessions prevents a logged-out browser from reusing an old cookie to
+     * regain admin access.
+     */
+    public function logoutSessionToken(string $rawToken): void
+    {
+        $rawToken = trim($rawToken);
+        if ($rawToken === '') {
+            return;
+        }
+
+        $this->sessions->revokeByTokenHash(hash('sha256', $rawToken));
+    }
+
+
 }
 
 // End of file.

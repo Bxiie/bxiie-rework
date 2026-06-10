@@ -397,6 +397,8 @@ HTML;
                 'ok' => true,
                 'id' => $id,
                 'status' => $status,
+                'next_status' => $status === 'published' ? 'draft' : 'published',
+                'next_label' => $status === 'published' ? 'Unpublish' : 'Publish',
                 'message' => 'Artwork status updated.',
             ], JSON_THROW_ON_ERROR), 200, ['Content-Type' => 'application/json']);
         }

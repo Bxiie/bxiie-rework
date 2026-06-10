@@ -156,7 +156,8 @@ HTML;
             <button type="submit">Save section</button>
             {$archiveButton}
         </p>
-    </form>
+        <button type="submit" class="button button-primary">Save order</button>
+</form>
 </main>
 HTML;
 

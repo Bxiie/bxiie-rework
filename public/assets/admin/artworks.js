@@ -35,6 +35,16 @@ document.addEventListener('submit', async function (event) {
         } else if (payload.status && row) {
             const statusCell = row.querySelector('.js-artwork-status');
             if (statusCell) statusCell.textContent = payload.status;
+
+            const statusInput = form.querySelector('input[name="status"]');
+            if (statusInput && payload.next_status) {
+                statusInput.value = payload.next_status;
+            }
+
+            if (button && payload.next_label) {
+                button.dataset.originalText = payload.next_label;
+                button.textContent = payload.next_label;
+            }
         }
 
         if (notice) {

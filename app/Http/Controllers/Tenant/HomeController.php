@@ -289,7 +289,24 @@ HTML
             return '<p class="artwork-price">For sale</p>';
         }
 
-        return '<p class="artwork-price">' . $this->escape($price) . '</p>';
+        return '<p class="artwork-price">' . $this->escape($this->formatPublicPrice($price)) . '</p>';
+    }
+
+    /**
+     * Adds a visible default currency marker to bare numeric prices.
+     */
+    private function formatPublicPrice(string $price): string
+    {
+        $price = trim($price);
+        if ($price === '') {
+            return $price;
+        }
+
+        if (preg_match('/^[0-9]+(?:[,.][0-9]{2})?$/', $price) === 1) {
+            return '$' . $price;
+        }
+
+        return $price;
     }
 
     /**

@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Middleware\CurrentUser;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\Support\SessionCookie;
@@ -83,8 +84,9 @@ final class LoginController
 
     public function logout(Request $request): Response
     {
-        $rawToken = $_COOKIE[self::COOKIE_NAME] ?? null;
-        $this->passwordAuth->logoutToken(is_string($rawToken) ? $rawToken : null);
+        if (isset($_COOKIE[self::COOKIE_NAME]) && is_string($_COOKIE[self::COOKIE_NAME])) {
+            $this->passwordAuth->logoutSessionToken((string) $_COOKIE[self::COOKIE_NAME]);
+        }
 
         FlashMessages::success('Signed out.');
 

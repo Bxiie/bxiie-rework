@@ -1414,4 +1414,5 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant logout revokes the active server-side session in addition to expiring session cookies.
 - Tenant artwork admin links to the artwork placement matrix and section artwork order UI.
 - Tenant home pages render only artworks explicitly assigned to the home page when homepage_artwork_assignments exists.
-
+- 2026-06-10: Patched tenant logout to revoke server-side session tokens, mounted platform `/password/forgot`, refreshed artwork publish/unpublish AJAX state, and added default `$` display for bare numeric public artwork prices.
+# End of file.

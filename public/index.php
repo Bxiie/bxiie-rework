@@ -597,6 +597,58 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->get('/admin/email-outbox', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/email-outbox']));
     $router->get('/admin/audit-log', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/audit-log']));
     $router->get('/admin/audit-log.csv', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/audit-log.csv']));
+
+    // ARTSFOLIO_PLATFORM_PASSWORD_ROUTES_V6
+    $router->get('/password/forgot', fn (Request $request): Response => Response::html(AuthPage::forgotPassword('/password/forgot', (new CsrfTokenService())->getOrCreate())));
+    $router->post('/password/forgot', function (Request $request) use ($pdo, $root): Response {
+        $csrf = new CsrfTokenService();
+        if (!$csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html(AuthPage::forgotPassword('/password/forgot', $csrf->getOrCreate()) . '<p class="error">The security check expired. Please try again.</p>', 419);
+        }
+
+        $email = strtolower(trim((string) ($_POST['email'] ?? '')));
+        if ($email !== '') {
+            $reset = (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->createResetTokenForEmail($email);
+            if ($reset) {
+                $resetUrl = 'https://' . $request->host() . '/password/reset?token=' . rawurlencode((string) $reset['reset_token']);
+                (new LifecycleEmailService(new EmailOutboxRepository($pdo), new TemplateRenderer(), $root . '/template/email'))->queuePasswordReset($email, $resetUrl, (int) $reset['user_id']);
+            }
+        }
+
+        return Response::html(AuthPage::pageMessage('Password reset requested', 'If that email address exists, a reset link has been queued.'));
+    });
+    $router->get('/password/reset', function (Request $request): Response {
+        $token = (string) ($_GET['token'] ?? '');
+        if ($token === '') {
+            return Response::html(AuthPage::pageMessage('Password reset link missing', 'This password reset link is missing its token. Please request a new reset link.'), 400);
+        }
+
+        return Response::html(AuthPage::resetPassword('/password/reset', $token, (new CsrfTokenService())->getOrCreate()));
+    });
+    $router->post('/password/reset', function (Request $request) use ($pdo): Response {
+        $csrf = new CsrfTokenService();
+        $token = (string) ($_POST['token'] ?? '');
+        $password = (string) ($_POST['password'] ?? '');
+        $confirm = (string) ($_POST['password_confirm'] ?? '');
+        if (!$csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html(AuthPage::resetPassword('/password/reset', $token, $csrf->getOrCreate(), 'The security check expired. Please try again.'), 419);
+        }
+        if ($token === '') {
+            return Response::html(AuthPage::pageMessage('Password reset link missing', 'This password reset link is missing its token. Please request a new reset link.'), 400);
+        }
+        if (strlen($password) < 10) {
+            return Response::html(AuthPage::resetPassword('/password/reset', $token, $csrf->getOrCreate(), 'Password must be at least 10 characters.'), 422);
+        }
+        if ($password !== $confirm) {
+            return Response::html(AuthPage::resetPassword('/password/reset', $token, $csrf->getOrCreate(), 'Passwords do not match.'), 422);
+        }
+        try {
+            (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->resetPassword($token, $password);
+        } catch (Throwable $e) {
+            return Response::html(AuthPage::pageMessage('Password reset failed', 'This password reset link is invalid or expired. Please request a new reset link.'), 400);
+        }
+        return Response::html(AuthPage::pageMessage('Password updated', 'Your password has been updated. You can now sign in with your new password.'));
+    });
     $router->get('/pricing', fn (Request $request): Response => (new PricingController($pdo, new PlatformSettingsRepository($pdo)))->index($request));
     $router->get('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo, new PlatformSettingsRepository($pdo), new SignupCodeRepository($pdo)), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService()))->show($request));
     $router->post('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo, new PlatformSettingsRepository($pdo), new SignupCodeRepository($pdo)), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService()))->submit($request));
@@ -655,6 +707,28 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->get('/auth/google/callback', fn (Request $request): Response => (new OAuthController(new TenantSignupService($pdo)))->callback($request, 'google'));
     $router->get('/auth/facebook', fn (Request $request): Response => (new OAuthController(new TenantSignupService($pdo)))->redirect($request, 'facebook'));
     $router->get('/auth/facebook/callback', fn (Request $request): Response => (new OAuthController(new TenantSignupService($pdo)))->callback($request, 'facebook'));
+    // ARTSFOLIO_PLATFORM_PASSWORD_RESET_ROUTES
+    // Password reset is a public account route and must be mounted on the
+    // platform host before login-only platform admin guards can intercept it.
+    $router->get('/password/forgot', fn (Request $request): Response => Response::html(AuthPage::forgotPassword('/password/forgot', (new CsrfTokenService())->getOrCreate())));
+    $router->post('/password/forgot', function (Request $request) use ($pdo, $root): Response {
+        $csrf = new CsrfTokenService();
+        if (!$csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html(AuthPage::forgotPassword('/password/forgot', $csrf->getOrCreate()) . '<p class="error">The security check expired. Please try again.</p>', 419);
+        }
+
+        $email = strtolower(trim((string) ($_POST['email'] ?? '')));
+        if ($email !== '') {
+            $reset = (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->createResetTokenForEmail($email);
+            if ($reset) {
+                $resetUrl = 'https://' . $request->host() . '/password/reset?token=' . rawurlencode((string) $reset['reset_token']);
+                (new LifecycleEmailService(new EmailOutboxRepository($pdo), new TemplateRenderer(), $root . '/template/email'))->queuePasswordReset($email, $resetUrl, (int) $reset['user_id']);
+            }
+        }
+
+        return Response::html(AuthPage::pageMessage('Password reset requested', 'If that email address exists, a reset link has been queued.'));
+    });
+
     $router->get('/login', fn (Request $request): Response => $passwordAuthController->loginForm($request));
     $router->post('/login/password', fn (Request $request): Response => $passwordAuthController->loginPassword($request));
     $router->post('/login', fn (Request $request): Response => $passwordAuthController->loginPassword($request));
