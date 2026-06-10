@@ -145,6 +145,7 @@ final class SmtpEmailSender implements EmailSenderInterface
 
         $lines = [];
         foreach ($headers as $name => $value) {
+            $this->assertSafeHeader((string) $name, (string) $value);
             $lines[] = "{$name}: {$value}";
         }
 

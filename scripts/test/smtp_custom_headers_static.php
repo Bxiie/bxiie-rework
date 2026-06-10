@@ -25,10 +25,12 @@ if ($source === false) {
 }
 
 $markers = [
+    'custom header source property' => '$this->headers',
     'custom header loop' => '$this->headers as $name => $value',
     'safe header validation' => 'assertSafeHeader',
     'header rendering loop' => 'foreach ($headers as $name => $value)',
     'multipart support preserved' => 'multipart/alternative',
+    'html part preserved' => 'Content-Type: text/html; charset=UTF-8',
 ];
 
 foreach ($markers as $label => $needle) {
@@ -62,13 +64,14 @@ $message = $sender->buildMessageForTest([
     'recipient_email' => 'test@example.test',
     'subject' => 'SMTP header test',
     'body_text' => 'Plain text body.',
-    'body_html' => '<p>HTML body.</p>',
+    'body_html' => '<p>HTML body with logo_2.png.</p>',
 ]);
 
 $requiredFragments = [
     'X-PM-Message-Stream: broadcasts',
     'Content-Type: multipart/alternative',
     'Content-Type: text/html; charset=UTF-8',
+    'logo_2.png',
 ];
 
 foreach ($requiredFragments as $fragment) {
