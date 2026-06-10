@@ -1423,3 +1423,4 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform access/login/jobs UI: developer resources are login-gated, platform marketing nav includes Pricing, tenant login hides create-account links, and background jobs show execution timestamps.
 - Platform UI/access: developer resources require login, Pricing appears in platform navigation, tenant login suppresses create-account link, and jobs admin shows execution timestamps.
 - Pricing UI: public pricing cards show admin user limits per tier and force high-contrast price display on tinted plan cards.
+- Pricing/plans UI: pricing shows admin-user limits, dark Studio card text is readable, and edit plan fields are widened for fee/card/currency values.

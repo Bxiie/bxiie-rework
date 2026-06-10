@@ -1,5 +1,5 @@
 # Pricing
 
-The public pricing page shows each tier price and plan limits, including the number of admin users available on each tier. Pricing amounts use a high-contrast treatment so Studio and other tinted cards remain legible.
+The public pricing page shows each tier price and plan limits, including admin-user limits. Dark featured cards use light feature text so Studio remains readable.
 
 # End of file.

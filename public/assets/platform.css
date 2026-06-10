@@ -594,3 +594,56 @@ h2 {
 }
 
 /* End of file. */
+
+/* Pricing card legibility: dark/featured cards must not render muted charcoal text. */
+.pricing-card--featured,
+.pricing-card--studio,
+.pricing-card.featured,
+.pricing-card.is-featured,
+.plan-card--studio,
+.plan-card.featured { color: #f8f5ed; }
+
+.pricing-card--featured li, .pricing-card--featured p, .pricing-card--featured small,
+.pricing-card--studio li, .pricing-card--studio p, .pricing-card--studio small,
+.pricing-card.featured li, .pricing-card.featured p, .pricing-card.featured small,
+.pricing-card.is-featured li, .pricing-card.is-featured p, .pricing-card.is-featured small,
+.plan-card--studio li, .plan-card--studio p, .plan-card--studio small,
+.plan-card.featured li, .plan-card.featured p, .plan-card.featured small { color: rgba(255, 255, 255, 0.86); }
+
+.pricing-card--featured .muted, .pricing-card--studio .muted, .pricing-card.featured .muted,
+.pricing-card.is-featured .muted, .plan-card--studio .muted, .plan-card.featured .muted { color: rgba(255, 255, 255, 0.72); }
+
+/* Pricing contrast override: keep plan prices visible on tinted cards. */
+.pricing-card .price, .pricing-card .pricing-price, .pricing-plan .price, .pricing-plan .pricing-price,
+.plan-card .price, .plan-card .pricing-price, .pricing-tier .price, .pricing-tier .pricing-price {
+    color: #1f1a14;
+    background: rgba(255, 255, 255, 0.94);
+    display: inline-block;
+    padding: 0.25rem 0.55rem;
+    border-radius: 0.5rem;
+    font-weight: 800;
+}
+
+/* Plan editor usability: give fee and currency fields enough visual room. */
+.plan-edit-form input[type='text'], .plan-edit-form input[type='number'], .plan-edit-form select, .plan-edit-form textarea,
+.admin-plan-form input[type='text'], .admin-plan-form input[type='number'], .admin-plan-form select, .admin-plan-form textarea,
+form[action*='plans'] input[type='text'], form[action*='plans'] input[type='number'], form[action*='plans'] select, form[action*='plans'] textarea {
+    min-width: 14rem;
+    max-width: 100%;
+    font-size: 1rem;
+}
+
+.plan-edit-form input[name*='card'], .plan-edit-form input[name*='credit'], .plan-edit-form input[name*='fee'],
+.plan-edit-form input[name*='commission'], .plan-edit-form input[name*='currency'],
+.admin-plan-form input[name*='card'], .admin-plan-form input[name*='credit'], .admin-plan-form input[name*='fee'],
+.admin-plan-form input[name*='commission'], .admin-plan-form input[name*='currency'],
+form[action*='plans'] input[name*='card'], form[action*='plans'] input[name*='credit'], form[action*='plans'] input[name*='fee'],
+form[action*='plans'] input[name*='commission'], form[action*='plans'] input[name*='currency'] {
+    min-width: 18rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.plan-edit-form .form-grid, .admin-plan-form .form-grid, form[action*='plans'] .form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    align-items: start;
+}

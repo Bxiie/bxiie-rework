@@ -738,7 +738,16 @@ HTML;
             ? $GLOBALS['artsfolio_current_user']
             : null;
     }
+    /**
+     * Format plan admin-user limits for pricing display.
+     */
+    private function formatAdminUsers(mixed $value): string
+    {
+        if ($value === null || $value === '' || (int) $value < 0) {
+            return 'Unlimited admin users';
+        }
+
+        $count = (int) $value;
+        return $count === 1 ? '1 admin user' : $count . ' admin users';
+    }
 }
-
-// End of file.
-

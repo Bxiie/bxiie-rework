@@ -149,3 +149,4 @@ php scripts/test/login_jobs_ui_static.php
 php scripts/test/platform_access_login_jobs_static.php
 
 php scripts/test/pricing_ui_static.php
+php scripts/test/pricing_plan_editor_ui_static.php
