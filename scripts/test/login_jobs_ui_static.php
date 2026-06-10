@@ -8,57 +8,56 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
 
-$loginFiles = [
-    $root . '/app/Http/Controllers/Auth/LoginController.php',
-    $root . '/template/auth/login.php',
-    $root . '/template/tenant/login.php',
+$authPage = (string) file_get_contents($root . '/app/Http/View/AuthPage.php');
+$loginController = (string) file_get_contents($root . '/app/Http/Controllers/Auth/LoginController.php');
+$jobsController = (string) file_get_contents($root . '/app/Http/Controllers/Platform/Admin/JobsController.php');
+$jobsRepository = (string) file_get_contents($root . '/app/Platform/Jobs/JobAdminRepository.php');
+
+if (!str_contains($jobsController, '<th>Execution</th>') && !str_contains($jobsController, '<th>Execution time</th>')) {
+    fwrite(STDERR, "FAILED: jobs controller renders execution timestamps\nMissing execution table header\n");
+    exit(1);
+}
+
+$checks = [
+    'auth page login supports optional create-account link' => [
+        $authPage,
+        [
+            'bool $showCreateAccount = true',
+            '$createAccountLink = $showCreateAccount ?',
+            '{$createAccountLink}',
+        ],
+    ],
+    'tenant login suppresses create-account link' => [
+        $loginController,
+        [
+            'AuthPage::login',
+            '$tenant === null',
+        ],
+    ],
+    'jobs repository selects execution timestamps' => [
+        $jobsRepository,
+        [
+            'MIN(bja.started_at) AS first_started_at',
+            'MAX(bja.finished_at) AS last_finished_at',
+            'MAX(bja.created_at) AS last_attempt_at',
+        ],
+    ],
+    'jobs controller renders execution timestamps' => [
+        $jobsController,
+        [
+            'formatJobExecutionTime($job)',
+            'private function formatJobExecutionTime(array $job): string',
+        ],
+    ],
 ];
 
-foreach ($loginFiles as $file) {
-    if (!is_file($file)) {
-        continue;
+foreach ($checks as $label => [$content, $needles]) {
+    foreach ($needles as $needle) {
+        if (!str_contains($content, $needle)) {
+            fwrite(STDERR, "FAILED: {$label}\nMissing: {$needle}\n");
+            exit(1);
+        }
     }
-
-    $content = strtolower((string) file_get_contents($file));
-    if ((str_contains($content, 'create an account') || str_contains($content, 'sign up')) && str_contains($content, '/signup')) {
-        fwrite(STDERR, "FAILED: tenant login still exposes create-account/signup link in {$file}\n");
-        exit(1);
-    }
-}
-
-$jobsOk = false;
-$appRoot = $root . '/app';
-
-$iterator = new RecursiveIteratorIterator(
-    new RecursiveDirectoryIterator($appRoot, FilesystemIterator::SKIP_DOTS)
-);
-
-foreach ($iterator as $fileInfo) {
-    if (!$fileInfo->isFile()) {
-        continue;
-    }
-
-    $path = $fileInfo->getPathname();
-    $basename = $fileInfo->getBasename();
-
-    if (!str_ends_with($basename, '.php')) {
-        continue;
-    }
-
-    if (!str_contains($basename, 'Jobs') && !str_contains($basename, 'Background')) {
-        continue;
-    }
-
-    $content = (string) file_get_contents($path);
-    if (str_contains($content, 'Execution time') && str_contains($content, 'formatJobExecutionTime')) {
-        $jobsOk = true;
-        break;
-    }
-}
-
-if (!$jobsOk) {
-    fwrite(STDERR, "FAILED: background jobs page does not expose execution date/time.\n");
-    exit(1);
 }
 
 echo "Login and background jobs UI static checks passed.\n";

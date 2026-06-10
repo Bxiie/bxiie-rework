@@ -74,6 +74,7 @@ final class JobsController
             . '<dt>Type</dt><dd>' . AdminLayout::escape((string) $job['job_type']) . '</dd>'
             . '<dt>Status</dt><dd>' . AdminLayout::escape((string) $job['status']) . '</dd>'
             . '<dt>Attempts</dt><dd>' . AdminLayout::escape((string) ($job['attempts'] ?? '')) . '</dd>'
+            . '<dt>Execution</dt><dd>' . $this->formatJobExecutionTime($job) . '</dd>'
             . '<dt>Created</dt><dd>' . AdminLayout::escape((string) $job['created_at']) . '</dd>'
             . '<dt>Updated</dt><dd>' . AdminLayout::escape((string) ($job['updated_at'] ?? '')) . '</dd>'
             . '</dl>'
@@ -177,6 +178,7 @@ HTML;
                 . '<td>' . AdminLayout::escape((string) $job['job_type']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $job['status']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) ($job['attempts'] ?? '')) . ' / ' . AdminLayout::escape((string) ($job['attempt_history_count'] ?? 0)) . '</td>'
+                . '<td>' . $this->formatJobExecutionTime($job) . '</td>'
                 . '<td><code>' . AdminLayout::escape($payloadPreview) . '</code></td>'
                 . '<td>' . AdminLayout::escape($errorPreview) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $job['created_at']) . '</td>'
@@ -186,7 +188,7 @@ HTML;
         }
 
         if ($rows === '') {
-            $rows = '<tr><td colspan="10">No background jobs found.</td></tr>';
+            $rows = '<tr><td colspan="11">No background jobs found.</td></tr>';
         }
 
         $statusValue = AdminLayout::escape($status);
