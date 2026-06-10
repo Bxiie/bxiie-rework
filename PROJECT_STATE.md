@@ -1422,3 +1422,4 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Login/jobs UI: tenant login pages do not show create-account links; background jobs admin shows execution timestamps.
 - Platform access/login/jobs UI: developer resources are login-gated, platform marketing nav includes Pricing, tenant login hides create-account links, and background jobs show execution timestamps.
 - Platform UI/access: developer resources require login, Pricing appears in platform navigation, tenant login suppresses create-account link, and jobs admin shows execution timestamps.
+- Pricing UI: public pricing cards show admin user limits per tier and force high-contrast price display on tinted plan cards.

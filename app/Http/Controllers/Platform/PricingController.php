@@ -69,7 +69,7 @@ HTML;
             $description = AdminLayout::escape((string) ($plan['description'] ?: 'ArtsFolio artist portfolio plan.'));
             $artworks = $this->limitLabel($plan['allowed_artworks'] ?? null, 'artworks');
             $emails = $this->limitLabel($plan['allowed_email_addresses'] ?? null, 'email addresses');
-            $customDomain = ((int) $plan['custom_domain_included']) === 1 ? 'Custom domain included' : 'ArtsFolio subdomain included';
+            $customDomain = ((int) $plan['custom_domain_included, admin_user_limit']) === 1 ? 'Admin users: ' . htmlspecialchars((string) ($plan['admin_user_limit'] ?? '1'), ENT_QUOTES, 'UTF-8') . '<br>Custom domain included' : 'ArtsFolio subdomain included';
             $sales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Online checkout available' : 'Online checkout not included';
             $fees = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? '<li>Sales fee disclosure: ArtsFolio commission plus ' . $this->cardFeesLabel($plan) . ' credit card charges</li>' : '';
             $freeNotice = $slug === 'free' ? '<li>Includes ArtsFolio notification/link on free tenant pages</li>' : '';

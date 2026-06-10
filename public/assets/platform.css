@@ -575,3 +575,22 @@ h2 {
 }
 
 /* End of file. */
+
+/* Pricing contrast override: keep plan prices visible on tinted cards. */
+.pricing-card .price,
+.pricing-card .pricing-price,
+.pricing-plan .price,
+.pricing-plan .pricing-price,
+.plan-card .price,
+.plan-card .pricing-price,
+.pricing-tier .price,
+.pricing-tier .pricing-price {
+    color: #1f1a14;
+    background: rgba(255, 255, 255, 0.94);
+    display: inline-block;
+    padding: 0.25rem 0.55rem;
+    border-radius: 0.5rem;
+    font-weight: 800;
+}
+
+/* End of file. */

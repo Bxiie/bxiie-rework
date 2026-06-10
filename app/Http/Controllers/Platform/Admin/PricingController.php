@@ -56,7 +56,7 @@ final class PricingController
             $ccFixed = number_format(((int) ($plan['credit_card_fixed_fee_cents'] ?? 30)) / 100, 2, '.', '');
             $allowSales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? ' checked' : '';
             $order = (string) (int) ($plan['display_order'] ?? 100);
-            $domain = ((int) $plan['custom_domain_included']) === 1 ? ' checked' : '';
+            $domain = ((int) $plan['custom_domain_included, admin_user_limit']) === 1 ? ' checked' : '';
             $active = ((int) $plan['is_active']) === 1 ? ' checked' : '';
             if ($canEdit) {
                 $rows .= <<<HTML
