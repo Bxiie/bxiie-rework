@@ -9,7 +9,7 @@ namespace App\Http\View;
  */
 final class AuthPage
 {
-    public static function login(string $action = '/login', string $message = '', string $brandName = 'ArtsFolio', string $homeUrl = '/', string $csrfToken = ''): string
+    public static function login(string $action = '/login', string $message = '', string $brandName = 'ArtsFolio', string $homeUrl = '/', string $csrfToken = '', bool $showCreateAccount = true): string
     {
         $safeAction = self::escape($action);
         $safeBrand = self::escape($brandName !== '' ? $brandName : 'ArtsFolio');
@@ -17,6 +17,7 @@ final class AuthPage
         $safeCsrf = self::escape($csrfToken);
         $notice = $message !== '' ? '<p class="auth-notice">' . self::escape($message) . '</p>' : '';
         $csrf = $safeCsrf !== '' ? '<input type="hidden" name="csrf_token" value="' . $safeCsrf . '">' : '';
+        $createAccountLink = $showCreateAccount ? '<a href="/signup">Create an account</a>' : '';
 
         return self::page('Sign in', <<<HTML
 <p class="auth-eyebrow">Welcome back</p>
@@ -31,7 +32,7 @@ final class AuthPage
     <label class="auth-checkbox"><input type="checkbox" name="keep_me_logged_in" value="1"> Keep me logged in</label>
     <button type="submit">Sign in</button>
 </form>
-<p class="auth-links"><a href="/password/forgot">Forgot password?</a><a href="/signup">Create an account</a><a href="/help">Need help?</a></p>
+<p class="auth-links"><a href="/password/forgot">Forgot password?</a>{$createAccountLink}<a href="/help">Need help?</a></p>
 HTML, $safeBrand, $safeHome);
     }
 

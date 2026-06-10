@@ -30,6 +30,9 @@ final class JobAdminRepository
                 bj.last_error,
                 bj.created_at,
                 bj.updated_at,
+                MIN(bja.started_at) AS first_started_at,
+                MAX(bja.finished_at) AS last_finished_at,
+                MAX(bja.created_at) AS last_attempt_at,
                 COUNT(bja.id) AS attempt_history_count
              FROM background_jobs bj
              LEFT JOIN background_job_attempts bja ON bja.background_job_id = bj.id
@@ -71,6 +74,9 @@ final class JobAdminRepository
                 bj.last_error,
                 bj.created_at,
                 bj.updated_at,
+                MIN(bja.started_at) AS first_started_at,
+                MAX(bja.finished_at) AS last_finished_at,
+                MAX(bja.created_at) AS last_attempt_at,
                 COUNT(bja.id) AS attempt_history_count
              FROM background_jobs bj
              LEFT JOIN tenants t ON t.id = bj.tenant_id

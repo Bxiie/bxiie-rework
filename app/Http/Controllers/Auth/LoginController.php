@@ -40,7 +40,7 @@ final class LoginController
             $brand = $this->settings->get($tenant, 'artist_name', $this->settings->get($tenant, 'site_title', $tenant->name));
         }
 
-        return Response::html(AuthPage::login('/login', '', $brand, '/', $this->csrf->getOrCreate()));
+        return Response::html(AuthPage::login('/login', '', $brand, '/', $this->csrf->getOrCreate(), $tenant === null));
     }
 
     public function login(Request $request, ?TenantContext $tenant = null): Response
@@ -64,7 +64,7 @@ final class LoginController
             }
 
             return Response::html(
-                AuthPage::login('/login', 'Invalid email or password. Please sign in again.', $brand, '/', $this->csrf->getOrCreate()),
+                AuthPage::login('/login', 'Invalid email or password. Please sign in again.', $brand, '/', $this->csrf->getOrCreate(), $tenant === null),
                 401
             );
         }

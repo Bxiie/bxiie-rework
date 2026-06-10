@@ -256,8 +256,11 @@ HTML;
             'directory' => ['/help/directory', 'Artist directory'],
             'stats' => ['/help/stats', 'Stats'],
             'audit' => ['/help/audit', 'Audit log'],
-            'developer' => ['/help/developer', $loggedIn ? 'Developer reference' : 'Developer reference 🔒'],
         ];
+
+        if ($loggedIn) {
+            $items['developer'] = ['/help/developer', 'Developer reference'];
+        }
 
         $html = '<nav>';
         foreach ($items as $key => [$href, $label]) {

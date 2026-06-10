@@ -1420,3 +1420,4 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Auth/domain security: tenant logout uses `SessionRepository`, tenant password reset requires active tenant membership, domain plan usage ignores default `artsfol.io` subdomains and `www` aliases, and tenant deletion removes tenant domain rows for reuse.
 - Domain DNS/reset hardening: DNS verification uses `ARTSFOLIO_SERVER_PUBLIC_IP` instead of literal `SERVER_PUBLIC_IP`; tenant reset fails closed on missing tenant id; platform custom-domain add accepts tenant id or slug.
 - Login/jobs UI: tenant login pages do not show create-account links; background jobs admin shows execution timestamps.
+- Platform access/login/jobs UI: developer resources are login-gated, platform marketing nav includes Pricing, tenant login hides create-account links, and background jobs show execution timestamps.

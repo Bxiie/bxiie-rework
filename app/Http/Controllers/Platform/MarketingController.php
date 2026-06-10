@@ -271,6 +271,10 @@ HTML;
 
     public function developer(Request $request): Response
     {
+        if (!$this->currentUser()) {
+            return new Response('', 302, ['Location' => '/login?next=/developer']);
+        }
+
         $captcha = FirstPartyCaptcha::render('platform_contact', 0);
 
         $body = <<<HTML
@@ -357,7 +361,10 @@ HTML;
         $recaptchaScript = '';
         $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
         $activeClass = static fn (string $key): string => $active === $key ? ' class="active"' : '';
-        $authLink = $this->currentUser() ? '' : '<a class="login-link" href="/login">Sign in</a>';
+        $loggedIn = (bool) $this->currentUser();
+        $authLink = $loggedIn ? '' : '<a class="login-link" href="/login">Sign in</a>';
+        $developerLink = $loggedIn ? '<a' . $activeClass('developer') . ' href="/developer">Developers</a>' : '';
+        $developerFooterLink = $loggedIn ? '<a href="/developer">Developers</a>' : '';
 
         $html = <<<HTML
 <!doctype html>
@@ -376,9 +383,10 @@ HTML;
     <a class="platform-brand" href="/">ArtsFolio</a>
     <nav>
         <a{$activeClass('home')} href="/">Home</a>
+        <a{$activeClass('pricing')} href="/pricing">Pricing</a>
         <a{$activeClass('directory')} href="/directory">Artists</a>
         <a{$activeClass('help')} href="/help">Help</a>
-        <a{$activeClass('developer')} href="/developer">Developers</a>
+        {$developerLink}
         <a{$activeClass('contact')} href="/contact">Contact</a>
         {$platformAdminLink}
         {$authLink}
@@ -391,7 +399,7 @@ HTML;
     <span>{$this->platformCopyrightLine()}</span>
     <nav>
         <a href="/help">Help</a>
-        <a href="/developer">Developers</a>
+        {$developerFooterLink}
         <a href="/privacy">Privacy</a>
         <a href="/contact">Contact</a>
     </nav>
