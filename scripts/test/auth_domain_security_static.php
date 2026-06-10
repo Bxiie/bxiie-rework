@@ -18,16 +18,17 @@ $checks = [
     'tenant reset routes are tenant scoped' => [
         'file' => $root . '/public/index.php',
         'must' => [
-            'createResetTokenForTenantEmail($email, $tenant->tenantId)',
-            'resetPasswordForTenant($token, $password, $tenant->tenantId)',
+            'createResetTokenForTenantEmail($email, (int) ($tenant->tenantId ?? $tenant->id ?? 0))',
+            'resetPasswordForTenant($token, $password, (int) ($tenant->tenantId ?? $tenant->id ?? 0))',
         ],
         'must_not' => [],
     ],
     'tenant reset service requires membership' => [
         'file' => $root . '/app/Platform/Auth/Password/PasswordResetService.php',
         'must' => [
-            'createResetTokenForTenantEmail(string $email, int $tenantId): ?array',
-            'resetPasswordForTenant(string $rawToken, string $newPassword, int $tenantId): int',
+            'createResetTokenForTenantEmail(string $email, ?int $tenantId): ?array',
+            'if ($tenantId === null || $tenantId < 1)',
+            'resetPasswordForTenant(string $rawToken, string $newPassword, ?int $tenantId): int',
             'FROM tenant_memberships',
             "AND status = 'active'",
         ],
