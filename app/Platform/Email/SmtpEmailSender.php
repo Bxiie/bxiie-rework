@@ -172,14 +172,9 @@ final class SmtpEmailSender implements EmailSenderInterface
 
     private function normalizeMessageBody(string $body): string
     {
-        $body = str_replace(["
-", "
-"], "
-", $body);
+        $body = str_replace(["\\r\\n", "\\r"], "\\n", $body);
 
-        return str_replace("
-", "
-", $body);
+        return str_replace("\\n", "\\r\\n", $body);
     }
 
     private function assertSafeHeader(string $name, string $value): void
