@@ -405,7 +405,7 @@ HTML;
     </nav>
 </footer>
 {$this->platformInteractionScript()}
-</body>
+<script src="/assets/platform.js" defer></script></body>
 </html>
 HTML;
 

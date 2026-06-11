@@ -29,14 +29,6 @@ final class PricingController
         $commission = $this->commissionPercent();
         $defaultCardFees = $this->defaultCardFeesLabel();
         $body = <<<HTML
-<style>
-.pricing-grid .pricing-card.featured, .professional-pricing .pricing-card.featured, .pricing-card.featured { color: #f8f5ed; }
-.pricing-grid .pricing-card.featured li, .pricing-grid .pricing-card.featured p, .pricing-grid .pricing-card.featured small,
-.professional-pricing .pricing-card.featured li, .professional-pricing .pricing-card.featured p, .professional-pricing .pricing-card.featured small,
-.pricing-card.featured li, .pricing-card.featured p, .pricing-card.featured small { color: rgba(255,255,255,.9); }
-.pricing-grid .pricing-card.featured .muted, .professional-pricing .pricing-card.featured .muted, .pricing-card.featured .muted { color: rgba(255,255,255,.74); }
-.pricing-card .price, .professional-pricing .price { color: #1f1a14; background: rgba(255,255,255,.94); display: inline-block; padding: .25rem .55rem; border-radius: .5rem; font-weight: 800; }
-</style>
 <section class="platform-hero pricing-hero compact">
     <div>
         <p class="eyebrow">Pricing</p>
@@ -78,7 +70,6 @@ HTML;
             $artworks = $this->limitLabel($plan['allowed_artworks'] ?? null, 'artworks');
             $emails = $this->limitLabel($plan['allowed_email_addresses'] ?? null, 'email addresses');
             $customDomain = ((int) $plan['custom_domain_included, admin_user_limit']) === 1 ? 'Admin users: Custom domain included' : 'ArtsFolio subdomain included';
-            . '<li>' . AdminLayout::escape($this->adminUsersLabel($plan)) . '</li>'
             $sales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Online checkout available' : 'Online checkout not included';
             $fees = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? '<li>Sales fee disclosure: ArtsFolio commission plus ' . $this->cardFeesLabel($plan) . ' credit card charges</li>' : '';
             $freeNotice = $slug === 'free' ? '<li>Includes ArtsFolio notification/link on free tenant pages</li>' : '';
@@ -115,11 +106,6 @@ HTML;
             $cardFees .= '<td>' . $this->cardFeesLabel($plan) . '</td>';
         }
         return '<table class="admin-table"><thead><tr><th>Feature</th>' . $heads . '</tr></thead><tbody>' . $price . '</tr>' . $artworks . '</tr>' . $emails . '</tr>' . $domains . '</tr>' . $notice . '</tr>' . $sales . '</tr>' . $cardFees . '</tr></tbody></table>';
-            . '<tr><th>Admin users</th>'
-            . '<td>' . AdminLayout::escape($this->adminUsersLabel($free ?? [])) . '</td>'
-            . '<td>' . AdminLayout::escape($this->adminUsersLabel($studio ?? [])) . '</td>'
-            . '<td>' . AdminLayout::escape($this->adminUsersLabel($professional ?? [])) . '</td>'
-            . '<td>' . AdminLayout::escape($this->adminUsersLabel($collective ?? [])) . '</td></tr>'
     }
 
     private function plans(): array
@@ -225,7 +211,7 @@ HTML;
 <header class="platform-header"><a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a><nav><a class="active" href="/pricing">Pricing</a><a href="/directory">Artists</a><a href="/help">Help</a>{$platformAdminLink}<a href="/login">Sign in</a></nav></header>
 <main>{$body}</main>
 <footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer>
-</body>
+<script src="/assets/platform.js" defer></script></body>
 </html>
 HTML;
     }
@@ -234,16 +220,6 @@ HTML;
      */
     private function formatAdminUsers(mixed $value): string
     {
-        if ($value === null || $value === '' || (int) $value < 0) {
-            return 'Unlimited admin users';
-        }
-
-        $count = (int) $value;
-        return $count === 1 ? '1 admin user' : $count . ' admin users';
-    }
-    private function adminUsersLabel(array $plan): string
-    {
-        $value = $plan['admin_user_limit'] ?? $plan['admin_users'] ?? null;
         if ($value === null || $value === '' || (int) $value < 0) {
             return 'Unlimited admin users';
         }
