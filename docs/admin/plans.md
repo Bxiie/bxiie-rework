@@ -1,5 +1,5 @@
 # Plans
 
-The edit plan page uses wider fields for currency, commission, card percentage, and fixed-fee values.
+Plan editor fee, card, commission, and currency fields use wider inputs so values are visible.
 
 # End of file.

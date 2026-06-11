@@ -1,5 +1,38 @@
 ## Now
 
+- The developer resources page should only be shown to logged in users
+- Pricing should be a top nav link on the platform pages
+- Still not done: remove 'create an account' link from tenant login page
+
+##
+
+- remove 'create an account' link from tenant login page
+- show execution date and time on background jobs page
+
+##
+
+- Domain verification: Not verified
+2026-06-10 18:41:11
+Actual: 153.75.250.37
+Expected: SERVER_PUBLIC_IP
+- allow custom domain addition by slug name or tenant ID
+- https://bxiie.artsfol.io/password/forgot: App\Platform\Auth\Password\PasswordResetService::createResetTokenForTenantEmail(): Argument #2 ($tenantId) must be of type int, null given, called in /var/www/artsfolio/public/index.php on line 314
+
+
+##
+
+- https://bxiie.artsfol.io/logout: Call to a member function prepare() on null
+- Still allowed to send password reset email to non-existent user, navigate to link, and change password.
+- add email address to password change request email.
+- Where are the email templates located?
+- allow deletion of custom domain names by tenant and platform admins
+- allow addition of custom domain names by tenant and platform admins if plan allows
+- do not count default artsfol.io domain name against plan limits
+- in the case of tenant custom domain names, given bxiie.com, do not could www.bxiie.com against plan limits
+- If a tenant is deleted, also delete all tenant domain names.  Allow slug and domain name to be reused.
+
+##
+
 - not fixed...  - after logging out from the tenant site using the log out link, I can then navigate back to the admin page and am allowed access without logging in.
 - not fixed - https://artsfol.io/password/forgot: No route for GET /password/forgot
 - add 'save order' button under each section in the portfolio section artwork order page

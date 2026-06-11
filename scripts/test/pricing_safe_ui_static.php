@@ -16,9 +16,19 @@ foreach ([
     }
 }
 
+if (
+    !str_contains($cssContent, 'rgba(255, 255, 255, 0.88)')
+    && !str_contains($cssContent, 'rgba(255, 255, 255, 0.86)')
+    && !str_contains($cssContent, 'rgba(255,255,255,.88)')
+    && !str_contains($cssContent, 'rgba(255,255,255,.86)')
+) {
+    fwrite(STDERR, "FAILED: pricing/editor CSS missing readable white feature text color.\n");
+    exit(1);
+}
+
 foreach ([
     'Pricing card legibility: dark/featured cards',
-    'rgba(255, 255, 255, 0.88)',
+    
     'Plan editor usability',
     'min-width: 18rem',
 ] as $needle) {

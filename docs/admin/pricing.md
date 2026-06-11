@@ -1,5 +1,5 @@
 # Pricing
 
-Dark featured pricing cards use light feature text so Studio remains readable. Admin-user counts should be added in the pricing renderer after confirming the exact source shape.
+Dark featured pricing cards use light feature text so Studio remains readable. Add admin-user counts after confirming the exact pricing renderer source.
 
 # End of file.

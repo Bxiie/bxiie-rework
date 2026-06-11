@@ -422,7 +422,7 @@ h2 {
   padding: 1.4rem;
   border: 1px solid var(--line, rgba(0,0,0,.12));
   border-radius: 1.5rem;
-  background: rgba(255,255,255,.86);
+  background: rgba(255, 255, 255, 0.88);
   box-shadow: 0 18px 60px rgba(0,0,0,.06);
 }
 
@@ -608,7 +608,7 @@ h2 {
 .pricing-card.featured li, .pricing-card.featured p, .pricing-card.featured small,
 .pricing-card.is-featured li, .pricing-card.is-featured p, .pricing-card.is-featured small,
 .plan-card--studio li, .plan-card--studio p, .plan-card--studio small,
-.plan-card.featured li, .plan-card.featured p, .plan-card.featured small { color: rgba(255, 255, 255, 0.86); }
+.plan-card.featured li, .plan-card.featured p, .plan-card.featured small { color: rgba(255, 255, 255, 0.88); }
 
 .pricing-card--featured .muted, .pricing-card--studio .muted, .pricing-card.featured .muted,
 .pricing-card.is-featured .muted, .plan-card--studio .muted, .plan-card.featured .muted { color: rgba(255, 255, 255, 0.72); }
