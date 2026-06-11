@@ -41,7 +41,88 @@ final class PricingController
 {$cards}
 </section>
 <section class="platform-section commission-disclosure"><h2>How payouts work</h2><p>ArtsFolio commission on platform-processed artwork sales is <strong>{$commission}</strong>. Credit card charges are plan-disclosed and commonly shown as <strong>{$defaultCardFees}</strong>.</p><p>Artists receive the sale amount minus platform commission, minus the credit card percentage, minus the fixed credit card charge. Complimentary tenants do not pay subscription fees, but they still pay platform commission and credit card charges on sales.</p></section>
-<section class="platform-section comparison-section"><h2>Plan comparison</h2>{$comparison}</section>
+<section class="platform-section comparison-section"><h2>Plan comparison</h2>{$comparison}</section><style>
+/* Pricing page inline repair: overrides cached/global muted text on the Studio card. */
+.professional-pricing > article:nth-of-type(2),
+.professional-pricing > article:nth-of-type(2) * {
+    color: #ffffff !important;
+    opacity: 1 !important;
+}
+.professional-pricing > article:nth-of-type(2) .eyebrow {
+    color: rgba(255,255,255,.64) !important;
+}
+.professional-pricing > article:nth-of-type(2) li,
+.professional-pricing > article:nth-of-type(2) li::marker,
+.professional-pricing > article:nth-of-type(2) p,
+.professional-pricing > article:nth-of-type(2) small,
+.professional-pricing > article:nth-of-type(2) span {
+    color: rgba(255,255,255,.92) !important;
+    opacity: 1 !important;
+}
+</style>
+<script>
+(() => {
+    const normalize = (value) => (value || '').toLowerCase().trim();
+
+    const studioCard = Array.from(document.querySelectorAll('.professional-pricing article, .pricing-grid article, .pricing-card'))
+        .find((card) => normalize(card.textContent).includes('studio') && normalize(card.textContent).includes('choose studio'));
+
+    if (studioCard) {
+        studioCard.style.color = '#ffffff';
+        studioCard.querySelectorAll('li, p, small, span').forEach((node) => {
+            node.style.setProperty('color', 'rgba(255,255,255,.92)', 'important');
+            node.style.setProperty('opacity', '1', 'important');
+        });
+        studioCard.querySelectorAll('h1,h2,h3').forEach((node) => {
+            node.style.setProperty('color', '#ffffff', 'important');
+        });
+        studioCard.querySelectorAll('.eyebrow').forEach((node) => {
+            node.style.setProperty('color', 'rgba(255,255,255,.64)', 'important');
+        });
+    }
+
+    document.querySelectorAll('.comparison-section table, table').forEach((table) => {
+        const text = normalize(table.textContent);
+        if (!text.includes('monthly price') || !text.includes('allowed artworks')) {
+            return;
+        }
+
+        const rows = Array.from(table.querySelectorAll('tr'));
+        const featureHeader = rows
+            .map((row) => row.querySelector('th,td'))
+            .find((cell) => cell && normalize(cell.textContent) === 'monthly price')
+            || rows.map((row) => row.querySelector('th,td')).find(Boolean);
+
+        let adminRow = rows.find((row) => normalize(row.textContent).includes('admin users'));
+
+        if (!adminRow) {
+            adminRow = document.createElement('tr');
+            adminRow.innerHTML = '<th>Admin users</th><td>1</td><td>3</td><td>10</td><td>Unlimited</td>';
+
+            const body = table.querySelector('tbody') || table;
+            const after = rows.find((row) => normalize(row.textContent).includes('allowed email addresses'))
+                || rows.find((row) => normalize(row.textContent).includes('allowed artworks'))
+                || rows[0];
+
+            if (after && after.parentNode) {
+                after.parentNode.insertBefore(adminRow, after.nextSibling);
+            } else {
+                body.appendChild(adminRow);
+            }
+        }
+
+        const adminHeader = adminRow.querySelector('th,td');
+        if (adminHeader && featureHeader) {
+            adminHeader.className = featureHeader.className;
+            for (const attr of featureHeader.attributes) {
+                if (attr.name.startsWith('data-')) {
+                    adminHeader.setAttribute(attr.name, attr.value);
+                }
+            }
+        }
+    });
+})();
+</script>
 HTML;
 
         return Response::html($this->layout('Pricing | ArtsFolio', $body));

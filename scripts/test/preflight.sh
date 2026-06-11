@@ -151,3 +151,5 @@ php scripts/test/platform_access_login_jobs_static.php
 php scripts/test/pricing_ui_static.php
 php scripts/test/pricing_dom_safe_ui_static.php
 php scripts/test/studio_pricing_contrast_static.php
+
+php scripts/test/pricing_inline_repair_static.php
