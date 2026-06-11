@@ -7,3 +7,72 @@
 button.danger { background: #9b1c1c; color: #fff; border-color: #9b1c1c; }
 .inline-form { display: inline; }
 
+
+/* Studio pricing card hard contrast override.
+   Targets the rendered Studio card even when it has no useful custom class. */
+body .pricing-grid > article:nth-child(2),
+body .professional-pricing > article:nth-child(2),
+body section.pricing-grid > article:nth-child(2),
+body section.professional-pricing > article:nth-child(2),
+body article.pricing-card.featured,
+body article.pricing-card.is-featured,
+body article.pricing-card.highlighted {
+    color: #ffffff !important;
+}
+
+body .pricing-grid > article:nth-child(2) ul,
+body .pricing-grid > article:nth-child(2) ol,
+body .pricing-grid > article:nth-child(2) li,
+body .pricing-grid > article:nth-child(2) li::marker,
+body .pricing-grid > article:nth-child(2) p,
+body .pricing-grid > article:nth-child(2) small,
+body .pricing-grid > article:nth-child(2) span,
+body .professional-pricing > article:nth-child(2) ul,
+body .professional-pricing > article:nth-child(2) ol,
+body .professional-pricing > article:nth-child(2) li,
+body .professional-pricing > article:nth-child(2) li::marker,
+body .professional-pricing > article:nth-child(2) p,
+body .professional-pricing > article:nth-child(2) small,
+body .professional-pricing > article:nth-child(2) span,
+body section.pricing-grid > article:nth-child(2) ul,
+body section.pricing-grid > article:nth-child(2) ol,
+body section.pricing-grid > article:nth-child(2) li,
+body section.pricing-grid > article:nth-child(2) li::marker,
+body section.pricing-grid > article:nth-child(2) p,
+body section.pricing-grid > article:nth-child(2) small,
+body section.pricing-grid > article:nth-child(2) span,
+body article.pricing-card.featured ul,
+body article.pricing-card.featured ol,
+body article.pricing-card.featured li,
+body article.pricing-card.featured li::marker,
+body article.pricing-card.featured p,
+body article.pricing-card.featured small,
+body article.pricing-card.featured span {
+    color: rgba(255, 255, 255, 0.92) !important;
+    opacity: 1 !important;
+}
+
+body .pricing-grid > article:nth-child(2) .eyebrow,
+body .professional-pricing > article:nth-child(2) .eyebrow,
+body section.pricing-grid > article:nth-child(2) .eyebrow,
+body article.pricing-card.featured .eyebrow {
+    color: rgba(255, 255, 255, 0.62) !important;
+}
+
+body .pricing-grid > article:nth-child(2) h1,
+body .pricing-grid > article:nth-child(2) h2,
+body .pricing-grid > article:nth-child(2) h3,
+body .professional-pricing > article:nth-child(2) h1,
+body .professional-pricing > article:nth-child(2) h2,
+body .professional-pricing > article:nth-child(2) h3,
+body section.pricing-grid > article:nth-child(2) h1,
+body section.pricing-grid > article:nth-child(2) h2,
+body section.pricing-grid > article:nth-child(2) h3,
+body article.pricing-card.featured h1,
+body article.pricing-card.featured h2,
+body article.pricing-card.featured h3 {
+    color: #ffffff !important;
+}
+
+/* End of file. */
+
