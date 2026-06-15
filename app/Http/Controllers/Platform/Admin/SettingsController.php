@@ -58,8 +58,8 @@ final class SettingsController
         $googleClientSecret = $this->escape($this->settings->get('google_oauth_client_secret', ''));
         $facebookClientId = $this->escape($this->settings->get('facebook_oauth_client_id', ''));
         $facebookClientSecret = $this->escape($this->settings->get('facebook_oauth_client_secret', ''));
-        $recaptchaSiteKey = $this->escape($this->settings->get('recaptcha_site_key', ''));
-        $recaptchaSecretKey = $this->escape($this->settings->get('recaptcha_secret_key', ''));
+        $turnstileSiteKey = $this->escape($this->settings->get('turnstile_site_key', $this->settings->get('recaptcha_site_key', '')));
+        $turnstileSecretKey = $this->escape($this->settings->get('turnstile_secret_key', ''));
         $signupCodeRequired = $this->truthy($this->settings->get('tenant_signup_code_required', '0')) ? ' checked' : '';
 
         return Response::html(AdminLayout::render(
@@ -75,7 +75,7 @@ final class SettingsController
         <fieldset><legend>Domains</legend><label>Expected IPv4 for custom domain DNS checks<input type="text" name="expected_ipv4" value="{$expectedIpv4}"></label></fieldset>
     </div>
     <fieldset><legend>OAuth providers</legend><div class="admin-form-grid"><label>Google client ID<input type="text" name="google_oauth_client_id" value="{$googleClientId}"></label><label>Google client secret<input type="password" name="google_oauth_client_secret" value="{$googleClientSecret}"></label><label>Facebook client ID<input type="text" name="facebook_oauth_client_id" value="{$facebookClientId}"></label><label>Facebook client secret<input type="password" name="facebook_oauth_client_secret" value="{$facebookClientSecret}"></label></div><p class="admin-muted">Stored in platform_settings. Do not expose provider secrets in PROJECT_STATE.md or docs.</p></fieldset>
-    <fieldset><legend>Spam protection</legend><div class="admin-form-grid"><label>reCAPTCHA site key<input type="text" name="recaptcha_site_key" value="{$recaptchaSiteKey}"></label><label>reCAPTCHA secret key<input type="password" name="recaptcha_secret_key" value="{$recaptchaSecretKey}"></label></div><p class="admin-muted">When the secret key is blank, public contact and signup forms do not block submissions in development.</p></fieldset>
+    <fieldset><legend>Spam protection</legend><div class="admin-form-grid"><label>Cloudflare Turnstile site key<input type="text" name="turnstile_site_key" value="{$turnstileSiteKey}"></label><label>Cloudflare Turnstile secret key<input type="password" name="turnstile_secret_key" value="{$turnstileSecretKey}"></label></div><p class="admin-muted">When the secret key is blank, public contact and signup forms do not block submissions in development. Create keys in Cloudflare Turnstile and allow artsfol.io plus active tenant domains.</p></fieldset>
     <fieldset><legend>Email delivery</legend><div class="admin-form-grid"><label>SMTP host<input type="text" name="smtp_host" value="{$smtpHost}"></label><label>SMTP port<input type="number" name="smtp_port" value="{$smtpPort}" min="1" max="65535"></label><label>SMTP username<input type="text" name="smtp_username" value="{$smtpUsername}"></label><label>SMTP password<input type="password" name="smtp_password" value="{$smtpPassword}"></label><label>SMTP encryption<input type="text" name="smtp_encryption" value="{$smtpEncryption}" placeholder="tls, ssl, or none"></label><label>From email<input type="email" name="mail_from_email" value="{$mailFromEmail}"></label><label>From name<input type="text" name="mail_from_name" value="{$mailFromName}"></label><label>Postmark message stream<input type="text" name="smtp_x_pm_message_stream" value="{$smtpMessageStream}" placeholder="outbound or broadcasts"></label></div><p class="admin-muted">Postmark message stream is sent as <code>X-PM-Message-Stream</code>. These values are stored in <code>platform_settings</code>. Keep production backups and database access restricted because SMTP and ecommerce secrets are sensitive.</p></fieldset>
     <fieldset><legend>Ecommerce</legend><div class="admin-form-grid"><label>Stripe publishable key<input type="text" name="stripe_publishable_key" value="{$stripePublishableKey}"></label><label>Stripe secret key<input type="password" name="stripe_secret_key" value="{$stripeSecretKey}"></label><label>Stripe webhook secret<input type="password" name="stripe_webhook_secret" value="{$stripeWebhookSecret}"></label></div></fieldset>
     <fieldset class="admin-panel-wide"><legend>Platform custom CSS</legend><p class="admin-muted">Applied to platform marketing, pricing, help, and platform admin pages through <code>/assets/platform-custom.css</code>.</p><textarea name="platform_custom_css" rows="18" spellcheck="false">{$platformCustomCss}</textarea></fieldset>
@@ -118,8 +118,8 @@ HTML,
         $googleClientSecret = (string) ($_POST['google_oauth_client_secret'] ?? '');
         $facebookClientId = trim((string) ($_POST['facebook_oauth_client_id'] ?? ''));
         $facebookClientSecret = (string) ($_POST['facebook_oauth_client_secret'] ?? '');
-        $recaptchaSiteKey = trim((string) ($_POST['recaptcha_site_key'] ?? ''));
-        $recaptchaSecretKey = (string) ($_POST['recaptcha_secret_key'] ?? '');
+        $turnstileSiteKey = trim((string) ($_POST['turnstile_site_key'] ?? ''));
+        $turnstileSecretKey = (string) ($_POST['turnstile_secret_key'] ?? '');
         $signupCodeRequired = isset($_POST['tenant_signup_code_required']) ? '1' : '0';
 
         if ($platformName === '') {
@@ -168,8 +168,8 @@ HTML,
         $this->settings->set('google_oauth_client_secret', $googleClientSecret);
         $this->settings->set('facebook_oauth_client_id', $facebookClientId);
         $this->settings->set('facebook_oauth_client_secret', $facebookClientSecret);
-        $this->settings->set('recaptcha_site_key', $recaptchaSiteKey);
-        $this->settings->set('recaptcha_secret_key', $recaptchaSecretKey);
+        $this->settings->set('turnstile_site_key', $turnstileSiteKey);
+        $this->settings->set('turnstile_secret_key', $turnstileSecretKey);
         $this->settings->set('tenant_signup_code_required', $signupCodeRequired);
         $this->settings->set('platform_custom_css', $platformCustomCss);
         $this->settings->set('smtp_host', $smtpHost);

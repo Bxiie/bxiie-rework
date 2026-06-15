@@ -1,5 +1,10 @@
 ## Now
 
+- Pricing page should show number of admin users per price tier
+- Price on studio plan is not visible due to div color
+
+##
+
 - The developer resources page should only be shown to logged in users
 - Pricing should be a top nav link on the platform pages
 - Still not done: remove 'create an account' link from tenant login page

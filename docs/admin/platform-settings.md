@@ -19,7 +19,7 @@ Tenant settings control one tenant/client site.
 ```text
 support email
 expected DNS target IPs
-global recaptcha defaults
+global Turnstile defaults
 email provider settings reference
 plan defaults
 custom domain automation controls

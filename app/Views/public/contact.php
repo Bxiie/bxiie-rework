@@ -12,7 +12,7 @@
   <label>Name <input name="name" required></label>
   <label>Email <input name="email" type="email" required></label>
   <label>Message <textarea name="message" required></textarea></label>
-  <?php if (!empty($settings['recaptcha_site_key'])): ?><div class="g-recaptcha" data-sitekey="<?= View::e($settings['recaptcha_site_key']) ?>"></div><?php endif; ?>
+  <?php if (!empty($settings['turnstile_site_key'])): ?><div class="cf-turnstile" data-sitekey="<?= View::e($settings['turnstile_site_key']) ?>"></div><?php endif; ?>
   <button>Send</button>
 </form>
 <form method="post" action="/subscribe" class="form compact">
@@ -20,7 +20,7 @@
   <label>Name <input name="name"></label>
   <label>Email <input name="email" type="email" required></label>
   <input type="hidden" name="source" value="contact">
-  <?php if (!empty($settings['recaptcha_site_key'])): ?><div class="g-recaptcha" data-sitekey="<?= View::e($settings['recaptcha_site_key']) ?>"></div><?php endif; ?>
+  <?php if (!empty($settings['turnstile_site_key'])): ?><div class="cf-turnstile" data-sitekey="<?= View::e($settings['turnstile_site_key']) ?>"></div><?php endif; ?>
   <button>Subscribe</button>
 </form>
 <?php $content = ob_get_clean(); require __DIR__ . '/layout.php'; ?>

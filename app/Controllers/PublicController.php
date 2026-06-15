@@ -63,7 +63,7 @@ final class PublicController
         $message = null;
         $error = null;
         if ($method === 'POST') {
-            if (!RecaptchaVerifier::verify($settings['recaptcha_secret_key'] ?? '', $_POST['g-recaptcha-response'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '')) {
+            if (!RecaptchaVerifier::verify($settings['turnstile_secret_key'] ?? '', $_POST['cf-turnstile-response'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '')) {
                 $error = 'reCAPTCHA verification failed. Please try again.';
             } else {
                 $stmt = $this->db->prepare('INSERT INTO contact_messages (tenant_id, name, email, message, created_at) VALUES (:tenant_id, :name, :email, :message, datetime("now"))');
@@ -92,7 +92,7 @@ final class PublicController
         $error = null;
 
         if ($method === 'POST') {
-            if (!RecaptchaVerifier::verify($settings['recaptcha_secret_key'] ?? '', $_POST['g-recaptcha-response'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '')) {
+            if (!RecaptchaVerifier::verify($settings['turnstile_secret_key'] ?? '', $_POST['cf-turnstile-response'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '')) {
                 $ok = false;
                 $error = 'reCAPTCHA verification failed.';
             } else {

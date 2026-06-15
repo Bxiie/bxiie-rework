@@ -36,8 +36,8 @@
   <label>Tile size CSS value<input name="background_tile_size" value="<?= View::e($settings['background_tile_size'] ?? '360px') ?>"></label>
   <label>Background opacity 0-1<input name="background_opacity" value="<?= View::e($settings['background_opacity'] ?? '0.12') ?>"></label>
 
-  <label>reCAPTCHA site key<input name="recaptcha_site_key" value="<?= View::e($settings['recaptcha_site_key'] ?? '') ?>"></label>
-  <label>reCAPTCHA secret key<input name="recaptcha_secret_key" value="<?= View::e($settings['recaptcha_secret_key'] ?? '') ?>"></label>
+  <label>Cloudflare Turnstile site key<input name="turnstile_site_key" value="<?= View::e($settings['turnstile_site_key'] ?? '') ?>"></label>
+  <label>Cloudflare Turnstile secret key<input name="turnstile_secret_key" value="<?= View::e($settings['turnstile_secret_key'] ?? '') ?>"></label>
 
   <label class="wide">Tenant-specific CSS<textarea name="tenant_css" class="code-area" spellcheck="false"><?= View::e($settings['tenant_css'] ?? '') ?></textarea></label>
 

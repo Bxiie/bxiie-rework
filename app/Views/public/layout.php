@@ -12,7 +12,7 @@ if (!empty($backgroundImage['storage_key'])) {
     $opacity = $settings['background_opacity'] ?? '0.12';
     $bgStyle = '--site-bg-image:url(' . $bgUrl . ');--site-bg-repeat:' . ($mode === 'tile' ? 'repeat' : 'no-repeat') . ';--site-bg-size:' . ($mode === 'tile' ? View::e($tileSize) : 'cover') . ';--site-bg-opacity:' . View::e($opacity) . ';';
 }
-$recaptchaSiteKey = trim((string) ($settings['recaptcha_site_key'] ?? ''));
+$turnstileSiteKey = trim((string) ($settings['turnstile_site_key'] ?? ''));
 $portfolioHref = $slugs['portfolio'] ?? '/portfolio';
 $aboutHref = $slugs['about'] ?? '/about';
 $contactHref = $slugs['contact'] ?? '/contact';
@@ -26,7 +26,7 @@ $contactHref = $slugs['contact'] ?? '/contact';
   <meta name="description" content="<?= View::e($settings['seo_description'] ?? 'Artist portfolio') ?>">
   <link rel="stylesheet" href="/assets/site.css">
   <link rel="stylesheet" href="/tenant.css">
-  <?php if ($recaptchaSiteKey !== ''): ?><script src="https://www.google.com/recaptcha/api.js" async defer></script><?php endif; ?>
+  <?php if ($turnstileSiteKey !== ''): ?><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script><?php endif; ?>
 </head>
 <body style="--primary: <?= View::e($settings['primary_color'] ?? '#111') ?>; --accent: <?= View::e($settings['accent_color'] ?? '#c9a85f') ?>; --bg: <?= View::e($settings['background_color'] ?? '#f7f2e8') ?>; <?= $bgStyle ?>">
 <header class="site-header">

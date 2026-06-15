@@ -1424,3 +1424,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform UI/access: developer resources require login, Pricing appears in platform navigation, tenant login suppresses create-account link, and jobs admin shows execution timestamps.
 - Pricing UI: public pricing cards show admin user limits per tier and force high-contrast price display on tinted plan cards.
 - Pricing/plans UI: pricing shows admin-user limits, dark Studio card text is readable, and edit plan fields are widened for fee/card/currency values.
+
+## Cloudflare Turnstile and social auth guide update - 2026-06-15
+
+- Public platform and tenant contact/signup form protection now uses Cloudflare Turnstile settings: `turnstile_site_key` and `turnstile_secret_key`. Tenant keys override platform keys; blank tenant keys inherit platform keys; blank secrets preserve local/staging form behavior.
+- The legacy `App\Services\FirstPartyCaptcha` class name remains as the compatibility facade, but it now renders `cf-turnstile` and verifies `cf-turnstile-response` through Cloudflare Siteverify.
+- Platform and tenant settings screens now label spam protection as Cloudflare Turnstile. Existing reCAPTCHA setting keys are only read as temporary migration fallback for site key display.
+- Added `docs/admin/turnstile-and-social-auth.md` and `docs/dev/oauth-provider-guide.md` with implementation guidance for Turnstile, Google OAuth, and Facebook Login.
+- Social auth redirect routes already exist, but provider callbacks still fail closed until token exchange, state validation, identity linking, and normal ArtsFolio session creation are implemented and tested.
+

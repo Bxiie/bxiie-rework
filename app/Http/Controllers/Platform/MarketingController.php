@@ -28,7 +28,7 @@ final class MarketingController
         $tenantCards = $this->tenantCards(limit: 6);
         $imageMosaic = $this->imageMosaic(limit: 10);
 
-        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0, $this->turnstileSiteKey());
 
         $body = <<<HTML
 <section class="platform-hero">
@@ -118,7 +118,7 @@ HTML;
     {
         $cards = $this->tenantCards(limit: 100);
 
-        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0, $this->turnstileSiteKey());
 
         $body = <<<HTML
 <section class="platform-page-heading">
@@ -136,7 +136,7 @@ HTML;
 
     public function signup(Request $request): Response
     {
-        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0, $this->turnstileSiteKey());
 
         $body = <<<HTML
 <section class="signup-panel">
@@ -166,7 +166,7 @@ HTML;
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $email = trim((string) ($_POST['email'] ?? ''));
             $message = trim((string) ($_POST['message'] ?? ''));
-            $captcha = FirstPartyCaptcha::verify('platform_contact', 0, $_POST);
+            $captcha = FirstPartyCaptcha::verify('platform_contact', 0, $_POST, $this->turnstileSecretKey(), $this->requestIp($request));
             if (!$captcha->passed) {
                 $notice = '<p class="error" role="alert">Please complete the human confirmation.</p>';
             } elseif ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $message === '') {
@@ -176,7 +176,7 @@ HTML;
             }
         }
 
-        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0, $this->turnstileSiteKey());
 
         $body = <<<HTML
 <section class="platform-page-heading">
@@ -204,7 +204,7 @@ HTML;
 
     public function help(Request $request): Response
     {
-        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0, $this->turnstileSiteKey());
 
         $body = <<<HTML
 <section class="platform-page-heading">
@@ -275,7 +275,7 @@ HTML;
             return new Response('', 302, ['Location' => '/login?next=/developer']);
         }
 
-        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0, $this->turnstileSiteKey());
 
         $body = <<<HTML
 <section class="platform-page-heading">
@@ -335,7 +335,7 @@ HTML;
 
     public function privacy(Request $request): Response
     {
-        $captcha = FirstPartyCaptcha::render('platform_contact', 0);
+        $captcha = FirstPartyCaptcha::render('platform_contact', 0, $this->turnstileSiteKey());
 
         $body = <<<HTML
 <section class="platform-page-heading">
@@ -358,7 +358,7 @@ HTML;
 
     private function page(string $title, string $body, string $active): Response
     {
-        $recaptchaScript = '';
+        $turnstileScript = FirstPartyCaptcha::isConfigured($this->turnstileSiteKey()) ? '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>' : '';
         $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
         $activeClass = static fn (string $key): string => $active === $key ? ' class="active"' : '';
         $loggedIn = (bool) $this->currentUser();
@@ -376,7 +376,7 @@ HTML;
     <meta name="description" content="ArtsFolio is an artist portfolio and sales platform for working artists.">
     <link rel="stylesheet" href="/assets/platform.css">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    {$recaptchaScript}
+    {$turnstileScript}
 </head>
 <body>
 <header class="platform-header">
@@ -415,21 +415,19 @@ HTML;
 
 
     /**
-     * Renders Google reCAPTCHA on the platform contact form when configured.
+     * Returns the configured Cloudflare Turnstile site key for platform forms.
      */
-    private function recaptchaWidget(): string
+    private function turnstileSiteKey(): string
     {
-        $siteKey = $this->recaptchaSiteKey();
-        if ($siteKey === '') {
-            return '';
-        }
-
-        return '<div class="g-recaptcha" data-sitekey="' . $this->escape($siteKey) . '"></div>';
+        return $this->platformSetting('turnstile_site_key') ?: (string) getenv('ARTSFOLIO_TURNSTILE_SITE_KEY');
     }
 
-    private function recaptchaSiteKey(): string
+    /**
+     * Returns the configured Cloudflare Turnstile secret key for platform forms.
+     */
+    private function turnstileSecretKey(): string
     {
-        return $this->platformSetting('recaptcha_site_key');
+        return $this->platformSetting('turnstile_secret_key') ?: (string) getenv('ARTSFOLIO_TURNSTILE_SECRET_KEY');
     }
 
     private function platformSetting(string $key): string

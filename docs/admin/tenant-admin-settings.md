@@ -27,7 +27,7 @@ theme colors
 top bar background color/image
 portfolio section tab behavior
 contact/signup display behavior
-recaptcha keys or inherited platform protection
+Turnstile keys or inherited platform protection
 ```
 
 <!-- End of file. -->

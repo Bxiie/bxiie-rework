@@ -38,7 +38,7 @@ final class ContactController
             return $this->backToContact('contact_error=security');
         }
 
-        $captcha = FirstPartyCaptcha::verify('contact', (int) $tenant->tenantId, $_POST);
+        $captcha = FirstPartyCaptcha::verify('contact', (int) $tenant->tenantId, $_POST, $this->turnstileSecretKey($tenant), $request->server('REMOTE_ADDR'));
         if (!$captcha->passed) {
             return $this->backToContact('contact_error=recaptcha');
         }
@@ -97,6 +97,37 @@ final class ContactController
         } catch (Throwable) {
             return ['country' => '', 'region' => '', 'city' => '', 'source' => 'error'];
         }
+    }
+
+
+    /**
+     * Returns tenant Turnstile secret key, falling back to platform/global env.
+     */
+    private function turnstileSecretKey(TenantContext $tenant): string
+    {
+        if (!$this->pdo) {
+            return trim((string) (getenv('ARTSFOLIO_TURNSTILE_SECRET_KEY') ?: ''));
+        }
+
+        try {
+            $stmt = $this->pdo->prepare("SELECT setting_value FROM tenant_settings WHERE tenant_id = :tenant_id AND setting_key = 'turnstile_secret_key' LIMIT 1");
+            $stmt->execute(['tenant_id' => $tenant->tenantId]);
+            $tenantValue = trim((string) ($stmt->fetchColumn() ?: ''));
+            if ($tenantValue !== '') {
+                return $tenantValue;
+            }
+
+            $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'turnstile_secret_key' LIMIT 1");
+            $stmt->execute();
+            $platformValue = trim((string) ($stmt->fetchColumn() ?: ''));
+            if ($platformValue !== '') {
+                return $platformValue;
+            }
+        } catch (Throwable) {
+            // Do not hard-fail public form submissions because settings lookup failed.
+        }
+
+        return trim((string) (getenv('ARTSFOLIO_TURNSTILE_SECRET_KEY') ?: ''));
     }
 
     private function backToContact(string $query): Response

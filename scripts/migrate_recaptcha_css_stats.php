@@ -1,6 +1,6 @@
 <?php
 /**
- * Apply schema/settings additions for reCAPTCHA, tenant CSS, subscriber export,
+ * Apply schema/settings additions for Cloudflare Turnstile, tenant CSS, subscriber export,
  * editable slugs, page image sizes, and IP geolocation cache.
  */
 
@@ -49,8 +49,8 @@ foreach ($tenantRows as $row) {
     setting($db, $tenantId, 'contact_slug', 'contact');
     setting($db, $tenantId, 'about_image_size', 'medium');
     setting($db, $tenantId, 'contact_image_size', 'medium');
-    setting($db, $tenantId, 'recaptcha_site_key', '');
-    setting($db, $tenantId, 'recaptcha_secret_key', '');
+    setting($db, $tenantId, 'turnstile_site_key', '');
+    setting($db, $tenantId, 'turnstile_secret_key', '');
     setting($db, $tenantId, 'tenant_css', '');
 }
 

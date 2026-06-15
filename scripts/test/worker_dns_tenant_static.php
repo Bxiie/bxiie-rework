@@ -34,9 +34,9 @@ $checks = [
         'file' => $root . '/app/Platform/Tenancy/TenantResolver.php',
         'needle' => 'resolvePlatformSubdomainFallback',
     ],
-    'platform contact renders recaptcha widget' => [
+    'platform contact renders turnstile widget' => [
         'file' => $root . '/app/Http/Controllers/Platform/MarketingController.php',
-        'needle' => 'g-recaptcha',
+        'needle' => 'turnstile/v0/api.js',
     ],
 ];
 

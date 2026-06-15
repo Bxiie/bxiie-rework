@@ -3,7 +3,7 @@
 
 Tenant contact messages and public email-list signups retain the submitter IP address, user agent, and coarse location fields when available: city, region, and country. Tenant admins can see the IP and location in the contact-message and email-signup admin tables and CSV exports.
 
-Public tenant contact and signup forms use the first-party ArtsFolio human confirmation widget. The platform-level `/contact` page uses the same first-party widget so it does not depend on Google reCAPTCHA domain configuration.
+Public tenant contact and signup forms use the Cloudflare Turnstile widget. The platform-level `/contact` page uses the same first-party widget so it does not depend on Google Cloudflare Turnstile domain configuration.
 
 ## Tenant user management
 

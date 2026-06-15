@@ -206,8 +206,8 @@ HTML;
     {
         $this->track($request, $tenant, 'contact_view');
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
-        $captcha = FirstPartyCaptcha::render('contact', (int) $tenant->tenantId);
-        $signupCaptcha = FirstPartyCaptcha::render('signup', (int) $tenant->tenantId);
+        $captcha = FirstPartyCaptcha::render('contact', (int) $tenant->tenantId, $this->turnstileSiteKey($tenant));
+        $signupCaptcha = FirstPartyCaptcha::render('signup', (int) $tenant->tenantId, $this->turnstileSiteKey($tenant));
         $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
         $artworkSubject = $this->contactArtworkSubject($tenant, (string) ($_GET['artwork'] ?? ''));
 
@@ -543,6 +543,7 @@ HTML;
         $footerSignupForm = $this->footerSignupForm($tenant, $contactSlug);
         $socialLinks = $this->socialFooterLinks($tenant);
         $platformAdminLink = $this->tenantAdminLink();
+        $turnstileScript = FirstPartyCaptcha::isConfigured($this->turnstileSiteKey($tenant)) ? '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>' : '';
 
         return <<<HTML
 <!doctype html>
@@ -555,6 +556,7 @@ HTML;
     <link rel="stylesheet" href="/assets/site.css">
     <link rel="stylesheet" href="/tenant.css">
     <script src="/assets/tenant-forms.js?v=20260602a" defer></script>
+    {$turnstileScript}
 </head>
 <body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};--text-color:{$textColor};{$backgroundStyle}{$surfaceStyle}">
 <header class="site-header">
@@ -688,7 +690,7 @@ HTML;
     private function footerSignupForm(TenantContext $tenant, string $contactSlug): string
     {
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
-        $captcha = FirstPartyCaptcha::render('signup', (int) $tenant->tenantId);
+        $captcha = FirstPartyCaptcha::render('signup', (int) $tenant->tenantId, $this->turnstileSiteKey($tenant));
         $contactSlug = trim($contactSlug, '/') !== '' ? trim($contactSlug, '/') : 'contact';
 
         return <<<HTML
@@ -889,7 +891,7 @@ HTML;
 
         $messages = [
             'security' => 'The form security check expired. Please try again.',
-            'recaptcha' => 'The reCAPTCHA check did not pass. Please try again.',
+            'recaptcha' => 'The Turnstile check did not pass. Please try again.',
             'rate_limited' => 'Too many submissions were received. Please wait a few minutes and try again.',
             'missing' => 'Please complete the required fields.',
             'email' => 'Please enter a valid email address.',
@@ -911,7 +913,7 @@ HTML;
 
         $messages = [
             'security' => 'The signup security check expired. Please try again.',
-            'recaptcha' => 'The reCAPTCHA check did not pass. Please try again.',
+            'recaptcha' => 'The Turnstile check did not pass. Please try again.',
             'rate_limited' => 'Too many signup attempts were received. Please wait a few minutes and try again.',
             'missing' => 'Please enter an email address.',
             'email' => 'Please enter a valid email address.',
@@ -1038,6 +1040,31 @@ HTML;
         }
 
         return $html;
+    }
+
+
+    /**
+     * Returns tenant Turnstile site key, falling back to platform/global env.
+     */
+    private function turnstileSiteKey(TenantContext $tenant): string
+    {
+        $tenantValue = trim((string) $this->settings->get($tenant, 'turnstile_site_key', ''));
+        if ($tenantValue !== '') {
+            return $tenantValue;
+        }
+
+        try {
+            $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'turnstile_site_key' LIMIT 1");
+            $stmt->execute();
+            $platformValue = trim((string) ($stmt->fetchColumn() ?: ''));
+            if ($platformValue !== '') {
+                return $platformValue;
+            }
+        } catch (Throwable) {
+            // Public pages should continue rendering even if settings lookup fails.
+        }
+
+        return trim((string) (getenv('ARTSFOLIO_TURNSTILE_SITE_KEY') ?: ''));
     }
 
     private function escape(string $value): string

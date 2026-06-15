@@ -95,6 +95,7 @@ run_if_exists scripts/test/tenant_admin_role.php
 run_if_exists scripts/test/tenant_settings_admin.php
 run_if_exists scripts/test/production_mutation_guard.php
 run_if_exists scripts/test/contact_signup_records.php
+run_if_exists scripts/test/turnstile_captcha_static.php
 run_if_exists scripts/test/worker_dns_tenant_static.php
 run_if_exists scripts/test/tenant_admin_lists.php
 run_if_exists scripts/test/contact_message_status.php
