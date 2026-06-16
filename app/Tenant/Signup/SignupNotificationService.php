@@ -13,6 +13,8 @@ use App\Tenant\Settings\TenantSettingsRepository;
  */
 final class SignupNotificationService
 {
+    private const FALLBACK_NOTIFICATION_EMAIL = 'info@artsfol.io';
+
     public function __construct(
         private readonly EmailOutboxRepository $outbox,
         private readonly TenantSettingsRepository $settings,
@@ -24,9 +26,9 @@ final class SignupNotificationService
         string $signupEmail,
         ?string $signupName = null,
     ): ?int {
-        $adminEmail = $this->settings->get($tenant, 'site_admin_email');
+        $adminEmail = $this->notificationEmail($tenant);
 
-        if (!$adminEmail) {
+        if ($adminEmail === null) {
             return null;
         }
 
@@ -46,6 +48,27 @@ final class SignupNotificationService
             tenantId: $tenant->tenantId,
             templateKey: 'tenant.signup_notification',
         );
+    }
+
+    /**
+     * Resolve a notification destination without silently losing public signups.
+     */
+    private function notificationEmail(TenantContext $tenant): ?string
+    {
+        $candidates = [
+            $this->settings->get($tenant, 'site_admin_email'),
+            getenv('ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL') ?: '',
+            self::FALLBACK_NOTIFICATION_EMAIL,
+        ];
+
+        foreach ($candidates as $candidate) {
+            $email = strtolower(trim((string) $candidate));
+            if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $email;
+            }
+        }
+
+        return null;
     }
 }
 

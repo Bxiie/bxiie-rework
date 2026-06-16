@@ -23,17 +23,17 @@ $service = new LifecycleEmailService(
 );
 
 $passwordResetId = $service->queuePasswordReset(
-    recipientEmail: 'password-reset-test@example.test',
+    recipientEmail: 'info@artsfol.io',
     resetUrl: 'https://artsfol.io/reset-password/example-token',
 );
 
 $emailVerificationId = $service->queueEmailVerification(
-    recipientEmail: 'email-verification-test@example.test',
+    recipientEmail: 'info@artsfol.io',
     verificationUrl: 'https://artsfol.io/verify-email/example-token',
 );
 
 $welcomeId = $service->queueWelcome(
-    recipientEmail: 'welcome-test@example.test',
+    recipientEmail: 'info@artsfol.io',
     recipientName: 'Test User',
 );
 

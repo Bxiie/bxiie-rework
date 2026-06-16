@@ -19,7 +19,7 @@ $sender = new SmtpEmailSender(
 
 $message = $sender->buildMessageForTest([
     'id' => 1,
-    'recipient_email' => 'admin@example.test',
+    'recipient_email' => 'info@artsfol.io',
     'subject' => 'Header test',
     'body_text' => "Hello\nWorld",
 ]);
@@ -57,7 +57,7 @@ putenv('SMTP_EXTRA_HEADERS=X-PM-Tag: lifecycle; X-PM-Metadata-tenant: bxiie');
 $factory = App\Platform\Email\EmailSenderFactory::fromEnvironment();
 $factoryMessage = $factory->buildMessageForTest([
     'id' => 2,
-    'recipient_email' => 'admin@example.test',
+    'recipient_email' => 'info@artsfol.io',
     'subject' => 'Factory header test',
     'body_text' => 'Hello',
 ]);

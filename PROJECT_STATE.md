@@ -781,6 +781,12 @@
 - The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
 - The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
 
+## Contact notification fallback and test email recipient update - 2026-06-15
+
+- Tenant contact-message and email-signup notifications now resolve recipients through `tenant_settings.site_admin_email`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io` so public submissions are not accepted without queuing an admin notification.
+- Queue-producing email smoke scripts now enqueue their test messages to `info@artsfol.io` instead of `.example.test` recipients. Fake account identity tests may still use `.example.test` users when they do not queue outbound mail.
+- Added `scripts/test/contact_email_notification_static.php` and wired it into preflight to protect notification fallback behavior and real smoke-recipient routing.
+
 # End of file.
 
 ## 2026-05-25 current complaints repair

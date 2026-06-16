@@ -13,6 +13,8 @@ use App\Tenant\Settings\TenantSettingsRepository;
  */
 final class ContactNotificationService
 {
+    private const FALLBACK_NOTIFICATION_EMAIL = 'info@artsfol.io';
+
     public function __construct(
         private readonly EmailOutboxRepository $outbox,
         private readonly TenantSettingsRepository $settings,
@@ -25,9 +27,9 @@ final class ContactNotificationService
         string $senderEmail,
         string $message,
     ): ?int {
-        $adminEmail = $this->settings->get($tenant, 'site_admin_email');
+        $adminEmail = $this->notificationEmail($tenant);
 
-        if (!$adminEmail) {
+        if ($adminEmail === null) {
             return null;
         }
 
@@ -35,6 +37,7 @@ final class ContactNotificationService
         $body = implode("\n", [
             "Tenant: {$tenant->name} ({$tenant->slug})",
             "From: {$senderName} <{$senderEmail}>",
+            "Reply to the sender manually at: {$senderEmail}",
             "",
             "Message:",
             $message,
@@ -48,6 +51,31 @@ final class ContactNotificationService
             tenantId: $tenant->tenantId,
             templateKey: 'tenant.contact_notification',
         );
+    }
+
+    /**
+     * Resolve the notification destination without silently dropping contacts.
+     *
+     * Tenant settings win. ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL allows staging
+     * and production to override the hard fallback. The hard fallback keeps the
+     * public contact form from accepting a message and then notifying nobody.
+     */
+    private function notificationEmail(TenantContext $tenant): ?string
+    {
+        $candidates = [
+            $this->settings->get($tenant, 'site_admin_email'),
+            getenv('ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL') ?: '',
+            self::FALLBACK_NOTIFICATION_EMAIL,
+        ];
+
+        foreach ($candidates as $candidate) {
+            $email = strtolower(trim((string) $candidate));
+            if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $email;
+            }
+        }
+
+        return null;
     }
 }
 

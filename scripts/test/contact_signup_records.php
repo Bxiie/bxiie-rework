@@ -32,7 +32,7 @@ if (!$tenant) {
 }
 
 $settings = new TenantSettingsRepository($pdo);
-$settings->set($tenant, 'site_admin_email', 'admin@example.test');
+$settings->set($tenant, 'site_admin_email', 'info@artsfol.io');
 
 $outbox = new EmailOutboxRepository($pdo);
 
