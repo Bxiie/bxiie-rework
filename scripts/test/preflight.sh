@@ -77,6 +77,7 @@ else
 fi
 
 run_if_exists scripts/test/email_outbox_status.php
+run_if_exists scripts/test/lifecycle_email_guard_static.php
 
 run_if_exists scripts/test/audit_log.php
 run_if_exists scripts/test/audit_log_search.php

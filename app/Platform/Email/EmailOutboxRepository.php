@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Platform\Email;
 
+use InvalidArgumentException;
 use PDO;
 
 /**
@@ -27,6 +28,8 @@ final class EmailOutboxRepository
         ?string $templateKey = null,
         int $availableAfterSeconds = 0,
     ): int {
+        $this->assertSendableEmail($templateKey, $tenantId, $userId, $recipientEmail);
+
         $brandedBodies = $this->brandBodies($subject, $bodyText, $bodyHtml);
         $bodyText = $brandedBodies['body_text'];
         $bodyHtml = $brandedBodies['body_html'];
@@ -83,6 +86,31 @@ final class EmailOutboxRepository
     private function brandBodies(string $subject, string $bodyText): array
     {
         return BrandedEmail::render($subject, $bodyText);
+    }
+
+    /**
+     * Blocks production-dangerous lifecycle rows before they reach the outbox.
+     *
+     * User lifecycle emails must belong to a real user. A NULL user_id turns
+     * smoke tests and template previews into deliverable production mail, which
+     * caused repeated lifecycle.welcome messages to be sent to platform inboxes.
+     */
+    private function assertSendableEmail(?string $templateKey, ?int $tenantId, ?int $userId, string $recipientEmail): void
+    {
+        $normalizedTemplateKey = strtolower(trim((string) $templateKey));
+        $normalizedRecipient = strtolower(trim($recipientEmail));
+
+        if (str_starts_with($normalizedTemplateKey, 'lifecycle.') && $userId === null) {
+            throw new InvalidArgumentException(
+                "Refusing to queue {$normalizedTemplateKey} for {$normalizedRecipient}: lifecycle email requires user_id."
+            );
+        }
+
+        if (str_starts_with($normalizedTemplateKey, 'lifecycle.') && $tenantId === null) {
+            throw new InvalidArgumentException(
+                "Refusing to queue {$normalizedTemplateKey} for {$normalizedRecipient}: lifecycle email requires tenant_id."
+            );
+        }
     }
 
     public function claimNext(): ?array

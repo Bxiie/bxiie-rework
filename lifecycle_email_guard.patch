@@ -1,0 +1,298 @@
+diff -ruN '--exclude=._*' src/PROJECT_STATE.md lifecycle_fix/PROJECT_STATE.md
+--- src/PROJECT_STATE.md	2026-06-16 01:53:00.587623751 +0000
++++ lifecycle_fix/PROJECT_STATE.md	2026-06-16 14:53:36.459577878 +0000
+@@ -1583,3 +1583,5 @@
+ - Added `docs/admin/turnstile-and-social-auth.md` and `docs/dev/oauth-provider-guide.md` with implementation guidance for Turnstile, Google OAuth, and Facebook Login.
+ - Social auth redirect routes already exist, but provider callbacks still fail closed until token exchange, state validation, identity linking, and normal ArtsFolio session creation are implemented and tested.
+ 
++- 2026-06-16: Lifecycle email outbox safety tightened after production showed repeated `lifecycle.welcome` rows with `tenant_id=NULL` and `user_id=NULL` sent to platform/test addresses. `lifecycle.*` queueing now requires both `tenant_id` and `user_id`; `scripts/test/email_outbox.php` rolls back by default and uses `welcome-test@example.test` unless explicitly committed with `ARTSFOLIO_EMAIL_OUTBOX_TEST_COMMIT=1`.
++
+diff -ruN '--exclude=._*' src/app/Platform/Email/EmailOutboxRepository.php lifecycle_fix/app/Platform/Email/EmailOutboxRepository.php
+--- src/app/Platform/Email/EmailOutboxRepository.php	2026-06-10 18:17:32.163926987 +0000
++++ lifecycle_fix/app/Platform/Email/EmailOutboxRepository.php	2026-06-16 14:53:36.456530739 +0000
+@@ -4,6 +4,7 @@
+ 
+ namespace App\Platform\Email;
+ 
++use InvalidArgumentException;
+ use PDO;
+ 
+ /**
+@@ -27,6 +28,8 @@
+         ?string $templateKey = null,
+         int $availableAfterSeconds = 0,
+     ): int {
++        $this->assertSendableEmail($templateKey, $tenantId, $userId, $recipientEmail);
++
+         $brandedBodies = $this->brandBodies($subject, $bodyText, $bodyHtml);
+         $bodyText = $brandedBodies['body_text'];
+         $bodyHtml = $brandedBodies['body_html'];
+@@ -85,6 +88,31 @@
+         return BrandedEmail::render($subject, $bodyText);
+     }
+ 
++    /**
++     * Blocks production-dangerous lifecycle rows before they reach the outbox.
++     *
++     * User lifecycle emails must belong to a real user. A NULL user_id turns
++     * smoke tests and template previews into deliverable production mail, which
++     * caused repeated lifecycle.welcome messages to be sent to platform inboxes.
++     */
++    private function assertSendableEmail(?string $templateKey, ?int $tenantId, ?int $userId, string $recipientEmail): void
++    {
++        $normalizedTemplateKey = strtolower(trim((string) $templateKey));
++        $normalizedRecipient = strtolower(trim($recipientEmail));
++
++        if (str_starts_with($normalizedTemplateKey, 'lifecycle.') && $userId === null) {
++            throw new InvalidArgumentException(
++                "Refusing to queue {$normalizedTemplateKey} for {$normalizedRecipient}: lifecycle email requires user_id."
++            );
++        }
++
++        if (str_starts_with($normalizedTemplateKey, 'lifecycle.') && $tenantId === null) {
++            throw new InvalidArgumentException(
++                "Refusing to queue {$normalizedTemplateKey} for {$normalizedRecipient}: lifecycle email requires tenant_id."
++            );
++        }
++    }
++
+     public function claimNext(): ?array
+     {
+         $this->pdo->beginTransaction();
+diff -ruN '--exclude=._*' src/app/Platform/Email/LifecycleEmailService.php lifecycle_fix/app/Platform/Email/LifecycleEmailService.php
+--- src/app/Platform/Email/LifecycleEmailService.php	2026-06-10 18:52:37.843363025 +0000
++++ lifecycle_fix/app/Platform/Email/LifecycleEmailService.php	2026-06-16 14:53:36.456907362 +0000
+@@ -4,6 +4,8 @@
+ 
+ namespace App\Platform\Email;
+ 
++use InvalidArgumentException;
++
+ /**
+  * Queues lifecycle and account emails.
+  */
+@@ -21,6 +23,10 @@
+         string $resetUrl,
+         ?int $userId = null,
+     ): int {
++        if ($tenantId === null || $userId === null) {
++            throw new InvalidArgumentException('Refusing to queue lifecycle.welcome without tenant_id and user_id.');
++        }
++
+         $body = $this->renderer->renderFile(
+             $this->templateRoot . '/auth/password-reset-request.md',
+             ['reset_url' => $resetUrl, 'recipient_email' => $recipientEmail],
+@@ -40,6 +46,10 @@
+         string $verificationUrl,
+         ?int $userId = null,
+     ): int {
++        if ($tenantId === null || $userId === null) {
++            throw new InvalidArgumentException('Refusing to queue lifecycle.welcome without tenant_id and user_id.');
++        }
++
+         $body = $this->renderer->renderFile(
+             $this->templateRoot . '/auth/email-verification-request.md',
+             ['verification_url' => $verificationUrl],
+@@ -61,6 +71,10 @@
+         ?int $userId = null,
+         int $delaySeconds = 21600,
+     ): int {
++        if ($tenantId === null || $userId === null) {
++            throw new InvalidArgumentException('Refusing to queue lifecycle.welcome without tenant_id and user_id.');
++        }
++
+         $body = $this->renderer->renderFile(
+             $this->templateRoot . '/lifecycle/welcome.md',
+             ['recipient_name' => $recipientName ?: 'there'],
+diff -ruN '--exclude=._*' src/scripts/test/contact_email_notification_static.php lifecycle_fix/scripts/test/contact_email_notification_static.php
+--- src/scripts/test/contact_email_notification_static.php	2026-06-16 00:38:47.775749291 +0000
++++ lifecycle_fix/scripts/test/contact_email_notification_static.php	2026-06-16 14:53:36.457511732 +0000
+@@ -18,7 +18,8 @@
+     'contact notification fallback' => $contactService !== false && str_contains($contactService, "FALLBACK_NOTIFICATION_EMAIL = 'info@artsfol.io'"),
+     'contact notification queues when fallback is configured' => $contactService !== false && str_contains($contactService, 'ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL') && !str_contains($contactService, 'if (!$adminEmail)'),
+     'signup notification fallback' => $signupService !== false && str_contains($signupService, "FALLBACK_NOTIFICATION_EMAIL = 'info@artsfol.io'"),
+-    'outbox smoke queues to real mailbox' => $emailOutbox !== false && substr_count($emailOutbox, "recipientEmail: 'info@artsfol.io'") >= 3,
++    'outbox smoke uses reserved test mailbox' => $emailOutbox !== false && str_contains($emailOutbox, "$recipientEmail = 'welcome-test@example.test';"),
++    'outbox smoke rolls back by default' => $emailOutbox !== false && str_contains($emailOutbox, "ARTSFOLIO_EMAIL_OUTBOX_TEST_COMMIT") && str_contains($emailOutbox, '$pdo->rollBack();'),
+     'tenant notification smoke recipient is real mailbox' => $tenantNotifications !== false && str_contains($tenantNotifications, "site_admin_email', 'info@artsfol.io'"),
+     'contact/signup record smoke recipient is real mailbox' => $contactSignupRecords !== false && str_contains($contactSignupRecords, "site_admin_email', 'info@artsfol.io'"),
+ ];
+diff -ruN '--exclude=._*' src/scripts/test/email_outbox.php lifecycle_fix/scripts/test/email_outbox.php
+--- src/scripts/test/email_outbox.php	2026-06-16 00:38:47.776618847 +0000
++++ lifecycle_fix/scripts/test/email_outbox.php	2026-06-16 14:53:36.457143563 +0000
+@@ -3,7 +3,12 @@
+ declare(strict_types=1);
+ 
+ /**
+- * Manual verification script for queuing account and lifecycle emails.
++ * Manual verification script for account and lifecycle email queueing.
++ *
++ * This script runs inside a rollback-only transaction by default. It verifies
++ * outbox rendering and lifecycle guards without leaving deliverable rows for
++ * the production worker. Set ARTSFOLIO_EMAIL_OUTBOX_TEST_COMMIT=1 only with a
++ * safe local mailbox or SMTP sink.
+  */
+ 
+ use App\Platform\Email\EmailOutboxRepository;
+@@ -14,34 +19,79 @@
+ $root = dirname(__DIR__, 2);
+ require $root . '/bootstrap/app.php';
+ 
++$commit = ((string) getenv('ARTSFOLIO_EMAIL_OUTBOX_TEST_COMMIT')) === '1';
++$recipientEmail = 'welcome-test@example.test';
++
+ $pdo = Database::connect($root);
+-$outbox = new EmailOutboxRepository($pdo);
+-$service = new LifecycleEmailService(
+-    outbox: $outbox,
+-    renderer: new TemplateRenderer(),
+-    templateRoot: $root . '/template',
+-);
+-
+-$passwordResetId = $service->queuePasswordReset(
+-    recipientEmail: 'info@artsfol.io',
+-    resetUrl: 'https://artsfol.io/reset-password/example-token',
+-);
+-
+-$emailVerificationId = $service->queueEmailVerification(
+-    recipientEmail: 'info@artsfol.io',
+-    verificationUrl: 'https://artsfol.io/verify-email/example-token',
+-);
+-
+-$welcomeId = $service->queueWelcome(
+-    recipientEmail: 'info@artsfol.io',
+-    recipientName: 'Test User',
+-);
+-
+-echo json_encode([
+-    'password_reset_email_id' => $passwordResetId,
+-    'email_verification_email_id' => $emailVerificationId,
+-    'welcome_email_id' => $welcomeId,
+-    'latest' => $outbox->latest(5),
+-], JSON_PRETTY_PRINT) . PHP_EOL;
++$pdo->beginTransaction();
++
++try {
++    $outbox = new EmailOutboxRepository($pdo);
++    $service = new LifecycleEmailService(
++        outbox: $outbox,
++        renderer: new TemplateRenderer(),
++        templateRoot: $root . '/template',
++    );
++
++    $passwordResetId = $service->queuePasswordReset(
++        recipientEmail: $recipientEmail,
++        resetUrl: 'https://artsfol.io/reset-password/example-token',
++        userId: 1,
++    );
++
++    $emailVerificationId = $service->queueEmailVerification(
++        recipientEmail: $recipientEmail,
++        verificationUrl: 'https://artsfol.io/verify-email/example-token',
++        userId: 1,
++    );
++
++    $guardTriggered = false;
++
++    try {
++        $service->queueWelcome(
++            recipientEmail: $recipientEmail,
++            recipientName: 'Test User',
++        );
++    } catch (InvalidArgumentException $e) {
++        $guardTriggered = str_contains($e->getMessage(), 'without tenant_id and user_id');
++    }
++
++    if (!$guardTriggered) {
++        throw new RuntimeException('Lifecycle welcome guard did not reject missing tenant_id/user_id.');
++    }
++
++    $welcomeId = $service->queueWelcome(
++        recipientEmail: $recipientEmail,
++        recipientName: 'Test User',
++        tenantId: 1,
++        userId: 1,
++    );
++
++    $latest = $outbox->latest(5);
++
++    if ($commit) {
++        $pdo->commit();
++    } else {
++        $pdo->rollBack();
++    }
++
++    echo json_encode([
++        'ok' => true,
++        'committed' => $commit,
++        'recipient_email' => $recipientEmail,
++        'password_reset_email_id' => $passwordResetId,
++        'email_verification_email_id' => $emailVerificationId,
++        'welcome_email_id' => $welcomeId,
++        'lifecycle_guard_triggered' => $guardTriggered,
++        'latest' => $latest,
++    ], JSON_PRETTY_PRINT) . PHP_EOL;
++} catch (Throwable $e) {
++    if ($pdo->inTransaction()) {
++        $pdo->rollBack();
++    }
++
++    fwrite(STDERR, $e->getMessage() . PHP_EOL);
++    exit(1);
++}
+ 
+ // End of file.
+diff -ruN '--exclude=._*' src/scripts/test/lifecycle_email_guard_static.php lifecycle_fix/scripts/test/lifecycle_email_guard_static.php
+--- src/scripts/test/lifecycle_email_guard_static.php	1970-01-01 00:00:00.000000000 +0000
++++ lifecycle_fix/scripts/test/lifecycle_email_guard_static.php	2026-06-16 14:53:36.457598246 +0000
+@@ -0,0 +1,39 @@
++<?php
++
++declare(strict_types=1);
++
++/**
++ * Static regression checks for lifecycle email safety guards.
++ */
++
++$root = dirname(__DIR__, 2);
++
++$repository = file_get_contents($root . '/app/Platform/Email/EmailOutboxRepository.php');
++$service = file_get_contents($root . '/app/Platform/Email/LifecycleEmailService.php');
++$outboxSmoke = file_get_contents($root . '/scripts/test/email_outbox.php');
++
++$checks = [
++    'repository blocks lifecycle without user_id' => $repository !== false
++        && str_contains($repository, "str_starts_with($normalizedTemplateKey, 'lifecycle.')")
++        && str_contains($repository, '$userId === null'),
++    'repository blocks lifecycle without tenant_id' => $repository !== false
++        && str_contains($repository, '$tenantId === null'),
++    'welcome service requires tenant and user ids' => $service !== false
++        && str_contains($service, "Refusing to queue lifecycle.welcome without tenant_id and user_id"),
++    'outbox smoke never uses platform mailbox' => $outboxSmoke !== false
++        && !str_contains($outboxSmoke, "recipientEmail: 'info@artsfol.io'"),
++    'outbox smoke rolls back by default' => $outboxSmoke !== false
++        && str_contains($outboxSmoke, 'ARTSFOLIO_EMAIL_OUTBOX_TEST_COMMIT')
++        && str_contains($outboxSmoke, '$pdo->rollBack();'),
++];
++
++foreach ($checks as $label => $ok) {
++    if (!$ok) {
++        fwrite(STDERR, "Failed lifecycle email guard static check: {$label}\n");
++        exit(1);
++    }
++}
++
++echo "Lifecycle email guard static checks passed.\n";
++
++// End of file.
+diff -ruN '--exclude=._*' src/scripts/test/preflight.sh lifecycle_fix/scripts/test/preflight.sh
+--- src/scripts/test/preflight.sh	2026-06-16 02:31:59.885712816 +0000
++++ lifecycle_fix/scripts/test/preflight.sh	2026-06-16 14:53:36.457771919 +0000
+@@ -77,6 +77,7 @@
+ fi
+ 
+ run_if_exists scripts/test/email_outbox_status.php
++run_if_exists scripts/test/lifecycle_email_guard_static.php
+ 
+ run_if_exists scripts/test/audit_log.php
+ run_if_exists scripts/test/audit_log_search.php

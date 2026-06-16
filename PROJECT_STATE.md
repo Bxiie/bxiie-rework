@@ -1564,4 +1564,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - OAuth provider settings are managed in Platform Admin → Platform Settings and persisted in `platform_settings` using `oauth_auth_base_url`, `google_oauth_client_id`, `google_oauth_client_secret`, `facebook_oauth_client_id`, and `facebook_oauth_client_secret`; browser OAuth no longer reads provider credentials or callback base URL from `/etc/artsfolio/artsfolio.env`.
 - Added `scripts/test/oauth_browser_login_static.php` plus admin/dev/user docs for social login setup and operation.
 
+## Lifecycle email safety
+
+- Lifecycle emails such as `lifecycle.welcome` must be associated with both `tenant_id` and `user_id` before being queued.
+- Smoke/preflight email tests must not commit deliverable lifecycle outbox rows by default.
+- `scripts/test/email_outbox.php` uses `welcome-test@example.test` and rolls back unless explicitly run with `ARTSFOLIO_EMAIL_OUTBOX_TEST_COMMIT=1`.
+
 <!-- End of file. -->

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Platform\Email;
 
+use InvalidArgumentException;
+
 /**
  * Queues lifecycle and account emails.
  */
@@ -61,6 +63,10 @@ final class LifecycleEmailService
         ?int $userId = null,
         int $delaySeconds = 21600,
     ): int {
+        if ($tenantId === null || $userId === null) {
+            throw new InvalidArgumentException('Refusing to queue lifecycle.welcome without tenant_id and user_id.');
+        }
+
         $body = $this->renderer->renderFile(
             $this->templateRoot . '/lifecycle/welcome.md',
             ['recipient_name' => $recipientName ?: 'there'],
