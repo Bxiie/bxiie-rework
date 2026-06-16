@@ -16,23 +16,24 @@ final class SignupCodeRepository
     {
     }
 
-    public function create(string $kind, string $label, ?string $recipientEmail, int $maxRedemptions, ?int $createdByUserId): array
+    public function create(string $kind, string $label, ?string $recipientEmail, int $maxRedemptions, ?int $createdByUserId, int $freeAccessMonths = 0): array
     {
-        if (!in_array($kind, ['one_time', 'blanket'], true)) {
-            throw new RuntimeException('Signup code type must be one_time or blanket.');
+        if (!in_array($kind, ['one_time', 'blanket', 'free_months'], true)) {
+            throw new RuntimeException('Signup code type must be one_time, blanket, or free_months.');
         }
         $recipientEmail = $recipientEmail !== null && trim($recipientEmail) !== '' ? strtolower(trim($recipientEmail)) : null;
         if ($recipientEmail !== null && !filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
             throw new RuntimeException('Recipient email is invalid.');
         }
         $maxRedemptions = $kind === 'one_time' ? 1 : max(1, $maxRedemptions);
+        $freeAccessMonths = $kind === 'free_months' ? max(1, min(60, $freeAccessMonths)) : 0;
         $code = $this->generateCode($kind);
 
         $stmt = $this->pdo->prepare(
             "INSERT INTO tenant_signup_codes (
-                code, code_type, label, recipient_email, max_redemptions, redemption_count, status, created_by_user_id, created_at, updated_at
+                code, code_type, label, recipient_email, max_redemptions, free_access_months, redemption_count, status, created_by_user_id, created_at, updated_at
             ) VALUES (
-                :code, :code_type, :label, :recipient_email, :max_redemptions, 0, 'active', :created_by_user_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                :code, :code_type, :label, :recipient_email, :max_redemptions, :free_access_months, 0, 'active', :created_by_user_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
             )"
         );
         $stmt->execute([
@@ -41,6 +42,7 @@ final class SignupCodeRepository
             'label' => trim($label) !== '' ? trim($label) : ucfirst(str_replace('_', ' ', $kind)) . ' signup code',
             'recipient_email' => $recipientEmail,
             'max_redemptions' => $maxRedemptions,
+            'free_access_months' => $freeAccessMonths,
             'created_by_user_id' => $createdByUserId,
         ]);
 
@@ -58,6 +60,22 @@ final class SignupCodeRepository
         );
         $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
         $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    /**
+     * Lists plans that may be selected during free-month signup redemption.
+     */
+    public function listActivePlans(): array
+    {
+        $stmt = $this->pdo->query(
+            "SELECT id, slug, name, monthly_price_cents
+             FROM plans
+             WHERE is_active = 1
+             ORDER BY monthly_price_cents ASC, id ASC"
+        );
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -134,7 +152,11 @@ final class SignupCodeRepository
 
     private function generateCode(string $kind): string
     {
-        $prefix = $kind === 'one_time' ? 'AF1' : 'AFB';
+        $prefix = match ($kind) {
+            'one_time' => 'AF1',
+            'free_months' => 'AFF',
+            default => 'AFB',
+        };
         do {
             $code = $prefix . '-' . strtoupper(bin2hex(random_bytes(4))) . '-' . strtoupper(bin2hex(random_bytes(3)));
         } while ($this->findByCode($code) !== null);

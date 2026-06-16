@@ -32,9 +32,10 @@ final class SignupController
     {
         // ARTSFOLIO_SIGNUP_PASSCODE_PREPROMPT
         $signupEntryCode = trim((string) ($_GET['code'] ?? ''));
-        if ($this->signups->requiresSignupCode()) {
+        $signupCodeData = null;
+        if ($this->signups->requiresSignupCode() || $signupEntryCode !== '') {
             try {
-                $this->signups->validateSignupEntryCode($signupEntryCode);
+                $signupCodeData = $this->signups->validateSignupEntryCode($signupEntryCode);
             } catch (\Throwable $e) {
                 return $this->signupCodePrompt($signupEntryCode === '' ? '' : $e->getMessage());
             }
@@ -47,6 +48,7 @@ final class SignupController
         $passwordBlock = $oauthEmail !== ''
             ? '<p class="auth-notice">Signed in with SSO as ' . $oauthEmail . '. Choose a site name and slug to create your tenant.</p>'
             : '<label>Password<input type="password" name="password" autocomplete="new-password" minlength="10" required></label>';
+        $planBlock = $this->freeAccessPlanBlock($signupCodeData);
 
         return Response::html(<<<HTML
 <!doctype html>
@@ -78,6 +80,7 @@ final class SignupController
             <label>Your name<input type="text" name="admin_name" autocomplete="name" value="{$oauthName}"></label>
             <label>Email<input type="email" name="email" autocomplete="email" value="{$oauthEmail}" required></label>
             <label>Signup passcode<input type="text" name="signup_code" value="{$signupCode}" autocomplete="off"></label>
+            {$planBlock}
             {$passwordBlock}
             <button type="submit">Create site</button>
         </form>
@@ -114,6 +117,7 @@ HTML);
                 adminName: (string) ($_POST['admin_name'] ?? ''),
                 passwordHash: $this->passwords->hash($password),
                 signupCode: (string) ($_POST['signup_code'] ?? ''),
+                selectedPlanSlug: (string) ($_POST['selected_plan'] ?? ''),
             );
 
             unset($_SESSION['artsfolio_oauth_profile']);
@@ -133,6 +137,36 @@ HTML);
         }
 
         return new Response('', 302, $headers);
+    }
+
+
+    /**
+     * Renders the plan selector shown only for free-month signup codes.
+     */
+    private function freeAccessPlanBlock(?array $signupCode): string
+    {
+        if ($signupCode === null || (string) ($signupCode['code_type'] ?? '') !== 'free_months') {
+            return '';
+        }
+
+        $months = max(1, (int) ($signupCode['free_access_months'] ?? 0));
+        $options = '';
+        foreach ($this->signups->activePlans() as $plan) {
+            $slug = htmlspecialchars((string) $plan['slug'], ENT_QUOTES, 'UTF-8');
+            $name = htmlspecialchars((string) $plan['name'], ENT_QUOTES, 'UTF-8');
+            $price = ((int) ($plan['monthly_price_cents'] ?? 0)) > 0
+                ? '$' . number_format(((int) $plan['monthly_price_cents']) / 100, 2) . '/month'
+                : 'Free';
+            $options .= '<option value="' . $slug . '">' . $name . ' · ' . htmlspecialchars($price, ENT_QUOTES, 'UTF-8') . '</option>';
+        }
+
+        if ($options === '') {
+            return '<p class="auth-error">No active plans are available for this free access code.</p>';
+        }
+
+        $label = htmlspecialchars($months . ' month' . ($months === 1 ? '' : 's'), ENT_QUOTES, 'UTF-8');
+
+        return '<label>Choose your plan<select name="selected_plan" required>' . $options . '</select></label><p class="auth-notice">This signup code grants free access to the selected plan for ' . $label . '.</p>';
     }
 
     /**

@@ -16,7 +16,7 @@ use App\Platform\Signup\SignupCodeRepository;
 use App\Support\Security\CsrfTokenService;
 
 /**
- * Platform admin UI for one-time and blanket tenant signup passcodes.
+ * Platform admin UI for one-time, blanket, and free-month tenant signup passcodes.
  */
 final class SignupCodesController
 {
@@ -46,6 +46,8 @@ final class SignupCodesController
             $recipient = AdminLayout::escape((string) ($row['recipient_email'] ?? ''));
             $status = AdminLayout::escape((string) $row['status']);
             $usage = (int) $row['redemption_count'] . ' / ' . (int) $row['max_redemptions'];
+            $freeMonths = (int) ($row['free_access_months'] ?? 0);
+            $freeAccess = $freeMonths > 0 ? AdminLayout::escape($freeMonths . ' month' . ($freeMonths === 1 ? '' : 's') . ' any plan') : '';
             $tenant = AdminLayout::escape(trim((string) ($row['redeemed_tenant_slug'] ?? '')));
             $rows .= <<<HTML
 <tr>
@@ -53,6 +55,7 @@ final class SignupCodesController
     <td>{$type}</td>
     <td>{$recipient}</td>
     <td>{$usage}</td>
+    <td>{$freeAccess}</td>
     <td>{$status}</td>
     <td>{$tenant}</td>
     <td>
@@ -67,7 +70,7 @@ final class SignupCodesController
 HTML;
         }
         if ($rows === '') {
-            $rows = '<tr><td colspan="7">No signup codes exist yet.</td></tr>';
+            $rows = '<tr><td colspan="8">No signup codes exist yet.</td></tr>';
         }
 
         $body = <<<HTML
@@ -81,11 +84,13 @@ HTML;
                 <select name="code_type">
                     <option value="one_time">One-time code</option>
                     <option value="blanket">Blanket code</option>
+                    <option value="free_months">Free access code</option>
                 </select>
             </label>
             <label>Label<input type="text" name="label" placeholder="June gallery prospect list"></label>
             <label>Recipient email, optional<input type="email" name="recipient_email"></label>
-            <label>Blanket redemption limit<input type="number" name="max_redemptions" min="1" max="10000" value="25"></label>
+            <label>Blanket/free-code redemption limit<input type="number" name="max_redemptions" min="1" max="10000" value="25"></label>
+            <label>Free access months<input type="number" name="free_access_months" min="1" max="60" value="3"></label>
         </div>
         <button type="submit">Create code</button>
     </form>
@@ -98,12 +103,13 @@ HTML;
         <input type="hidden" name="bulk" value="1">
         <label>Prospective tenant emails<textarea name="bulk_emails" rows="8"></textarea></label>
         <label>Campaign label<input type="text" name="label" placeholder="Prospects"></label>
-        <label>Mode<select name="code_type"><option value="one_time">Individual one-time codes</option><option value="blanket">One blanket code for all recipients</option></select></label>
-        <label>Blanket redemption limit<input type="number" name="max_redemptions" min="1" max="10000" value="100"></label>
+        <label>Mode<select name="code_type"><option value="one_time">Individual one-time codes</option><option value="blanket">One blanket code for all recipients</option><option value="free_months">One free-access code for all recipients</option></select></label>
+        <label>Blanket/free-code redemption limit<input type="number" name="max_redemptions" min="1" max="10000" value="100"></label>
+        <label>Free access months<input type="number" name="free_access_months" min="1" max="60" value="3"></label>
         <button type="submit">Create and queue invites</button>
     </form>
 </section>
-<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Code</th><th>Type</th><th>Recipient</th><th>Use</th><th>Status</th><th>Tenant</th><th>Invite</th></tr></thead><tbody>{$rows}</tbody></table></div>
+<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Code</th><th>Type</th><th>Recipient</th><th>Use</th><th>Free access</th><th>Status</th><th>Tenant</th><th>Invite</th></tr></thead><tbody>{$rows}</tbody></table></div>
 HTML;
 
         return Response::html(AdminLayout::render('Signup Codes', $body, 'codes'));
@@ -129,6 +135,7 @@ HTML;
             recipientEmail: (string) ($_POST['recipient_email'] ?? '') ?: null,
             maxRedemptions: (int) ($_POST['max_redemptions'] ?? 1),
             createdByUserId: isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
+            freeAccessMonths: (int) ($_POST['free_access_months'] ?? 0),
         );
         $this->audit($request, $currentUser, 'platform.signup_code.created', (string) ($code['id'] ?? $code['code']), ['code_type' => $code['code_type'] ?? '']);
 
@@ -161,8 +168,8 @@ HTML;
         $emails = preg_split('/[\r\n,;]+/', (string) ($_POST['bulk_emails'] ?? '')) ?: [];
         $emails = array_values(array_unique(array_filter(array_map(static fn ($e) => strtolower(trim((string) $e)), $emails), static fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL))));
         $type = (string) ($_POST['code_type'] ?? 'one_time');
-        if ($type === 'blanket') {
-            $code = $this->codes->create('blanket', (string) ($_POST['label'] ?? 'Blanket prospect code'), null, (int) ($_POST['max_redemptions'] ?? count($emails)), isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null);
+        if (in_array($type, ['blanket', 'free_months'], true)) {
+            $code = $this->codes->create($type, (string) ($_POST['label'] ?? ($type === 'free_months' ? 'Free access prospect code' : 'Blanket prospect code')), null, (int) ($_POST['max_redemptions'] ?? count($emails)), isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, (int) ($_POST['free_access_months'] ?? 0));
             foreach ($emails as $email) {
                 $this->queueInvite($email, (string) $code['code']);
             }

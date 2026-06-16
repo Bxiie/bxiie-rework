@@ -1570,14 +1570,4 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Smoke/preflight email tests must not commit deliverable lifecycle outbox rows by default.
 - `scripts/test/email_outbox.php` uses `welcome-test@example.test` and rolls back unless explicitly run with `ARTSFOLIO_EMAIL_OUTBOX_TEST_COMMIT=1`.
 
-
-## Free plan access signup codes
-
-- Platform signup codes support a `free_months` type for granting temporary free access to any active plan.
-- `tenant_signup_codes.free_access_months` stores the number of free months granted by the code.
-- `tenant_plan_assignments.complimentary_until` stores the end of the free access period.
-- `tenant_plan_assignments.granted_by_signup_code_id` links the plan assignment back to the redeemed signup code.
-- `tenant_plan_assignments.billing_note` records the operational reason for the complimentary/trial assignment.
-- Free access signup codes waive ArtsFolio platform plan billing for the configured period only; they do not waive card fees, sales commissions, shipping, or taxes.
-
 <!-- End of file. -->

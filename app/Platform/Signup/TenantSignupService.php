@@ -59,6 +59,7 @@ final class TenantSignupService
         string $passwordHash,
         string $platformDomain = 'artsfol.io',
         ?string $signupCode = null,
+        ?string $selectedPlanSlug = null,
     ): array {
         $slug = $this->normalizeSlug($slug);
         $siteName = trim($siteName);
@@ -79,6 +80,7 @@ final class TenantSignupService
 
         $domain = $slug . '.' . $platformDomain;
         $validatedSignupCode = $this->validateSignupCode($signupCode, $adminEmail);
+        $selectedPlan = $this->validateSelectedPlan($validatedSignupCode, $selectedPlanSlug);
 
         $this->pdo->beginTransaction();
 
@@ -94,6 +96,7 @@ final class TenantSignupService
             $this->seedTenantCss($tenantId);
             $this->assignTenantAdminRole($tenantId, $userId);
             $this->queueProvisioningJobs($tenantId, $domain);
+            $this->assignSignupCodePlanGrant($tenantId, $validatedSignupCode, $selectedPlan);
             $this->queueLifecycleEmail($tenantId, $userId, $adminEmail, $adminName, $slug);
             if ($validatedSignupCode !== null && $this->signupCodes !== null) {
                 $this->signupCodes->markRedeemed((int) $validatedSignupCode['id'], $tenantId, $adminEmail);
@@ -117,6 +120,28 @@ final class TenantSignupService
 
 
     /**
+     * Lists active pricing plans for public signup plan selection.
+     */
+    public function activePlans(): array
+    {
+        if ($this->signupCodes !== null) {
+            return $this->signupCodes->listActivePlans();
+        }
+        if (!$this->tableExists('plans')) {
+            return [];
+        }
+
+        $stmt = $this->pdo->query(
+            "SELECT id, slug, name, monthly_price_cents
+             FROM plans
+             WHERE is_active = 1
+             ORDER BY monthly_price_cents ASC, id ASC"
+        );
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Enforces optional platform signup-code gating before tenant creation.
      */
     private function validateSignupCode(?string $signupCode, string $adminEmail): ?array
@@ -136,6 +161,70 @@ final class TenantSignupService
         }
 
         return $this->signupCodes->validateForSignup($signupCode, $adminEmail);
+    }
+
+    /**
+     * Validates the selected plan when a free-month signup code is redeemed.
+     */
+    private function validateSelectedPlan(?array $signupCode, ?string $selectedPlanSlug): ?array
+    {
+        if ($signupCode === null || (string) ($signupCode['code_type'] ?? '') !== 'free_months') {
+            return null;
+        }
+
+        $selectedPlanSlug = strtolower(trim((string) $selectedPlanSlug));
+        if ($selectedPlanSlug === '') {
+            throw new RuntimeException('Choose a plan for the free access period.');
+        }
+        if (!$this->tableExists('plans')) {
+            throw new RuntimeException('Pricing plans are not available.');
+        }
+
+        $stmt = $this->pdo->prepare('SELECT id, slug, name, monthly_price_cents FROM plans WHERE slug = :slug AND is_active = 1 LIMIT 1');
+        $stmt->execute(['slug' => $selectedPlanSlug]);
+        $plan = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$plan) {
+            throw new RuntimeException('Selected plan is not available.');
+        }
+
+        return $plan;
+    }
+
+    /**
+     * Assigns the selected plan and records the free-access end date.
+     */
+    private function assignSignupCodePlanGrant(int $tenantId, ?array $signupCode, ?array $selectedPlan): void
+    {
+        if ($signupCode === null || $selectedPlan === null || (string) ($signupCode['code_type'] ?? '') !== 'free_months') {
+            return;
+        }
+        if (!$this->tableExists('tenant_plan_assignments')) {
+            return;
+        }
+
+        $months = max(1, (int) ($signupCode['free_access_months'] ?? 0));
+        $complimentaryUntil = (new \DateTimeImmutable('now'))->modify('+' . $months . ' months')->format('Y-m-d H:i:s');
+        $values = [
+            'tenant_id' => $tenantId,
+            'plan_id' => (int) $selectedPlan['id'],
+            'status' => 'trial',
+            'complimentary_until' => $complimentaryUntil,
+            'granted_by_signup_code_id' => (int) $signupCode['id'],
+            'billing_note' => 'Free access signup code ' . (string) $signupCode['code'] . ' for ' . $months . ' month' . ($months === 1 ? '' : 's') . '.',
+            'created_at' => $this->now(),
+        ];
+
+        $stmt = $this->pdo->prepare('SELECT id FROM tenant_plan_assignments WHERE tenant_id = :tenant_id LIMIT 1');
+        $stmt->execute(['tenant_id' => $tenantId]);
+        $existingId = $stmt->fetchColumn();
+
+        if ($existingId !== false) {
+            $values['updated_at'] = $this->now();
+            $this->updateKnown('tenant_plan_assignments', (int) $existingId, $values);
+            return;
+        }
+
+        $this->insertKnown('tenant_plan_assignments', $values);
     }
 
     private function normalizeSlug(string $slug): string
