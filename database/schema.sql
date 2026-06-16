@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS subscribers (
 
 CREATE TABLE IF NOT EXISTS contact_messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    tenant_id INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    tenant_id INTEGER NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name TEXT,
     email TEXT,
     message TEXT,

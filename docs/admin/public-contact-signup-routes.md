@@ -1,6 +1,6 @@
 # Public Contact and Signup Routes Administration
 
-## Current public routes
+## Current public platform routes
 
 ```text
 GET  /contact
@@ -9,18 +9,31 @@ GET  /
 POST /signup
 ```
 
-## Current protections
+## Contact behavior
+
+Platform `POST /contact` now behaves like tenant contact forms:
 
 ```text
-CSRF token
-basic required-field validation
-email format validation
+validates Turnstile when configured
+validates email/message
+persists contact_messages with tenant_id = NULL
+queues platform.contact_notification in email_outbox
 ```
+
+The stored message is managed from:
+
+```text
+/platform/admin/contacts
+```
+
+## Signup behavior
+
+Platform signup creates users and tenant setup records through the platform signup flow. Tenant public signup forms continue to create tenant email-signup records.
 
 ## Production requirements
 
 ```text
-reCAPTCHA or equivalent spam protection
+Cloudflare Turnstile keys configured
 rate limiting
 abuse logging
 privacy policy copy

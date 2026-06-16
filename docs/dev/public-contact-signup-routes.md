@@ -2,40 +2,61 @@
 
 ## Scope
 
-Tenant public routes now include POST handlers for:
+Tenant public routes include POST handlers for:
 
 ```text
 POST /contact
 POST /signup
 ```
 
+Platform public routes include:
+
+```text
+POST /contact
+```
+
 ## GET forms
 
-Current placeholder forms are rendered on:
+Tenant placeholder forms are rendered on:
 
 ```text
 GET /contact
 GET /
 ```
 
-## Behavior
-
-`POST /contact`:
+The platform contact form is rendered on:
 
 ```text
-validates CSRF
-validates name/email/message
-persists contact_messages row
-queues tenant admin notification if site_admin_email is set
+GET /contact
 ```
 
-`POST /signup`:
+## Behavior
+
+Tenant `POST /contact`:
 
 ```text
-validates CSRF
+validates CSRF or configured human challenge
+validates name/email/message
+persists contact_messages row with tenant_id populated
+queues tenant admin notification
+```
+
+Platform `POST /contact`:
+
+```text
+validates configured human challenge
+validates name/email/message
+persists contact_messages row with tenant_id = NULL
+queues platform.contact_notification to email_outbox
+```
+
+Tenant `POST /signup`:
+
+```text
+validates CSRF or configured human challenge
 validates email
 persists or updates email_signups row
-queues tenant admin notification if site_admin_email is set
+queues tenant admin notification
 ```
 
 ## Manual verification
@@ -43,6 +64,7 @@ queues tenant admin notification if site_admin_email is set
 ```bash
 cd /Users/bxiie/Dropbox/tcdev/artsfolio
 php scripts/test/public_contact_signup_routes.sh
+php scripts/test/platform_contact_management_static.php
 php -S 127.0.0.1:8080 -t public
 ```
 

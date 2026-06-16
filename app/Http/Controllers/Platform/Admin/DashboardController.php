@@ -46,7 +46,7 @@ final class DashboardController
     {$this->metricCard('Paid-capable tenants', $metrics['paid_tenants'], $metrics['paid_detail'], '/platform/admin/tenants')}
     {$this->metricCard('30-day GMV', $this->money((int) $metrics['gmv_30d']), $metrics['sales_detail'], '/platform/admin/sales/analytics')}
     {$this->metricCard('30-day commission', $this->money((int) $metrics['commission_30d']), $metrics['commission_detail'], '/platform/admin/sales/analytics')}
-    {$this->metricCard('Open contact messages', $metrics['open_contacts'], $metrics['contact_detail'], '/platform/admin/contact-messages')}
+    {$this->metricCard('Open platform contacts', $metrics['open_contacts'], $metrics['contact_detail'], '/platform/admin/contacts')}
     {$this->metricCard('Queued / failed jobs', $metrics['jobs_attention'], $metrics['jobs_detail'], '/platform/admin/jobs')}
 </section>
 
@@ -104,7 +104,7 @@ HTML;
         $commission30d = $this->scalarInt('SELECT COALESCE(SUM(commission_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
         $sellerNet30d = $this->scalarInt('SELECT COALESCE(SUM(seller_net_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
         $orders30d = $this->scalarInt('SELECT COUNT(*) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)');
-        $openContacts = $this->scalarInt("SELECT COUNT(*) FROM contact_messages WHERE status IN ('new','read')");
+        $openContacts = $this->scalarInt("SELECT COUNT(*) FROM contact_messages WHERE tenant_id IS NULL AND status IN ('new','read')");
         $jobsQueued = $this->scalarInt("SELECT COUNT(*) FROM background_jobs WHERE status IN ('queued','running')");
         $jobsFailed = $this->scalarInt("SELECT COUNT(*) FROM background_jobs WHERE status = 'failed'");
 
@@ -118,7 +118,7 @@ HTML;
             'commission_30d' => $commission30d,
             'commission_detail' => 'Seller net ' . $this->money($sellerNet30d) . ' in the last 30 days',
             'open_contacts' => $this->number($openContacts),
-            'contact_detail' => 'Tenant and platform contact follow-up queue',
+            'contact_detail' => 'Public artsfol.io contact follow-up queue',
             'jobs_attention' => $this->number($jobsQueued) . ' / ' . $this->number($jobsFailed),
             'jobs_detail' => 'Queued/running jobs · failed jobs',
         ];

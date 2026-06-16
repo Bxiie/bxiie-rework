@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Request;
 use App\Http\Response;
+use App\Platform\Contact\PlatformContactMessageRepository;
 use App\Platform\Email\EmailOutboxRepository;
 use App\Services\FirstPartyCaptcha;
 use PDO;
@@ -177,7 +178,7 @@ HTML;
                 $notice = '<p class="error" role="alert">Please enter a valid email address and message.</p>';
             } else {
                 try {
-                    $this->queuePlatformContactNotification($name, $email, $message);
+                    $this->recordPlatformContact($request, $name, $email, $message);
                     $notice = '<p class="notice" role="status">Thank you. Your message has been sent.</p>';
                 } catch (Throwable $exception) {
                     error_log('ArtsFolio platform contact notification queue failed: ' . $exception->getMessage());
@@ -209,22 +210,41 @@ HTML;
     }
 
 
+    /**
+     * Persists public platform contact submissions, then queues an admin notice.
+     *
+     * This intentionally mirrors tenant contacts: the message lives in
+     * contact_messages for admin workflow, while email_outbox is only the
+     * notification transport.
+     */
+    private function recordPlatformContact(Request $request, string $name, string $email, string $message): int
+    {
+        $messageId = (new PlatformContactMessageRepository($this->pdo))->create(
+            senderName: $name !== '' ? $name : 'Platform contact visitor',
+            senderEmail: $email,
+            message: $message,
+            subject: 'ArtsFolio platform contact',
+            ipAddress: $this->requestIp($request),
+            userAgent: (string) $request->server('HTTP_USER_AGENT', ''),
+        );
 
+        $this->queuePlatformContactNotification($messageId, $name, $email, $message);
 
-
+        return $messageId;
+    }
 
     /**
      * Queue public platform contact submissions into the normal email outbox.
-     *
-     * Platform contact is not tenant-scoped, so it writes a NULL tenant_id row
-     * with a stable template key that can be audited from platform admin pages.
      */
-    private function queuePlatformContactNotification(string $name, string $email, string $message): int
+    private function queuePlatformContactNotification(int $messageId, string $name, string $email, string $message): int
     {
         $displayName = $name !== '' ? $name : 'Platform contact visitor';
         $subject = 'New ArtsFolio platform contact from ' . $displayName;
         $body = implode("\n", [
             'A public ArtsFolio platform contact form was submitted.',
+            '',
+            'Platform contact message ID: ' . $messageId,
+            'Manage it: /platform/admin/contacts',
             '',
             'From: ' . $displayName . ' <' . $email . '>',
             'Reply to the sender manually at: ' . $email,
