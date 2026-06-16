@@ -1605,4 +1605,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant custom domains and subdomains do not require Cloudflare Turnstile hostname registration.
 - Tenant settings must not expose Turnstile site-key or secret-key fields.
 
+## Email signup duplicate notification guard
+
+- Public tenant email-list submissions check for an existing active subscriber before queueing `tenant.signup_notification`.
+- Active email-list status means `pending` or `confirmed`. Repeat submissions for active addresses update metadata but do not queue another tenant-admin notification email.
+- Repeat public submissions preserve `pending` and `confirmed` consent status so a confirmed address is not downgraded to pending.
+- Previously unsubscribed addresses are not active; a later signup can restore them to pending and send a notification.
+
 <!-- End of file. -->

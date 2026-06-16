@@ -21,6 +21,33 @@ final class EmailSignupRepository
     ) {
     }
 
+    /**
+     * Return an existing tenant email-list signup by normalized address.
+     *
+     * Public signup handling uses this before queueing notifications so a
+     * repeat signup by an already-active subscriber can update metadata
+     * without creating another tenant-admin notification email.
+     *
+     * @return array<string,mixed>|null
+     */
+    public function findByEmail(TenantContext $tenant, string $email): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT *
+             FROM email_signups
+             WHERE tenant_id = :tenant_id
+               AND email = :email
+             LIMIT 1'
+        );
+        $stmt->execute([
+            'tenant_id' => $tenant->tenantId,
+            'email' => strtolower(trim($email)),
+        ]);
+
+        $row = $stmt->fetch();
+        return is_array($row) ? $row : null;
+    }
+
     public function upsert(
         TenantContext $tenant,
         string $email,
@@ -71,7 +98,10 @@ final class EmailSignupRepository
                 country = COALESCE(VALUES(country), country),
                 region = COALESCE(VALUES(region), region),
                 city = COALESCE(VALUES(city), city),
-                consent_status = VALUES(consent_status),
+                consent_status = CASE
+                    WHEN consent_status IN ("pending", "confirmed") THEN consent_status
+                    ELSE VALUES(consent_status)
+                END,
                 updated_at = CURRENT_TIMESTAMP'
         );
 
@@ -89,7 +119,17 @@ final class EmailSignupRepository
             'consent_status' => $consentStatus,
         ]);
 
-        return (int) $this->pdo->lastInsertId();
+        $insertId = (int) $this->pdo->lastInsertId();
+        if ($insertId > 0) {
+            return $insertId;
+        }
+
+        $existing = $this->findByEmail($tenant, $email);
+        if ($existing !== null && isset($existing['id'])) {
+            return (int) $existing['id'];
+        }
+
+        throw new \RuntimeException('Email signup was saved but its id could not be resolved.');
     }
 
     public function updateConsentStatus(TenantContext $tenant, int $signupId, string $status): void

@@ -28,6 +28,10 @@ final class EmailSignupService
         ?string $region = null,
         ?string $city = null,
     ): int {
+        $existing = $this->signups->findByEmail($tenant, $email);
+        $alreadyActive = $existing !== null
+            && in_array((string) ($existing['consent_status'] ?? ''), ['pending', 'confirmed'], true);
+
         $signupId = $this->signups->upsert(
             tenant: $tenant,
             email: $email,
@@ -40,11 +44,13 @@ final class EmailSignupService
             city: $city,
         );
 
-        $this->notifications->queueSignupNotification(
-            tenant: $tenant,
-            signupEmail: $email,
-            signupName: $name,
-        );
+        if (!$alreadyActive) {
+            $this->notifications->queueSignupNotification(
+                tenant: $tenant,
+                signupEmail: $email,
+                signupName: $name,
+            );
+        }
 
         return $signupId;
     }
