@@ -58,6 +58,7 @@ final class SettingsController
         $googleClientSecret = $this->escape($this->settings->get('google_oauth_client_secret', ''));
         $facebookClientId = $this->escape($this->settings->get('facebook_oauth_client_id', ''));
         $facebookClientSecret = $this->escape($this->settings->get('facebook_oauth_client_secret', ''));
+        $oauthAuthBaseUrl = $this->escape($this->settings->get('oauth_auth_base_url', 'https://artsfol.io'));
         $turnstileSiteKey = $this->escape($this->settings->get('turnstile_site_key', $this->settings->get('recaptcha_site_key', '')));
         $turnstileSecretKey = $this->escape($this->settings->get('turnstile_secret_key', ''));
         $signupCodeRequired = $this->truthy($this->settings->get('tenant_signup_code_required', '0')) ? ' checked' : '';
@@ -74,7 +75,7 @@ final class SettingsController
         <fieldset><legend>Directory</legend><label><span><input type="checkbox" name="platform_directory_enabled" value="1"{$directoryEnabled}> Enable public artist directory</span></label><label>Directory thumbnail size, px<input type="number" name="platform_directory_thumbnail_size" min="80" max="420" value="{$directoryThumbSize}"></label><p class="admin-muted">Tenant opt-in still applies. This switch controls whether the platform directory is available at all.</p></fieldset>
         <fieldset><legend>Domains</legend><label>Expected IPv4 for custom domain DNS checks<input type="text" name="expected_ipv4" value="{$expectedIpv4}"></label></fieldset>
     </div>
-    <fieldset><legend>OAuth providers</legend><div class="admin-form-grid"><label>Google client ID<input type="text" name="google_oauth_client_id" value="{$googleClientId}"></label><label>Google client secret<input type="password" name="google_oauth_client_secret" value="{$googleClientSecret}"></label><label>Facebook client ID<input type="text" name="facebook_oauth_client_id" value="{$facebookClientId}"></label><label>Facebook client secret<input type="password" name="facebook_oauth_client_secret" value="{$facebookClientSecret}"></label></div><p class="admin-muted">Stored in platform_settings. Do not expose provider secrets in PROJECT_STATE.md or docs.</p></fieldset>
+    <fieldset><legend>OAuth providers</legend><div class="admin-form-grid"><label>OAuth callback base URL<input type="url" name="oauth_auth_base_url" value="{$oauthAuthBaseUrl}" placeholder="https://artsfol.io"></label><label>Google client ID<input type="text" name="google_oauth_client_id" value="{$googleClientId}"></label><label>Google client secret<input type="password" name="google_oauth_client_secret" value="{$googleClientSecret}"></label><label>Facebook client ID<input type="text" name="facebook_oauth_client_id" value="{$facebookClientId}"></label><label>Facebook client secret<input type="password" name="facebook_oauth_client_secret" value="{$facebookClientSecret}"></label></div><p class="admin-muted">Stored in <code>platform_settings</code>. Use the platform origin, normally <code>https://artsfol.io</code>, so provider callback URLs stay stable across tenant domains. Do not expose provider secrets in <code>PROJECT_STATE.md</code> or docs.</p></fieldset>
     <fieldset><legend>Spam protection</legend><div class="admin-form-grid"><label>Cloudflare Turnstile site key<input type="text" name="turnstile_site_key" value="{$turnstileSiteKey}"></label><label>Cloudflare Turnstile secret key<input type="password" name="turnstile_secret_key" value="{$turnstileSecretKey}"></label></div><p class="admin-muted">When the secret key is blank, public contact and signup forms do not block submissions in development. Create keys in Cloudflare Turnstile and allow artsfol.io plus active tenant domains.</p></fieldset>
     <fieldset><legend>Email delivery</legend><div class="admin-form-grid"><label>SMTP host<input type="text" name="smtp_host" value="{$smtpHost}"></label><label>SMTP port<input type="number" name="smtp_port" value="{$smtpPort}" min="1" max="65535"></label><label>SMTP username<input type="text" name="smtp_username" value="{$smtpUsername}"></label><label>SMTP password<input type="password" name="smtp_password" value="{$smtpPassword}"></label><label>SMTP encryption<input type="text" name="smtp_encryption" value="{$smtpEncryption}" placeholder="tls, ssl, or none"></label><label>From email<input type="email" name="mail_from_email" value="{$mailFromEmail}"></label><label>From name<input type="text" name="mail_from_name" value="{$mailFromName}"></label><label>Postmark message stream<input type="text" name="smtp_x_pm_message_stream" value="{$smtpMessageStream}" placeholder="outbound or broadcasts"></label></div><p class="admin-muted">Postmark message stream is sent as <code>X-PM-Message-Stream</code>. These values are stored in <code>platform_settings</code>. Keep production backups and database access restricted because SMTP and ecommerce secrets are sensitive.</p></fieldset>
     <fieldset><legend>Ecommerce</legend><div class="admin-form-grid"><label>Stripe publishable key<input type="text" name="stripe_publishable_key" value="{$stripePublishableKey}"></label><label>Stripe secret key<input type="password" name="stripe_secret_key" value="{$stripeSecretKey}"></label><label>Stripe webhook secret<input type="password" name="stripe_webhook_secret" value="{$stripeWebhookSecret}"></label></div></fieldset>
@@ -118,6 +119,7 @@ HTML,
         $googleClientSecret = (string) ($_POST['google_oauth_client_secret'] ?? '');
         $facebookClientId = trim((string) ($_POST['facebook_oauth_client_id'] ?? ''));
         $facebookClientSecret = (string) ($_POST['facebook_oauth_client_secret'] ?? '');
+        $oauthAuthBaseUrl = rtrim(trim((string) ($_POST['oauth_auth_base_url'] ?? 'https://artsfol.io')), '/');
         $turnstileSiteKey = trim((string) ($_POST['turnstile_site_key'] ?? ''));
         $turnstileSecretKey = (string) ($_POST['turnstile_secret_key'] ?? '');
         $signupCodeRequired = isset($_POST['tenant_signup_code_required']) ? '1' : '0';
@@ -143,6 +145,9 @@ HTML,
         if ($persistentLoginDays < 1 || $persistentLoginDays > 365) {
             return Response::html('<h1>Persistent login days must be between 1 and 365</h1>', 422);
         }
+        if ($oauthAuthBaseUrl !== '' && !preg_match('#^https://[A-Za-z0-9.-]+(?::[0-9]{1,5})?$#', $oauthAuthBaseUrl)) {
+            return Response::html('<h1>OAuth callback base URL must be an HTTPS origin without a path</h1>', 422);
+        }
 
         $before = [
             'platform_name' => $this->settings->get('platform_name', 'ArtsFolio'),
@@ -155,6 +160,9 @@ HTML,
             'smtp_x_pm_message_stream' => $this->settings->get('smtp_x_pm_message_stream', ''),
             'mail_from_email' => $this->settings->get('mail_from_email', ''),
             'stripe_publishable_key' => $this->settings->get('stripe_publishable_key', ''),
+            'oauth_auth_base_url' => $this->settings->get('oauth_auth_base_url', 'https://artsfol.io'),
+            'google_oauth_client_id' => $this->settings->get('google_oauth_client_id', ''),
+            'facebook_oauth_client_id' => $this->settings->get('facebook_oauth_client_id', ''),
         ];
 
         $this->settings->set('platform_name', $platformName);
@@ -164,6 +172,7 @@ HTML,
         $this->settings->set('platform_directory_enabled', $directoryEnabled);
         $this->settings->set('platform_footer_copyright_html', $platformFooterCopyright);
         $this->settings->set('platform_directory_thumbnail_size', (string) $directoryThumbSize);
+        $this->settings->set('oauth_auth_base_url', $oauthAuthBaseUrl !== '' ? $oauthAuthBaseUrl : 'https://artsfol.io');
         $this->settings->set('google_oauth_client_id', $googleClientId);
         $this->settings->set('google_oauth_client_secret', $googleClientSecret);
         $this->settings->set('facebook_oauth_client_id', $facebookClientId);
@@ -198,6 +207,9 @@ HTML,
                 'smtp_x_pm_message_stream' => $smtpMessageStream,
                 'mail_from_email' => $mailFromEmail,
                 'stripe_publishable_key' => $stripePublishableKey,
+                'oauth_auth_base_url' => $oauthAuthBaseUrl !== '' ? $oauthAuthBaseUrl : 'https://artsfol.io',
+                'google_oauth_client_id' => $googleClientId,
+                'facebook_oauth_client_id' => $facebookClientId,
             ],
         ]);
 

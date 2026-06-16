@@ -787,7 +787,6 @@
 - Queue-producing email smoke scripts now enqueue their test messages to `info@artsfol.io` instead of `.example.test` recipients. Fake account identity tests may still use `.example.test` users when they do not queue outbound mail.
 - Added `scripts/test/contact_email_notification_static.php` and wired it into preflight to protect notification fallback behavior and real smoke-recipient routing.
 
-# End of file.
 
 ## 2026-05-25 current complaints repair
 
@@ -821,7 +820,6 @@
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## admin-session-help-stats-audit update
 - Platform admin pages use the platform admin shell with `/assets/logo_2.png` branding and platform-specific navigation.
@@ -845,7 +843,6 @@
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## Help platform polish bundle
 
@@ -869,7 +866,6 @@
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## Route/UI hotfix
 
@@ -943,7 +939,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## 2026-05-26 admin shell refactor
 
@@ -1030,7 +1025,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## 2026-05-30 access, lifecycle, developer reference, and jobs patch
 
@@ -1047,7 +1041,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## 2026-05-30 stats/auth/API/admin lifecycle patch
 
@@ -1064,7 +1057,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 
 ## 2026-05-30 tenant login cookie loop fix
@@ -1158,7 +1150,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## Background job handler compatibility - 2026-05-31
 
@@ -1181,7 +1172,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## 2026-05-31: Production preflight email send guard
 - `scripts/test/preflight.sh` no longer runs `scripts/workers/email_run_once.php` by default.
@@ -1237,7 +1227,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## Contact, signup, reCAPTCHA, and navigation UX
 - Tenant contact and email signup submissions redirect back to branded tenant pages with inline success/error notices instead of standalone error pages.
@@ -1251,7 +1240,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## Tenant first-party CAPTCHA controller integration
 - Tenant public pages use `FirstPartyCaptcha::render()` directly and must not call the removed `HomeController::recaptchaWidget()` helper.
@@ -1297,7 +1285,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## Custom-domain deploy safety
 
@@ -1318,7 +1305,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## 2026-05-31 tenant branding and site image patch
 - Tenant public home body headline now uses tenant setting `artist_name`; menu brand and browser title continue to use `site_title`/page title behavior.
@@ -1334,7 +1320,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## Email branding
 - All queued outbound email is branded centrally through `App\Platform\Email\BrandedEmail` from `EmailOutboxRepository::queue()`.
@@ -1354,7 +1339,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## 2026-06-02 pricing, commission, and platform stats patch
 - Platform Admin → Plans & Billing now edits plan price, description, active status, display order, custom-domain inclusion, allowed artwork count, and allowed email-address count.
@@ -1376,7 +1360,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## 2026-06-02 sales readiness phase 1
 - Published, unsold `for_sale` artworks display price on portfolio cards and artwork detail pages.
@@ -1392,7 +1375,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## 2026-06-02 sales phase 2
 - Added tenant-scoped shopping carts, order records, order items, Stripe Checkout session creation, and Stripe webhook completion handling.
@@ -1408,7 +1390,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## 2026-06-02 pricing, billing, auth, and social stabilization
 - Tenant custom domains and tenant subdomains share the same tenant route set; tenant `/signup` redirects to the tenant signup/contact surface instead of 404.
@@ -1426,7 +1407,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## Billing economics update - 2026-06-02
 - Tenant signup now intentionally supports both GET /signup and POST /signup; route preflight expects both.
@@ -1441,7 +1421,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## 2026-06-02 dashboard signal update
 - Platform Admin dashboard now shows operating and business signals: tenant counts, paid-capable tenants, complimentary tenants, 30-day GMV, platform commission, seller net, contact queue, background job attention, recent sales, recent tenants, and active plan economics.
@@ -1454,7 +1433,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## 2026-06-02 dashboard schema alignment
 - Platform and tenant dashboards use production table names, including `plans`, `sales_orders`, and `background_jobs`.
@@ -1476,7 +1454,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 
 ## Recent operational fixes
 
@@ -1545,7 +1522,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform role assignment checks for an existing `tenant_id IS NULL` row before inserting because MySQL unique indexes do not de-duplicate NULL tenant IDs reliably for this purpose.
 - Added `scripts/test/platform_user_invite_repository_static.php` and wired it into preflight.
 
-<!-- End of file. -->
 
 ## 2026-06-10
 
@@ -1565,7 +1541,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
 - Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
-# End of file.
 - Tenant auth security: tenant logout revokes the server-side session row through `SessionRepository`, and tenant password reset token issue/redeem paths require active tenant membership.
 - Auth/domain security: tenant logout uses `SessionRepository`, tenant password reset requires active tenant membership, domain plan usage ignores default `artsfol.io` subdomains and `www` aliases, and tenant deletion removes tenant domain rows for reuse.
 - Domain DNS/reset hardening: DNS verification uses `ARTSFOLIO_SERVER_PUBLIC_IP` instead of literal `SERVER_PUBLIC_IP`; tenant reset fails closed on missing tenant id; platform custom-domain add accepts tenant id or slug.
@@ -1583,3 +1558,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Added `docs/admin/turnstile-and-social-auth.md` and `docs/dev/oauth-provider-guide.md` with implementation guidance for Turnstile, Google OAuth, and Facebook Login.
 - Social auth redirect routes already exist, but provider callbacks still fail closed until token exchange, state validation, identity linking, and normal ArtsFolio session creation are implemented and tested.
 
+## 2026-06-15 Google and Facebook browser OAuth implementation
+
+- Implemented Google and Facebook browser OAuth login callbacks in `App\Http\Controllers\Auth\OAuthController` with one-time session-bound state validation, server-side code exchange, profile lookup, identity linking, normal `user_sessions` creation, and `artsfolio_session` cookie issuance.
+- OAuth provider settings are managed in Platform Admin → Platform Settings and persisted in `platform_settings` using `oauth_auth_base_url`, `google_oauth_client_id`, `google_oauth_client_secret`, `facebook_oauth_client_id`, and `facebook_oauth_client_secret`; browser OAuth no longer reads provider credentials or callback base URL from `/etc/artsfolio/artsfolio.env`.
+- Added `scripts/test/oauth_browser_login_static.php` plus admin/dev/user docs for social login setup and operation.
+
+<!-- End of file. -->

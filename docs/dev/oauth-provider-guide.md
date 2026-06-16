@@ -1,31 +1,33 @@
 # Facebook and Google Authentication Implementation Guide
 
-This guide describes the production path for turning the existing ArtsFolio `/auth/google` and `/auth/facebook` routes into completed social login flows.
+This guide describes the completed ArtsFolio browser login flow for Google and Facebook.
 
 ## Current app state
 
-The routes are mounted and visible in the login UI:
+The routes are mounted and active:
 
 - `GET /auth/google`
 - `GET /auth/google/callback`
 - `GET /auth/facebook`
 - `GET /auth/facebook/callback`
 
-`app/Http/Controllers/Auth/OAuthController.php` currently starts provider redirects when `ARTSFOLIO_GOOGLE_CLIENT_ID` or `ARTSFOLIO_FACEBOOK_CLIENT_ID` is set, but callback token exchange and user/session creation still return HTTP 501. The database already has social identity concepts through `user_identities`, `oauth_clients`, and bearer-token infrastructure.
+`app/Http/Controllers/Auth/OAuthController.php` now performs the provider redirect, validates one-time PHP-session-bound OAuth `state`, exchanges the provider authorization `code` server-side, reads the provider profile, links or creates the global ArtsFolio user, creates a normal `user_sessions` browser session, issues the normal `artsfolio_session` cookie, and redirects the user into the existing platform or tenant flow.
 
-## Required configuration names
+The earlier callback token exchange and user/session creation are implemented. The old HTTP 501 callback placeholder must not return in production.
 
-Store secrets in `/etc/artsfolio/artsfolio.env` or the production secret source loaded before PHP starts. Do not commit values.
+## Runtime configuration
 
-```bash
-ARTSFOLIO_GOOGLE_CLIENT_ID=""
-ARTSFOLIO_GOOGLE_CLIENT_SECRET=""
-ARTSFOLIO_FACEBOOK_CLIENT_ID=""
-ARTSFOLIO_FACEBOOK_CLIENT_SECRET=""
-ARTSFOLIO_AUTH_BASE_URL="https://artsfol.io"
-```
+OAuth provider values are stored in the database in `platform_settings` and are managed at `/platform/admin/platform-settings`. They are not read from `/etc/artsfolio/artsfolio.env`.
 
-The platform settings screen also stores `google_oauth_client_id`, `google_oauth_client_secret`, `facebook_oauth_client_id`, and `facebook_oauth_client_secret`. Pick one canonical runtime source before coding the callback. The safest production default is env for secrets and platform settings for display/status only.
+Settings keys:
+
+- `oauth_auth_base_url`
+- `google_oauth_client_id`
+- `google_oauth_client_secret`
+- `facebook_oauth_client_id`
+- `facebook_oauth_client_secret`
+
+`oauth_auth_base_url` should normally be `https://artsfol.io`. Keep the callback base URL on the platform origin so every tenant, subdomain, and custom domain can use the same provider console callbacks. Secrets are rendered only into the protected Platform Admin settings form; do not copy them into docs, `PROJECT_STATE.md`, logs, screenshots, browser JavaScript, or support tickets.
 
 ## Provider console setup
 
@@ -38,12 +40,7 @@ The platform settings screen also stores `google_oauth_client_id`, `google_oauth
    - `https://artsfol.io`
 5. Add authorized redirect URI:
    - `https://artsfol.io/auth/google/callback`
-6. Copy the client ID and client secret into the configured secret store.
-
-Official references:
-
-- Google OAuth web server applications: `https://developers.google.com/identity/protocols/oauth2/web-server`
-- Google OAuth policy notes for secure redirect URIs: `https://developers.google.com/identity/verification/authentication-policy-compliance`
+6. Copy the client ID and client secret into Platform Admin → Platform Settings → OAuth providers.
 
 ### Facebook
 
@@ -57,73 +54,60 @@ Official references:
 6. Request only the minimum scopes needed for login:
    - `email`
    - `public_profile`
-7. Copy the app ID and app secret into the configured secret store.
+7. Copy the app ID and app secret into Platform Admin → Platform Settings → OAuth providers.
 
-Official references:
+## Login behavior
 
-- Facebook Login manual flow: `https://developers.facebook.com/documentation/facebook-login/guides/advanced/manual-flow`
-- Facebook Login for the web: `https://developers.facebook.com/documentation/facebook-login/web`
+1. User clicks `Continue with Google` or `Continue with Facebook`.
+2. ArtsFolio creates a random state value and stores it in `$_SESSION['artsfolio_oauth_states']` with a 10-minute TTL.
+3. Provider redirects back to the platform callback with `code` and `state`.
+4. ArtsFolio consumes the state exactly once and rejects missing, expired, reused, or provider-mismatched state.
+5. ArtsFolio exchanges the authorization code for a provider access token.
+6. ArtsFolio fetches the provider profile.
+7. ArtsFolio requires a valid email address.
+8. Existing provider identities are reused. New provider identities are linked to an existing user with the same normalized email, or a new global user is created.
+9. ArtsFolio creates a normal browser session in `user_sessions` and sends the existing shared session cookie.
+10. Redirect target:
+    - safe relative `return_to` value when provided;
+    - `/platform/admin` for platform admins;
+    - the first active tenant domain `/admin` URL for tenant users;
+    - `/signup` for users without a tenant yet.
 
-## Callback implementation plan
+## Security notes
 
-Implement the callback in `app/Http/Controllers/Auth/OAuthController.php`.
+- OAuth state is one-time and session-bound.
+- Callback handling should stay on `https://artsfol.io`, not arbitrary custom tenant domains.
+- Provider access tokens are not stored because ArtsFolio only needs login identity.
+- The controller rejects profiles without a stable subject or valid email.
+- Return URLs must be relative paths and must not begin with `//`.
+- Login uses the same browser session table and cookie helper as password auth, so logout/session revocation behavior stays aligned.
 
-1. Validate `state`.
-   - Store a signed or session-bound state value before redirect.
-   - Reject missing, mismatched, reused, or expired state.
-2. Exchange the `code` for tokens server-side.
-   - Google token endpoint: `https://oauth2.googleapis.com/token`
-   - Facebook token endpoint: `https://graph.facebook.com/v19.0/oauth/access_token`
-3. Fetch or validate identity.
-   - Google: verify the ID token claims or call the userinfo endpoint.
-   - Facebook: call `/me?fields=id,name,email` with the access token.
-4. Require an email address.
-   - If provider does not return email, fail with a friendly message and log the provider subject.
-5. Normalize provider identity.
-   - Provider values should be exactly `google` and `facebook`.
-   - Store provider subject, email, display name, verification status, and raw safe metadata.
-6. Find or create the local user.
-   - Match existing verified local user by normalized email when safe.
-   - Link provider identity through `UserIdentityRepository`.
-7. Create the normal ArtsFolio browser session.
-   - Use the existing password-auth/session path so tenant admin access, platform admin access, logout revocation, and session bridge behavior remain consistent.
-8. Redirect safely.
-   - Use a relative `return_to` value only.
-   - Default to `/platform/admin` for platform admins and `/admin` or `/` for tenant users depending on context.
-9. Audit the action.
-   - Record provider, user ID, linked/new account status, request IP, user agent, and outcome.
-10. Add regression tests.
-   - State validation unit test.
-   - Provider token exchange mock test.
-   - Callback creates session integration test.
-   - Existing local user gets linked rather than duplicated.
-   - Failed provider response does not create a user.
-
-## Security traps
-
-- Do not use OAuth implicit flow for this server-rendered app.
-- Do not accept callback redirects from tenant custom domains unless each provider app is explicitly configured for them. Keep callback handling on `https://artsfol.io`.
-- Do not store provider access tokens unless ArtsFolio actually needs ongoing provider API access.
-- Do not trust `email_verified` unless it came from a provider claim or endpoint that actually supplies it.
-- Do not let social login bypass suspended tenant checks, platform role checks, or logout token revocation.
-- Do not expose client secrets in docs, `PROJECT_STATE.md`, browser HTML, or JavaScript.
-
-## Manual verification
+## Verification
 
 ```bash
 php -l app/Http/Controllers/Auth/OAuthController.php
+php -l public/index.php
+php scripts/test/oauth_browser_login_static.php
 php scripts/test/auth_architecture.php
 php scripts/test/pricing_billing_auth_social_static.php
 ./scripts/test/preflight.sh
 ```
 
-Then verify with real provider test users:
+Then verify the real provider browser flow using provider test users:
 
 ```bash
 curl -I https://artsfol.io/auth/google
 curl -I https://artsfol.io/auth/facebook
 ```
 
-Both should redirect to provider authorization pages when client IDs are configured. Callback testing must be done through a browser because provider redirects and state/session cookies are part of the flow.
+Both should return a `302` to the provider when credentials are configured. Without credentials, they should return `501 OAuth provider not configured`.
+
+## Troubleshooting
+
+- `redirect_uri_mismatch`: make `oauth_auth_base_url` in Platform Admin and provider console redirect URIs exactly match `https://artsfol.io/auth/{provider}/callback`.
+- Invalid or missing state: browser lost the PHP session cookie, callback used the wrong host, or the user reused an old callback URL.
+- Missing email from Facebook: the user may not expose an email to the app. Use password login or another provider.
+- Provider HTTP request failed: confirm PHP can make outbound HTTPS requests and either `allow_url_fopen` or the curl extension is available.
+- Login succeeds but tenant admin lands oddly: confirm the user has an active `tenant_memberships` row and an active primary row in `tenant_domains`.
 
 <!-- End of file. -->

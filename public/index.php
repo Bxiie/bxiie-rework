@@ -709,10 +709,10 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->get('/platform/admin/signup-codes', fn (Request $request): Response => (new PlatformAdminSignupCodesController(new RequirePlatformRole(new MembershipRepository($pdo)), new SignupCodeRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo), new App\Platform\Email\EmailOutboxRepository($pdo)))->index($request, $currentUser));
     $router->post('/platform/admin/signup-codes/create', fn (Request $request): Response => (new PlatformAdminSignupCodesController(new RequirePlatformRole(new MembershipRepository($pdo)), new SignupCodeRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo), new App\Platform\Email\EmailOutboxRepository($pdo)))->create($request, $currentUser));
     $router->post('/platform/admin/signup-codes/send', fn (Request $request): Response => (new PlatformAdminSignupCodesController(new RequirePlatformRole(new MembershipRepository($pdo)), new SignupCodeRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo), new App\Platform\Email\EmailOutboxRepository($pdo)))->send($request, $currentUser));
-    $router->get('/auth/google', fn (Request $request): Response => (new OAuthController(new TenantSignupService($pdo)))->redirect($request, 'google'));
-    $router->get('/auth/google/callback', fn (Request $request): Response => (new OAuthController(new TenantSignupService($pdo)))->callback($request, 'google'));
-    $router->get('/auth/facebook', fn (Request $request): Response => (new OAuthController(new TenantSignupService($pdo)))->redirect($request, 'facebook'));
-    $router->get('/auth/facebook/callback', fn (Request $request): Response => (new OAuthController(new TenantSignupService($pdo)))->callback($request, 'facebook'));
+    $router->get('/auth/google', fn (Request $request): Response => (new OAuthController($pdo))->redirect($request, 'google'));
+    $router->get('/auth/google/callback', fn (Request $request): Response => (new OAuthController($pdo))->callback($request, 'google'));
+    $router->get('/auth/facebook', fn (Request $request): Response => (new OAuthController($pdo))->redirect($request, 'facebook'));
+    $router->get('/auth/facebook/callback', fn (Request $request): Response => (new OAuthController($pdo))->callback($request, 'facebook'));
     // ARTSFOLIO_PLATFORM_PASSWORD_RESET_ROUTES
     // Password reset is a public account route and must be mounted on the
     // platform host before login-only platform admin guards can intercept it.
