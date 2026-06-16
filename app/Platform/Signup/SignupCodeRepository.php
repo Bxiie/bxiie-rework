@@ -49,15 +49,37 @@ final class SignupCodeRepository
         return $this->findByCode($code) ?? ['code' => $code];
     }
 
-    public function listRecent(int $limit = 200): array
+    public function listRecent(int $limit = 200, bool $includeUsed = false, bool $includeRevoked = false): array
     {
+        $excludedStatuses = [];
+        if (!$includeUsed) {
+            $excludedStatuses[] = 'used';
+            $excludedStatuses[] = 'redeemed';
+        }
+        if (!$includeRevoked) {
+            $excludedStatuses[] = 'revoked';
+        }
+
+        $where = '';
+        if ($excludedStatuses !== []) {
+            $placeholders = [];
+            foreach ($excludedStatuses as $index => $status) {
+                $placeholders[] = ':status_' . $index;
+            }
+            $where = 'WHERE c.status NOT IN (' . implode(', ', $placeholders) . ')';
+        }
+
         $stmt = $this->pdo->prepare(
             "SELECT c.*, t.slug AS redeemed_tenant_slug, t.name AS redeemed_tenant_name
              FROM tenant_signup_codes c
              LEFT JOIN tenants t ON t.id = c.redeemed_tenant_id
+             {$where}
              ORDER BY c.id DESC
              LIMIT :limit_count"
         );
+        foreach ($excludedStatuses as $index => $status) {
+            $stmt->bindValue('status_' . $index, $status);
+        }
         $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -105,7 +127,7 @@ final class SignupCodeRepository
             throw new RuntimeException('Signup code is not active.');
         }
         if ((int) ($row['redemption_count'] ?? 0) >= (int) ($row['max_redemptions'] ?? 1)) {
-            throw new RuntimeException('Signup code has already been fully redeemed.');
+            throw new RuntimeException('Signup code has already been fully used.');
         }
 
         return $row;
@@ -125,7 +147,7 @@ final class SignupCodeRepository
             throw new RuntimeException('Signup code is limited to a different recipient email.');
         }
         if ((int) ($row['redemption_count'] ?? 0) >= (int) ($row['max_redemptions'] ?? 1)) {
-            throw new RuntimeException('Signup code has already been fully redeemed.');
+            throw new RuntimeException('Signup code has already been fully used.');
         }
 
         return $row;
@@ -169,7 +191,7 @@ final class SignupCodeRepository
                  redeemed_tenant_id = COALESCE(redeemed_tenant_id, :tenant_id),
                  redeemed_by_email = :email,
                  redeemed_at = COALESCE(redeemed_at, CURRENT_TIMESTAMP),
-                 status = CASE WHEN redemption_count + 1 >= max_redemptions THEN 'redeemed' ELSE status END,
+                 status = CASE WHEN redemption_count + 1 >= max_redemptions THEN 'used' ELSE status END,
                  updated_at = CURRENT_TIMESTAMP
              WHERE id = :id"
         );

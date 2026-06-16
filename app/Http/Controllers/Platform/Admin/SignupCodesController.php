@@ -37,14 +37,18 @@ final class SignupCodesController
 
         $csrf = AdminLayout::escape($this->csrf->getOrCreate());
         $notice = $this->notice((string) ($_GET['notice'] ?? ''));
+        [$showUsed, $showRevoked, $filterHeaders] = $this->signupCodeFilterState();
+        $showUsedChecked = $showUsed ? ' checked' : '';
+        $showRevokedChecked = $showRevoked ? ' checked' : '';
         $rows = '';
-        foreach ($this->codes->listRecent() as $row) {
+        foreach ($this->codes->listRecent(200, $showUsed, $showRevoked) as $row) {
             $id = (int) $row['id'];
             $code = AdminLayout::escape((string) $row['code']);
             $type = AdminLayout::escape((string) $row['code_type']);
             $label = AdminLayout::escape((string) $row['label']);
             $recipient = AdminLayout::escape((string) ($row['recipient_email'] ?? ''));
-            $status = AdminLayout::escape((string) $row['status']);
+            $statusValue = $this->normalizedStatus($row);
+            $status = AdminLayout::escape($statusValue);
             $usage = (int) $row['redemption_count'] . ' / ' . (int) $row['max_redemptions'];
             $freeMonths = (int) ($row['free_access_months'] ?? 0);
             $freeAccess = $freeMonths > 0 ? AdminLayout::escape($freeMonths . ' month' . ($freeMonths === 1 ? '' : 's') . ' any plan') : '';
@@ -114,10 +118,19 @@ HTML;
         <button type="submit">Create and queue invites</button>
     </form>
 </section>
-<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Code</th><th>Type</th><th>Recipient</th><th>Use</th><th>Free access</th><th>Status</th><th>Tenant</th><th>Invite</th></tr></thead><tbody>{$rows}</tbody></table></div>
+<section class="admin-panel">
+    <h2>Signup code list options</h2>
+    <form method="get" action="/platform/admin/signup-codes" class="admin-form">
+        <label><input type="checkbox" name="show_used" value="1"{$showUsedChecked}> Show used codes</label>
+        <label><input type="checkbox" name="show_revoked" value="1"{$showRevokedChecked}> Show revoked codes</label>
+        <button type="submit">Save list options</button>
+    </form>
+    <p class="admin-muted">These options are saved in this browser and reused when returning to the signup code page.</p>
+</section>
+<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Code</th><th>Type</th><th>Recipient</th><th>Use</th><th>Free access</th><th>Status</th><th>Tenant</th><th>Actions</th></tr></thead><tbody>{$rows}</tbody></table></div>
 HTML;
 
-        return Response::html(AdminLayout::render('Signup Codes', $body, 'codes'));
+        return Response::html(AdminLayout::render('Signup Codes', $body, 'codes'), 200, $filterHeaders);
     }
 
     public function create(Request $request, ?array $currentUser): Response
@@ -211,6 +224,57 @@ HTML;
         $signupUrl = 'https://artsfol.io/signup?code=' . rawurlencode($code);
         $body = "You are invited to create an ArtsFolio site.\n\nSignup code: {$code}\nCreate your site: {$signupUrl}\n";
         $this->outbox->queue($email, 'Create your ArtsFolio site', $body, nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8')), null, null, null, 'platform.tenant_signup_invite');
+    }
+
+
+    /**
+     * Reads and persists admin signup-code list filters in browser cookies.
+     *
+     * Query-string values are authoritative when present. Otherwise the page
+     * reuses the last saved browser preference. Used and revoked codes are
+     * hidden by default to keep the active-code list operational.
+     *
+     * @return array{0: bool, 1: bool, 2: array<string, array<int, string>|string>}
+     */
+    private function signupCodeFilterState(): array
+    {
+        $hasUsedQuery = array_key_exists('show_used', $_GET);
+        $hasRevokedQuery = array_key_exists('show_revoked', $_GET);
+
+        $showUsed = $hasUsedQuery
+            ? (string) ($_GET['show_used'] ?? '') === '1'
+            : (string) ($_COOKIE['artsfolio_signup_codes_show_used'] ?? '0') === '1';
+        $showRevoked = $hasRevokedQuery
+            ? (string) ($_GET['show_revoked'] ?? '') === '1'
+            : (string) ($_COOKIE['artsfolio_signup_codes_show_revoked'] ?? '0') === '1';
+
+        $headers = [];
+        if ($hasUsedQuery || $hasRevokedQuery) {
+            $expires = gmdate('D, d M Y H:i:s', time() + 31536000) . ' GMT';
+            $headers['Set-Cookie'] = [
+                'artsfolio_signup_codes_show_used=' . ($showUsed ? '1' : '0') . '; Expires=' . $expires . '; Path=/platform/admin/signup-codes; SameSite=Lax; Secure; HttpOnly',
+                'artsfolio_signup_codes_show_revoked=' . ($showRevoked ? '1' : '0') . '; Expires=' . $expires . '; Path=/platform/admin/signup-codes; SameSite=Lax; Secure; HttpOnly',
+            ];
+        }
+
+        return [$showUsed, $showRevoked, $headers];
+    }
+
+    /**
+     * Normalizes legacy redeemed status to the current user-facing used status.
+     */
+    private function normalizedStatus(array $row): string
+    {
+        $status = strtolower(trim((string) ($row['status'] ?? '')));
+        if ($status === 'redeemed') {
+            return 'used';
+        }
+
+        if ($status === 'active' && (int) ($row['redemption_count'] ?? 0) >= (int) ($row['max_redemptions'] ?? 1)) {
+            return 'used';
+        }
+
+        return $status !== '' ? $status : 'unknown';
     }
 
     private function notice(string $notice): string

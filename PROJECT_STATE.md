@@ -1588,4 +1588,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Existing-tenant free access updates `tenant_plan_assignments` to the selected active plan with `status = trial`, `complimentary_until`, `granted_by_signup_code_id`, and `billing_note`.
 - Existing-tenant code redemption increments `tenant_signup_codes.redemption_count` and can move the code to `redeemed` when its redemption limit is reached.
 
+## Signup code used status and list filters
+
+- Signup codes use `used` as the terminal status when redemption count reaches the configured limit.
+- Migration `0036_signup_code_used_status.sql` converts legacy `redeemed` rows to `used`.
+- Platform Admin → Signup Codes hides used and revoked codes by default.
+- The signup-code page has persistent browser-scoped options to show used codes and/or revoked codes.
+- Revoked and used codes remain invalid for signup and tenant billing because validation requires `status = active`.
+
 <!-- End of file. -->
