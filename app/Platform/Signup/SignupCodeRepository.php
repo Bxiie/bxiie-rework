@@ -131,6 +131,36 @@ final class SignupCodeRepository
         return $row;
     }
 
+    /**
+     * Revokes any signup code type so it cannot be used again.
+     */
+    public function revoke(int $codeId): void
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE tenant_signup_codes
+             SET status = 'revoked', updated_at = CURRENT_TIMESTAMP
+             WHERE id = :id
+               AND status <> 'revoked'"
+        );
+        $stmt->execute(['id' => $codeId]);
+    }
+
+    /**
+     * Validates a free-access code for use by an existing tenant from billing.
+     */
+    public function validateFreeAccessForExistingTenant(string $code, string $email): array
+    {
+        $row = $this->validateForSignup($code, $email);
+        if ((string) ($row['code_type'] ?? '') !== 'free_months') {
+            throw new RuntimeException('Only free access signup codes can be applied from tenant billing.');
+        }
+        if ((int) ($row['free_access_months'] ?? 0) < 1) {
+            throw new RuntimeException('Free access code does not include a free-month grant.');
+        }
+
+        return $row;
+    }
+
     public function markRedeemed(int $codeId, int $tenantId, string $email): void
     {
         $stmt = $this->pdo->prepare(

@@ -9,6 +9,7 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Http\View\AdminLayout;
 use App\Platform\Tenancy\TenantContext;
+use App\Platform\Signup\SignupCodeRepository;
 use App\Support\Flash\FlashMessages;
 use PDO;
 use Throwable;
@@ -50,6 +51,7 @@ final class BillingController
         $payout1000 = $this->payoutExample(100000, $economics);
         $complementary = $this->isComplementary($tenant) ? '<p class="admin-notice admin-notice-info"><strong>Complementary plan:</strong> platform service billing is waived. Platform commission and credit card charges still apply to sales.</p>' : '';
         $csrf = $this->e($this->csrfToken());
+        $freeAccessPlanOptions = $this->freeAccessPlanOptions($plans, (string) $plan['slug']);
         $planName = $this->e((string) $plan['name']);
         $price = $this->money((int) ($plan['monthly_price_cents'] ?? 0));
         $summary = $this->e((string) ($plan['description'] ?? 'ArtsFolio artist portfolio plan.'));
@@ -74,6 +76,16 @@ final class BillingController
       <button type="submit">Update plan</button>
     </form>
     <p class="admin-muted">Upgrade and downgrade changes are recorded immediately. External billing collection remains a platform operations task until subscription billing is connected.</p>
+  </div>
+  <div class="admin-panel">
+    <p class="admin-muted">Apply free access code</p>
+    <form method="post" action="/admin/billing/free-access-code" class="admin-form">
+      <input type="hidden" name="csrf_token" value="{$csrf}">
+      <label>Free access code<input type="text" name="signup_code" autocomplete="off" required></label>
+      <label>Plan for free access<select name="plan_slug" required>{$freeAccessPlanOptions}</select></label>
+      <button type="submit">Apply free access</button>
+    </form>
+    <p class="admin-muted">Free access codes can move this tenant onto any active plan for the number of months configured by platform admin. Card fees, commissions, shipping, and taxes are not waived.</p>
   </div>
 </section>
 
@@ -107,6 +119,40 @@ HTML;
         $this->setSetting($tenant, 'billing_plan', (string) $plan['slug']);
         FlashMessages::success('Billing plan updated.');
         return new Response('', 303, ['Location' => '/admin/billing?notice=plan-updated']);
+    }
+
+    public function applyFreeAccessCode(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'owner'])) {
+            return Response::html('<h1>Forbidden</h1><p>Only tenant owners may apply billing codes.</p>', 403);
+        }
+        if (!$this->validCsrf((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+        $code = strtoupper(trim((string) ($_POST['signup_code'] ?? '')));
+        $planSlug = strtolower(trim((string) ($_POST['plan_slug'] ?? '')));
+        $email = strtolower(trim((string) ($currentUser['email'] ?? '')));
+        if ($email === '') {
+            return Response::html('<h1>Current user email unavailable</h1>', 422);
+        }
+
+        try {
+            $codes = new SignupCodeRepository($this->pdo);
+            $signupCode = $codes->validateFreeAccessForExistingTenant($code, $email);
+            $plan = $this->planBySlug($planSlug);
+            if (!$plan) {
+                return Response::html('<h1>Invalid plan</h1>', 422);
+            }
+            $this->applyFreeAccessPlan($tenant, (int) $plan['id'], $signupCode);
+            $codes->markRedeemed((int) $signupCode['id'], $tenant->tenantId, $email);
+            $this->setSetting($tenant, 'billing_plan', (string) $plan['slug']);
+        } catch (Throwable $e) {
+            return Response::html('<h1>Could not apply free access code</h1><p>' . $this->e($e->getMessage()) . '</p>', 422);
+        }
+
+        FlashMessages::success('Free access code applied.');
+        return new Response('', 303, ['Location' => '/admin/billing?notice=free-access-applied']);
     }
 
     /**
@@ -169,6 +215,20 @@ HTML;
         return $plans !== [] ? $plans : [$this->fallbackPlan()];
     }
 
+    private function freeAccessPlanOptions(array $plans, string $currentSlug): string
+    {
+        $options = '';
+        foreach ($plans as $plan) {
+            $slug = $this->e((string) $plan['slug']);
+            $name = $this->e((string) $plan['name']);
+            $price = $this->money((int) ($plan['monthly_price_cents'] ?? 0));
+            $selected = (string) $plan['slug'] === $currentSlug ? ' selected' : '';
+            $options .= '<option value="' . $slug . '"' . $selected . '>' . $name . ' — ' . $price . '</option>';
+        }
+
+        return $options;
+    }
+
     private function currentPlan(TenantContext $tenant): ?array
     {
         if ($this->tableExists('tenant_plan_assignments')) {
@@ -200,6 +260,35 @@ HTML;
         }
         $stmt = $this->pdo->prepare('INSERT INTO tenant_plan_assignments (tenant_id, plan_id, status) VALUES (:tenant_id, :plan_id, "manual") ON DUPLICATE KEY UPDATE plan_id = VALUES(plan_id), status = "manual"');
         $stmt->execute(['tenant_id' => $tenant->tenantId, 'plan_id' => $planId]);
+    }
+
+    private function applyFreeAccessPlan(TenantContext $tenant, int $planId, array $signupCode): void
+    {
+        if (!$this->tableExists('tenant_plan_assignments')) {
+            return;
+        }
+
+        $months = max(1, (int) ($signupCode['free_access_months'] ?? 0));
+        $complimentaryUntil = (new \DateTimeImmutable('now'))->modify('+' . $months . ' months')->format('Y-m-d H:i:s');
+        $billingNote = 'Free access signup code ' . (string) $signupCode['code'] . ' applied from tenant billing for ' . $months . ' month' . ($months === 1 ? '' : 's') . '.';
+
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO tenant_plan_assignments (tenant_id, plan_id, status, complimentary_until, granted_by_signup_code_id, billing_note, created_at)
+             VALUES (:tenant_id, :plan_id, "trial", :complimentary_until, :signup_code_id, :billing_note, CURRENT_TIMESTAMP)
+             ON DUPLICATE KEY UPDATE
+                plan_id = VALUES(plan_id),
+                status = "trial",
+                complimentary_until = VALUES(complimentary_until),
+                granted_by_signup_code_id = VALUES(granted_by_signup_code_id),
+                billing_note = VALUES(billing_note)'
+        );
+        $stmt->execute([
+            'tenant_id' => $tenant->tenantId,
+            'plan_id' => $planId,
+            'complimentary_until' => $complimentaryUntil,
+            'signup_code_id' => (int) $signupCode['id'],
+            'billing_note' => $billingNote,
+        ]);
     }
 
     private function fallbackPlan(): array

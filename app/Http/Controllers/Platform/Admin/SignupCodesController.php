@@ -65,6 +65,11 @@ final class SignupCodesController
             <label>Email<br><input type="email" name="recipient_email" value="{$recipient}" required></label>
             <button type="submit">Send invite</button>
         </form>
+        <form method="post" action="/platform/admin/signup-codes/revoke" onsubmit="return confirm('Revoke this signup code? It cannot be used after revocation.');">
+            <input type="hidden" name="csrf_token" value="{$csrf}">
+            <input type="hidden" name="id" value="{$id}">
+            <button type="submit" class="button-link-danger">Revoke</button>
+        </form>
     </td>
 </tr>
 HTML;
@@ -163,6 +168,26 @@ HTML;
         return new Response('', 303, ['Location' => '/platform/admin/signup-codes?notice=invite-queued']);
     }
 
+    public function revoke(Request $request, ?array $currentUser): Response
+    {
+        if (!$this->canManage($currentUser)) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
+        }
+        if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
+            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+        }
+
+        $id = (int) ($_POST['id'] ?? 0);
+        if ($id < 1) {
+            return Response::html('<h1>Invalid signup code</h1>', 422);
+        }
+
+        $this->codes->revoke($id);
+        $this->audit($request, $currentUser, 'platform.signup_code.revoked', (string) $id, []);
+
+        return new Response('', 303, ['Location' => '/platform/admin/signup-codes?notice=revoked']);
+    }
+
     private function bulkCreate(Request $request, ?array $currentUser): void
     {
         $emails = preg_split('/[\r\n,;]+/', (string) ($_POST['bulk_emails'] ?? '')) ?: [];
@@ -194,6 +219,7 @@ HTML;
             'created' => 'Signup code created.',
             'bulk-created' => 'Signup codes created and invite emails queued.',
             'invite-queued' => 'Signup invite email queued.',
+            'revoked' => 'Signup code revoked.',
             default => '',
         };
         return $text === '' ? '' : '<p class="admin-notice admin-notice-success">' . AdminLayout::escape($text) . '</p>';

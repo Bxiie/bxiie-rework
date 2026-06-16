@@ -1580,4 +1580,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `tenant_plan_assignments.billing_note` records the operational reason for the complimentary/trial assignment.
 - Free access signup codes waive ArtsFolio platform plan billing for the configured period only; they do not waive card fees, sales commissions, shipping, or taxes.
 
+## Signup code revocation and existing-tenant free access
+
+- Platform admins can revoke any tenant signup code type from Platform Admin -> Signup Codes.
+- Revoked codes are blocked by the same active-code validation used for public signup and tenant billing redemption.
+- Tenant owners can apply `free_months` codes from Tenant Admin -> Billing to an existing tenant.
+- Existing-tenant free access updates `tenant_plan_assignments` to the selected active plan with `status = trial`, `complimentary_until`, `granted_by_signup_code_id`, and `billing_note`.
+- Existing-tenant code redemption increments `tenant_signup_codes.redemption_count` and can move the code to `redeemed` when its redemption limit is reached.
+
 <!-- End of file. -->
