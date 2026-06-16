@@ -53,23 +53,4 @@ Process queued email dry-run:
 EMAIL_DRIVER=dry_run php scripts/workers/email_run_once.php
 ```
 
-## Platform contact form
-
-The public `https://artsfol.io/contact` form is not tenant-scoped, so successful submissions are queued directly to `email_outbox` with:
-
-```text
-template_key=platform.contact_notification
-recipient_email=ARTSFOLIO_PLATFORM_CONTACT_EMAIL, then ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL, then info@artsfol.io
-```
-
-Use this SQL after a platform contact test:
-
-```sql
-SELECT id, status, recipient_email, subject, template_key, attempts, created_at, sent_at, last_error
-FROM email_outbox
-WHERE template_key = 'platform.contact_notification'
-ORDER BY id DESC
-LIMIT 10;
-```
-
 <!-- End of file. -->

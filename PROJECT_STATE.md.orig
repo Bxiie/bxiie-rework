@@ -773,6 +773,20 @@
 - Tenant audit log rendering was repaired; `/admin/audit-log` now builds and displays the table body instead of returning an empty page.
 - Tenant public page handlers now write `analytics_events` rows for public page, portfolio, contact, about, and artwork/image views. The tenant and platform stats pages read from `analytics_events`, so this aligns tracking with reporting.
 
+## 2026-05-30 header, copyright, and developer-reference patch
+
+- Public platform page headers now hide the Sign in link when `artsfolio_current_user` is present and show an Admin link for signed-in users.
+- Tenant public page headers show an Admin link for signed-in users and do not add a Sign in link.
+- Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
+- The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
+- The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
+
+## Contact notification fallback and test email recipient update - 2026-06-15
+
+- Tenant contact-message and email-signup notifications now resolve recipients through `tenant_settings.site_admin_email`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io` so public submissions are not accepted without queuing an admin notification.
+- Queue-producing email smoke scripts now enqueue their test messages to `info@artsfol.io` instead of `.example.test` recipients. Fake account identity tests may still use `.example.test` users when they do not queue outbound mail.
+- Added `scripts/test/contact_email_notification_static.php` and wired it into preflight to protect notification fallback behavior and real smoke-recipient routing.
+
 # End of file.
 
 ## 2026-05-25 current complaints repair
@@ -787,6 +801,14 @@
 - The apply script seeds existing Bxiie tenant `custom_css` when blank.
 - OAuth Google/Facebook redirect routes are mounted. Callback routes fail closed with HTTP 501 until provider credentials and tested token exchange are configured.
 
+## 2026-05-30 header, copyright, and developer-reference patch
+
+- Public platform page headers now hide the Sign in link when `artsfolio_current_user` is present and show an Admin link for signed-in users.
+- Tenant public page headers show an Admin link for signed-in users and do not add a Sign in link.
+- Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
+- The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
+- The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
+
 # End of file.
 
 ## admin-session-help-stats-audit update
@@ -797,6 +819,14 @@
 - Platform stats are exposed at `/admin/stats`; tenant stats remain at tenant `/admin/stats`.
 - Tenant audit-log rendering was repaired so scoped audit rows are visible instead of an empty panel.
 
+## 2026-05-30 header, copyright, and developer-reference patch
+
+- Public platform page headers now hide the Sign in link when `artsfolio_current_user` is present and show an Admin link for signed-in users.
+- Tenant public page headers show an Admin link for signed-in users and do not add a Sign in link.
+- Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
+- The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
+- The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
+
 # End of file.
 
 ## Help platform polish bundle
@@ -806,6 +836,14 @@
 - Platform admin layout uses `public/assets/logo_2.png` and ArtsFolio platform branding instead of tenant/Bxiie branding.
 - Platform settings can manage support email, expected DNS IPv4, persistent login days, global artist-directory enablement, and platform custom CSS served from `/assets/platform-custom.css`.
 - `/pricing` is a branded plan-comparison page.
+
+## 2026-05-30 header, copyright, and developer-reference patch
+
+- Public platform page headers now hide the Sign in link when `artsfolio_current_user` is present and show an Admin link for signed-in users.
+- Tenant public page headers show an Admin link for signed-in users and do not add a Sign in link.
+- Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
+- The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
+- The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
 
 # End of file.
 
@@ -867,6 +905,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform admin layout now has distinct platform branding/background and platform-only navigation to avoid confusion with tenant admin.
 - Tenant admin directory controls remain tenant-scoped; platform admins only control global directory availability.
 
+## 2026-05-30 header, copyright, and developer-reference patch
+
+- Public platform page headers now hide the Sign in link when `artsfolio_current_user` is present and show an Admin link for signed-in users.
+- Tenant public page headers show an Admin link for signed-in users and do not add a Sign in link.
+- Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
+- The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
+- The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
+
 # End of file.
 
 ## 2026-05-26 admin shell refactor
@@ -894,4 +940,502 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The picker lists only non-private media attached to published artwork so `/media?uuid=...` can serve the selected image through the existing public media safety gate.
 - Public rendering uses CSS variables consumed by `public/assets/site.css`: `--site-bg-image`, `--site-bg-repeat`, `--site-bg-size`, and `--site-bg-opacity`.
 
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
+## 2026-05-29 admin user/config/email repair
+
+- Platform admin shell logout now includes a CSRF token generated from `CsrfTokenService`.
+- Platform and tenant admin shells show the logged-in user email/display name and current role context.
+- Added platform user management at `/platform/admin/users` with password rotation for platform-scoped users.
+- Added platform tenant drill-in at `/platform/admin/tenants/{id}` with tenant user details and tenant-user password rotation.
+- Added tenant user management at `/admin/users` with tenant-user password rotation.
+- Platform settings now include SMTP and Stripe/ecommerce keys in `platform_settings`.
+- Tenant settings now include `site_admin_email`; contact and signup notification queueing uses this value.
+- Portfolio section empty-state link in tenant artwork edit now points to `/admin/portfolio-sections`.
+
+
+## 2026-05-29 admin user-management hotfix
+- Added missing admin user-management classes required by `/platform/admin/users`, `/platform/admin/tenants/{id}`, and `/admin/users`.
+- Deduplicated displayed platform and tenant role labels so legacy duplicate role rows do not flood admin headers.
+- Password-rotation audit events use the audit_log column order correctly: tenant_id, user_id, action, entity_type, entity_id, details, ip_address.
+
+## 2026-05-29 Caddy domain action hotfix
+
+- Fixed platform custom-domain admin forms so DNS verification posts to `/platform/admin/domains/action`.
+- Added compatibility handling for stale `POST /admin/domains/action` submissions.
+- Removed normal admin exposure of Render vhost because the deployment uses Caddy on-demand TLS rather than Apache per-domain vhost artifacts.
+- Changed DNS verification success behavior to mark tenant domains `active`, allowing tenant resolution and `/caddy/ask` authorization.
+- Documented that `custom_domain.render_vhost` is deprecated under the Caddy deployment model.
+
+## 2026-05-30 platform UI/admin polish
+- Platform footer copyright is now stored in `platform_settings.platform_footer_copyright_html` and reused by platform public/admin chrome.
+- Platform settings now include directory thumbnail size, Google/Facebook OAuth config fields, and shared reCAPTCHA keys.
+- Tenant settings now include artwork display ordering and optional tenant reCAPTCHA override keys.
+- Public contact/signup submissions verify reCAPTCHA when a tenant or platform secret is configured.
+- Platform stats now include day/hour bar graphs and location drilldown with unique IP hashes and access counts.
+- Admin color fields are progressively enhanced with color pickers and live swatches via `/assets/admin-color-fields.js`.
+
+## 2026-05-30 header, copyright, and developer-reference patch
+
+- Public platform page headers now hide the Sign in link when `artsfolio_current_user` is present and show an Admin link for signed-in users.
+- Tenant public page headers show an Admin link for signed-in users and do not add a Sign in link.
+- Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
+- The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
+- The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
+
+# End of file.
+
+## 2026-05-30 access, lifecycle, developer reference, and jobs patch
+
+- Browser session cookies now use `App\Http\Support\SessionCookie` so `artsfol.io` and `*.artsfol.io` can share a session cookie via `.artsfol.io`; unrelated custom domains remain host-scoped by browser security rules.
+- Added `users.status` lifecycle state with `active`, `suspended`, and `deleted`; suspended/deleted users cannot resolve active sessions and their existing sessions are revoked on status change.
+- Platform admins can change platform user status and tenant status from platform admin screens. Tenant deletion is implemented as soft-delete/archive by setting tenant status to `archived`.
+- Suspended or archived tenant domains return an ArtsFolio-branded unavailable page with HTTP 503.
+- Developer route reference is expanded in `docs/dev/http-routes.md` and `/developer` falls back to the global current user when routed through legacy route wiring.
+- Background job execution requires `artsfolio-background-worker.service`; the unit file lives at `scripts/systemd/artsfolio-background-worker.service` and wraps `scripts/workers/run_once.php` through `scripts/workers/run_forever.php`.
+
+# End of file.
+
+## 2026-05-30 stats/auth/API/admin lifecycle patch
+
+- Browser session cookies are centralized through `App\Http\Support\SessionCookie` and default to `.artsfol.io` on the platform host and ArtsFolio subdomains.
+- Direct cookie sharing between custom tenant domains and `artsfol.io` is not possible in browsers; custom-domain-to-subdomain seamless auth requires OAuth/OIDC or a signed one-time handoff flow.
+- Platform stats now render day/hour bar graphs and a Unique IP detail dialog. New platform analytics rows store `analytics_events.ip_address`; older rows may only show IP hash prefixes.
+- Platform admin tenant list includes an external link to the tenant ArtsFolio subdomain.
+- Platform admins can suspend/delete users and tenants with confirmation prompts. Tenant deletion is soft deletion by status. Suspended tenants display an ArtsFolio-branded unavailable page.
+- Initial OAuth2-protected administrative API routes live under `/api/admin/*` and cover tenant creation, tenant settings, and tenant-admin-visible content collections.
+
+# End of file.
+
+
+## 2026-05-30 tenant login cookie loop fix
+- Fixed tenant-domain browser login/logout in `app/Http/Controllers/Auth/LoginController.php` so the `artsfolio_session` `Set-Cookie` header is returned with successful login and expired on logout.
+- Added `scripts/test/browser_login_sets_session_cookie.php` to prevent a regression where login succeeds but `/admin/*` redirects back to `/login?notice=admin-login-required` because the browser never received the session cookie.
+
+
+## 2026-05-30 browser session persistence fix
+- Fixed `app/Platform/Auth/Session/SessionRepository.php` so session expiry is computed in PHP and inserted as `:expires_at` instead of relying on a bound placeholder inside MariaDB `INTERVAL` syntax.
+- Confirmed tenant login/logout and platform signup return `Set-Cookie` with redirect responses so browser sessions can survive redirects.
+- Added `scripts/test/session_repository_expiry_sql.php` as a regression check for the session persistence SQL and browser-auth Set-Cookie behavior.
+
+## 2026-05-30 auth/session schema drift fix
+- Fixed `app/Platform/Auth/Session/SessionRepository.php` so active browser session lookup no longer requires a `users.status` column.
+- The current deployed/local core user schema can exist without `users.status`; session validity now depends on the session row being unrevoked and unexpired.
+- Session creation stores `expires_at` as a bound timestamp computed in PHP instead of relying on a MariaDB `INTERVAL :ttl_seconds SECOND` placeholder.
+- Added `scripts/test/session_repository_no_user_status.php` as a regression check for this specific schema-drift failure.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
+## 2026-05-30 auth cookie multi-header fix
+- Browser login/logout now supports multiple `Set-Cookie` headers through `App\Http\Response`.
+- `App\Http\Support\SessionCookie` now clears stale host-only and `.artsfol.io` cookie variants before setting the canonical browser session cookie.
+- Tenant login now returns the session cookie on the redirect response and passes tenant context to the session creation path.
+- Platform password login/logout and platform signup now use the same multi-header cookie helper.
+- Added `scripts/test/auth_cookie_headers.php` to prevent regressions where browser auth succeeds server-side but stale duplicate cookies keep admin pages inaccessible.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
+## Email SMTP custom headers
+- SMTP sender supports static custom message headers configured through environment variables.
+- `SMTP_X_PM_MESSAGE_STREAM` sets `X-PM-Message-Stream` for Postmark SMTP message streams.
+- `SMTP_EXTRA_HEADERS` accepts semicolon- or newline-separated `Name: value` entries, such as `X-PM-Tag: lifecycle; X-PM-Metadata-tenant: bxiie`.
+- Header names and values are validated to prevent CRLF/header injection before SMTP DATA is sent.
+- Secret SMTP credentials remain in environment/secrets files and must not be recorded in `PROJECT_STATE.md`.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
+
+## 2026-05-31 - Tenant login and platform SMTP message-stream setting
+- Tenant POST `/login` now carries the resolved tenant context into `PasswordAuthService::login()` so tenant-scoped browser sessions store `tenant_id`.
+- Login/logout responses now attach `Set-Cookie` headers instead of calling the cookie helper and discarding the result.
+- Browser session cookie handling supports repeated `Set-Cookie` values so stale host-only and `.artsfol.io` cookies can be cleared before issuing the active session cookie.
+- `SessionRepository` no longer depends on a nonexistent `users.status` column and computes `expires_at` in PHP before binding it as a normal SQL value.
+- Platform Admin > Platform Settings > Email delivery now stores `smtp_x_pm_message_stream`; SMTP sends it as `X-PM-Message-Stream` for Postmark message streams.
+- `scripts/workers/email_run_once.php` builds its sender from `platform_settings` rather than environment-only mail configuration.
+
+## Tenant login and admin invites
+- Tenant browser login stores the tenant ID on the session and returns `Set-Cookie` on the redirect to `/admin`.
+- `SessionCookie` keeps backward-compatible `issueSetCookie()` and `expireSetCookie()` aliases to avoid rolling-deploy method-name failures.
+- Platform tenant detail pages show an external link to open the tenant site in a new tab when a tenant domain is available.
+- Tenant admins can invite additional tenant admins from `/admin/users`; invites upsert membership/role records and queue `email_outbox` email with template key `tenant_admin_invite`.
+- Regression check: `php scripts/test/tenant_login_and_invite_static.php`.
+
+# End of file.
+
+## Background job handler compatibility - 2026-05-31
+
+- Production background worker is expected to run as `artsfolio-background-worker.service`.
+- `scripts/workers/run_once.php` supports canonical domain job type `custom_domain.verify_dns` and compatibility alias `tenant.domain.verify` for older queued signup rows.
+- `tenant.site.bootstrap` is handled by `App\Platform\Jobs\Handlers\TenantSiteBootstrapJobHandler` to finalize tenant provisioning idempotently.
+- New signup provisioning queues `custom_domain.verify_dns` for DNS work and keeps `tenant.site.bootstrap` for tenant finalization.
+
+## 2026-05-31 worker health, DNS results, tenant subdomain fallback
+
+- Platform admin pages now display a background worker error banner when no worker heartbeat has been seen within 75 seconds.
+- Worker heartbeat writes now use `UTC_TIMESTAMP()` and PHP reads heartbeat timestamps as UTC to prevent false stale worker status caused by timezone drift.
+- Custom domain DNS verification now stores the last DNS check on `tenant_domains.dns_last_checked_at`, `tenant_domains.dns_last_result`, and `tenant_domains.dns_last_error`; Platform Admin → Domains displays these values.
+- `*.artsfol.io` tenant subdomains now fall back to resolving by tenant slug when an active `tenant_domains` row is missing or stale. Platform/root/admin hostnames remain excluded from tenant fallback.
+- The platform contact page now renders reCAPTCHA when `platform_settings.recaptcha_site_key` is configured and verifies submitted tokens when `platform_settings.recaptcha_secret_key` is configured.
+
+# End of file.
+
+## 2026-05-31: Production preflight email send guard
+- `scripts/test/preflight.sh` no longer runs `scripts/workers/email_run_once.php` by default.
+- Production deploy preflight validates email queue/template behavior but does not attempt to relay SMTP to test recipients.
+- To exercise the send path in a safe local environment, run preflight with `ARTSFOLIO_PREFLIGHT_SEND_EMAIL=1` and point SMTP settings at a local sink such as MailHog.
+
+## Production deploy final status reporting - 2026-05-31
+
+- `scripts/deploy/deploy_production.sh` now uses an `EXIT` trap to print a final `DEPLOY SUCCEEDED` or `DEPLOY FAILED` banner on every run.
+- Failure banners include the failed deploy stage, exit code, branch, and commit so preflight failures are no longer confused with completed deploys.
+- The deploy stage order remains unchanged: git update, env verification, PHP lint, migrations, migration integrity, preflight, service restarts, then health check.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
+## Production deploy worker requirement
+
+`artsfolio-background-worker.service` is deploy-critical. `scripts/deploy/deploy_production.sh` must fail if the unit is missing or inactive. The deploy script checks the unit with `systemctl cat artsfolio-background-worker.service` and verifies activity with `systemctl is-active --quiet artsfolio-background-worker.service`.
+
+## Hardened production deploy worker health - 2026-05-31
+
+- `scripts/deploy/deploy_production.sh` now fails if `artsfolio-background-worker.service` is missing or inactive.
+- `scripts/deploy/healthcheck.sh` now treats the background worker as a required service instead of warning and passing.
+- SIGINT/SIGTERM during deploy now exit with code 130 and produce a `DEPLOY FAILED` banner rather than a false success banner.
+- Required production services are `php8.4-fpm`, `caddy`, `mariadb`, `artsfolio-email-worker.service`, and `artsfolio-background-worker.service`.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
+# End of file.
+
+## Contact, signup, reCAPTCHA, and navigation UX
+- Tenant contact and email signup submissions redirect back to branded tenant pages with inline success/error notices instead of standalone error pages.
+- Tenant public reCAPTCHA is tenant-specific only; platform keys are not reused on tenant/custom domains to avoid Google invalid-domain errors.
+- Tenant contact pages include an email-list signup form and public tenant pages show a one-minute visitor signup modal.
+- Public tenant and platform navigation styling reserves stable tab width to reduce page-to-page tab movement.
+
+# End of file.
+
+## Tenant first-party CAPTCHA controller integration
+- Tenant public pages use `FirstPartyCaptcha::render()` directly and must not call the removed `HomeController::recaptchaWidget()` helper.
+- Tenant contact/signup submissions verify first-party CAPTCHA server-side and render branded same-page errors for visitors.
+
+## Platform admin routing
+- Platform-admin routes are canonical to `artsfol.io`; tenant-host `/platform/admin...` requests redirect to `https://artsfol.io/platform/admin...` so tenant routing cannot swallow platform admin URLs.
+
+## Platform admin redirect compatibility
+- Tenant-host platform-admin redirects use `Response::html(..., 302, Location)` because `App\Http\Response` has no `redirect()` factory method.
+
+
+## Tenant first-party CAPTCHA form-fix
+- Tenant first-party CAPTCHA is progressively enhanced: the checkbox is usable without JavaScript after server dwell time, and JavaScript only temporarily disables it.
+- The honeypot field is hidden inline and in CSS to prevent tenant CSS/cache drift from exposing it to visitors.
+- Tenant form JavaScript now surfaces server error text instead of replacing failures with a generic message.
+
+## Tenant admin navigation
+- Tenant public Admin links point to `/admin` on the current tenant host. Platform admin remains canonical at `https://artsfol.io/platform/admin`; tenant public navigation must not link to `/platform/admin`.
+
+## Tenant admin navigation
+- Tenant public Admin links point to `/admin` on the current tenant host. Platform admin remains canonical at `https://artsfol.io/platform/admin`; tenant public navigation must not link to `/platform/admin`.
+
+## Tenant public admin navigation
+
+- Tenant public pages use `/admin` for their Admin nav link on the tenant host.
+- Platform admin remains canonical at `https://artsfol.io/platform/admin` and must not be emitted in tenant public navigation.
+
+
+## Tenant chrome guardrails
+- Tenant public pages must use `/admin` for tenant admin links and must not call `PlatformChrome::platformAdminLink()` directly.
+- Tenant form JavaScript is loaded from `/assets/tenant-forms.js`; controllers must not inline the asset contents into public pages.
+- `scripts/test/tenant_chrome_static.php` enforces these rules during preflight.
+
+
+## Email outbox diagnostics
+- Platform Admin → Email Outbox displays `email_outbox.last_error` for failed rows.
+- `EmailSenderFactory::fromEnvironment()` honors both `EMAIL_DRIVER` and legacy `MAIL_TRANSPORT`; `MAIL_TRANSPORT=log` maps to dry-run behavior.
+
+# End of file.
+
+## Custom-domain deploy safety
+
+- Added migration `0020_preserve_bxiie_custom_domains.sql` to preserve and repair the Bxiie tenant mappings for `bxiie.artsfol.io`, `bxiie.com`, and `www.bxiie.com`.
+- Production preflight/deploy must treat tenant custom-domain rows as durable data and must not delete or disable them as test cleanup.
+- If a custom hostname is assigned to the wrong tenant, migration code must not silently steal it; deployment should fail and require explicit operator repair.
+
+## 2026-05-31 engagement and tenant-user admin update
+
+- Contact messages and email-list signups now store IP address, user agent, city, region, and country when location can be resolved.
+- Tenant admin contact-message and email-signup screens and CSV exports show IP and location details.
+- Public tenant contact/signup forms and the platform `/contact` page use the first-party ArtsFolio CAPTCHA widget instead of silently depending on absent Google reCAPTCHA tenant secrets.
+- Tenant owner user-management actions now include promotion of tenant admins to tenant owner and deletion of invited or active tenant users from that tenant. Delete actions revoke tenant-scoped access and active sessions and write `tenant.user.deleted` audit rows.
+
+# End of file.
+
+## 2026-05-31 tenant branding and site image patch
+- Tenant public home body headline now uses tenant setting `artist_name`; menu brand and browser title continue to use `site_title`/page title behavior.
+- Tenant artwork supports seeded artwork types `portfolio_images` and `site_images` through `artwork_types` and `artwork_type_assignments`.
+- Public portfolio/home/artwork queries require `portfolio_images`; published `site_images` are available to About, Contact, and Background pickers and are not public portfolio items unless also marked `portfolio_images`.
+- About, Contact, and Background image pickers use thumbnails and selectable opacity.
+- Tenant admin user deletion requires typing `delete` in confirmation and continues to audit tenant user deletion.
+- Tenant admin upload page now uses the tenant admin shell instead of an unbranded bare HTML page.
+
+# End of file.
+
+## Email branding
+- All queued outbound email is branded centrally through `App\Platform\Email\BrandedEmail` from `EmailOutboxRepository::queue()`.
+- Individual email templates should keep message-specific content only and avoid duplicating the shared ArtsFolio header/footer.
+
+
+## 2026-06-02 tenant visual/admin auth repair
+
+- Tenant public pages and tenant admin pages now share page background, top bar, menu panel, heading spread, content surface, and text color CSS variables.
+- Tenant settings include `menu_background_enabled` so the visible navigation background wash can be suppressed without hiding navigation links.
+- Tenant contact and signup forms use tenant surface styling and the tenant form asset version was bumped to avoid stale browser JavaScript.
+- `App\Http\Support\SessionCookie` includes plural `issueHeaders()` and `expireHeaders()` aliases used by platform login/logout controllers.
+
+# End of file.
+
+## 2026-06-02 pricing, commission, and platform stats patch
+- Platform Admin → Plans & Billing now edits plan price, description, active status, display order, custom-domain inclusion, allowed artwork count, and allowed email-address count.
+- Platform sales commission is stored in `platform_settings.platform_sales_commission_basis_points` and displayed on public pricing and tenant billing surfaces.
+- Free tenant pages show an ArtsFolio notification/link; public pricing explicitly notes this.
+- Platform stats location drill-down now opens IP detail scoped to the selected location rather than the global IP list.
+- Platform tenant status/lifecycle audit calls use the correct `AuditLogRepository::record()` argument order.
+
+## 2026-06-02 platform pricing, tenant lifecycle, and invite controls
+- Platform tenant deletion is soft-delete only, requires a typed `delete` confirmation, writes audit, and removes deleted tenants from the default platform tenant list.
+- Platform pricing is editable from `/platform/admin/pricing`; platform admins can create plans, update prices, set artwork/email limits, custom-domain inclusion, active state, display order, and platform sales commission disclosure.
+- Strawman plans are seeded for Free, Studio, Professional, and Collective; the Free plan includes an ArtsFolio notification/link disclosure.
+- Platform and tenant user admin screens support invite send/resend through the local email outbox.
+- Tenant menu visual settings now suppress the nav panel background and background image when menu opacity is zero or the menu panel is disabled.
+
+# End of file.
+
+## 2026-06-02 sales readiness phase 1
+- Published, unsold `for_sale` artworks display price on portfolio cards and artwork detail pages.
+- Artwork detail pages include a contact link with the artwork title prefilled for inquiry.
+- Artwork rows now include `is_one_off` and `inventory_quantity` fields for original versus inventory-backed items.
+- Tenant settings include `sales_notes`; public artwork detail pages display the notes with sales context.
+- Tenant pages show first-party cookie consent in preparation for sessions, analytics, signup/contact forms, and tenant-scoped cart support.
+- Stripe checkout, cart/order records, sales workflow, recent sales, commission calculation, and sales analytics remain phase-two/phase-three work.
+
+# End of file.
+
+## 2026-06-02 sales phase 2
+- Added tenant-scoped shopping carts, order records, order items, Stripe Checkout session creation, and Stripe webhook completion handling.
+- Stripe model: Stripe Checkout with destination charges when tenant setting `stripe_connected_account_id` is configured; platform settings hold Stripe keys and webhook secret.
+- Paid plans only: public add-to-cart and checkout are gated by active paid plan assignments.
+- Tenant admin now has a Sales workflow page for ordered, acknowledged, packed, and shipped status plus shipping details.
+- Platform admin now has a Sales overview with tenant visibility and commission totals.
+- Public platform home can show recent sales with tenant and artwork links.
+
+# End of file.
+
+## 2026-06-02 pricing, billing, auth, and social stabilization
+- Tenant custom domains and tenant subdomains share the same tenant route set; tenant `/signup` redirects to the tenant signup/contact surface instead of 404.
+- Tenant `/password/forgot` accepts POST, creates password reset tokens, and queues branded reset email through `email_outbox`.
+- Platform pricing setup now includes the same billing features shown in tenant usage: artwork records, media storage GB, email subscribers, contact messages, custom domains, admin users, and online checkout/allow-sales.
+- Tenant owners can upgrade or downgrade from `/admin/billing`; the change updates `tenant_plan_assignments` and legacy `tenant_settings.billing_plan`.
+- Platform tenant detail includes a complementary billing override. Complementary tenants do not pay platform service billing but still pay platform commission on sales.
+- Tenant footer renders configured Instagram, Facebook, and LinkedIn URLs.
+- Cart contact email is collected before checkout, and `scripts/email/queue_abandoned_cart_emails.php` queues 12-hour and 24-hour abandoned-cart reminders without sending SMTP directly.
+- Production smoke/predeploy tests must not send real emails; delivery remains worker-owned and should only be triggered manually against a safe SMTP sink.
+
+# End of file.
+
+## Billing economics update - 2026-06-02
+- Tenant signup now intentionally supports both GET /signup and POST /signup; route preflight expects both.
+- Plan pricing includes plan-scoped credit card percentage and fixed fee settings.
+- Sales orders persist platform commission, estimated credit card fees, and estimated seller net revenue.
+- Stripe Checkout application fees include platform commission plus estimated card fees so tenants receive sale amount minus commission and card charges.
+- Complementary tenants waive subscription billing only; platform commission and credit card charges still apply to sales.
+
+# End of file.
+
+## 2026-06-02 dashboard signal update
+- Platform Admin dashboard now shows operating and business signals: tenant counts, paid-capable tenants, complimentary tenants, 30-day GMV, platform commission, seller net, contact queue, background job attention, recent sales, recent tenants, and active plan economics.
+- Tenant Admin dashboard now shows site and sales action signals: published/draft artworks, for-sale inventory, low-stock multiples, 30-day views, subscribers, contact queue, open orders, current plan, sales readiness, and next-action guidance.
+- Dashboard queries are defensive around optional sales/engagement tables so rolling deployments and local environments do not turn the admin landing page into a brick.
+
+# End of file.
+
+## 2026-06-02 dashboard schema alignment
+- Platform and tenant dashboards use production table names, including `plans`, `sales_orders`, and `background_jobs`.
+- Dashboard optional table checks use MariaDB `SHOW TABLES` / `SHOW COLUMNS` instead of fragile assumptions.
+- Dashboard sections now report concise admin-visible query failures instead of misleading missing-table empty states.
+
+## 2026-06-08 admin dashboard, sales analytics, login, and release checklist fixes
+- Tenant dashboard sales inventory counts now use `artworks.sale_status = 'for_sale'` instead of the nonexistent `artworks.is_for_sale` column.
+- Tenant dashboard subscriber counts now use `email_signups.consent_status` from the production schema.
+- Platform dashboard tenant counts are null-safe and continue to exclude deleted tenants.
+- Tenant and platform sales analytics routes are wired to the existing SalesAnalyticsController classes.
+- Tenant login failure now returns the branded login page with a retry invitation instead of an unbranded raw `Invalid login` page.
+- Tenant public Admin tab is hidden for anonymous visitors and shown only when a browser session user is present.
+- Printable application checklists and comprehensive test-stack guidance were added under `docs/admin`, `docs/dev`, and `docs/user`.
+
+# End of file.
+
+## Recent operational fixes
+
+- 2026-06-08 dashboard counts hotfix: Platform and tenant admin dashboard controllers must use `Database::connect(dirname(__DIR__, 5))`; using level 6 points outside the project and makes metrics/table checks falsely report zero or missing tables.
+
+## 2026-06-08 Contact and signup location schema repair
+- Added `database/migrations/0031_contact_engagement_location_schema_repair.sql` to repair schema drift where contact/signup repositories write `country`, `region`, and `city`, but older databases may not have those columns.
+- Migration is additive and idempotent; it does not delete or rewrite production contact or signup data.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
+## 2026-06-08 Email list management and custom-domain admin sessions
+
+- Added tenant email signup source/notes management, CSV import, deletion, search, sort, and filtered export.
+- Added one-time tenant session bridge tickets so an admin logged in on a tenant `artsfol.io` subdomain can enter the same tenant admin on a verified custom domain without a second password prompt.
+- Admin tab on tenant public pages is shown only when a browser user is signed in.
+- Cross-domain auth uses short-lived one-time tickets because browsers cannot share ordinary cookies between unrelated domains such as `bxiie.artsfol.io` and `bxiie.com`.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
+## 2026-06-08 Email list management and custom-domain admin sessions
+
+- Added tenant email signup source/notes management, CSV import, deletion, search, sort, and filtered export.
+- Added one-time tenant session bridge tickets so an admin logged in on a tenant `artsfol.io` subdomain can enter the same tenant admin on a verified custom domain without a second password prompt.
+- Admin tab on tenant public pages is shown only when a browser user is signed in.
+- Cross-domain auth uses short-lived one-time tickets because browsers cannot share ordinary cookies between unrelated domains such as `bxiie.artsfol.io` and `bxiie.com`.
+
+## 2026-06-08 Generic tenant session bridge
+- Tenant admin session bridging is tenant-domain generic, not bxiie-specific. Any active host owned by the same tenant can issue a short-lived one-time ticket for another host owned by that tenant. This supports `{tenant}.artsfol.io` and any active custom domain without cross-tenant cookie sharing.
+
+
+## 2026-06-08 Tenant session bridge hostname hotfix
+- Tenant session bridge now reads `tenant_domains.hostname` and aliases it as `domain` internally. The production schema does not contain `tenant_domains.domain`; using that column breaks `/auth/tenant-session/bridge` with SQLSTATE 42S22.
+- Active bridge hosts are limited to tenant-owned platform/custom domains with `active` or `dns_verified` status.
+
+
+## 2026-06-08 Tenant session bridge domain-column repair
+- Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
+- Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
+
+## 2026-06-08 Platform admin invite repository repair
+
+- Added `AdminUserRepository::assignPlatformRole()` so `/platform/admin/users/invite` can create/reuse a user and assign the platform admin role without a fatal method error.
+- Platform role assignment checks for an existing `tenant_id IS NULL` row before inserting because MySQL unique indexes do not de-duplicate NULL tenant IDs reliably for this purpose.
+- Added `scripts/test/platform_user_invite_repository_static.php` and wired it into preflight.
+
 <!-- End of file. -->
+
+## 2026-06-10
+
+- Added tenant admin artwork placement matrix at `/admin/artworks/placement` for assigning artwork to the home page and portfolio sections with thumbnail-first rows.
+- Added portfolio/home artwork ordering workflow at `/admin/portfolio-sections/order`; ordering writes to `homepage_artwork_assignments.sort_order` and `artwork_section_assignments.sort_order`.
+- Tenant password reset requests are now scoped to users attached to the current tenant through `tenant_memberships` or legacy `tenant_users`; unrelated users and mailing-list-only addresses do not receive tenant reset links.
+
+## 2026-06-10 signup, logout, and home artwork visibility
+- Signup passcodes are verified before the platform signup flow displays site detail fields.
+- Tenant logout revokes the active server-side session in addition to expiring session cookies.
+- Tenant artwork admin links to the artwork placement matrix and section artwork order UI.
+- Tenant home pages render only artworks explicitly assigned to the home page when homepage_artwork_assignments exists.
+- 2026-06-10: Patched tenant logout to revoke server-side session tokens, mounted platform `/password/forgot`, refreshed artwork publish/unpublish AJAX state, and added default `$` display for bare numeric public artwork prices.
+# End of file.
+- Tenant auth security: tenant logout revokes the server-side session row through `SessionRepository`, and tenant password reset token issue/redeem paths require active tenant membership.
+- Auth/domain security: tenant logout uses `SessionRepository`, tenant password reset requires active tenant membership, domain plan usage ignores default `artsfol.io` subdomains and `www` aliases, and tenant deletion removes tenant domain rows for reuse.
+- Domain DNS/reset hardening: DNS verification uses `ARTSFOLIO_SERVER_PUBLIC_IP` instead of literal `SERVER_PUBLIC_IP`; tenant reset fails closed on missing tenant id; platform custom-domain add accepts tenant id or slug.
+- Login/jobs UI: tenant login pages do not show create-account links; background jobs admin shows execution timestamps.
+- Platform access/login/jobs UI: developer resources are login-gated, platform marketing nav includes Pricing, tenant login hides create-account links, and background jobs show execution timestamps.
+- Platform UI/access: developer resources require login, Pricing appears in platform navigation, tenant login suppresses create-account link, and jobs admin shows execution timestamps.
+- Pricing UI: public pricing cards show admin user limits per tier and force high-contrast price display on tinted plan cards.
+- Pricing/plans UI: pricing shows admin-user limits, dark Studio card text is readable, and edit plan fields are widened for fee/card/currency values.
+
+## Cloudflare Turnstile and social auth guide update - 2026-06-15
+
+- Public platform and tenant contact/signup form protection now uses Cloudflare Turnstile settings: `turnstile_site_key` and `turnstile_secret_key`. Tenant keys override platform keys; blank tenant keys inherit platform keys; blank secrets preserve local/staging form behavior.
+- The legacy `App\Services\FirstPartyCaptcha` class name remains as the compatibility facade, but it now renders `cf-turnstile` and verifies `cf-turnstile-response` through Cloudflare Siteverify.
+- Platform and tenant settings screens now label spam protection as Cloudflare Turnstile. Existing reCAPTCHA setting keys are only read as temporary migration fallback for site key display.
+- Added `docs/admin/turnstile-and-social-auth.md` and `docs/dev/oauth-provider-guide.md` with implementation guidance for Turnstile, Google OAuth, and Facebook Login.
+- Social auth redirect routes already exist, but provider callbacks still fail closed until token exchange, state validation, identity linking, and normal ArtsFolio session creation are implemented and tested.
+

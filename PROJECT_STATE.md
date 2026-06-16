@@ -809,6 +809,18 @@
 - The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
 - The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
 
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
 # End of file.
 
 ## admin-session-help-stats-audit update
@@ -827,6 +839,12 @@
 - The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
 - The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
 
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
 # End of file.
 
 ## Help platform polish bundle
@@ -844,6 +862,12 @@
 - Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
 - The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
 - The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
+
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
 # End of file.
 
@@ -912,6 +936,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform marketing footer copyright expands the `{year}` token from `platform_footer_copyright_html`. Legacy platform page footers now render a current-year ArtsFolio copyright line.
 - The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
 - The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
+
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
 # End of file.
 
@@ -994,6 +1024,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The login-method buttons were removed from the platform home page hero; signup/login-specific pages still expose authentication choices.
 - The developer reference at `/help/developer` and `/developer` now includes route descriptions and curl examples.
 
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
 # End of file.
 
 ## 2026-05-30 access, lifecycle, developer reference, and jobs patch
@@ -1005,6 +1041,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Developer route reference is expanded in `docs/dev/http-routes.md` and `/developer` falls back to the global current user when routed through legacy route wiring.
 - Background job execution requires `artsfolio-background-worker.service`; the unit file lives at `scripts/systemd/artsfolio-background-worker.service` and wraps `scripts/workers/run_once.php` through `scripts/workers/run_forever.php`.
 
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
 # End of file.
 
 ## 2026-05-30 stats/auth/API/admin lifecycle patch
@@ -1015,6 +1057,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform admin tenant list includes an external link to the tenant ArtsFolio subdomain.
 - Platform admins can suspend/delete users and tenants with confirmation prompts. Tenant deletion is soft deletion by status. Suspended tenants display an ArtsFolio-branded unavailable page.
 - Initial OAuth2-protected administrative API routes live under `/api/admin/*` and cover tenant creation, tenant settings, and tenant-admin-visible content collections.
+
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
 # End of file.
 
@@ -1104,6 +1152,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant admins can invite additional tenant admins from `/admin/users`; invites upsert membership/role records and queue `email_outbox` email with template key `tenant_admin_invite`.
 - Regression check: `php scripts/test/tenant_login_and_invite_static.php`.
 
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
 # End of file.
 
 ## Background job handler compatibility - 2026-05-31
@@ -1120,6 +1174,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Custom domain DNS verification now stores the last DNS check on `tenant_domains.dns_last_checked_at`, `tenant_domains.dns_last_result`, and `tenant_domains.dns_last_error`; Platform Admin → Domains displays these values.
 - `*.artsfol.io` tenant subdomains now fall back to resolving by tenant slug when an active `tenant_domains` row is missing or stale. Platform/root/admin hostnames remain excluded from tenant fallback.
 - The platform contact page now renders reCAPTCHA when `platform_settings.recaptcha_site_key` is configured and verifies submitted tokens when `platform_settings.recaptcha_secret_key` is configured.
+
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
 # End of file.
 
@@ -1171,6 +1231,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Repaired the tenant session bridge so all tenant-domain lookups use `tenant_domains.hostname`; production does not have `tenant_domains.domain`.
 - Added `scripts/test/tenant_session_bridge_hostname_static.php` to prevent the bridge from reintroducing the missing `domain` column.
 
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
 # End of file.
 
 ## Contact, signup, reCAPTCHA, and navigation UX
@@ -1178,6 +1244,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant public reCAPTCHA is tenant-specific only; platform keys are not reused on tenant/custom domains to avoid Google invalid-domain errors.
 - Tenant contact pages include an email-list signup form and public tenant pages show a one-minute visitor signup modal.
 - Public tenant and platform navigation styling reserves stable tab width to reduce page-to-page tab movement.
+
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
 # End of file.
 
@@ -1219,6 +1291,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform Admin → Email Outbox displays `email_outbox.last_error` for failed rows.
 - `EmailSenderFactory::fromEnvironment()` honors both `EMAIL_DRIVER` and legacy `MAIL_TRANSPORT`; `MAIL_TRANSPORT=log` maps to dry-run behavior.
 
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
 # End of file.
 
 ## Custom-domain deploy safety
@@ -1234,6 +1312,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Public tenant contact/signup forms and the platform `/contact` page use the first-party ArtsFolio CAPTCHA widget instead of silently depending on absent Google reCAPTCHA tenant secrets.
 - Tenant owner user-management actions now include promotion of tenant admins to tenant owner and deletion of invited or active tenant users from that tenant. Delete actions revoke tenant-scoped access and active sessions and write `tenant.user.deleted` audit rows.
 
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
 # End of file.
 
 ## 2026-05-31 tenant branding and site image patch
@@ -1243,6 +1327,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - About, Contact, and Background image pickers use thumbnails and selectable opacity.
 - Tenant admin user deletion requires typing `delete` in confirmation and continues to audit tenant user deletion.
 - Tenant admin upload page now uses the tenant admin shell instead of an unbranded bare HTML page.
+
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
 # End of file.
 
@@ -1257,6 +1347,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant settings include `menu_background_enabled` so the visible navigation background wash can be suppressed without hiding navigation links.
 - Tenant contact and signup forms use tenant surface styling and the tenant form asset version was bumped to avoid stale browser JavaScript.
 - `App\Http\Support\SessionCookie` includes plural `issueHeaders()` and `expireHeaders()` aliases used by platform login/logout controllers.
+
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
 # End of file.
 
@@ -1274,6 +1370,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform and tenant user admin screens support invite send/resend through the local email outbox.
 - Tenant menu visual settings now suppress the nav panel background and background image when menu opacity is zero or the menu panel is disabled.
 
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
 # End of file.
 
 ## 2026-06-02 sales readiness phase 1
@@ -1284,6 +1386,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant pages show first-party cookie consent in preparation for sessions, analytics, signup/contact forms, and tenant-scoped cart support.
 - Stripe checkout, cart/order records, sales workflow, recent sales, commission calculation, and sales analytics remain phase-two/phase-three work.
 
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
 # End of file.
 
 ## 2026-06-02 sales phase 2
@@ -1293,6 +1401,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant admin now has a Sales workflow page for ordered, acknowledged, packed, and shipped status plus shipping details.
 - Platform admin now has a Sales overview with tenant visibility and commission totals.
 - Public platform home can show recent sales with tenant and artwork links.
+
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
 # End of file.
 
@@ -1306,6 +1420,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Cart contact email is collected before checkout, and `scripts/email/queue_abandoned_cart_emails.php` queues 12-hour and 24-hour abandoned-cart reminders without sending SMTP directly.
 - Production smoke/predeploy tests must not send real emails; delivery remains worker-owned and should only be triggered manually against a safe SMTP sink.
 
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
 # End of file.
 
 ## Billing economics update - 2026-06-02
@@ -1315,12 +1435,24 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Stripe Checkout application fees include platform commission plus estimated card fees so tenants receive sale amount minus commission and card charges.
 - Complementary tenants waive subscription billing only; platform commission and credit card charges still apply to sales.
 
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
 # End of file.
 
 ## 2026-06-02 dashboard signal update
 - Platform Admin dashboard now shows operating and business signals: tenant counts, paid-capable tenants, complimentary tenants, 30-day GMV, platform commission, seller net, contact queue, background job attention, recent sales, recent tenants, and active plan economics.
 - Tenant Admin dashboard now shows site and sales action signals: published/draft artworks, for-sale inventory, low-stock multiples, 30-day views, subscribers, contact queue, open orders, current plan, sales readiness, and next-action guidance.
 - Dashboard queries are defensive around optional sales/engagement tables so rolling deployments and local environments do not turn the admin landing page into a brick.
+
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
 # End of file.
 
@@ -1337,6 +1469,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant login failure now returns the branded login page with a retry invitation instead of an unbranded raw `Invalid login` page.
 - Tenant public Admin tab is hidden for anonymous visitors and shown only when a browser session user is present.
 - Printable application checklists and comprehensive test-stack guidance were added under `docs/admin`, `docs/dev`, and `docs/user`.
+
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
 
 # End of file.
 
@@ -1421,6 +1559,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant artwork admin links to the artwork placement matrix and section artwork order UI.
 - Tenant home pages render only artworks explicitly assigned to the home page when homepage_artwork_assignments exists.
 - 2026-06-10: Patched tenant logout to revoke server-side session tokens, mounted platform `/password/forgot`, refreshed artwork publish/unpublish AJAX state, and added default `$` display for bare numeric public artwork prices.
+## Platform contact outbox repair - 2026-06-15
+
+- The public platform contact form at `https://artsfol.io/contact` now queues `email_outbox` rows with `template_key=platform.contact_notification` instead of only displaying a success notice.
+- Platform contact recipients resolve through `ARTSFOLIO_PLATFORM_CONTACT_EMAIL`, then `ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL`, then `info@artsfol.io`; `.example.test` is not used for queued contact mail.
+- Added `scripts/test/platform_contact_email_static.php` and wired it into preflight to protect platform contact queueing.
+
 # End of file.
 - Tenant auth security: tenant logout revokes the server-side session row through `SessionRepository`, and tenant password reset token issue/redeem paths require active tenant membership.
 - Auth/domain security: tenant logout uses `SessionRepository`, tenant password reset requires active tenant membership, domain plan usage ignores default `artsfol.io` subdomains and `www` aliases, and tenant deletion removes tenant domain rows for reuse.

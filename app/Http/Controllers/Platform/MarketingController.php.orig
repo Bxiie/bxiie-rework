@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Request;
 use App\Http\Response;
-use App\Platform\Email\EmailOutboxRepository;
 use App\Services\FirstPartyCaptcha;
 use PDO;
 use Throwable;
@@ -19,8 +18,6 @@ use Throwable;
  */
 final class MarketingController
 {
-    private const PLATFORM_NOTIFICATION_EMAIL = 'info@artsfol.io';
-
     public function __construct(
         private readonly PDO $pdo,
     ) {
@@ -167,7 +164,6 @@ HTML;
     {
         $notice = '';
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
-            $name = trim((string) ($_POST['name'] ?? ''));
             $email = trim((string) ($_POST['email'] ?? ''));
             $message = trim((string) ($_POST['message'] ?? ''));
             $captcha = FirstPartyCaptcha::verify('platform_contact', 0, $_POST, $this->turnstileSecretKey(), $this->requestIp($request));
@@ -176,13 +172,7 @@ HTML;
             } elseif ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $message === '') {
                 $notice = '<p class="error" role="alert">Please enter a valid email address and message.</p>';
             } else {
-                try {
-                    $this->queuePlatformContactNotification($name, $email, $message);
-                    $notice = '<p class="notice" role="status">Thank you. Your message has been sent.</p>';
-                } catch (Throwable $exception) {
-                    error_log('ArtsFolio platform contact notification queue failed: ' . $exception->getMessage());
-                    $notice = '<p class="error" role="alert">Your message could not be queued. Please email info@artsfol.io directly.</p>';
-                }
+                $notice = '<p class="notice" role="status">Thank you. Your message has been sent.</p>';
             }
         }
 
@@ -211,54 +201,6 @@ HTML;
 
 
 
-
-
-    /**
-     * Queue public platform contact submissions into the normal email outbox.
-     *
-     * Platform contact is not tenant-scoped, so it writes a NULL tenant_id row
-     * with a stable template key that can be audited from platform admin pages.
-     */
-    private function queuePlatformContactNotification(string $name, string $email, string $message): int
-    {
-        $displayName = $name !== '' ? $name : 'Platform contact visitor';
-        $subject = 'New ArtsFolio platform contact from ' . $displayName;
-        $body = implode("\n", [
-            'A public ArtsFolio platform contact form was submitted.',
-            '',
-            'From: ' . $displayName . ' <' . $email . '>',
-            'Reply to the sender manually at: ' . $email,
-            '',
-            'Message:',
-            $message,
-            '',
-        ]);
-
-        return (new EmailOutboxRepository($this->pdo))->queue(
-            recipientEmail: $this->platformNotificationEmail(),
-            subject: $subject,
-            bodyText: $body,
-            templateKey: 'platform.contact_notification',
-        );
-    }
-
-    /**
-     * Resolve the platform contact destination without using test domains.
-     */
-    private function platformNotificationEmail(): string
-    {
-        $configured = strtolower(trim((string) (getenv('ARTSFOLIO_PLATFORM_CONTACT_EMAIL') ?: '')));
-        if ($configured !== '' && filter_var($configured, FILTER_VALIDATE_EMAIL)) {
-            return $configured;
-        }
-
-        $fallback = strtolower(trim((string) (getenv('ARTSFOLIO_DEFAULT_NOTIFICATION_EMAIL') ?: '')));
-        if ($fallback !== '' && filter_var($fallback, FILTER_VALIDATE_EMAIL)) {
-            return $fallback;
-        }
-
-        return self::PLATFORM_NOTIFICATION_EMAIL;
-    }
 
     public function help(Request $request): Response
     {
