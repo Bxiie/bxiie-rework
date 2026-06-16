@@ -121,6 +121,7 @@ HTML;
 <section class="admin-panel">
     <h2>Signup code list options</h2>
     <form method="get" action="/platform/admin/signup-codes" class="admin-form">
+        <input type="hidden" name="signup_code_filter_saved" value="1">
         <label><input type="checkbox" name="show_used" value="1"{$showUsedChecked}> Show used codes</label>
         <label><input type="checkbox" name="show_revoked" value="1"{$showRevokedChecked}> Show revoked codes</label>
         <button type="submit">Save list options</button>
@@ -238,18 +239,17 @@ HTML;
      */
     private function signupCodeFilterState(): array
     {
-        $hasUsedQuery = array_key_exists('show_used', $_GET);
-        $hasRevokedQuery = array_key_exists('show_revoked', $_GET);
+        $filterSubmitted = (string) ($_GET['signup_code_filter_saved'] ?? '') === '1';
 
-        $showUsed = $hasUsedQuery
-            ? (string) ($_GET['show_used'] ?? '') === '1'
+        $showUsed = $filterSubmitted
+            ? (string) ($_GET['show_used'] ?? '0') === '1'
             : (string) ($_COOKIE['artsfolio_signup_codes_show_used'] ?? '0') === '1';
-        $showRevoked = $hasRevokedQuery
-            ? (string) ($_GET['show_revoked'] ?? '') === '1'
+        $showRevoked = $filterSubmitted
+            ? (string) ($_GET['show_revoked'] ?? '0') === '1'
             : (string) ($_COOKIE['artsfolio_signup_codes_show_revoked'] ?? '0') === '1';
 
         $headers = [];
-        if ($hasUsedQuery || $hasRevokedQuery) {
+        if ($filterSubmitted) {
             $expires = gmdate('D, d M Y H:i:s', time() + 31536000) . ' GMT';
             $headers['Set-Cookie'] = [
                 'artsfolio_signup_codes_show_used=' . ($showUsed ? '1' : '0') . '; Expires=' . $expires . '; Path=/platform/admin/signup-codes; SameSite=Lax; Secure; HttpOnly',
