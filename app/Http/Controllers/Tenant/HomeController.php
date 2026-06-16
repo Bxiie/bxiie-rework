@@ -1044,27 +1044,15 @@ HTML;
 
 
     /**
-     * Returns tenant Turnstile site key, falling back to platform/global env.
+     * Tenant public forms use the built-in ArtsFolio CAPTCHA.
+     *
+     * Platform marketing forms still use Cloudflare Turnstile. Tenant and
+     * custom-domain sites intentionally do not inherit the platform Turnstile
+     * widget because Cloudflare hostname limits do not scale with tenants.
      */
     private function turnstileSiteKey(TenantContext $tenant): string
     {
-        $tenantValue = trim((string) $this->settings->get($tenant, 'turnstile_site_key', ''));
-        if ($tenantValue !== '') {
-            return $tenantValue;
-        }
-
-        try {
-            $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'turnstile_site_key' LIMIT 1");
-            $stmt->execute();
-            $platformValue = trim((string) ($stmt->fetchColumn() ?: ''));
-            if ($platformValue !== '') {
-                return $platformValue;
-            }
-        } catch (Throwable) {
-            // Public pages should continue rendering even if settings lookup fails.
-        }
-
-        return trim((string) (getenv('ARTSFOLIO_TURNSTILE_SITE_KEY') ?: ''));
+        return '';
     }
 
     private function escape(string $value): string

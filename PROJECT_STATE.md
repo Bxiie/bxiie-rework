@@ -1596,4 +1596,13 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The signup-code page has persistent browser-scoped options to show used codes and/or revoked codes.
 - Revoked and used codes remain invalid for signup and tenant billing because validation requires `status = active`.
 
+
+## CAPTCHA split
+
+- Platform ArtsFolio forms on `artsfol.io` continue to use Cloudflare Turnstile from platform settings.
+- Tenant public forms use `App\Services\FirstPartyCaptcha` instead of Turnstile.
+- Tenant CAPTCHA is session-backed, single-use, short-lived, includes a honeypot field, requires a human confirmation checkbox, and enforces minimum dwell time.
+- Tenant custom domains and subdomains do not require Cloudflare Turnstile hostname registration.
+- Tenant settings must not expose Turnstile site-key or secret-key fields.
+
 <!-- End of file. -->

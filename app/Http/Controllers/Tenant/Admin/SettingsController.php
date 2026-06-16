@@ -90,8 +90,6 @@ final class SettingsController
         $backgroundPicker = $this->siteImagePicker($tenant, 'background_media_uuid', $backgroundMediaUuid, true);
         $tenantCss = $this->setting($tenant, 'tenant_css', '');
         $artworkDisplayOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
-        $turnstileSiteKey = $this->setting($tenant, 'turnstile_site_key', $this->setting($tenant, 'recaptcha_site_key', ''));
-        $turnstileSecretKey = $this->setting($tenant, 'turnstile_secret_key', '');
 
         $selected = static fn (string $actual, string $expected): string => $actual === $expected ? ' selected' : '';
         $checked = static fn (string $actual, string $expected): string => $actual === $expected ? ' checked' : '';
@@ -204,11 +202,7 @@ final class SettingsController
 
         <fieldset>
             <legend>Spam protection</legend>
-            <div class="admin-grid-2">
-                <label>Cloudflare Turnstile site key<input name="turnstile_site_key" value="{$turnstileSiteKey}"></label>
-                <label>Cloudflare Turnstile secret key<input type="password" name="turnstile_secret_key" value="{$turnstileSecretKey}"></label>
-            </div>
-            <p class="admin-help">Blank values inherit platform Turnstile settings.</p>
+            <p class="admin-help">Tenant public contact and email-list forms use the built-in ArtsFolio CAPTCHA. Cloudflare Turnstile is reserved for ArtsFolio platform-domain forms.</p>
         </fieldset>
 
         <fieldset>
@@ -252,7 +246,7 @@ HTML;
             'menu_background_color', 'menu_background_enabled', 'menu_background_opacity', 'menu_media_uuid', 'heading_background_color', 'heading_background_opacity',
             'content_background_color', 'content_background_opacity', 'text_background_color', 'text_background_opacity', 'header_drop_shadow_enabled', 'header_drop_shadow', 'artwork_card_background_color', 'artwork_card_background_opacity', 'artwork_card_background_size', 'artwork_card_media_uuid', 'background_media_uuid',
             'background_mode', 'background_tile_size', 'background_opacity', 'exhibitions_heading', 'exhibitions_display_mode',
-            'tenant_css', 'artwork_display_order', 'turnstile_site_key', 'turnstile_secret_key',
+            'tenant_css', 'artwork_display_order',
         ];
 
         $before = [];

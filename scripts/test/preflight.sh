@@ -99,6 +99,7 @@ run_if_exists scripts/test/contact_signup_records.php
 run_if_exists scripts/test/contact_email_notification_static.php
 run_if_exists scripts/test/platform_contact_management_static.php
 run_if_exists scripts/test/turnstile_captcha_static.php
+run_if_exists scripts/test/tenant_custom_captcha_static.php
 run_if_exists scripts/test/worker_dns_tenant_static.php
 run_if_exists scripts/test/tenant_admin_lists.php
 run_if_exists scripts/test/contact_message_status.php
