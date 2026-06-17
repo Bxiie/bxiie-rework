@@ -23,8 +23,21 @@ $userStmt->execute();
 $user = $userStmt->fetch();
 
 if (!$user) {
-    fwrite(STDERR, "Missing password-auth-test@example.test. Run php scripts/test/password_auth.php first.\n");
-    exit(1);
+    fwrite(STDERR, "Missing password-auth-test@example.test; bootstrapping with scripts/test/password_auth.php.\n");
+    passthru(PHP_BINARY . ' ' . escapeshellarg($root . '/scripts/test/password_auth.php'), $exitCode);
+
+    if ($exitCode !== 0) {
+        fwrite(STDERR, "Could not bootstrap password-auth-test@example.test.\n");
+        exit(1);
+    }
+
+    $userStmt->execute();
+    $user = $userStmt->fetch();
+
+    if (!$user) {
+        fwrite(STDERR, "Missing password-auth-test@example.test after bootstrap.\n");
+        exit(1);
+    }
 }
 
 $resolver = new TenantResolver($pdo);
