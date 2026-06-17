@@ -361,6 +361,8 @@ final class OAuthController
             return $tenantAdminLocation;
         }
 
+        $_SESSION['artsfolio_oauth_user_id'] = $userId;
+
         return '/signup';
     }
 

@@ -100,6 +100,7 @@ HTML);
 
         $password = (string) ($_POST['password'] ?? '');
         $oauthProfile = is_array($_SESSION['artsfolio_oauth_profile'] ?? null) ? $_SESSION['artsfolio_oauth_profile'] : null;
+        $oauthUserId = isset($_SESSION['artsfolio_oauth_user_id']) ? max(0, (int) $_SESSION['artsfolio_oauth_user_id']) : null;
 
         if ($oauthProfile === null && strlen($password) < 10) {
             return Response::html('<h1>Password too short</h1><p>Use at least 10 characters.</p>', 422);
@@ -117,10 +118,12 @@ HTML);
                 adminName: (string) ($_POST['admin_name'] ?? ''),
                 passwordHash: $this->passwords->hash($password),
                 signupCode: (string) ($_POST['signup_code'] ?? ''),
+                existingUserId: $oauthUserId,
+                createPasswordIdentity: $oauthProfile === null,
                 selectedPlanSlug: (string) ($_POST['selected_plan'] ?? ''),
             );
 
-            unset($_SESSION['artsfolio_oauth_profile']);
+            unset($_SESSION['artsfolio_oauth_profile'], $_SESSION['artsfolio_oauth_user_id']);
         } catch (\Throwable $e) {
             return Response::html(
                 '<h1>Could not create site</h1><p>' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>',
@@ -128,7 +131,7 @@ HTML);
             );
         }
 
-        $sessionToken = $this->createBrowserSession((int) $result['user_id']);
+        $sessionToken = $this->createBrowserSession((int) $result['user_id'], (int) $result['tenant_id']);
 
         $headers = ['Location' => $this->gettingStartedUrl((string) $result['domain'])];
 
@@ -183,7 +186,7 @@ HTML);
 HTML);
     }
 
-    private function createBrowserSession(int $userId): string
+    private function createBrowserSession(int $userId, ?int $tenantId = null): string
     {
         if ($this->sessions === null || $this->sessionTokens === null) {
             return '';
@@ -195,7 +198,7 @@ HTML);
         $this->sessions->create(
             sessionHash: $hash,
             userId: $userId,
-            tenantId: null,
+            tenantId: $tenantId,
             ipAddress: $_SERVER['REMOTE_ADDR'] ?? null,
             userAgent: $_SERVER['HTTP_USER_AGENT'] ?? null,
         );

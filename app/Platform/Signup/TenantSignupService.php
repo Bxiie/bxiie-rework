@@ -59,6 +59,8 @@ final class TenantSignupService
         string $passwordHash,
         string $platformDomain = 'artsfol.io',
         ?string $signupCode = null,
+        ?int $existingUserId = null,
+        bool $createPasswordIdentity = true,
         ?string $selectedPlanSlug = null,
     ): array {
         $slug = $this->normalizeSlug($slug);
@@ -89,8 +91,14 @@ final class TenantSignupService
             $this->ensureDomainAvailable($domain);
 
             $tenantId = $this->createTenant($slug, $siteName);
-            $userId = $this->createOrUpdateUser($adminEmail, $adminName);
-            $this->createOrUpdatePasswordIdentity($userId, $adminEmail, $passwordHash);
+            $userId = $existingUserId !== null && $existingUserId > 0
+                ? $this->updateExistingUser($existingUserId, $adminEmail, $adminName)
+                : $this->createOrUpdateUser($adminEmail, $adminName);
+
+            if ($createPasswordIdentity) {
+                $this->createOrUpdatePasswordIdentity($userId, $adminEmail, $passwordHash);
+            }
+
             $this->createTenantDomain($tenantId, $domain, true);
             $this->createTenantMembership($tenantId, $userId);
             $this->seedTenantCss($tenantId);
@@ -281,6 +289,25 @@ final class TenantSignupService
         return (int) $this->pdo->lastInsertId();
     }
 
+    private function updateExistingUser(int $userId, string $email, string $displayName): int
+    {
+        $stmt = $this->pdo->prepare('SELECT id FROM users WHERE id = :id LIMIT 1');
+        $stmt->execute(['id' => $userId]);
+
+        if ($stmt->fetchColumn() === false) {
+            throw new RuntimeException('OAuth user could not be found during tenant signup.');
+        }
+
+        $this->updateKnown('users', $userId, [
+            'email' => $email,
+            'display_name' => $displayName,
+            'status' => 'active',
+            'updated_at' => $this->now(),
+        ]);
+
+        return $userId;
+    }
+
     private function createOrUpdateUser(string $email, string $name): int
     {
         $stmt = $this->pdo->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
@@ -397,13 +424,28 @@ final class TenantSignupService
             return;
         }
 
-        $this->insertKnown('tenant_memberships', [
-            'uuid' => $this->uuid(),
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO tenant_memberships (
+                tenant_id,
+                user_id,
+                status,
+                created_at,
+                updated_at
+            ) VALUES (
+                :tenant_id,
+                :user_id,
+                'active',
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+            )
+            ON DUPLICATE KEY UPDATE
+                status = 'active',
+                updated_at = CURRENT_TIMESTAMP"
+        );
+
+        $stmt->execute([
             'tenant_id' => $tenantId,
             'user_id' => $userId,
-            'status' => 'active',
-            'created_at' => $this->now(),
-            'updated_at' => $this->now(),
         ]);
     }
 
@@ -416,16 +458,27 @@ final class TenantSignupService
         $roleId = $this->findRoleId(['tenant_owner', 'tenant_admin', 'owner', 'admin']);
 
         if ($roleId === null) {
-            return;
+            throw new RuntimeException('No tenant owner/admin role exists for new tenant owner assignment.');
         }
 
-        $this->insertKnown('role_assignments', [
-            'uuid' => $this->uuid(),
-            'tenant_id' => $tenantId,
-            'user_id' => $userId,
+        $stmt = $this->pdo->prepare(
+            "INSERT IGNORE INTO role_assignments (
+                role_id,
+                user_id,
+                tenant_id,
+                created_at
+            ) VALUES (
+                :role_id,
+                :user_id,
+                :tenant_id,
+                CURRENT_TIMESTAMP
+            )"
+        );
+
+        $stmt->execute([
             'role_id' => $roleId,
-            'created_at' => $this->now(),
-            'updated_at' => $this->now(),
+            'user_id' => $userId,
+            'tenant_id' => $tenantId,
         ]);
     }
 
