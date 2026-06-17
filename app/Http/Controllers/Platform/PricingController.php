@@ -342,7 +342,7 @@ HTML;
 <body>
 <header class="platform-header"><a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a><nav><a class="active" href="/pricing">Pricing</a><a href="/directory">Artists</a><a href="/help">Help</a>{$platformAdminLink}<a href="/login">Sign in</a></nav></header>
 <main>{$body}</main>
-<footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer>
+<footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer>
 <script src="/assets/platform.js" defer></script></body>
 </html>
 HTML;

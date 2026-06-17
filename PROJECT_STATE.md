@@ -1612,4 +1612,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Repeat public submissions preserve `pending` and `confirmed` consent status so a confirmed address is not downgraded to pending.
 - Previously unsubscribed addresses are not active; a later signup can restore them to pending and send a notification.
 
+## Platform legal pages
+
+- Public platform legal pages are available at `/terms` and `/privacy` on `artsfol.io`.
+- Platform footers should link to Terms and Privacy.
+- Terms cover tenant content rights, public/discovery image usage, directory opt-in, sales, fees, shipping, signup codes, acceptable use, suspension, liability, and contact.
+- Privacy policy covers collected data, OAuth login data, sales data, contact/email-list data, cookies/CAPTCHA/security, retention, sharing, and data deletion instructions for direct, Facebook, and Google login data.
+- Legal copy is operationally comprehensive but should be reviewed by counsel before broad commercial launch.
+
 <!-- End of file. -->

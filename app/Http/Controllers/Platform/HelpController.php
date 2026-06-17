@@ -245,7 +245,7 @@ HTML;
         <section class="tenant-admin-panel help-article"><h1>{$safeTitle}</h1>{$body}</section>
     </main>
 </div>
-<footer class="platform-footer"><span>{\App\Http\View\PlatformChrome::copyrightLine()}</span></footer>
+<footer class="platform-footer"><span>{\App\Http\View\PlatformChrome::copyrightLine()}</span><nav><a href="/help">Help</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer>
 </body>
 </html>
 HTML;

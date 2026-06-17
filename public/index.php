@@ -666,6 +666,7 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->get('/help/{article}', fn (Request $request, array $params): Response => (new HelpController())->topic($request, $params, $currentUser));
     $router->get('/developer', fn (Request $request): Response => (new HelpController())->developer($request, $currentUser));
     $router->get('/help/developer', fn (Request $request): Response => (new HelpController())->developer($request, $currentUser));
+    $router->get('/terms', fn (Request $request): Response => $marketingController->terms($request));
     $router->get('/privacy', fn (Request $request): Response => $marketingController->privacy($request));
 
     $router->get('/platform/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));

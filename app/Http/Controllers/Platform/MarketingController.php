@@ -411,28 +411,163 @@ HTML;
     }
 
 
-    public function privacy(Request $request): Response
+    public function terms(Request $request): Response
     {
-        $captcha = FirstPartyCaptcha::render('platform_contact', 0, $this->turnstileSiteKey());
-
-        $body = <<<HTML
+        $body = <<<'HTML'
 <section class="platform-page-heading">
-    <p class="eyebrow">Privacy</p>
-    <h1>Privacy overview</h1>
-    <p>This page is a public placeholder for the ArtsFolio privacy policy. Replace it with reviewed legal copy before broad commercial launch.</p>
+    <p class="eyebrow">Legal</p>
+    <h1>Terms and Conditions</h1>
+    <p>These Terms govern access to and use of ArtsFolio, including artist portfolio sites, public pages, admin tools, email capture, contact forms, directory features, and sales workflows.</p>
+    <p><strong>Effective date:</strong> June 16, 2026</p>
 </section>
+
 <div class="legal-copy">
-    <h2>What ArtsFolio collects</h2>
-    <p>Account information, tenant site content, uploaded artwork metadata, contact form submissions, email signup records, and operational analytics needed to run the platform.</p>
-    <h2>Tenant visibility</h2>
-    <p>Tenants are not shown in the public directory unless an admin opts in. Directory listings and random image features use only public artwork/site content from opted-in tenants.</p>
-    <h2>Contact</h2>
-    <p>Questions about privacy can be sent through the ArtsFolio contact page.</p>
+    <h2>1. Acceptance of these Terms</h2>
+    <p>By creating an account, administering a tenant site, visiting a public ArtsFolio page, contacting an artist, joining an email list, purchasing artwork, or otherwise using ArtsFolio, you agree to these Terms and to the ArtsFolio Privacy Policy. If you use ArtsFolio on behalf of an organization, gallery, collective, studio, or other entity, you represent that you have authority to bind that entity.</p>
+
+    <h2>2. What ArtsFolio provides</h2>
+    <p>ArtsFolio provides hosted artist portfolio software, tenant websites, custom-domain support, public artwork pages, email signup tools, contact tools, analytics, directory features, administrative workflows, and optional sales functionality. ArtsFolio may add, modify, suspend, or discontinue features as the platform develops.</p>
+
+    <h2>3. Accounts, roles, and security</h2>
+    <p>You are responsible for maintaining the confidentiality of login credentials, OAuth accounts, administrator invitations, and devices used to access ArtsFolio. You must provide accurate account information, keep contact information current, and promptly notify ArtsFolio of suspected unauthorized access. Tenant owners are responsible for users they invite and for assigning appropriate roles.</p>
+
+    <h2>4. Tenant sites and public content</h2>
+    <p>Tenant administrators control the content published on their tenant sites, including artwork images, artwork metadata, statements, biography, events, contact information, pricing, availability, and custom styling. Published tenant content is public and may be viewed, indexed, cached, linked, shared, or archived by visitors and third-party services.</p>
+
+    <h2>5. Artist ownership and license to ArtsFolio</h2>
+    <p>Artists and tenants retain ownership of artwork, images, text, trademarks, and other content they upload or publish, subject to any rights they have granted elsewhere. By uploading, publishing, or storing content on ArtsFolio, you grant ArtsFolio a non-exclusive, worldwide, royalty-free license to host, store, reproduce, resize, cache, transmit, display, format, and otherwise use that content as needed to operate, secure, support, improve, and promote the platform and the applicable tenant site.</p>
+
+    <h2>6. Use of public images, listings, and promotion</h2>
+    <p>If a tenant publishes images or other content publicly, ArtsFolio may display that public content on that tenant site and in normal platform surfaces that support the tenant site. If a tenant opts into platform discovery, directory listing, featured artist modules, random image features, or similar public discovery features, ArtsFolio may use public tenant names, site links, summaries, thumbnails, and publicly visible artwork images on ArtsFolio home pages, directory pages, discovery pages, social previews, internal promotional placements, and platform marketing surfaces. Tenants can opt out of directory/discovery features in tenant admin where those controls are provided.</p>
+
+    <h2>7. Directory opt-in and visibility</h2>
+    <p>Tenant sites are not required to appear in the public ArtsFolio directory. When a tenant opts in, ArtsFolio may list the tenant name, public URL, summary, thumbnail, and selected public content. Opting out removes the tenant from future platform directory displays, but previously cached pages, screenshots, links, social previews, search engine entries, backups, and external references may persist outside ArtsFolio control.</p>
+
+    <h2>8. Sales, purchases, and artist responsibility</h2>
+    <p>ArtsFolio may provide tools for artists to list artwork for sale, accept inquiries, manage carts, record orders, and use payment workflows. Unless ArtsFolio expressly states otherwise in writing, the artist or tenant is the seller of record and is responsible for artwork descriptions, availability, pricing, taxes, shipping, insurance, fulfillment, authenticity, condition, refunds, exchanges, customer service, export/import restrictions, and compliance with applicable laws. Buyers should review artwork details, shipping terms, and artist policies before purchasing.</p>
+
+    <h2>9. Payments, fees, commissions, taxes, and chargebacks</h2>
+    <p>Paid plans, platform fees, payment-card processing fees, sales commissions, transaction fees, shipping charges, taxes, and other amounts may apply depending on plan and configuration. ArtsFolio may use third-party payment processors. Payment processors may have their own terms, privacy policies, fees, fraud controls, dispute processes, payout timing, and identity-verification requirements. Tenants are responsible for taxes and reporting obligations associated with their sales unless a written agreement says otherwise. ArtsFolio may offset, reverse, or withhold amounts related to refunds, chargebacks, suspected fraud, processor actions, or unpaid fees.</p>
+
+    <h2>10. Shipping, returns, damage, and disputes</h2>
+    <p>Unless ArtsFolio expressly agrees otherwise, artists and tenants are responsible for packing, shipping, insurance, delivery communication, returns, damage claims, customs forms, import/export compliance, and buyer disputes. ArtsFolio may provide workflow tools but does not guarantee delivery, buyer satisfaction, artwork condition, or resolution of buyer-seller disputes.</p>
+
+    <h2>11. Plans, billing, trials, complimentary access, and signup codes</h2>
+    <p>ArtsFolio may offer free plans, paid plans, trials, complimentary tenants, promotional access, and signup codes. Plan features, limits, pricing, and eligibility may change. Signup codes and free-access codes may expire, be revoked, be limited to certain users or redemption counts, or be changed if misused. Complimentary or trial access does not waive sales commissions, payment-card fees, taxes, chargebacks, shipping, or other third-party costs unless expressly stated.</p>
+
+    <h2>12. Acceptable use</h2>
+    <p>You may not use ArtsFolio to violate laws, infringe rights, upload malware, send spam, scrape or attack the platform, interfere with other tenants, impersonate others, misrepresent artwork or authorship, sell prohibited goods, process fraudulent orders, harass people, or publish content that is unlawful, exploitative, defamatory, abusive, or otherwise unsafe for the platform. ArtsFolio may remove content, limit features, suspend accounts, disable tenant sites, cancel orders, or terminate access when needed to protect users, tenants, buyers, artists, the public, or the platform.</p>
+
+    <h2>13. Copyright and intellectual-property complaints</h2>
+    <p>If you believe content on ArtsFolio infringes your rights, contact ArtsFolio with enough detail to identify the content, the rights claimed, your contact information, and the action requested. ArtsFolio may remove or restrict content while reviewing a complaint and may require additional information. Tenants are responsible for ensuring they have rights to upload and publish their content.</p>
+
+    <h2>14. Third-party services</h2>
+    <p>ArtsFolio may integrate with third-party services such as domain/DNS providers, OAuth identity providers, email providers, payment processors, analytics services, CAPTCHA providers, maps, storage, hosting, and other operational vendors. Third-party services are governed by their own terms and privacy practices. ArtsFolio is not responsible for third-party outages, policy changes, fees, or account decisions.</p>
+
+    <h2>15. Data, analytics, backups, and logs</h2>
+    <p>ArtsFolio may collect operational logs, analytics, security events, audit records, contact messages, email signup records, order records, payment status, and similar data to operate, secure, debug, support, and improve the platform. Backups and logs may retain information for a limited period after public deletion or account closure.</p>
+
+    <h2>16. Suspension, termination, and removal</h2>
+    <p>You may stop using ArtsFolio at any time. ArtsFolio may suspend or terminate accounts, tenant sites, public content, sales features, or access when required by law, payment risk, security risk, nonpayment, suspected abuse, infringement claims, platform integrity, or violation of these Terms. Termination may not erase completed transaction records, audit logs, legal records, backups, or information ArtsFolio must retain for legitimate business, security, compliance, or dispute-resolution purposes.</p>
+
+    <h2>17. Disclaimers</h2>
+    <p>ArtsFolio is provided on an “as is” and “as available” basis. ArtsFolio does not guarantee uninterrupted service, search ranking, sales volume, buyer behavior, artistic success, custom-domain availability, payment approval, email deliverability, data-loss immunity, or compatibility with every browser, device, integration, or third-party service.</p>
+
+    <h2>18. Limitation of liability</h2>
+    <p>To the maximum extent permitted by law, ArtsFolio and its owners, operators, employees, contractors, and service providers will not be liable for indirect, incidental, consequential, special, exemplary, or punitive damages, or for lost profits, lost sales, lost data, lost goodwill, business interruption, buyer-seller disputes, payment processor actions, third-party outages, or unauthorized access that occurs despite reasonable safeguards.</p>
+
+    <h2>19. Indemnification</h2>
+    <p>You agree to indemnify and hold ArtsFolio harmless from claims, losses, damages, liabilities, costs, and expenses arising from your content, tenant site, sales activity, buyer interactions, misuse of the platform, violation of these Terms, violation of law, or infringement of third-party rights.</p>
+
+    <h2>20. Changes to these Terms</h2>
+    <p>ArtsFolio may update these Terms as the platform changes. The effective date will be updated when material changes are made. Continued use of ArtsFolio after changes become effective means you accept the updated Terms.</p>
+
+    <h2>21. Governing law and contact</h2>
+    <p>These Terms are intended to be governed by the laws of Vermont, United States, without regard to conflict-of-law principles, unless applicable law requires otherwise. Questions about these Terms can be sent through the ArtsFolio contact page or by email to info@artsfol.io.</p>
 </div>
 HTML;
 
-        return $this->page('Privacy | ArtsFolio', $body, 'privacy');
+        return $this->page('Terms and Conditions | ArtsFolio', $body, 'terms');
     }
+
+    public function privacy(Request $request): Response
+    {
+        $body = <<<'HTML'
+<section class="platform-page-heading">
+    <p class="eyebrow">Privacy</p>
+    <h1>Privacy Policy</h1>
+    <p>This Privacy Policy explains how ArtsFolio collects, uses, shares, retains, and deletes information when people use ArtsFolio platform pages, tenant sites, admin tools, contact forms, email signup tools, OAuth login, analytics, and sales workflows.</p>
+    <p><strong>Effective date:</strong> June 16, 2026</p>
+</section>
+
+<div class="legal-copy">
+    <h2>1. Who this policy covers</h2>
+    <p>This policy covers ArtsFolio users, tenant administrators, artists, invited users, public site visitors, buyers, collectors, email-list subscribers, people who submit contact forms, and people who authenticate through Google, Facebook, or another supported identity provider.</p>
+
+    <h2>2. Information you provide</h2>
+    <p>ArtsFolio may collect account information, names, email addresses, passwords or password hashes for local accounts, OAuth identifiers, tenant names, site slugs, custom domains, public profile text, artwork records, artwork images, event and exhibition information, contact details, email signup records, buyer and order information, support messages, administrative settings, and content uploaded or entered into tenant sites.</p>
+
+    <h2>3. Information collected automatically</h2>
+    <p>ArtsFolio may collect IP address, user agent, request path, referrer, timestamps, session identifiers, security events, audit logs, device/browser information, approximate location derived from IP address, page views, artwork views, contact-form metadata, email signup metadata, and operational diagnostics needed to run and secure the service.</p>
+
+    <h2>4. Public content</h2>
+    <p>Published tenant content is public. This may include artwork images, titles, descriptions, prices, availability, artist statements, biographies, contact links, events, and other public page content. Public content may be viewed, indexed, cached, shared, copied, or archived by visitors and third-party services outside ArtsFolio control.</p>
+
+    <h2>5. Directory and home-page discovery</h2>
+    <p>If a tenant opts into ArtsFolio directory or discovery features, ArtsFolio may use public tenant names, summaries, public URLs, thumbnails, and public artwork images on ArtsFolio home pages, directory pages, discovery modules, social previews, and platform marketing surfaces. Tenants can opt out where tenant admin controls are provided, but external caches and prior references may persist.</p>
+
+    <h2>6. OAuth login data</h2>
+    <p>When you sign in with Google, Facebook, or another supported identity provider, ArtsFolio may receive identifiers, email address, email-verification status, display name, profile information, and authentication tokens needed to complete login. ArtsFolio uses this information to create or access your ArtsFolio account, link identities, prevent duplicate accounts, and secure authentication. ArtsFolio does not use Google or Facebook login data for unrelated advertising.</p>
+
+    <h2>7. Payments and sales data</h2>
+    <p>When sales features are used, ArtsFolio may process order records, cart records, artwork details, prices, fees, commission information, fulfillment status, buyer contact information, shipping information, payout/accounting metadata, refund or chargeback metadata, and payment status. Payment-card details may be handled by third-party payment processors rather than stored directly by ArtsFolio.</p>
+
+    <h2>8. Contact forms and email lists</h2>
+    <p>When visitors submit tenant contact forms or join tenant email lists, ArtsFolio stores the submitted information for the tenant to review and act on. Tenant administrators can see and manage their own messages and subscriber records. ArtsFolio may also queue notification emails to tenant administrators unless a duplicate active signup does not require another notification.</p>
+
+    <h2>9. Cookies, sessions, CAPTCHA, and security tools</h2>
+    <p>ArtsFolio uses cookies and similar technologies for login sessions, CSRF protection, form safety, list-filter preferences, CAPTCHA or human-confirmation checks, fraud prevention, rate limiting, and operational security. Platform forms may use Cloudflare Turnstile. Tenant forms may use ArtsFolio built-in CAPTCHA and anti-spam controls.</p>
+
+    <h2>10. How ArtsFolio uses information</h2>
+    <p>ArtsFolio uses information to provide tenant sites, authenticate users, operate admin tools, process contact messages, manage email signups, support sales workflows, show public content, provide analytics, maintain audit logs, send operational emails, provide support, improve product reliability, prevent abuse, comply with legal obligations, and enforce Terms.</p>
+
+    <h2>11. How information is shared</h2>
+    <p>ArtsFolio may share information with tenant administrators, invited tenant users, buyers and sellers as needed for transactions, service providers that host or operate the platform, email providers, payment processors, OAuth providers, CAPTCHA/security providers, analytics/diagnostic providers, professional advisers, law enforcement or legal recipients when required, and successor entities in connection with a business transfer. ArtsFolio does not sell personal information to advertisers.</p>
+
+    <h2>12. Tenant responsibility</h2>
+    <p>Tenant administrators are responsible for how they use exported contact messages, email lists, buyer information, and other tenant-controlled data. Tenants must comply with applicable privacy, consumer protection, tax, email-marketing, and sales laws when using data collected through their sites.</p>
+
+    <h2>13. Retention</h2>
+    <p>ArtsFolio retains information for as long as needed to provide the service, support tenant sites, maintain security and auditability, comply with legal and financial obligations, resolve disputes, enforce agreements, and maintain backups. Deleted content may remain in backups, logs, transaction records, audit records, or security records for a limited period or where retention is legally or operationally necessary.</p>
+
+    <h2>14. Data deletion instructions</h2>
+    <p>You may request deletion of your ArtsFolio account data, OAuth-linked identity data, contact-form submissions, email-list subscriber records, or tenant content by contacting ArtsFolio at info@artsfol.io or through the ArtsFolio contact page. Use the subject line “Data deletion request” and include the email address associated with the account, the tenant/site involved, and the data you want deleted. ArtsFolio may need to verify your identity or tenant authority before deleting data.</p>
+    <p>If you used Facebook Login and want ArtsFolio to delete data received from Facebook, send a request to info@artsfol.io with the subject “Facebook data deletion request” and include the email address used for login. If you used Google Login and want ArtsFolio to delete data received from Google, send a request with the subject “Google data deletion request.” You may also disconnect ArtsFolio from your Google or Facebook account through those providers, but provider-side disconnection does not automatically delete ArtsFolio records already created in ArtsFolio.</p>
+    <p>Some information may be retained when necessary for security, fraud prevention, transaction records, tax/accounting records, chargebacks, dispute resolution, audit logs, backups, legal compliance, or legitimate platform operations. When deletion is not possible, ArtsFolio may restrict, anonymize, or minimize information where practical.</p>
+
+    <h2>15. Your choices</h2>
+    <p>You may update account information, change tenant public content, unpublish content, opt out of directory features, unsubscribe from email lists where unsubscribe tools are available, ask a tenant to remove subscriber/contact records, request account deletion, or contact ArtsFolio for help. Browser settings may allow you to block some cookies, but required cookies are necessary for login and form protection.</p>
+
+    <h2>16. Security</h2>
+    <p>ArtsFolio uses technical and organizational measures intended to protect information, including authentication controls, session protections, CSRF protections, audit logs, restricted admin areas, database-backed permissions, and operational monitoring. No system is perfectly secure, and ArtsFolio cannot guarantee that unauthorized access, disclosure, or loss will never occur.</p>
+
+    <h2>17. Children</h2>
+    <p>ArtsFolio is not intended for children under 13. Children should not create accounts, administer tenant sites, purchase artwork, or submit personal information through ArtsFolio without appropriate consent where required by law.</p>
+
+    <h2>18. International users</h2>
+    <p>ArtsFolio is operated from the United States. If you use ArtsFolio from another country, information may be processed in the United States or other locations where service providers operate.</p>
+
+    <h2>19. Changes to this Privacy Policy</h2>
+    <p>ArtsFolio may update this Privacy Policy as the platform, laws, vendors, or data practices change. The effective date will be updated when material changes are made.</p>
+
+    <h2>20. Contact</h2>
+    <p>Questions, privacy requests, and data deletion requests can be sent to info@artsfol.io or through the ArtsFolio contact page.</p>
+</div>
+HTML;
+
+        return $this->page('Privacy Policy | ArtsFolio', $body, 'privacy');
+    }
+
 
     private function page(string $title, string $body, string $active): Response
     {
@@ -478,6 +613,7 @@ HTML;
     <nav>
         <a href="/help">Help</a>
         {$developerFooterLink}
+        <a href="/terms">Terms</a>
         <a href="/privacy">Privacy</a>
         <a href="/contact">Contact</a>
     </nav>
