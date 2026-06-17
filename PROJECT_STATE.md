@@ -1620,4 +1620,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Privacy policy covers collected data, OAuth login data, sales data, contact/email-list data, cookies/CAPTCHA/security, retention, sharing, and data deletion instructions for direct, Facebook, and Google login data.
 - Legal copy is operationally comprehensive but should be reviewed by counsel before broad commercial launch.
 
+## Canonical OAuth and logout behavior
+
+- Google and Facebook OAuth callbacks are canonical on `https://artsfol.io`.
+- Tenant login pages link to `https://artsfol.io/auth/google` and `https://artsfol.io/auth/facebook` with a trusted tenant admin `return_to` URL.
+- Tenant-local `/auth/google` and `/auth/facebook` routes redirect to the platform OAuth entrypoint instead of trying to run provider OAuth on tenant hosts.
+- OAuth `return_to` accepts relative URLs, `artsfol.io` hosts, `*.artsfol.io` hosts, and active tenant custom domains from `tenant_domains`.
+- Platform `/logout` supports GET for direct navigation and POST with CSRF for form logout.
+
 <!-- End of file. -->

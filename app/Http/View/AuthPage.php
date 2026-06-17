@@ -31,7 +31,13 @@ final class AuthPage
     <label>Email<input type="email" name="email" autocomplete="email" required></label>
     <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
     <label class="auth-checkbox"><input type="checkbox" name="keep_me_logged_in" value="1"> Keep me logged in</label>
-    <button type="submit">Sign in</button>
+    
+<div class="sso-row">
+    <a class="button secondary" href="{$googleHref}">Continue with Google</a>
+    <a class="button secondary" href="{$facebookHref}">Continue with Facebook</a>
+</div>
+
+<button type="submit">Sign in</button>
 </form>
 <p class="auth-links"><a href="/password/forgot">Forgot password?</a>{$createAccountLink}<a href="/help">Need help?</a></p>
 HTML, $safeBrand, $safeHome);
@@ -46,7 +52,6 @@ HTML, $safeBrand, $safeHome);
 <p class="auth-eyebrow">Start your site</p>
 <h1>Create your ArtsFolio account</h1>
 <p class="auth-copy">Create a tenant workspace with editable branding, tenant CSS, and admin tools.</p>
-<div class="sso-row"><a href="{$googleHref}">Continue with Google</a><a href="{$facebookHref}">Continue with Facebook</a></div>
 <form method="post" action="{$safeAction}" class="auth-form">
     {$csrf}
     <label>Site name<input type="text" name="site_name" required></label>

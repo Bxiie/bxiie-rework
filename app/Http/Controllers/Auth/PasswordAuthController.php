@@ -98,7 +98,7 @@ HTML);
 
     public function logout(Request $request): Response
     {
-        if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
+        if ($request->method() === 'POST' && !$this->csrf->validate($_POST['csrf_token'] ?? null)) {
             $this->auditAuth($request, 'auth.logout.denied.invalid_csrf');
             return Response::html('<h1>Invalid CSRF token</h1>', 419);
         }
