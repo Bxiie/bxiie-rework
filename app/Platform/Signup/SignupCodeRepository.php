@@ -70,7 +70,43 @@ final class SignupCodeRepository
         }
 
         $stmt = $this->pdo->prepare(
-            "SELECT c.*, t.slug AS redeemed_tenant_slug, t.name AS redeemed_tenant_name
+            "SELECT
+                c.*,
+                t.slug AS redeemed_tenant_slug,
+                t.name AS redeemed_tenant_name,
+                (
+                    SELECT COUNT(*)
+                    FROM email_outbox eo
+                    WHERE eo.template_key = 'platform.tenant_signup_invite'
+                      AND eo.body_text LIKE CONCAT('%', c.code, '%')
+                ) AS invite_email_count,
+                (
+                    SELECT COUNT(*)
+                    FROM email_outbox eo
+                    WHERE eo.template_key = 'platform.tenant_signup_invite'
+                      AND eo.body_text LIKE CONCAT('%', c.code, '%')
+                      AND eo.status = 'sent'
+                ) AS invite_email_sent_count,
+                (
+                    SELECT COUNT(*)
+                    FROM email_outbox eo
+                    WHERE eo.template_key = 'platform.tenant_signup_invite'
+                      AND eo.body_text LIKE CONCAT('%', c.code, '%')
+                      AND eo.status IN ('queued', 'sending')
+                ) AS invite_email_pending_count,
+                (
+                    SELECT MAX(eo.sent_at)
+                    FROM email_outbox eo
+                    WHERE eo.template_key = 'platform.tenant_signup_invite'
+                      AND eo.body_text LIKE CONCAT('%', c.code, '%')
+                      AND eo.status = 'sent'
+                ) AS invite_email_last_sent_at,
+                (
+                    SELECT MAX(eo.created_at)
+                    FROM email_outbox eo
+                    WHERE eo.template_key = 'platform.tenant_signup_invite'
+                      AND eo.body_text LIKE CONCAT('%', c.code, '%')
+                ) AS invite_email_last_queued_at
              FROM tenant_signup_codes c
              LEFT JOIN tenants t ON t.id = c.redeemed_tenant_id
              {$where}

@@ -53,6 +53,7 @@ final class SignupCodesController
             $freeMonths = (int) ($row['free_access_months'] ?? 0);
             $freeAccess = $freeMonths > 0 ? AdminLayout::escape($freeMonths . ' month' . ($freeMonths === 1 ? '' : 's') . ' any plan') : '';
             $tenant = AdminLayout::escape(trim((string) ($row['redeemed_tenant_slug'] ?? '')));
+            $inviteStatus = $this->inviteStatus($row);
             $rows .= <<<HTML
 <tr>
     <td><code>{$code}</code><br><small>{$label}</small></td>
@@ -62,6 +63,7 @@ final class SignupCodesController
     <td>{$freeAccess}</td>
     <td>{$status}</td>
     <td>{$tenant}</td>
+    <td>{$inviteStatus}</td>
     <td>
         <form method="post" action="/platform/admin/signup-codes/send">
             <input type="hidden" name="csrf_token" value="{$csrf}">
@@ -275,6 +277,33 @@ HTML;
         }
 
         return $status !== '' ? $status : 'unknown';
+    }
+
+
+    private function inviteStatus(array $row): string
+    {
+        $queuedCount = (int) ($row['invite_email_count'] ?? 0);
+        $sentCount = (int) ($row['invite_email_sent_count'] ?? 0);
+        $pendingCount = (int) ($row['invite_email_pending_count'] ?? 0);
+        $lastSentAt = trim((string) ($row['invite_email_last_sent_at'] ?? ''));
+        $lastQueuedAt = trim((string) ($row['invite_email_last_queued_at'] ?? ''));
+
+        if ($queuedCount <= 0) {
+            return '<span class="admin-muted">Not sent</span>';
+        }
+
+        if ($sentCount > 0 && $pendingCount <= 0) {
+            $detail = $lastSentAt !== '' ? '<br><small>Last sent ' . AdminLayout::escape($lastSentAt) . '</small>' : '';
+            return '<strong>Sent</strong> <span class="admin-muted">(' . $sentCount . ' / ' . $queuedCount . ')</span>' . $detail;
+        }
+
+        if ($sentCount > 0) {
+            $detail = $lastSentAt !== '' ? '<br><small>Last sent ' . AdminLayout::escape($lastSentAt) . '</small>' : '';
+            return '<strong>Partially sent</strong> <span class="admin-muted">(' . $sentCount . ' / ' . $queuedCount . ')</span>' . $detail;
+        }
+
+        $detail = $lastQueuedAt !== '' ? '<br><small>Queued ' . AdminLayout::escape($lastQueuedAt) . '</small>' : '';
+        return '<span class="admin-muted">Queued, not sent yet</span>' . $detail;
     }
 
     private function notice(string $notice): string

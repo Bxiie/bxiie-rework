@@ -1629,3 +1629,5 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform `/logout` supports GET for direct navigation and POST with CSRF for form logout.
 
 <!-- End of file. -->
+
+- Platform signup code list now shows invite email delivery state by reading matching `platform.tenant_signup_invite` outbox rows: not sent, queued/not sent yet, partially sent, or sent with counts and latest timestamps.
