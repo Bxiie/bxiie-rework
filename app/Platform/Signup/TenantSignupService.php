@@ -455,7 +455,7 @@ final class TenantSignupService
             return;
         }
 
-        $roleId = $this->findRoleId(['tenant_owner', 'tenant_admin', 'owner', 'admin']);
+        $roleId = $this->findRoleId(['owner', 'admin', 'tenant_admin', 'tenant_owner', 'manager']);
 
         if ($roleId === null) {
             throw new RuntimeException('No tenant owner/admin role exists for new tenant owner assignment.');
