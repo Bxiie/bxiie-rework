@@ -381,6 +381,27 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
         $router->get('/artwork/{slug}', fn (Request $request, array $params): Response => $tenantController->artwork($request, $tenant, (string) $params['slug']));
         $router->get('/about', fn (Request $request): Response => $tenantController->about($request, $tenant));
         $router->get('/caddy/ask', fn (Request $request): Response => (new CaddyAskController($pdo))->ask($request));
+
+        // ARTSFOLIO_TENANT_CANONICAL_OAUTH_ROUTES
+        // Tenant social-login entry points redirect to the platform OAuth host so
+        // Google and Facebook only need https://artsfol.io callbacks registered.
+        $tenantOauthRedirect = function (Request $request, string $provider): Response {
+            $host = strtolower(trim(explode(':', $request->host(), 2)[0]));
+            if ($host === '') {
+                $host = 'artsfol.io';
+            }
+            $scheme = strtolower((string) $request->server('HTTP_X_FORWARDED_PROTO', '')) === 'https'
+                || strtolower((string) $request->server('HTTPS', '')) === 'on'
+                || (string) $request->server('HTTPS', '') === '1'
+                ? 'https'
+                : 'http';
+            $returnTo = $scheme . '://' . $host . '/admin';
+            return new Response('', 303, [
+                'Location' => 'https://artsfol.io/auth/' . $provider . '?return_to=' . rawurlencode($returnTo),
+            ]);
+        };
+        $router->get('/auth/google', fn (Request $request): Response => $tenantOauthRedirect($request, 'google'));
+        $router->get('/auth/facebook', fn (Request $request): Response => $tenantOauthRedirect($request, 'facebook'));
         $router->post('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings))->login($request, $tenant));
         $router->get('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings))->logout($request));
         $router->get('/help', fn (Request $request): Response => (new HelpController())->index($request, $currentUser));
@@ -742,6 +763,7 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->post('/login/password', fn (Request $request): Response => $passwordAuthController->loginPassword($request));
     $router->post('/login', fn (Request $request): Response => $passwordAuthController->loginPassword($request));
     $router->get('/me', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin']));
+    $router->get('/logout', fn (Request $request): Response => $passwordAuthController->logout($request));
     $router->post('/logout', fn (Request $request): Response => $passwordAuthController->logout($request));
     $router->get('/api/admin/tenants', fn (Request $request): Response => (new AdminApiController($pdo, $bearerToken))->tenants($request));
     $router->post('/api/admin/tenants', fn (Request $request): Response => (new AdminApiController($pdo, $bearerToken))->tenants($request));

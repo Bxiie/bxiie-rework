@@ -494,14 +494,57 @@ final class OAuthController
     private function safeReturnTo(?string $returnTo): string
     {
         $returnTo = trim((string) $returnTo);
-        if ($returnTo === '' || !str_starts_with($returnTo, '/') || str_starts_with($returnTo, '//')) {
-            return '';
-        }
-        if (preg_match('/[\r\n]/', $returnTo) === 1) {
+        if ($returnTo === '' || preg_match('/[\r\n]/', $returnTo) === 1) {
             return '';
         }
 
-        return $returnTo;
+        if (str_starts_with($returnTo, '/') && !str_starts_with($returnTo, '//')) {
+            return $returnTo;
+        }
+
+        $parts = parse_url($returnTo);
+        if (!is_array($parts)) {
+            return '';
+        }
+
+        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+        $host = strtolower((string) ($parts['host'] ?? ''));
+        $path = (string) ($parts['path'] ?? '/');
+        $query = (string) ($parts['query'] ?? '');
+
+        if ($scheme !== 'https' || $host === '') {
+            return '';
+        }
+
+        if (!$this->isTrustedReturnHost($host)) {
+            return '';
+        }
+
+        $safe = 'https://' . $host . ($path !== '' ? $path : '/');
+        if ($query !== '') {
+            $safe .= '?' . $query;
+        }
+
+        return $safe;
+    }
+
+    private function isTrustedReturnHost(string $host): bool
+    {
+        $host = strtolower(trim($host));
+        if ($host === 'artsfol.io' || str_ends_with($host, '.artsfol.io')) {
+            return true;
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT 1
+             FROM tenant_domains
+             WHERE LOWER(hostname) = :host
+               AND status = 'active'
+             LIMIT 1"
+        );
+        $stmt->execute(['host' => $host]);
+
+        return (bool) $stmt->fetchColumn();
     }
 
     private function fail(string $message, int $status): Response

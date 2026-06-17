@@ -9,7 +9,7 @@ namespace App\Http\View;
  */
 final class AuthPage
 {
-    public static function login(string $action = '/login', string $message = '', string $brandName = 'ArtsFolio', string $homeUrl = '/', string $csrfToken = '', bool $showCreateAccount = true): string
+    public static function login(string $action = '/login', string $message = '', string $brandName = 'ArtsFolio', string $homeUrl = '/', string $csrfToken = '', bool $showCreateAccount = true, string $oauthBaseUrl = '', string $oauthReturnTo = ''): string
     {
         $safeAction = self::escape($action);
         $safeBrand = self::escape($brandName !== '' ? $brandName : 'ArtsFolio');
@@ -18,13 +18,14 @@ final class AuthPage
         $notice = $message !== '' ? '<p class="auth-notice">' . self::escape($message) . '</p>' : '';
         $csrf = $safeCsrf !== '' ? '<input type="hidden" name="csrf_token" value="' . $safeCsrf . '">' : '';
         $createAccountLink = $showCreateAccount ? '<a href="/signup">Create an account</a>' : '';
+        $googleHref = self::escape(self::oauthLink('google', $oauthBaseUrl, $oauthReturnTo));
+        $facebookHref = self::escape(self::oauthLink('facebook', $oauthBaseUrl, $oauthReturnTo));
 
         return self::page('Sign in', <<<HTML
 <p class="auth-eyebrow">Welcome back</p>
 <h1>Sign in to {$safeBrand}</h1>
 <p class="auth-copy">Manage artwork, content, messages, subscribers, analytics, and settings.</p>
 {$notice}
-<div class="sso-row"><a href="/auth/google">Continue with Google</a><a href="/auth/facebook">Continue with Facebook</a></div>
 <form method="post" action="{$safeAction}" class="auth-form">
     {$csrf}
     <label>Email<input type="email" name="email" autocomplete="email" required></label>
@@ -45,7 +46,7 @@ HTML, $safeBrand, $safeHome);
 <p class="auth-eyebrow">Start your site</p>
 <h1>Create your ArtsFolio account</h1>
 <p class="auth-copy">Create a tenant workspace with editable branding, tenant CSS, and admin tools.</p>
-<div class="sso-row"><a href="/auth/google">Continue with Google</a><a href="/auth/facebook">Continue with Facebook</a></div>
+<div class="sso-row"><a href="{$googleHref}">Continue with Google</a><a href="{$facebookHref}">Continue with Facebook</a></div>
 <form method="post" action="{$safeAction}" class="auth-form">
     {$csrf}
     <label>Site name<input type="text" name="site_name" required></label>
@@ -101,6 +102,18 @@ HTML);
         return self::page($title, '<p>' . self::escape($message) . '</p><p class="auth-links"><a href="/login">Back to login</a></p>');
     }
 
+    private static function oauthLink(string $provider, string $oauthBaseUrl, string $returnTo): string
+    {
+        $base = rtrim(trim($oauthBaseUrl), '/');
+        $path = '/auth/' . rawurlencode($provider);
+        $url = $base !== '' ? $base . $path : $path;
+        if ($returnTo !== '') {
+            $url .= '?return_to=' . rawurlencode($returnTo);
+        }
+
+        return $url;
+    }
+
     private static function page(string $title, string $body, string $brandName = 'ArtsFolio', string $homeUrl = '/'): string
     {
         $safeTitle = self::escape($title);
@@ -116,6 +129,26 @@ HTML;
     {
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
+
+    private static function canonicalSocialAuthUrl(string $provider, string $host): string
+    {
+        $provider = strtolower(trim($provider));
+        $returnTo = self::tenantAdminReturnTo($host);
+
+        return 'https://artsfol.io/auth/' . rawurlencode($provider)
+            . '?return_to=' . rawurlencode($returnTo);
+    }
+
+    private static function tenantAdminReturnTo(string $host): string
+    {
+        $host = strtolower(trim($host));
+        if ($host === '' || $host === 'artsfol.io') {
+            return '/platform/admin';
+        }
+
+        return 'https://' . $host . '/admin';
+    }
+
 }
 
 // End of file.
