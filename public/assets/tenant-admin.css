@@ -497,3 +497,23 @@ body.tenant-admin-page {
 }
 
 /* End of file. */
+
+/* Tenant admin sidebar readability: default new-site menu text to dark on light menu panels. */
+.site-header.tenant-admin-public-header nav {
+  color: var(--menu-text-color, var(--text-color, #1f1a14)) !important;
+}
+
+.site-header.tenant-admin-public-header nav a,
+.site-header.tenant-admin-public-header nav .link-button {
+  color: var(--menu-text-color, var(--text-color, #1f1a14)) !important;
+  text-shadow: none !important;
+}
+
+/* Keep the left tenant-admin application sidebar intentionally dark. */
+.tenant-admin-sidebar,
+.tenant-admin-sidebar a,
+.tenant-admin-brand {
+  color: #fff !important;
+}
+
+/* End of file. */

@@ -29,6 +29,7 @@ final class GettingStartedController
 
         $tenantName = htmlspecialchars($tenant->name, ENT_QUOTES, 'UTF-8');
         $tenantSlug = htmlspecialchars($tenant->slug, ENT_QUOTES, 'UTF-8');
+        $platformLogoUrl = '/assets/logo_2.png';
         $publicUrl = htmlspecialchars('https://' . ($_SERVER['HTTP_HOST'] ?? $tenant->slug), ENT_QUOTES, 'UTF-8');
 
         return Response::html(<<<HTML
@@ -51,6 +52,34 @@ final class GettingStartedController
             max-width: 980px;
             margin: 0 auto;
             padding: 32px 20px 48px;
+        }
+
+        .platform-brand {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .platform-brand a {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            color: inherit;
+            text-decoration: none;
+            font-weight: 800;
+        }
+
+        .platform-brand img {
+            display: block;
+            width: min(210px, 58vw);
+            height: auto;
+        }
+
+        .platform-brand span {
+            color: #6f675c;
+            font-size: 0.94rem;
         }
 
         .hero,
@@ -103,10 +132,26 @@ final class GettingStartedController
             border-radius: 6px;
             padding: 2px 5px;
         }
+
+        @media (max-width: 640px) {
+            .platform-brand {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .platform-brand span {
+                font-size: 0.88rem;
+            }
+        }
     </style>
 </head>
 <body>
 <main>
+    <header class="platform-brand" aria-label="ArtsFolio platform branding">
+        <a href="/" aria-label="ArtsFolio home"><img src="{$platformLogoUrl}" alt="ArtsFolio"></a>
+        <span>Tenant setup powered by ArtsFolio</span>
+    </header>
+
     <section class="hero">
         <p><a href="/admin">&larr; Admin dashboard</a></p>
         <h1>Set up {$tenantName}</h1>

@@ -1,30 +1,28 @@
-# Tenant Getting Started Admin Notes
+# Tenant getting-started page
 
-## First-run page
+The tenant getting-started page is shown after a new tenant site is created and is also available at `/admin/getting-started` on a tenant host.
 
-New tenant admins should land at:
+The page is tenant-admin content, but it is part of the platform signup handoff. It must show ArtsFolio platform branding and should not look like an unowned tenant page.
 
-```text
-/admin/getting-started
-```
+## Editing the text
 
-## Checklist
-
-The onboarding page prompts the admin to:
+The current text is hardcoded in:
 
 ```text
-create portfolio sections
-upload first artwork
-edit tenant settings
-test contact form
+app/Http/Controllers/Tenant/Admin/GettingStartedController.php
 ```
 
-## Operational note
+Edit the HTML returned by `GettingStartedController::index()` to change the onboarding copy, checklist labels, button text, or target links.
 
-If automatic login fails, the tenant admin can still sign in manually at:
+There is not currently a database-backed admin editor for this page. If editable onboarding copy becomes a product requirement, add a platform settings-backed content editor instead of asking tenant admins to edit source code.
 
-```text
-https://tenant-domain/login
+## Verification
+
+Run:
+
+```bash
+php scripts/test/tenant_getting_started_branding_static.php
+./scripts/test/preflight.sh
 ```
 
-<!-- End of file. -->
+# End of file.

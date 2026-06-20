@@ -1640,6 +1640,7 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The signup POST handler uses the session provider email instead of trusting the browser-submitted `email` field.
 - Signup-page OAuth links include a trusted `return_to` path that preserves the signup passcode query string.
 - Regression coverage lives in `scripts/test/oauth_signup_email_lock_static.php` and is called from `scripts/test/preflight.sh`.
+- Tenant getting-started page (`/admin/getting-started`) is platform-branded with the ArtsFolio logo and “Tenant setup powered by ArtsFolio.” The page text is currently maintained in `app/Http/Controllers/Tenant/Admin/GettingStartedController.php`; there is not yet an admin-editable content setting for this page.
 
 ## Branded browser-facing error pages
 

@@ -1,44 +1,25 @@
-# Tenant Getting Started
+# Tenant getting-started implementation
 
-## Purpose
-
-New tenant signups redirect to:
+`/admin/getting-started` is routed from `public/index.php` to:
 
 ```text
-/admin/getting-started
+app/Http/Controllers/Tenant/Admin/GettingStartedController.php
 ```
 
-The page gives the first tenant admin a short launch checklist:
+The controller renders a first-run tenant-admin onboarding checklist. The page uses inline CSS and intentionally shows ArtsFolio platform branding because it is the handoff page after platform signup and OAuth site creation.
+
+## Static coverage
+
+The branding regression check is:
 
 ```text
-create portfolio sections
-upload first artwork
-choose site identity
-test contact/signup plumbing
+scripts/test/tenant_getting_started_branding_static.php
 ```
 
-## Route
+It verifies that the page includes the platform logo asset, the platform branding wrapper class, accessible branding label, and ArtsFolio handoff copy.
 
-```text
-GET /admin/getting-started
-```
+## Future improvement
 
-This route is mounted only inside the tenant route block.
+The onboarding copy is currently source-controlled. A future platform-admin content editor should store this copy in platform settings or a dedicated content table if non-developers need to edit it.
 
-## Signup behavior
-
-Platform signup now attempts to create a browser session for the new admin and redirect directly to the getting-started page.
-
-Production URL:
-
-```text
-https://<slug>.artsfol.io/admin/getting-started
-```
-
-Local URL when `APP_ENV=local` and `ARTSFOLIO_LOCAL_DEV_PORT=8080`:
-
-```text
-http://<slug>.artsfol.io:8080/admin/getting-started
-```
-
-<!-- End of file. -->
+# End of file.
