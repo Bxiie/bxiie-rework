@@ -27,7 +27,6 @@ final class TenantAdminNav
             'sales' => ['/admin/sales', 'Sales'],
             'sales_analytics' => ['/admin/sales/analytics', 'Sales Analytics'],
             'users' => ['/admin/users', 'Users'],
-            'directory' => ['/admin/directory', 'Directory'],
             'stats' => ['/admin/stats', 'Stats'],
             'audit' => ['/admin/audit-log', 'Audit Log'],
             'routes' => ['/admin/routes', 'Tenant Routes'],

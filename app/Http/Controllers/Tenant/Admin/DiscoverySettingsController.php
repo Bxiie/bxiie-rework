@@ -35,56 +35,9 @@ final class DiscoverySettingsController
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
-        $layout = new TenantAdminLayout($this->settings);
-        $token = $this->escape($this->csrf->getOrCreate());
-        $checked = $this->truthy($this->settings->get($tenant, 'platform_directory_opt_in', '0') ?? '0') ? ' checked' : '';
-        $summary = $this->escape($this->settings->get($tenant, 'platform_directory_summary', '') ?? '');
-        $selectedArtworkId = (int) ($this->settings->get($tenant, 'platform_directory_thumbnail_artwork_id', '0') ?? '0');
-        $notice = isset($_GET['notice']) ? '<p class="notice">Directory settings saved. The public directory will use the selected published artwork thumbnail.</p>' : '';
-        $artworkOptions = $this->artworkOptions($tenant, $selectedArtworkId);
-        $preview = $this->thumbnailPreview($tenant, $selectedArtworkId);
-
-        $body = <<<HTML
-{$notice}
-<p class="admin-muted">Control whether this artist appears in the public ArtsFolio directory on artsfol.io. The platform-wide directory switch must also be enabled by a platform admin.</p>
-
-<form method="post" action="/admin/directory" class="admin-form">
-    <input type="hidden" name="csrf_token" value="{$token}">
-
-    <fieldset>
-        <legend>Directory listing</legend>
-        <label class="checkbox-row">
-            <span><input type="checkbox" name="platform_directory_opt_in" value="1"{$checked}> Show this tenant in the public ArtsFolio directory</span>
-        </label>
-        <p class="admin-muted">Leave this off for private portfolios, sites still in setup, or artists who do not want platform-level discovery.</p>
-    </fieldset>
-
-    <fieldset>
-        <legend>Directory thumbnail artwork</legend>
-        <p class="admin-muted">Select a published artwork with a primary image. This thumbnail appears on the public ArtsFolio directory card.</p>
-        <label>Directory thumbnail
-            <select name="platform_directory_thumbnail_artwork_id">
-                <option value="0">Use automatic fallback</option>
-                {$artworkOptions}
-            </select>
-        </label>
-        {$preview}
-        <p><a href="/admin/artworks">Manage artworks</a></p>
-    </fieldset>
-
-    <fieldset>
-        <legend>Directory summary</legend>
-        <label>Short public description
-            <textarea name="platform_directory_summary" rows="5" maxlength="500">{$summary}</textarea>
-        </label>
-        <p class="admin-muted">This appears on directory cards. Keep it plain, specific, and collector-readable.</p>
-    </fieldset>
-
-    <p><button type="submit">Save directory settings</button></p>
-</form>
-HTML;
-
-        return Response::html($layout->render($tenant, 'Directory', $body, 'directory'));
+        // Directory settings now live under Tenant Admin -> Settings so the old
+        // standalone URL remains as a backward-compatible redirect.
+        return new Response('', 303, ['Location' => '/admin/settings?section=directory']);
     }
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -120,7 +73,7 @@ HTML;
             );
         }
 
-        return new Response('', 303, ['Location' => '/admin/directory?notice=saved']);
+        return new Response('', 303, ['Location' => '/admin/settings?section=directory&notice=saved']);
     }
 
     private function artworkOptions(TenantContext $tenant, int $selectedArtworkId): string

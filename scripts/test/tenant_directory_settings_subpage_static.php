@@ -1,0 +1,53 @@
+<?php
+
+declare(strict_types=1);
+
+$root = dirname(__DIR__, 2);
+$settingsController = file_get_contents($root . '/app/Http/Controllers/Tenant/Admin/SettingsController.php');
+$discoveryController = file_get_contents($root . '/app/Http/Controllers/Tenant/Admin/DiscoverySettingsController.php');
+$tenantNav = file_get_contents($root . '/app/Http/View/TenantAdminNav.php');
+$preflight = file_get_contents($root . '/scripts/test/preflight.sh');
+
+$failures = [];
+
+$checks = [
+    [$settingsController, "'directory' => [", 'Directory settings subpage section'],
+    [$settingsController, "'label' => 'Directory'", 'Directory settings subpage label'],
+    [$settingsController, "'directory' => \$directoryContent", 'Directory settings subpage content switch'],
+    [$settingsController, 'platform_directory_opt_in', 'Directory opt-in setting key'],
+    [$settingsController, 'platform_directory_thumbnail_artwork_id', 'Directory thumbnail setting key'],
+    [$settingsController, 'platform_directory_summary', 'Directory summary setting key'],
+    [$settingsController, 'directorySettingsContent', 'Directory settings renderer'],
+    [$settingsController, 'validDirectoryArtworkId', 'Directory thumbnail validation'],
+    [$settingsController, "if (\$key === 'platform_directory_opt_in')", 'Directory checkbox save handling'],
+    [$discoveryController, "Location' => '/admin/settings?section=directory'", 'Legacy directory GET redirect'],
+    [$discoveryController, "Location' => '/admin/settings?section=directory&notice=saved'", 'Legacy directory POST redirect'],
+    [$preflight, 'tenant_directory_settings_subpage_static.php', 'Preflight wiring'],
+];
+
+foreach ($checks as [$haystack, $needle, $label]) {
+    if (!str_contains($haystack, $needle)) {
+        $failures[] = $label . ' missing: ' . $needle;
+    }
+}
+
+if (str_contains($tenantNav, "'directory' => ['/admin/directory', 'Directory']")) {
+    $failures[] = 'Standalone tenant Directory nav item should be removed now that Directory is a settings subpage.';
+}
+
+if (!str_contains($settingsController, '/admin/settings?section=')) {
+    $failures[] = 'Settings subnav URL pattern missing.';
+}
+
+if ($failures !== []) {
+    fwrite(STDERR, "Tenant directory settings subpage static check failed:
+ - " . implode("
+ - ", $failures) . "
+");
+    exit(1);
+}
+
+echo "Tenant directory settings subpage static checks passed.
+";
+
+// End of file.

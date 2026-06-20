@@ -140,6 +140,7 @@ final class SettingsController
         $backgroundPicker = $this->siteImagePicker($tenant, 'background_media_uuid', $backgroundMediaUuid, true);
         $tenantCss = $this->setting($tenant, 'tenant_css', '');
         $artworkDisplayOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
+        $directoryContent = $this->directorySettingsContent($tenant);
         $paletteButtons = $this->paletteButtons();
         $typographyPresetButtons = $this->typographyPresetButtons();
         $saveButton = '<div class="settings-section-actions"><button type="submit">Save site settings</button></div>';
@@ -305,6 +306,7 @@ HTML;
         $sectionContent = match ($activeSection) {
             'typography' => $typographyContent,
             'colors-backgrounds' => $colorsContent,
+            'directory' => $directoryContent,
             'miscellaneous' => $miscContent,
             'custom-css' => $cssContent,
             default => $identityContent,
@@ -343,6 +345,16 @@ HTML;
         foreach ($keys as $key) {
             $before[$key] = $this->settings->get($tenant, $key, '');
             $value = trim((string) ($_POST[$key] ?? ''));
+            if ($key === 'platform_directory_opt_in') {
+                $value = isset($_POST[$key]) ? '1' : '0';
+            }
+            if ($key === 'platform_directory_summary') {
+                $value = mb_substr($value, 0, 500);
+            }
+            if ($key === 'platform_directory_thumbnail_artwork_id') {
+                $artworkId = $this->validDirectoryArtworkId($tenant, (int) $value);
+                $value = $artworkId > 0 ? (string) $artworkId : '';
+            }
             if (in_array($key, ['background_media_uuid', 'topbar_media_uuid', 'menu_media_uuid', 'artwork_card_media_uuid'], true)) {
                 $value = $this->safeSiteImageMediaUuid($tenant, $value);
             }
@@ -390,6 +402,10 @@ HTML;
             'colors-backgrounds' => [
                 'label' => 'Colors & Backgrounds',
                 'help' => 'Color palettes, nav colors, page backgrounds, and site image backgrounds.',
+            ],
+            'directory' => [
+                'label' => 'Directory',
+                'help' => 'Public ArtsFolio directory opt-in, summary, and thumbnail artwork.',
             ],
             'miscellaneous' => [
                 'label' => 'Miscellaneous',
@@ -451,6 +467,9 @@ HTML;
                 'content_background_color', 'content_background_opacity', 'text_background_color', 'text_background_opacity', 'header_drop_shadow_enabled', 'header_drop_shadow', 'artwork_card_background_color', 'artwork_card_background_opacity', 'artwork_card_background_size', 'artwork_card_media_uuid', 'background_media_uuid',
                 'background_mode', 'background_tile_size', 'background_opacity',
             ],
+            'directory' => [
+                'platform_directory_opt_in', 'platform_directory_thumbnail_artwork_id', 'platform_directory_summary',
+            ],
             'miscellaneous' => [
                 'sales_notes', 'stripe_connected_account_id', 'artwork_display_order', 'exhibitions_heading', 'exhibitions_display_mode',
             ],
@@ -462,6 +481,155 @@ HTML;
                 'home_tab', 'portfolio_tab', 'about_tab', 'contact_tab', 'portfolio_slug', 'about_slug', 'contact_slug',
             ],
         };
+    }
+
+
+    /**
+     * Renders the Directory settings subpage now that directory management lives
+     * under Tenant Admin -> Settings instead of a separate admin page.
+     */
+    private function directorySettingsContent(TenantContext $tenant): string
+    {
+        $checked = $this->truthy((string) $this->settings->get($tenant, 'platform_directory_opt_in', '0')) ? ' checked' : '';
+        $summary = $this->escape((string) $this->settings->get($tenant, 'platform_directory_summary', ''));
+        $selectedArtworkId = (int) ($this->settings->get($tenant, 'platform_directory_thumbnail_artwork_id', '0') ?? '0');
+        $artworkOptions = $this->directoryArtworkOptions($tenant, $selectedArtworkId);
+        $preview = $this->directoryThumbnailPreview($tenant, $selectedArtworkId);
+
+        return <<<HTML
+        <fieldset>
+            <legend>Directory listing</legend>
+            <p class="admin-help">Control whether this artist appears in the public ArtsFolio directory on artsfol.io. The platform-wide directory switch must also be enabled by a platform admin.</p>
+            <label class="checkbox-row">
+                <span><input type="checkbox" name="platform_directory_opt_in" value="1"{$checked}> Show this tenant in the public ArtsFolio directory</span>
+            </label>
+            <p class="admin-help">Leave this off for private portfolios, sites still in setup, or artists who do not want platform-level discovery.</p>
+        </fieldset>
+
+        <fieldset>
+            <legend>Directory thumbnail artwork</legend>
+            <p class="admin-help">Select a published artwork with a primary image. This thumbnail appears on the public ArtsFolio directory card.</p>
+            <label>Directory thumbnail
+                <select name="platform_directory_thumbnail_artwork_id">
+                    <option value="0">Use automatic fallback</option>
+                    {$artworkOptions}
+                </select>
+            </label>
+            {$preview}
+            <p><a href="/admin/artworks">Manage artworks</a></p>
+        </fieldset>
+
+        <fieldset>
+            <legend>Directory summary</legend>
+            <label>Short public description
+                <textarea name="platform_directory_summary" rows="5" maxlength="500">{$summary}</textarea>
+            </label>
+            <p class="admin-help">This appears on directory cards. Keep it plain, specific, and collector-readable.</p>
+        </fieldset>
+HTML;
+    }
+
+    /**
+     * Returns published artwork options that are eligible for the directory card.
+     */
+    private function directoryArtworkOptions(TenantContext $tenant, int $selectedArtworkId): string
+    {
+        if ($this->pdo === null) {
+            return '<option value="0">Published artwork lookup is unavailable</option>';
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT a.id, a.title, m.uuid AS media_uuid
+             FROM artworks a
+             JOIN media_assets m ON m.id = a.primary_media_id AND m.tenant_id = a.tenant_id
+             WHERE a.tenant_id = :tenant_id
+               AND a.status = 'published'
+               AND a.primary_media_id IS NOT NULL
+             ORDER BY a.title ASC, a.id DESC
+             LIMIT 500"
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+
+        $html = '';
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $id = (int) $row['id'];
+            $selected = $id === $selectedArtworkId ? ' selected' : '';
+            $label = ((string) $row['title']) !== '' ? (string) $row['title'] : 'Artwork #' . $id;
+            $html .= '<option value="' . $id . '"' . $selected . '>' . $this->escape($label) . '</option>';
+        }
+
+        if ($html === '') {
+            return '<option value="0">No published artworks with primary images are available</option>';
+        }
+
+        return $html;
+    }
+
+    /**
+     * Renders the currently selected directory thumbnail preview.
+     */
+    private function directoryThumbnailPreview(TenantContext $tenant, int $selectedArtworkId): string
+    {
+        if ($selectedArtworkId <= 0 || $this->pdo === null) {
+            return '<p class="admin-help">No artwork selected. The public directory will use its automatic fallback.</p>';
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT a.title, m.uuid AS media_uuid
+             FROM artworks a
+             JOIN media_assets m ON m.id = a.primary_media_id AND m.tenant_id = a.tenant_id
+             WHERE a.tenant_id = :tenant_id
+               AND a.id = :artwork_id
+               AND a.status = 'published'
+             LIMIT 1"
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'artwork_id' => $selectedArtworkId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return '<p class="admin-error">The previously selected artwork is no longer available. Choose a published artwork with a primary image.</p>';
+        }
+
+        $title = $this->escape((string) $row['title']);
+        $uuid = rawurlencode((string) $row['media_uuid']);
+
+        return <<<HTML
+<div class="directory-thumbnail-preview">
+    <img src="/media?uuid={$uuid}" alt="">
+    <div><strong>Current directory thumbnail</strong><p>{$title}</p></div>
+</div>
+HTML;
+    }
+
+    /**
+     * Ensures the directory thumbnail points at a published artwork with media.
+     */
+    private function validDirectoryArtworkId(TenantContext $tenant, int $artworkId): int
+    {
+        if ($artworkId <= 0 || $this->pdo === null) {
+            return 0;
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT a.id
+             FROM artworks a
+             JOIN media_assets m ON m.id = a.primary_media_id AND m.tenant_id = a.tenant_id
+             WHERE a.tenant_id = :tenant_id
+               AND a.id = :artwork_id
+               AND a.status = 'published'
+             LIMIT 1"
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'artwork_id' => $artworkId]);
+
+        return $stmt->fetchColumn() ? $artworkId : 0;
+    }
+
+    /**
+     * Interprets persisted checkbox-ish setting values.
+     */
+    private function truthy(string $value): bool
+    {
+        return in_array(strtolower(trim($value)), ['1', 'true', 'yes', 'on'], true);
     }
 
     /**

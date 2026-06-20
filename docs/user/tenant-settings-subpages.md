@@ -7,11 +7,12 @@ Open Tenant Admin -> Settings, then choose one of the section buttons near the t
 - Identity
 - Typography
 - Colors & Backgrounds
+- Directory
 - Miscellaneous
 - Custom CSS
 
 Each section has its own `Save site settings` button. Saving a section updates only the settings shown in that section. After saving, you return to the same section.
 
-Use Identity for site names, page labels, slugs, and home intro text. Use Typography for fonts and text sizes. Use Colors & Backgrounds for palettes, colors, opacity, and background images. Use Miscellaneous for sales notes, artwork ordering, and exhibition display. Use Custom CSS only for advanced custom styling.
+Use Identity for site names, page labels, slugs, and home intro text. Use Typography for fonts and text sizes. Use Colors & Backgrounds for palettes, colors, opacity, and background images. Use Directory for public discovery opt-in and directory-card text. Use Miscellaneous for sales notes, artwork ordering, and exhibition display. Use Custom CSS only for advanced custom styling.
 
 # End of file.

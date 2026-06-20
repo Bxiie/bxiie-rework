@@ -7,6 +7,7 @@ Subpages:
 - Identity: site title, artist name, browser title, copyright name, admin notification email, home intro text, public navigation labels, and public page slugs.
 - Typography: typography presets, font family pickers, and text-size controls for public pages.
 - Colors & Backgrounds: color palettes, text and background colors, top bar/menu colors, background opacity controls, and site image pickers.
+- Directory: public ArtsFolio directory opt-in, summary, and thumbnail artwork.
 - Miscellaneous: public sales notes, Stripe connected account ID, default artwork order, spam-protection note, and exhibition display options.
 - Custom CSS: advanced tenant CSS loaded after the standard public stylesheet.
 

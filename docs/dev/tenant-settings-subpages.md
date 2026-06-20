@@ -24,6 +24,7 @@ Subpages use a query parameter rather than additional router entries:
 /admin/settings?section=identity
 /admin/settings?section=typography
 /admin/settings?section=colors-backgrounds
+/admin/settings?section=directory
 /admin/settings?section=miscellaneous
 /admin/settings?section=custom-css
 ```
