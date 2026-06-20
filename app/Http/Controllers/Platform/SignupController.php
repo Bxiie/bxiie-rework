@@ -115,11 +115,11 @@ HTML);
         $adminEmail = $oauthProfile !== null ? $oauthEmail : (string) ($_POST['email'] ?? '');
 
         if ($oauthProfile !== null && ($oauthEmail === '' || !filter_var($oauthEmail, FILTER_VALIDATE_EMAIL))) {
-            return Response::html('<h1>Could not create site</h1><p>The OAuth provider did not provide a valid email address.</p>', 422);
+            return Response::error(422, 'The OAuth provider did not provide a valid email address. Please try another sign-in method.');
         }
 
         if ($oauthProfile === null && strlen($password) < 10) {
-            return Response::html('<h1>Password too short</h1><p>Use at least 10 characters.</p>', 422);
+            return Response::error(422, 'Use at least 10 characters for your password.');
         }
 
         if ($oauthProfile !== null && $password === '') {
@@ -141,9 +141,11 @@ HTML);
 
             unset($_SESSION['artsfolio_oauth_profile'], $_SESSION['artsfolio_oauth_user_id']);
         } catch (\Throwable $e) {
-            return Response::html(
-                '<h1>Could not create site</h1><p>' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>',
+            error_log('Tenant signup failed: ' . $e->getMessage());
+
+            return Response::error(
                 422,
+                'Could not create site: ' . $e->getMessage(),
             );
         }
 

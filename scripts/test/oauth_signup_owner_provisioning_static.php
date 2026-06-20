@@ -31,7 +31,7 @@ $checks = [
     'TenantSignupService updates existing OAuth user' => [$service, 'function updateExistingUser'],
     'Tenant membership insert is idempotent' => [$service, 'ON DUPLICATE KEY UPDATE'],
     'Tenant role assignment is idempotent' => [$service, 'INSERT IGNORE INTO role_assignments'],
-    'Missing tenant owner role fails closed' => [$service, 'No tenant owner/admin role exists'],
+    'Tenant owner role self-heals when seed data is missing' => [$service, 'function ensureTenantOwnerRoleId'],
     'SignupController reads OAuth user id from session' => [$signup, 'artsfolio_oauth_user_id'],
     'SignupController passes OAuth user id to signup service' => [$signup, 'existingUserId: $oauthUserId'],
     'SignupController skips password identity for OAuth signup' => [$signup, 'createPasswordIdentity: $oauthProfile === null'],

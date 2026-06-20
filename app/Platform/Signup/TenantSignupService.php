@@ -455,11 +455,7 @@ final class TenantSignupService
             return;
         }
 
-        $roleId = $this->findRoleId(['owner', 'admin', 'tenant_admin', 'tenant_owner', 'manager']);
-
-        if ($roleId === null) {
-            throw new RuntimeException('No tenant owner/admin role exists for new tenant owner assignment.');
-        }
+        $roleId = $this->ensureTenantOwnerRoleId();
 
         $stmt = $this->pdo->prepare(
             "INSERT IGNORE INTO role_assignments (
@@ -480,6 +476,51 @@ final class TenantSignupService
             'user_id' => $userId,
             'tenant_id' => $tenantId,
         ]);
+    }
+
+    /**
+     * Resolves or recreates the canonical tenant owner role.
+     *
+     * Signup cannot depend on historical seed data still being present. Older
+     * test and repair work has occasionally left production without the tenant
+     * owner/admin role, so tenant creation self-heals the role row before
+     * assigning ownership to the new site creator.
+     */
+    private function ensureTenantOwnerRoleId(): int
+    {
+        $roleId = $this->findTenantRoleId(['owner', 'tenant_owner', 'admin', 'tenant_admin', 'manager']);
+
+        if ($roleId !== null) {
+            return $roleId;
+        }
+
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO roles (
+                scope,
+                slug,
+                name,
+                description,
+                created_at
+            ) VALUES (
+                'tenant',
+                'owner',
+                'Tenant Owner',
+                'Full tenant ownership.',
+                CURRENT_TIMESTAMP
+            )
+            ON DUPLICATE KEY UPDATE
+                name = VALUES(name),
+                description = VALUES(description)"
+        );
+        $stmt->execute();
+
+        $roleId = $this->findTenantRoleId(['owner']);
+
+        if ($roleId === null) {
+            throw new RuntimeException('Tenant owner role could not be created for new tenant owner assignment.');
+        }
+
+        return $roleId;
     }
 
     private function queueProvisioningJobs(int $tenantId, string $domain): void
@@ -578,11 +619,30 @@ final class TenantSignupService
         return trim(implode("\n\n", $parts));
     }
 
-    private function findRoleId(array $roleNames): ?int
+    /**
+     * Finds a tenant-scoped role by canonical slug first, then legacy names.
+     */
+    private function findTenantRoleId(array $roleSlugs): ?int
     {
-        $placeholders = implode(', ', array_fill(0, count($roleNames), '?'));
-        $stmt = $this->pdo->prepare("SELECT id FROM roles WHERE name IN ({$placeholders}) ORDER BY id LIMIT 1");
-        $stmt->execute($roleNames);
+        $roleSlugs = array_values(array_unique(array_filter(array_map(
+            static fn (string $role): string => strtolower(trim($role)),
+            $roleSlugs,
+        ))));
+
+        if ($roleSlugs === []) {
+            return null;
+        }
+
+        $placeholders = implode(', ', array_fill(0, count($roleSlugs), '?'));
+        $stmt = $this->pdo->prepare(
+            "SELECT id
+             FROM roles
+             WHERE scope = 'tenant'
+               AND (slug IN ({$placeholders}) OR LOWER(name) IN ({$placeholders}))
+             ORDER BY CASE slug WHEN 'owner' THEN 0 WHEN 'tenant_owner' THEN 1 WHEN 'admin' THEN 2 ELSE 3 END, id
+             LIMIT 1"
+        );
+        $stmt->execute(array_merge($roleSlugs, $roleSlugs));
         $id = $stmt->fetchColumn();
 
         return $id === false ? null : (int) $id;
