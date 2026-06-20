@@ -64,16 +64,16 @@ final class SettingsController
         $artworkMetaFontFamily = $this->setting($tenant, 'font_family_artwork_meta', $bodyFontFamily);
         $formFontFamily = $this->setting($tenant, 'font_family_form', $bodyFontFamily);
         $footerFontFamily = $this->setting($tenant, 'font_family_footer', $bodyFontFamily);
-        $bodyFontSize = $this->setting($tenant, 'font_size_body', '1rem');
-        $headingFontSize = $this->setting($tenant, 'font_size_heading', 'clamp(2.5rem, 8vw, 6.875rem)');
-        $subheadingFontSize = $this->setting($tenant, 'font_size_subheading', 'clamp(1.5rem, 3vw, 2.25rem)');
-        $brandFontSize = $this->setting($tenant, 'font_size_brand', 'clamp(1.75rem, 5vw, 4rem)');
-        $navFontSize = $this->setting($tenant, 'font_size_nav', '0.875rem');
-        $proseFontSize = $this->setting($tenant, 'font_size_prose', 'clamp(1.125rem, 2vw, 1.5rem)');
-        $artworkTitleFontSize = $this->setting($tenant, 'font_size_artwork_title', '1.1rem');
-        $artworkMetaFontSize = $this->setting($tenant, 'font_size_artwork_meta', '0.95rem');
-        $formFontSize = $this->setting($tenant, 'font_size_form', '1rem');
-        $footerFontSize = $this->setting($tenant, 'font_size_footer', '0.95rem');
+        $bodyFontSize = $this->setting($tenant, 'font_size_body', '18px');
+        $headingFontSize = $this->setting($tenant, 'font_size_heading', '72px');
+        $subheadingFontSize = $this->setting($tenant, 'font_size_subheading', '32px');
+        $brandFontSize = $this->setting($tenant, 'font_size_brand', '52px');
+        $navFontSize = $this->setting($tenant, 'font_size_nav', '15px');
+        $proseFontSize = $this->setting($tenant, 'font_size_prose', '22px');
+        $artworkTitleFontSize = $this->setting($tenant, 'font_size_artwork_title', '20px');
+        $artworkMetaFontSize = $this->setting($tenant, 'font_size_artwork_meta', '15px');
+        $formFontSize = $this->setting($tenant, 'font_size_form', '16px');
+        $footerFontSize = $this->setting($tenant, 'font_size_footer', '15px');
         $bodyFontSelect = $this->fontSelect('font_family_body', $bodyFontFamily, $fontFamilies);
         $headingFontSelect = $this->fontSelect('font_family_heading', $headingFontFamily, $fontFamilies);
         $brandFontSelect = $this->fontSelect('font_family_brand', $brandFontFamily, $fontFamilies);
@@ -90,6 +90,16 @@ final class SettingsController
         $artworkMetaFontPreview = $this->escape($artworkMetaFontFamily);
         $formFontPreview = $this->escape($formFontFamily);
         $footerFontPreview = $this->escape($footerFontFamily);
+        $bodySizeControl = $this->fontSizeControl('font_size_body', 'Body text size', $bodyFontSize, 18, 12, 28, 'Body text size preview');
+        $headingSizeControl = $this->fontSizeControl('font_size_heading', 'Main heading size', $headingFontSize, 72, 28, 120, 'Main heading size preview');
+        $subheadingSizeControl = $this->fontSizeControl('font_size_subheading', 'Subheading size', $subheadingFontSize, 32, 18, 64, 'Subheading size preview');
+        $brandSizeControl = $this->fontSizeControl('font_size_brand', 'Site title size', $brandFontSize, 52, 24, 96, 'Site title size preview');
+        $navSizeControl = $this->fontSizeControl('font_size_nav', 'Navigation size', $navFontSize, 15, 11, 24, 'Navigation size preview');
+        $proseSizeControl = $this->fontSizeControl('font_size_prose', 'Intro/prose size', $proseFontSize, 22, 14, 36, 'Intro/prose size preview');
+        $artworkTitleSizeControl = $this->fontSizeControl('font_size_artwork_title', 'Artwork title size', $artworkTitleFontSize, 20, 12, 40, 'Artwork title size preview');
+        $artworkMetaSizeControl = $this->fontSizeControl('font_size_artwork_meta', 'Artwork metadata size', $artworkMetaFontSize, 15, 10, 24, 'Artwork metadata size preview');
+        $formSizeControl = $this->fontSizeControl('font_size_form', 'Forms size', $formFontSize, 16, 12, 26, 'Forms size preview');
+        $footerSizeControl = $this->fontSizeControl('font_size_footer', 'Footer size', $footerFontSize, 15, 10, 24, 'Footer size preview');
         $primaryColor = $this->setting($tenant, 'primary_color', '#111111');
         $accentColor = $this->setting($tenant, 'accent_color', '#c9a85f');
         $textColor = $this->setting($tenant, 'text_color', '#1f1a14');
@@ -181,24 +191,24 @@ final class SettingsController
             <legend>Typography</legend>
             <p class="admin-help">Choose font families and sizes for text on the public home, portfolio, about, and contact pages. These fields update CSS variables, so the individual controls remain editable after selecting a font.</p>
             <div class="admin-grid-2 tenant-typography-grid">
-                <label>Body text font{$bodyFontSelect}<span class="font-picker-preview" style="font-family: {$bodyFontPreview}">Body text preview</span></label>
-                <label>Body text size<input name="font_size_body" value="{$bodyFontSize}" placeholder="1rem"></label>
-                <label>Heading font{$headingFontSelect}<span class="font-picker-preview" style="font-family: {$headingFontPreview}">Heading preview</span></label>
-                <label>Main heading size<input name="font_size_heading" value="{$headingFontSize}" placeholder="clamp(2.5rem, 8vw, 6.875rem)"></label>
-                <label>Subheading size<input name="font_size_subheading" value="{$subheadingFontSize}" placeholder="clamp(1.5rem, 3vw, 2.25rem)"></label>
-                <label>Site title font{$brandFontSelect}<span class="font-picker-preview" style="font-family: {$brandFontPreview}">Site title preview</span></label>
-                <label>Site title size<input name="font_size_brand" value="{$brandFontSize}" placeholder="clamp(1.75rem, 5vw, 4rem)"></label>
-                <label>Navigation font{$navFontSelect}<span class="font-picker-preview" style="font-family: {$navFontPreview}">Navigation preview</span></label>
-                <label>Navigation size<input name="font_size_nav" value="{$navFontSize}" placeholder="0.875rem"></label>
-                <label>Intro/prose size<input name="font_size_prose" value="{$proseFontSize}" placeholder="clamp(1.125rem, 2vw, 1.5rem)"></label>
-                <label>Artwork title font{$artworkTitleFontSelect}<span class="font-picker-preview" style="font-family: {$artworkTitleFontPreview}">Artwork title preview</span></label>
-                <label>Artwork title size<input name="font_size_artwork_title" value="{$artworkTitleFontSize}" placeholder="1.1rem"></label>
-                <label>Artwork metadata font{$artworkMetaFontSelect}<span class="font-picker-preview" style="font-family: {$artworkMetaFontPreview}">Artwork metadata preview</span></label>
-                <label>Artwork metadata size<input name="font_size_artwork_meta" value="{$artworkMetaFontSize}" placeholder="0.95rem"></label>
-                <label>Forms font{$formFontSelect}<span class="font-picker-preview" style="font-family: {$formFontPreview}">Form field preview</span></label>
-                <label>Forms size<input name="font_size_form" value="{$formFontSize}" placeholder="1rem"></label>
-                <label>Footer font{$footerFontSelect}<span class="font-picker-preview" style="font-family: {$footerFontPreview}">Footer preview</span></label>
-                <label>Footer size<input name="font_size_footer" value="{$footerFontSize}" placeholder="0.95rem"></label>
+                <label>Body text font{$bodyFontSelect}<span class="font-picker-preview" style="font-family: {$bodyFontPreview}; font-size: {$bodyFontSize}">Body text preview</span></label>
+                {$bodySizeControl}
+                <label>Heading font{$headingFontSelect}<span class="font-picker-preview" style="font-family: {$headingFontPreview}; font-size: {$headingFontSize}">Heading preview</span></label>
+                {$headingSizeControl}
+                {$subheadingSizeControl}
+                <label>Site title font{$brandFontSelect}<span class="font-picker-preview" style="font-family: {$brandFontPreview}; font-size: {$brandFontSize}">Site title preview</span></label>
+                {$brandSizeControl}
+                <label>Navigation font{$navFontSelect}<span class="font-picker-preview" style="font-family: {$navFontPreview}; font-size: {$navFontSize}">Navigation preview</span></label>
+                {$navSizeControl}
+                {$proseSizeControl}
+                <label>Artwork title font{$artworkTitleFontSelect}<span class="font-picker-preview" style="font-family: {$artworkTitleFontPreview}; font-size: {$artworkTitleFontSize}">Artwork title preview</span></label>
+                {$artworkTitleSizeControl}
+                <label>Artwork metadata font{$artworkMetaFontSelect}<span class="font-picker-preview" style="font-family: {$artworkMetaFontPreview}; font-size: {$artworkMetaFontSize}">Artwork metadata preview</span></label>
+                {$artworkMetaSizeControl}
+                <label>Forms font{$formFontSelect}<span class="font-picker-preview" style="font-family: {$formFontPreview}; font-size: {$formFontSize}">Form field preview</span></label>
+                {$formSizeControl}
+                <label>Footer font{$footerFontSelect}<span class="font-picker-preview" style="font-family: {$footerFontPreview}; font-size: {$footerFontSize}">Footer preview</span></label>
+                {$footerSizeControl}
             </div>
         </fieldset>
         {$saveButton}
@@ -434,21 +444,69 @@ HTML;
     }
 
     /**
+     * Renders a friendly pixel-based font size control for tenant typography.
+     *
+     * The stored setting remains a CSS size string, but the UI exposes a slider
+     * and numeric field because raw clamp()/rem values are hostile to normal
+     * tenant editing. Existing rem/clamp values are converted to a practical
+     * pixel approximation for display and saved back as px.
+     */
+    private function fontSizeControl(string $name, string $label, string $value, int $defaultPx, int $minPx, int $maxPx, string $sample): string
+    {
+        $pixels = $this->fontSizePixels($value, $defaultPx);
+        $safeName = $this->escape($name);
+        $safeLabel = $this->escape($label);
+        $safeSample = $this->escape($sample);
+
+        return <<<HTML
+<label class="tenant-font-size-control" data-font-size-control="{$safeName}">
+    <span class="tenant-font-size-label">{$safeLabel}</span>
+    <span class="tenant-font-size-row">
+        <input class="tenant-font-size-range" type="range" min="{$minPx}" max="{$maxPx}" step="1" value="{$pixels}" data-font-size-range="{$safeName}">
+        <input class="tenant-font-size-number" type="number" min="{$minPx}" max="{$maxPx}" step="1" value="{$pixels}" data-font-size-number="{$safeName}">
+        <input type="hidden" name="{$safeName}" value="{$pixels}px" data-font-size-value="{$safeName}">
+        <span class="tenant-font-size-unit">px</span>
+    </span>
+    <span class="font-picker-preview tenant-font-size-preview" data-font-size-preview="{$safeName}" style="font-size: {$pixels}px">{$safeSample}</span>
+</label>
+HTML;
+    }
+
+    /**
+     * Converts stored CSS size strings to a friendly pixel value for sliders.
+     */
+    private function fontSizePixels(string $value, int $defaultPx): int
+    {
+        $value = trim($value);
+        if (preg_match('/^([0-9]+(?:\.[0-9]+)?)px$/', $value, $matches) === 1) {
+            return max(8, min(160, (int) round((float) $matches[1])));
+        }
+        if (preg_match('/^([0-9]+(?:\.[0-9]+)?)rem$/', $value, $matches) === 1) {
+            return max(8, min(160, (int) round((float) $matches[1] * 16)));
+        }
+        if (preg_match('/^([0-9]+(?:\.[0-9]+)?)em$/', $value, $matches) === 1) {
+            return max(8, min(160, (int) round((float) $matches[1] * 16)));
+        }
+
+        return $defaultPx;
+    }
+
+    /**
      * Provides per-field typography defaults for validation fallbacks.
      */
     private function defaultFontSize(string $key): string
     {
         return match ($key) {
-            'font_size_heading' => 'clamp(2.5rem, 8vw, 6.875rem)',
-            'font_size_subheading' => 'clamp(1.5rem, 3vw, 2.25rem)',
-            'font_size_brand' => 'clamp(1.75rem, 5vw, 4rem)',
-            'font_size_nav' => '0.875rem',
-            'font_size_prose' => 'clamp(1.125rem, 2vw, 1.5rem)',
-            'font_size_artwork_title' => '1.1rem',
-            'font_size_artwork_meta' => '0.95rem',
-            'font_size_form' => '1rem',
-            'font_size_footer' => '0.95rem',
-            default => '1rem',
+            'font_size_heading' => '72px',
+            'font_size_subheading' => '32px',
+            'font_size_brand' => '52px',
+            'font_size_nav' => '15px',
+            'font_size_prose' => '22px',
+            'font_size_artwork_title' => '20px',
+            'font_size_artwork_meta' => '15px',
+            'font_size_form' => '16px',
+            'font_size_footer' => '15px',
+            default => '18px',
         };
     }
 

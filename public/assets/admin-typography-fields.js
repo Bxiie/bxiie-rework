@@ -1,10 +1,9 @@
 /* Tenant typography live preview helper.
  *
- * The settings form stores tenant typography as plain inputs/selects. This
- * script mirrors selected local/system font stacks and size values into the
- * small admin preview samples immediately, before the full settings form is
- * saved. It also writes matching CSS variables onto the settings page body so
- * the admin page itself gives a quick smoke-test of the chosen typography.
+ * The settings form stores tenant typography as CSS variables. This helper keeps
+ * font previews live and turns each size field into a friendly pixel slider plus
+ * number input. Hidden inputs keep the submitted values compatible with the
+ * existing settings save path.
  */
 (function () {
   'use strict';
@@ -62,10 +61,26 @@
     return /^(?:[0-9]+(?:\.[0-9]+)?(?:px|rem|em|%)|clamp\([0-9.]+(?:px|rem|em|%),\s*[0-9.]+(?:vw|vh|rem|em|%),\s*[0-9.]+(?:px|rem|em|%)\))$/.test(String(value || '').trim());
   }
 
+  function clamp(value, min, max) {
+    var number = parseInt(value, 10);
+    if (Number.isNaN(number)) {
+      number = min;
+    }
+    return Math.max(min, Math.min(max, number));
+  }
+
+  function pxValue(name) {
+    var hidden = document.querySelector('[data-font-size-value="' + name + '"]');
+    if (hidden && hidden.value) {
+      return hidden.value;
+    }
+    var input = field(name);
+    return input ? input.value : '';
+  }
+
   function sizeForFamily(familyFieldName) {
     var sizeFieldName = FAMILY_TO_SIZE[familyFieldName];
-    var sizeField = sizeFieldName ? field(sizeFieldName) : null;
-    return sizeField ? sizeField.value : '';
+    return sizeFieldName ? pxValue(sizeFieldName) : '';
   }
 
   function updateOnePreview(select) {
@@ -90,6 +105,37 @@
       : 'Font preview';
   }
 
+  function syncOneSizeControl(name) {
+    var range = document.querySelector('[data-font-size-range="' + name + '"]');
+    var number = document.querySelector('[data-font-size-number="' + name + '"]');
+    var hidden = document.querySelector('[data-font-size-value="' + name + '"]');
+    var preview = document.querySelector('[data-font-size-preview="' + name + '"]');
+
+    if (!range || !number || !hidden) {
+      return;
+    }
+
+    var min = parseInt(range.getAttribute('min') || number.getAttribute('min') || '8', 10);
+    var max = parseInt(range.getAttribute('max') || number.getAttribute('max') || '160', 10);
+    var value = clamp(number.value || range.value, min, max);
+    var cssValue = value + 'px';
+
+    range.value = String(value);
+    number.value = String(value);
+    hidden.value = cssValue;
+
+    if (preview) {
+      preview.style.fontSize = cssValue;
+    }
+  }
+
+  function syncSizeControls() {
+    var controls = document.querySelectorAll('[data-font-size-control]');
+    for (var index = 0; index < controls.length; index += 1) {
+      syncOneSizeControl(controls[index].getAttribute('data-font-size-control'));
+    }
+  }
+
   function updateCssVariables() {
     var target = document.body || document.documentElement;
 
@@ -101,14 +147,16 @@
     });
 
     Object.keys(SIZE_TO_VAR).forEach(function (name) {
-      var input = field(name);
-      if (input && isSafePreviewSize(input.value)) {
-        target.style.setProperty(SIZE_TO_VAR[name], input.value);
+      var value = pxValue(name);
+      if (isSafePreviewSize(value)) {
+        target.style.setProperty(SIZE_TO_VAR[name], value);
       }
     });
   }
 
   function refreshAll() {
+    syncSizeControls();
+
     var selects = document.querySelectorAll('.tenant-font-picker');
     for (var index = 0; index < selects.length; index += 1) {
       updateOnePreview(selects[index]);
@@ -116,12 +164,21 @@
     updateCssVariables();
   }
 
-  function boot() {
-    var fields = document.querySelectorAll('.tenant-font-picker, input[name^="font_size_"]');
+  function bindSizeControls() {
+    var fields = document.querySelectorAll('[data-font-size-range], [data-font-size-number]');
     for (var index = 0; index < fields.length; index += 1) {
       fields[index].addEventListener('input', refreshAll);
       fields[index].addEventListener('change', refreshAll);
     }
+  }
+
+  function boot() {
+    var fields = document.querySelectorAll('.tenant-font-picker');
+    for (var index = 0; index < fields.length; index += 1) {
+      fields[index].addEventListener('input', refreshAll);
+      fields[index].addEventListener('change', refreshAll);
+    }
+    bindSizeControls();
     refreshAll();
   }
 

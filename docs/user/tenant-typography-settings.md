@@ -24,7 +24,7 @@ You can choose sizes for the same public-site areas.
 1. Open Tenant Admin > Settings.
 2. Scroll to Typography.
 3. Choose fonts from the picker.
-4. Adjust sizes, such as `1rem`, `18px`, or `clamp(2.5rem, 8vw, 6rem)`.
+4. Adjust sizes with the slider or type a pixel number in the size box.
 5. Click any **Save site settings** button.
 6. View the public site and refresh the page.
 
@@ -32,6 +32,6 @@ The font picker uses built-in browser/system fonts so your site stays fast and a
 
 ## Live preview and cache behavior
 
-The font preview samples update immediately when a font picker or related size field changes. Public pages load `site.css` with a typography cache-bust query so saved font changes are not hidden by stale browser CSS.
+The font preview samples update immediately when a font picker, slider, or size box changes. After saving, the public pages should use the selected fonts and sizes on home, portfolio, about, contact, artwork, forms, and footer text.
 
 # End of file.

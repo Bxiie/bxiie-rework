@@ -556,8 +556,9 @@ HTML;
     <title>{$browserTitle}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Artist portfolio">
-    <link rel="stylesheet" href="/assets/site.css?v=20260620-typography-live">
+    <link rel="stylesheet" href="/assets/site.css?v=20260620-typography-apply">
     <link rel="stylesheet" href="/tenant.css">
+    {$this->tenantTypographyStyleBlock()}
     <script src="/assets/tenant-forms.js?v=20260602a" defer></script>
     {$turnstileScript}
 </head>
@@ -589,6 +590,109 @@ HTML;
 
 
     /**
+     * Emits high-specificity tenant typography rules after /tenant.css.
+     *
+     * Tenant CSS is loaded after the shared stylesheet and may contain older
+     * hard-coded rules. Keeping this block after /tenant.css makes saved
+     * typography settings visible on home, portfolio, about, contact, artwork,
+     * forms, and footer pages without asking tenants to edit CSS manually.
+     */
+    private function tenantTypographyStyleBlock(): string
+    {
+        return <<<HTML
+<style id="tenant-typography-style">
+body,
+.site-main,
+.tenant-content-surface {
+  font-family: var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif) !important;
+  font-size: var(--tenant-font-size-body, 18px) !important;
+}
+
+.site-header .brand {
+  font-family: var(--tenant-font-brand, var(--tenant-font-heading, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif))) !important;
+  font-size: var(--tenant-font-size-brand, 52px) !important;
+}
+
+.site-header nav,
+.site-header nav a,
+.portfolio-tabs a,
+.chips a,
+.tenant-admin-top-link {
+  font-family: var(--tenant-font-nav, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
+  font-size: var(--tenant-font-size-nav, 15px) !important;
+}
+
+.site-main h1,
+.site-main .hero h1 {
+  font-family: var(--tenant-font-heading, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
+  font-size: var(--tenant-font-size-heading, 72px) !important;
+}
+
+.site-main h2,
+.site-main h3,
+.events h2,
+.contact-grid h2,
+.artwork-sales-panel h2 {
+  font-family: var(--tenant-font-heading, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
+  font-size: var(--tenant-font-size-subheading, 32px) !important;
+}
+
+.site-main .prose,
+.site-main .hero p,
+.site-main .sales-notes,
+.site-main .event-card,
+.site-main .events-table,
+.site-main article,
+.site-main p,
+.contact-grid p {
+  font-family: var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif) !important;
+  font-size: var(--tenant-font-size-prose, 22px) !important;
+}
+
+.card span,
+.artwork-card span,
+.home-grid .card span,
+.site-main article h2,
+.site-main article h2 a {
+  font-family: var(--tenant-font-artwork-title, var(--tenant-font-heading, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif))) !important;
+  font-size: var(--tenant-font-size-artwork-title, 20px) !important;
+}
+
+.card small,
+.art-meta,
+.site-main article small,
+.site-main article p,
+.artwork-price {
+  font-family: var(--tenant-font-artwork-meta, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
+  font-size: var(--tenant-font-size-artwork-meta, 15px) !important;
+}
+
+.form,
+.plan-edit-form,
+.contact-grid form,
+.tenant-footer-signup,
+.site-main input,
+.site-main textarea,
+.site-main select,
+.site-main button,
+.tenant-footer-signup input,
+.tenant-footer-signup button {
+  font-family: var(--tenant-font-form, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
+  font-size: var(--tenant-font-size-form, 16px) !important;
+}
+
+.site-footer,
+.site-footer a,
+.tenant-public-footer,
+.tenant-social-links a {
+  font-family: var(--tenant-font-footer, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
+  font-size: var(--tenant-font-size-footer, 15px) !important;
+}
+</style>
+HTML;
+    }
+
+    /**
      * Returns tenant typography CSS variables for public home, portfolio, about,
      * contact, artwork, and shared footer/form text.
      */
@@ -611,16 +715,16 @@ HTML;
             . '--tenant-font-artwork-meta:' . $artworkMetaFamily . ';'
             . '--tenant-font-form:' . $formFamily . ';'
             . '--tenant-font-footer:' . $footerFamily . ';'
-            . '--tenant-font-size-body:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_body', '1rem'), '1rem') . ';'
-            . '--tenant-font-size-heading:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_heading', 'clamp(2.5rem, 8vw, 6.875rem)'), 'clamp(2.5rem, 8vw, 6.875rem)') . ';'
-            . '--tenant-font-size-subheading:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_subheading', 'clamp(1.5rem, 3vw, 2.25rem)'), 'clamp(1.5rem, 3vw, 2.25rem)') . ';'
-            . '--tenant-font-size-brand:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_brand', 'clamp(1.75rem, 5vw, 4rem)'), 'clamp(1.75rem, 5vw, 4rem)') . ';'
-            . '--tenant-font-size-nav:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_nav', '0.875rem'), '0.875rem') . ';'
-            . '--tenant-font-size-prose:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_prose', 'clamp(1.125rem, 2vw, 1.5rem)'), 'clamp(1.125rem, 2vw, 1.5rem)') . ';'
-            . '--tenant-font-size-artwork-title:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_artwork_title', '1.1rem'), '1.1rem') . ';'
-            . '--tenant-font-size-artwork-meta:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_artwork_meta', '0.95rem'), '0.95rem') . ';'
-            . '--tenant-font-size-form:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_form', '1rem'), '1rem') . ';'
-            . '--tenant-font-size-footer:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_footer', '0.95rem'), '0.95rem') . ';';
+            . '--tenant-font-size-body:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_body', '18px'), '18px') . ';'
+            . '--tenant-font-size-heading:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_heading', '72px'), '72px') . ';'
+            . '--tenant-font-size-subheading:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_subheading', '32px'), '32px') . ';'
+            . '--tenant-font-size-brand:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_brand', '52px'), '52px') . ';'
+            . '--tenant-font-size-nav:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_nav', '15px'), '15px') . ';'
+            . '--tenant-font-size-prose:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_prose', '22px'), '22px') . ';'
+            . '--tenant-font-size-artwork-title:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_artwork_title', '20px'), '20px') . ';'
+            . '--tenant-font-size-artwork-meta:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_artwork_meta', '15px'), '15px') . ';'
+            . '--tenant-font-size-form:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_form', '16px'), '16px') . ';'
+            . '--tenant-font-size-footer:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_footer', '15px'), '15px') . ';';
     }
 
     /**

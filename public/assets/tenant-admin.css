@@ -768,3 +768,48 @@ body.tenant-admin-page {
   color: #1f1a14;
 }
 /* End of file. */
+
+/* Tenant typography size controls use sliders and numeric fields instead of
+   raw CSS text boxes so admins can make visible adjustments without knowing
+   clamp(), rem, or other CSS sizing syntax. */
+.tenant-admin-panel .tenant-font-size-control {
+  display: grid;
+  gap: 0.45rem;
+  align-content: start;
+}
+
+.tenant-admin-panel .tenant-font-size-label {
+  font-weight: 700;
+}
+
+.tenant-admin-panel .tenant-font-size-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) 5.25rem auto;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.tenant-admin-panel .tenant-font-size-range {
+  width: 100%;
+  min-height: 2rem;
+}
+
+.tenant-admin-panel .tenant-font-size-number {
+  width: 100%;
+}
+
+.tenant-admin-panel .tenant-font-size-unit {
+  color: #5c5145;
+  font-weight: 700;
+}
+
+.tenant-admin-panel .tenant-font-size-preview {
+  display: block;
+  padding: 0.75rem;
+  border: 1px dashed rgba(17, 17, 17, 0.28);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.64);
+  line-height: 1.15;
+}
+
+/* End of file. */

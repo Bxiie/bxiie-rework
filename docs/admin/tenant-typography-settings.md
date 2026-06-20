@@ -17,7 +17,7 @@ Each tenant can choose font families for:
 - Forms
 - Footer
 
-Each tenant can also choose sizes for:
+Each tenant can also choose sizes with sliders and numeric pixel boxes for:
 
 - Body text
 - Main headings
@@ -40,15 +40,7 @@ The picker includes a small preview sample below each select. The preview is an 
 
 Font family values are restricted to the curated list in code.
 
-Font size values support conservative CSS size tokens such as:
-
-- `16px`
-- `1rem`
-- `1.2em`
-- `90%`
-- `clamp(2.5rem, 8vw, 6.875rem)`
-
-Invalid or empty submitted values fall back to defaults.
+Font size controls save pixel values such as `18px` or `72px`. Existing older `rem`, `em`, or `clamp(...)` values are converted to a reasonable pixel value when the settings page renders. Invalid or empty submitted values fall back to defaults.
 
 ## Where the settings are maintained
 
@@ -78,6 +70,6 @@ public/assets/tenant-admin.css
 
 ## Live preview and cache behavior
 
-The font preview samples update immediately when a font picker or related size field changes. Public pages load `site.css` with a typography cache-bust query so saved font changes are not hidden by stale browser CSS.
+The font preview samples update immediately when a font picker, slider, or numeric size field changes. Public pages load `site.css` with a typography cache-bust query and emit a late tenant typography style block after `/tenant.css`, so saved font changes win over older tenant CSS and inline portfolio markup.
 
 # End of file.

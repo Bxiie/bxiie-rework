@@ -45,11 +45,13 @@ The font picker is intentionally curated and local/system only. The application 
 Validation happens during settings save:
 
 - `safeFontFamily()` restricts family values to the curated list.
-- `safePublicFontSize()` restricts sizes to simple CSS units or conservative `clamp(...)` expressions.
+- `fontSizeControl()` renders a range slider, numeric pixel field, and hidden submitted CSS value for each size.
+- `fontSizePixels()` converts older `rem`, `em`, and `clamp(...)` values to friendly pixel values for the UI.
+- `safePublicFontSize()` still accepts conservative CSS values for backward compatibility, but the admin UI now submits pixel values.
 
 ## Public rendering
 
-`HomeController::tenantTypographyCssVariables()` emits CSS variables into the public tenant `<body>` style attribute. The values are consumed by `public/assets/site.css`.
+`HomeController::tenantTypographyCssVariables()` emits CSS variables into the public tenant `<body>` style attribute. `HomeController::tenantTypographyStyleBlock()` also emits a late inline stylesheet after `/tenant.css`, because tenant custom CSS and older generated markup can otherwise override the shared stylesheet.
 
 The public CSS applies variables to broad public-site groups:
 
@@ -62,7 +64,7 @@ The public CSS applies variables to broad public-site groups:
 - Forms
 - Footer/social links
 
-Some rules use `!important` for artwork titles because older portfolio markup includes inline font-size declarations. This keeps the admin typography settings authoritative without requiring a larger markup rewrite.
+The late inline typography block uses targeted `!important` rules for headings, portfolio card titles, forms, footer, and prose because older portfolio markup includes inline font-size declarations and `/tenant.css` is loaded after the shared stylesheet. This keeps admin typography settings authoritative without requiring a larger markup rewrite.
 
 ## Testing
 
@@ -80,6 +82,6 @@ scripts/test/preflight.sh
 
 ## Live preview and cache behavior
 
-The font preview samples update immediately when a font picker or related size field changes. Public pages load `site.css` with a typography cache-bust query so saved font changes are not hidden by stale browser CSS.
+The font preview samples update immediately when a font picker, range slider, or numeric size field changes. Public pages load `site.css` with a typography cache-bust query and emit the late typography block after `/tenant.css`.
 
 # End of file.
