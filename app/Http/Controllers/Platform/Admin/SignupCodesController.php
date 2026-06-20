@@ -81,7 +81,7 @@ final class SignupCodesController
 HTML;
         }
         if ($rows === '') {
-            $rows = '<tr><td colspan="8">No signup codes exist yet.</td></tr>';
+            $rows = '<tr><td colspan="9">No signup codes exist yet.</td></tr>';
         }
 
         $body = <<<HTML
@@ -130,7 +130,7 @@ HTML;
     </form>
     <p class="admin-muted">These options are saved in this browser and reused when returning to the signup code page.</p>
 </section>
-<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Code</th><th>Type</th><th>Recipient</th><th>Use</th><th>Free access</th><th>Status</th><th>Tenant</th><th>Actions</th></tr></thead><tbody>{$rows}</tbody></table></div>
+<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Code</th><th>Type</th><th>Recipient</th><th>Use</th><th>Free access</th><th>Status</th><th>Tenant</th><th>Invite status</th><th>Actions</th></tr></thead><tbody>{$rows}</tbody></table></div>
 HTML;
 
         return Response::html(AdminLayout::render('Signup Codes', $body, 'codes'), 200, $filterHeaders);
