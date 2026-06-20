@@ -1628,6 +1628,18 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - OAuth `return_to` accepts relative URLs, `artsfol.io` hosts, `*.artsfol.io` hosts, and active tenant custom domains from `tenant_domains`.
 - Platform `/logout` supports GET for direct navigation and POST with CSRF for form logout.
 
-<!-- End of file. -->
+
+
+## Signup code invite status
 
 - Platform signup code list now shows invite email delivery state by reading matching `platform.tenant_signup_invite` outbox rows: not sent, queued/not sent yet, partially sent, or sent with counts and latest timestamps.
+
+## Branded browser-facing error pages
+
+- Browser-facing error responses are rendered through `App\Http\View\ErrorPage` with either platform branding or tenant branding.
+- The router no longer returns raw `No route for ...` copy for missing routes.
+- `public/index.php` catches uncaught exceptions and shutdown-handler fatal errors and returns branded 500 pages while logging the underlying failure.
+- `public/.htaccess` maps common Apache `ErrorDocument` statuses to `/error/{code}` so web-server fallbacks route through the branded application renderer.
+- Static regression coverage lives in `scripts/test/branded_error_pages_static.php` and is called from `scripts/test/preflight.sh`.
+
+<!-- End of file. -->

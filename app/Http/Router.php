@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http;
 
 
-use App\Http\View\ErrorPage;
 /**
  * Minimal HTTP router supporting exact routes and simple {parameter} path segments.
  */
@@ -37,7 +36,7 @@ final class Router
         $match = $this->match($request->method(), $request->path());
 
         if (!$match) {
-            return Response::notFound("No route for {$request->method()} {$request->path()}");
+            return Response::notFound();
         }
 
         $response = ($match->handler)($request, $match->parameters);

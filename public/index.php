@@ -170,6 +170,20 @@ $root = dirname(__DIR__);
 
 require $root . '/bootstrap/app.php';
 
+register_shutdown_function(static function (): void {
+    $error = error_get_last();
+    if ($error === null) {
+        return;
+    }
+
+    $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR];
+    if (!in_array((int) $error['type'], $fatalTypes, true)) {
+        return;
+    }
+
+    ErrorPage::sendFatal($error);
+});
+
 session_start();
 
 $request = Request::fromGlobals();
@@ -184,7 +198,8 @@ $request = Request::fromGlobals();
             $target .= '?' . $queryString;
         }
 
-        return new Response('', 302, ['Location' => $target]);
+        (new Response('', 302, ['Location' => $target]))->send();
+        exit;
     }
 
 
@@ -192,9 +207,11 @@ try {
     $pdo = Database::connect($root);
     $tenantResolver = new TenantResolver($pdo);
     $tenant = (new ResolveTenant($tenantResolver))->handle($request);
+    $GLOBALS['artsfolio_tenant_context'] = $tenant;
+    $GLOBALS['artsfolio_platform_context'] = $tenant === null;
 
     if ($tenant && method_exists($tenant, 'isSuspended') && $tenant->isSuspended()) {
-        Response::html('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Content unavailable | ArtsFolio</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/platform.css"></head><body class="platform-page"><main class="platform-main"><section class="platform-page-heading"><p class="eyebrow">ArtsFolio</p><h1>We are sorry, this content cannot be shown right now.</h1><p>This artist site is temporarily unavailable. Please check back later or contact ArtsFolio support.</p><p><a class="button primary" href="https://artsfol.io/">Return to ArtsFolio</a></p></section></main></body></html>', 403)->send();
+        Response::error(403, 'This artist site is temporarily unavailable. Please check back later or contact ArtsFolio support.')->send();
         exit;
     }
 
@@ -246,9 +263,9 @@ try {
     ))->resolve($request);
 
     if ($request->path() === '/caddy/ask') {
-    echo (new CaddyAskController($pdo))->ask($request)->send();
-    exit;
-}
+        (new CaddyAskController($pdo))->ask($request)->send();
+        exit;
+    }
     if ($request->path() === '/stripe/webhook') {
         (new StripeWebhookController(new PlatformSettingsRepository($pdo), new SalesRepository($pdo)))->receive($request)->send();
         exit;
@@ -257,8 +274,7 @@ try {
 
 $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTTP_HOST') ?? '');
     if (!$tenant && $suspendedTenant) {
-        $tenantName = htmlspecialchars((string) ($suspendedTenant['name'] ?? 'this artist site'), ENT_QUOTES, 'UTF-8');
-        Response::html("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>Content unavailable | ArtsFolio</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><link rel=\"stylesheet\" href=\"/assets/platform.css\"></head><body class=\"platform-page\"><header class=\"platform-header\"><a class=\"platform-logo\" href=\"https://artsfol.io/\"><img src=\"/assets/logo_2.png\" alt=\"ArtsFolio\"></a></header><main class=\"platform-main\"><section class=\"platform-hero\"><p class=\"eyebrow\">ArtsFolio</p><h1>We’re sorry, this content can’t be shown.</h1><p>The site for {$tenantName} is not currently available. Please check back later or contact the artist directly if you have an existing relationship.</p><p><a class=\"button primary\" href=\"https://artsfol.io/\">Return to ArtsFolio</a></p></section></main></body></html>", 503)->send();
+        Response::error(503, 'This artist site is not currently available. Please check back later or contact the artist directly if you have an existing relationship.')->send();
         exit;
     }
 
@@ -301,6 +317,7 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
         );
 
         $router = new Router();
+        $router->get('/error/{code}', fn (Request $request, array $params): Response => Response::error((int) ($params['code'] ?? 500)));
 
 
         // ARTSFOLIO_GLOBAL_PASSWORD_ROUTES
@@ -554,7 +571,10 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $marketingController = new MarketingController($pdo);
     $helpController = new PlatformHelpController();
 
+    $GLOBALS['artsfolio_platform_context'] = true;
+
     $router = new Router();
+    $router->get('/error/{code}', fn (Request $request, array $params): Response => Response::error((int) ($params['code'] ?? 500)));
 
     // Track platform-host page views, including platform admin pages, after the
     // tenant router has had its chance to handle tenant sites.
@@ -779,10 +799,7 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
 
     $router->dispatch($request)->send();
 } catch (Throwable $e) {
-    Response::html(
-        "<h1>Application error</h1>\n<pre>" . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . "</pre>\n",
-        500
-    )->send();
+    ErrorPage::sendException($e);
 }
 
 // End of file.

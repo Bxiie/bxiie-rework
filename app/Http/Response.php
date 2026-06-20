@@ -43,9 +43,14 @@ final class Response
         );
     }
 
-    public static function notFound(string $message = 'Page not found'): self
+    public static function notFound(string $message = 'The page you requested could not be found.'): self
     {
         return self::html(ErrorPage::notFound($message), 404);
+    }
+
+    public static function error(int $statusCode, string $message = ''): self
+    {
+        return self::html(ErrorPage::status($statusCode, $message), $statusCode);
     }
 
     public function send(): void

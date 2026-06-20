@@ -1,0 +1,832 @@
+diff -ruN '--exclude=._*' artsfolio_orig/PROJECT_STATE.md artsfolio_work/PROJECT_STATE.md
+--- artsfolio_orig/PROJECT_STATE.md	2026-06-17 03:00:29.760813704 +0000
++++ artsfolio_work/PROJECT_STATE.md	2026-06-20 17:37:25.241516919 +0000
+@@ -1628,6 +1628,18 @@
+ - OAuth `return_to` accepts relative URLs, `artsfol.io` hosts, `*.artsfol.io` hosts, and active tenant custom domains from `tenant_domains`.
+ - Platform `/logout` supports GET for direct navigation and POST with CSRF for form logout.
+ 
+-<!-- End of file. -->
++
++
++## Signup code invite status
+ 
+ - Platform signup code list now shows invite email delivery state by reading matching `platform.tenant_signup_invite` outbox rows: not sent, queued/not sent yet, partially sent, or sent with counts and latest timestamps.
++
++## Branded browser-facing error pages
++
++- Browser-facing error responses are rendered through `App\Http\View\ErrorPage` with either platform branding or tenant branding.
++- The router no longer returns raw `No route for ...` copy for missing routes.
++- `public/index.php` catches uncaught exceptions and shutdown-handler fatal errors and returns branded 500 pages while logging the underlying failure.
++- `public/.htaccess` maps common Apache `ErrorDocument` statuses to `/error/{code}` so web-server fallbacks route through the branded application renderer.
++- Static regression coverage lives in `scripts/test/branded_error_pages_static.php` and is called from `scripts/test/preflight.sh`.
++
++<!-- End of file. -->
+diff -ruN '--exclude=._*' artsfolio_orig/app/Http/Response.php artsfolio_work/app/Http/Response.php
+--- artsfolio_orig/app/Http/Response.php	2026-06-10 18:17:32.158513759 +0000
++++ artsfolio_work/app/Http/Response.php	2026-06-20 17:36:16.213451300 +0000
+@@ -43,11 +43,16 @@
+         );
+     }
+ 
+-    public static function notFound(string $message = 'Page not found'): self
++    public static function notFound(string $message = 'The page you requested could not be found.'): self
+     {
+         return self::html(ErrorPage::notFound($message), 404);
+     }
+ 
++    public static function error(int $statusCode, string $message = ''): self
++    {
++        return self::html(ErrorPage::status($statusCode, $message), $statusCode);
++    }
++
+     public function send(): void
+     {
+         http_response_code($this->status);
+diff -ruN '--exclude=._*' artsfolio_orig/app/Http/Router.php artsfolio_work/app/Http/Router.php
+--- artsfolio_orig/app/Http/Router.php	2026-06-10 18:17:32.158695009 +0000
++++ artsfolio_work/app/Http/Router.php	2026-06-20 17:36:16.213942728 +0000
+@@ -5,7 +5,6 @@
+ namespace App\Http;
+ 
+ 
+-use App\Http\View\ErrorPage;
+ /**
+  * Minimal HTTP router supporting exact routes and simple {parameter} path segments.
+  */
+@@ -37,7 +36,7 @@
+         $match = $this->match($request->method(), $request->path());
+ 
+         if (!$match) {
+-            return Response::notFound("No route for {$request->method()} {$request->path()}");
++            return Response::notFound();
+         }
+ 
+         $response = ($match->handler)($request, $match->parameters);
+diff -ruN '--exclude=._*' artsfolio_orig/app/Http/View/ErrorPage.php artsfolio_work/app/Http/View/ErrorPage.php
+--- artsfolio_orig/app/Http/View/ErrorPage.php	2026-06-10 18:17:32.159854430 +0000
++++ artsfolio_work/app/Http/View/ErrorPage.php	2026-06-20 17:37:48.742266604 +0000
+@@ -1,46 +1,200 @@
+ <?php
+ 
++/**
++ * Branded browser-facing error page renderer.
++ */
++
+ declare(strict_types=1);
+ 
+ namespace App\Http\View;
+ 
++use App\Platform\Tenancy\TenantContext;
++use Throwable;
++
++/**
++ * Renders every browser-facing error response inside platform or tenant chrome.
++ *
++ * The renderer intentionally avoids database dependencies so it can be used from
++ * exception and shutdown handlers when the application is already in trouble.
++ */
+ final class ErrorPage
+ {
+-    public static function notFound(string $path = ''): string
++    /**
++     * Builds a branded 404 page without leaking internal route details.
++     */
++    public static function notFound(string $message = 'The page you requested could not be found.'): string
+     {
+-        $safePath = self::escape($path);
+-        $message = $safePath !== '' ? '<code>' . $safePath . '</code>' : 'No route for this request';
+-
+-        return self::page('Page not found', '404', 'This page wandered off.', $message, [
+-            ['/', 'Go home'],
+-            ['/help', 'Help'],
+-            ['/contact', 'Contact'],
+-        ]);
++        return self::page(
++            title: 'Page not found',
++            statusLabel: '404',
++            heading: 'This page wandered off.',
++            message: $message,
++            actions: self::defaultActions(),
++        );
+     }
+ 
++    /**
++     * Builds a branded 401/403-style page for sign-in failures.
++     */
+     public static function unauthorized(string $loginPath = '/login', string $message = 'Please sign in to continue.'): string
+     {
+-        return self::page('Sign in required', 'Unauthorized', 'You need to sign in.', self::escape($message), [
+-            [$loginPath, 'Sign in'],
+-            ['/', 'Go home'],
+-            ['/help', 'Help'],
+-        ]);
++        return self::page(
++            title: 'Sign in required',
++            statusLabel: 'Access',
++            heading: 'You need to sign in.',
++            message: $message,
++            actions: [
++                [$loginPath, 'Sign in'],
++                [self::homeUrl(), 'Go home'],
++                [self::supportUrl(), 'Help'],
++            ],
++        );
+     }
+ 
++    /**
++     * Builds a branded forbidden page.
++     */
+     public static function forbidden(string $message = 'You do not have access to this page.'): string
+     {
+-        return self::page('Access denied', '403', 'Not enough keys for this door.', self::escape($message), [
+-            ['/login', 'Sign in'],
+-            ['/', 'Go home'],
+-            ['/contact', 'Contact'],
+-        ]);
++        return self::page(
++            title: 'Access denied',
++            statusLabel: '403',
++            heading: 'Not enough keys for this door.',
++            message: $message,
++            actions: [
++                ['/login', 'Sign in'],
++                [self::homeUrl(), 'Go home'],
++                [self::supportUrl(), 'Contact'],
++            ],
++        );
++    }
++
++    /**
++     * Builds a branded error page for known HTTP status codes.
++     */
++    public static function status(int $statusCode, string $message = ''): string
++    {
++        $copy = self::statusCopy($statusCode);
++
++        return self::page(
++            title: $copy['title'],
++            statusLabel: (string) $statusCode,
++            heading: $copy['heading'],
++            message: $message !== '' ? $message : $copy['message'],
++            actions: self::defaultActions(),
++        );
+     }
+ 
+-    private static function page(string $title, string $eyebrow, string $heading, string $message, array $actions): string
++    /**
++     * Builds a branded 500 page that hides exception details from visitors.
++     */
++    public static function serverError(string $message = 'The page could not be loaded. The issue has been logged.'): string
+     {
++        return self::page(
++            title: 'Something went wrong',
++            statusLabel: '500',
++            heading: 'Something went wrong.',
++            message: $message,
++            actions: self::defaultActions(),
++        );
++    }
++
++    /**
++     * Emits a branded exception page and logs the underlying throwable.
++     */
++    public static function sendException(Throwable $throwable): void
++    {
++        error_log((string) $throwable);
++
++        if (!headers_sent()) {
++            http_response_code(500);
++            header('Content-Type: text/html; charset=utf-8');
++        }
++
++        echo self::serverError();
++    }
++
++    /**
++     * Emits a branded fatal-error page for shutdown-handler failures.
++     */
++    public static function sendFatal(array $error): void
++    {
++        error_log('Fatal browser-facing error: ' . json_encode($error));
++
++        if (!headers_sent()) {
++            http_response_code(500);
++            header('Content-Type: text/html; charset=utf-8');
++        }
++
++        echo self::serverError();
++    }
++
++    /**
++     * Returns the current tenant context recorded by the front controller.
++     */
++    private static function tenant(): ?TenantContext
++    {
++        $tenant = $GLOBALS['artsfolio_tenant_context'] ?? null;
++
++        return $tenant instanceof TenantContext ? $tenant : null;
++    }
++
++    /**
++     * Returns true when the current request is being served as platform chrome.
++     */
++    private static function isPlatform(): bool
++    {
++        if (!empty($GLOBALS['artsfolio_platform_context'])) {
++            return true;
++        }
++
++        $host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
++        $host = preg_replace('/:\d+$/', '', $host) ?? $host;
++
++        return in_array($host, ['artsfol.io', 'www.artsfol.io', 'app.artsfol.io'], true)
++            || str_starts_with((string) ($_SERVER['REQUEST_URI'] ?? '/'), '/platform');
++    }
++
++    /**
++     * Returns brand values without using the database or tenant settings.
++     */
++    private static function brand(): array
++    {
++        $tenant = self::tenant();
++        if ($tenant !== null && !self::isPlatform()) {
++            return [
++                'name' => $tenant->name !== '' ? $tenant->name : $tenant->slug,
++                'home_url' => '/',
++                'logo_url' => '/assets/logo_2.png',
++                'footer' => 'Powered by ArtsFolio',
++                'body_class' => 'tenant-error-page',
++            ];
++        }
++
++        return [
++            'name' => 'ArtsFolio',
++            'home_url' => 'https://artsfol.io/',
++            'logo_url' => '/assets/logo_2.png',
++            'footer' => 'ArtsFolio',
++            'body_class' => 'platform-error-page',
++        ];
++    }
++
++    /**
++     * Renders the branded error shell.
++     */
++    private static function page(string $title, string $statusLabel, string $heading, string $message, array $actions): string
++    {
++        $brand = self::brand();
+         $safeTitle = self::escape($title);
+-        $safeEyebrow = self::escape($eyebrow);
++        $safeStatus = self::escape($statusLabel);
+         $safeHeading = self::escape($heading);
++        $safeMessage = self::escape($message);
++        $safeBrand = self::escape((string) $brand['name']);
++        $safeLogoUrl = self::escape((string) $brand['logo_url']);
++        $safeHomeUrl = self::escape((string) $brand['home_url']);
++        $safeFooter = self::escape((string) $brand['footer']);
++        $safeBodyClass = self::escape((string) $brand['body_class']);
+ 
+         $links = '';
+         foreach ($actions as [$href, $label]) {
+@@ -52,20 +206,22 @@
+ <html lang="en">
+ <head>
+     <meta charset="utf-8">
+-    <title>{$safeTitle} | ArtsFolio</title>
++    <title>{$safeTitle} | {$safeBrand}</title>
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+     <link rel="stylesheet" href="/assets/error.css">
+ </head>
+-<body>
++<body class="{$safeBodyClass}">
+ <main class="error-page">
+-    <section class="error-card">
+-        <a href="/" class="error-logo-link" aria-label="ArtsFolio home">
+-            <img src="/assets/logo_2.png" alt="ArtsFolio" class="error-logo">
++    <section class="error-card" role="alert">
++        <a href="{$safeHomeUrl}" class="error-logo-link" aria-label="{$safeBrand} home">
++            <img src="{$safeLogoUrl}" alt="{$safeBrand}" class="error-logo">
+         </a>
+-        <p class="error-eyebrow">{$safeEyebrow}</p>
++        <p class="error-brand">{$safeBrand}</p>
++        <p class="error-eyebrow">{$safeStatus}</p>
+         <h1>{$safeHeading}</h1>
+-        <p class="error-message">{$message}</p>
++        <p class="error-message">{$safeMessage}</p>
+         <div class="error-actions">{$links}</div>
++        <p class="error-footer">{$safeFooter}</p>
+     </section>
+ </main>
+ </body>
+@@ -73,6 +229,76 @@
+ HTML;
+     }
+ 
++    /**
++     * Returns default actions for the active brand context.
++     */
++    private static function defaultActions(): array
++    {
++        return [
++            [self::homeUrl(), 'Go home'],
++            [self::supportUrl(), 'Help'],
++        ];
++    }
++
++    private static function homeUrl(): string
++    {
++        return (string) self::brand()['home_url'];
++    }
++
++    private static function supportUrl(): string
++    {
++        return self::tenant() !== null && !self::isPlatform() ? '/contact' : '/help';
++    }
++
++    /**
++     * Returns visitor-safe copy for common HTTP errors.
++     */
++    private static function statusCopy(int $statusCode): array
++    {
++        return match ($statusCode) {
++            400 => [
++                'title' => 'Bad request',
++                'heading' => 'That request was not understood.',
++                'message' => 'Please check the address and try again.',
++            ],
++            401 => [
++                'title' => 'Sign in required',
++                'heading' => 'You need to sign in.',
++                'message' => 'Please sign in to continue.',
++            ],
++            403 => [
++                'title' => 'Access denied',
++                'heading' => 'Not enough keys for this door.',
++                'message' => 'You do not have access to this page.',
++            ],
++            404 => [
++                'title' => 'Page not found',
++                'heading' => 'This page wandered off.',
++                'message' => 'The page you requested could not be found.',
++            ],
++            502 => [
++                'title' => 'Temporary platform issue',
++                'heading' => 'The platform hit a rough patch.',
++                'message' => 'Please try again in a few minutes.',
++            ],
++            503 => [
++                'title' => 'Temporarily unavailable',
++                'heading' => 'This page is temporarily unavailable.',
++                'message' => 'Please check back later.',
++            ],
++            504 => [
++                'title' => 'Request timed out',
++                'heading' => 'That request took too long.',
++                'message' => 'Please try again.',
++            ],
++            default => [
++                'title' => 'Something went wrong',
++                'heading' => 'Something went wrong.',
++                'message' => 'The request could not be completed.',
++            ],
++        };
++    }
++
+     private static function escape(string $value): string
+     {
+         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+diff -ruN '--exclude=._*' artsfolio_orig/docs/admin/branded-error-pages.md artsfolio_work/docs/admin/branded-error-pages.md
+--- artsfolio_orig/docs/admin/branded-error-pages.md	1970-01-01 00:00:00.000000000 +0000
++++ artsfolio_work/docs/admin/branded-error-pages.md	2026-06-20 17:37:17.403780707 +0000
+@@ -0,0 +1,35 @@
++# Branded error pages
++
++Every browser-facing error page should display ArtsFolio or tenant branding. Visitors should not see raw routing messages, PHP warnings, stack traces, or default Apache error pages.
++
++## What users see
++
++- Platform pages show ArtsFolio branding.
++- Tenant pages show the tenant site name and a `Powered by ArtsFolio` footer.
++- Missing pages, forbidden pages, suspended/unavailable site pages, and most application failures use the same branded error shell.
++
++## What admins should check
++
++Use the browser or `curl` to test missing pages after deployment:
++
++```bash
++curl -ksS https://artsfol.io/__definitely_missing_platform_page__ | head
++curl -ksS https://bxiie.artsfol.io/__definitely_missing_tenant_page__ | head
++```
++
++The response should contain normal HTML with `/assets/error.css`, not raw plaintext.
++
++## Escalation clues
++
++Escalate to development if any public browser page shows:
++
++- `No route for GET`
++- `Application error`
++- `Fatal error`
++- `Stack trace`
++- default Apache error markup
++- unstyled plaintext errors
++
++Application exception details are logged server-side and intentionally hidden from users.
++
++<!-- End of file. -->
+diff -ruN '--exclude=._*' artsfolio_orig/docs/dev/branded-error-pages.md artsfolio_work/docs/dev/branded-error-pages.md
+--- artsfolio_orig/docs/dev/branded-error-pages.md	1970-01-01 00:00:00.000000000 +0000
++++ artsfolio_work/docs/dev/branded-error-pages.md	2026-06-20 17:37:17.395131368 +0000
+@@ -0,0 +1,47 @@
++# Branded error pages
++
++ArtsFolio must not serve browser-facing naked framework, PHP, router, or web-server error content. Error responses are rendered through `App\Http\View\ErrorPage` so users see either platform branding or tenant branding.
++
++## Runtime flow
++
++- `public/index.php` records request context in `$GLOBALS['artsfolio_tenant_context']` and `$GLOBALS['artsfolio_platform_context']` after tenant resolution.
++- `App\Http\Router::dispatch()` returns `Response::notFound()` with visitor-safe copy when no route matches.
++- `App\Http\Response::error()` renders known status codes through `ErrorPage::status()`.
++- `public/index.php` catches uncaught `Throwable` instances and calls `ErrorPage::sendException()`.
++- `public/index.php` registers a shutdown handler for fatal PHP errors and calls `ErrorPage::sendFatal()` when possible.
++- `public/.htaccess` maps common Apache `ErrorDocument` statuses to `/error/{code}`, which routes back through the application renderer.
++
++## Branding rules
++
++Tenant hosts render tenant-branded error pages using the resolved tenant name and a `Powered by ArtsFolio` footer. Platform hosts and `/platform` routes render ArtsFolio platform branding.
++
++The renderer intentionally avoids database reads and tenant settings lookups. Error paths need to work when persistence, settings, or downstream services are broken.
++
++## Regression coverage
++
++Run:
++
++```bash
++php scripts/test/branded_error_pages_static.php
++./scripts/test/preflight.sh
++```
++
++The static test verifies that raw markers such as `No route for`, `Application error`, and `Stack trace` are not present in the front-controller/router error path.
++
++## Operational checks
++
++After deployment, verify both platform and tenant missing pages:
++
++```bash
++curl -ksS https://artsfol.io/__definitely_missing_platform_page__ | grep -E 'ArtsFolio|error-card'
++curl -ksS https://bxiie.artsfol.io/__definitely_missing_tenant_page__ | grep -E 'James Payne Art|Powered by ArtsFolio|error-card'
++```
++
++Also confirm raw leakage is absent:
++
++```bash
++curl -ksS https://artsfol.io/__definitely_missing_platform_page__ | grep -E 'No route for|Application error|Fatal error|Stack trace|Apache/[0-9]' && exit 1 || true
++curl -ksS https://bxiie.artsfol.io/__definitely_missing_tenant_page__ | grep -E 'No route for|Application error|Fatal error|Stack trace|Apache/[0-9]' && exit 1 || true
++```
++
++<!-- End of file. -->
+diff -ruN '--exclude=._*' artsfolio_orig/public/.htaccess artsfolio_work/public/.htaccess
+--- artsfolio_orig/public/.htaccess	2026-05-11 08:15:22.000000000 +0000
++++ artsfolio_work/public/.htaccess	2026-06-20 17:36:16.214263235 +0000
+@@ -1,4 +1,14 @@
+ RewriteEngine On
++
++ErrorDocument 400 /error/400
++ErrorDocument 401 /error/401
++ErrorDocument 403 /error/403
++ErrorDocument 404 /error/404
++ErrorDocument 500 /error/500
++ErrorDocument 502 /error/502
++ErrorDocument 503 /error/503
++ErrorDocument 504 /error/504
++
+ RewriteCond %{REQUEST_FILENAME} !-f
+ RewriteCond %{REQUEST_FILENAME} !-d
+ RewriteRule ^ index.php [L]
+diff -ruN '--exclude=._*' artsfolio_orig/public/assets/error.css artsfolio_work/public/assets/error.css
+--- artsfolio_orig/public/assets/error.css	2026-06-10 18:17:32.257865462 +0000
++++ artsfolio_work/public/assets/error.css	2026-06-20 17:36:04.268849676 +0000
+@@ -1,2 +1,126 @@
+-:root{--ink:#151515;--paper:#f6efe5;--muted:#665f56;--line:rgba(0,0,0,.12)}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at top left,rgba(255,255,255,.95),transparent 28rem),linear-gradient(135deg,#f8f1e8,#eadfce);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.error-page{width:min(860px,calc(100% - 2rem))}.error-card{padding:clamp(2rem,6vw,4rem);border:1px solid var(--line);border-radius:2rem;background:rgba(255,255,255,.78);box-shadow:0 28px 90px rgba(0,0,0,.10);text-align:center}.error-logo{width:min(220px,60vw);height:auto;margin:0 auto 1.5rem;display:block}.error-logo-link{display:inline-block}.error-eyebrow{margin:0 0 .8rem;font-size:.82rem;font-weight:950;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}h1{margin:0;font-size:clamp(3rem,10vw,7rem);line-height:.88;letter-spacing:-.08em}.error-message{margin:1.2rem auto 0;max-width:620px;color:var(--muted);font-size:clamp(1.1rem,2vw,1.35rem);line-height:1.45}.error-message code{padding:.15rem .35rem;border-radius:.35rem;background:rgba(0,0,0,.06)}.error-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:.85rem;margin-top:1.6rem}.error-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.8rem 1.1rem;border:1px solid var(--ink);border-radius:999px;color:inherit;text-decoration:none;font-weight:950}.error-button:first-child{background:var(--ink);color:white}
++/*
++ * ArtsFolio branded browser-facing error pages.
++ */
++:root {
++  --ink: #151515;
++  --paper: #f6efe5;
++  --muted: #665f56;
++  --line: rgba(0, 0, 0, .12);
++  --card: rgba(255, 255, 255, .82);
++}
++
++* {
++  box-sizing: border-box;
++}
++
++body {
++  margin: 0;
++  min-height: 100vh;
++  display: grid;
++  place-items: center;
++  background:
++    radial-gradient(circle at top left, rgba(255, 255, 255, .95), transparent 28rem),
++    linear-gradient(135deg, #f8f1e8, #eadfce);
++  color: var(--ink);
++  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
++}
++
++.error-page {
++  width: min(860px, calc(100% - 2rem));
++}
++
++.error-card {
++  padding: clamp(2rem, 6vw, 4rem);
++  border: 1px solid var(--line);
++  border-radius: 2rem;
++  background: var(--card);
++  box-shadow: 0 28px 90px rgba(0, 0, 0, .10);
++  text-align: center;
++}
++
++.error-logo {
++  width: min(220px, 60vw);
++  height: auto;
++  margin: 0 auto 1rem;
++  display: block;
++}
++
++.error-logo-link {
++  display: inline-block;
++}
++
++.error-brand {
++  margin: 0 0 1rem;
++  font-size: 1rem;
++  font-weight: 950;
++  letter-spacing: .04em;
++}
++
++.error-eyebrow {
++  margin: 0 0 .8rem;
++  font-size: .82rem;
++  font-weight: 950;
++  letter-spacing: .16em;
++  text-transform: uppercase;
++  color: var(--muted);
++}
++
++h1 {
++  margin: 0;
++  font-size: clamp(2.7rem, 9vw, 6.5rem);
++  line-height: .9;
++  letter-spacing: -.07em;
++}
++
++.error-message {
++  margin: 1.2rem auto 0;
++  max-width: 620px;
++  color: var(--muted);
++  font-size: clamp(1.1rem, 2vw, 1.35rem);
++  line-height: 1.45;
++}
++
++.error-actions {
++  display: flex;
++  justify-content: center;
++  flex-wrap: wrap;
++  gap: .85rem;
++  margin-top: 1.6rem;
++}
++
++.error-button {
++  display: inline-flex;
++  align-items: center;
++  justify-content: center;
++  min-height: 44px;
++  padding: .8rem 1.1rem;
++  border: 1px solid var(--ink);
++  border-radius: 999px;
++  color: inherit;
++  text-decoration: none;
++  font-weight: 950;
++}
++
++.error-button:first-child {
++  background: var(--ink);
++  color: white;
++}
++
++.error-footer {
++  margin: 1.5rem 0 0;
++  color: var(--muted);
++  font-size: .9rem;
++}
++
++@media (max-width: 520px) {
++  .error-card {
++    border-radius: 1.4rem;
++  }
++
++  .error-actions {
++    align-items: stretch;
++    flex-direction: column;
++  }
++}
++
+ /* End of file. */
+diff -ruN '--exclude=._*' artsfolio_orig/public/index.php artsfolio_work/public/index.php
+--- artsfolio_orig/public/index.php	2026-06-17 00:30:17.729460153 +0000
++++ artsfolio_work/public/index.php	2026-06-20 17:36:35.432587534 +0000
+@@ -170,6 +170,20 @@
+ 
+ require $root . '/bootstrap/app.php';
+ 
++register_shutdown_function(static function (): void {
++    $error = error_get_last();
++    if ($error === null) {
++        return;
++    }
++
++    $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR];
++    if (!in_array((int) $error['type'], $fatalTypes, true)) {
++        return;
++    }
++
++    ErrorPage::sendFatal($error);
++});
++
+ session_start();
+ 
+ $request = Request::fromGlobals();
+@@ -184,7 +198,8 @@
+             $target .= '?' . $queryString;
+         }
+ 
+-        return new Response('', 302, ['Location' => $target]);
++        (new Response('', 302, ['Location' => $target]))->send();
++        exit;
+     }
+ 
+ 
+@@ -192,9 +207,11 @@
+     $pdo = Database::connect($root);
+     $tenantResolver = new TenantResolver($pdo);
+     $tenant = (new ResolveTenant($tenantResolver))->handle($request);
++    $GLOBALS['artsfolio_tenant_context'] = $tenant;
++    $GLOBALS['artsfolio_platform_context'] = $tenant === null;
+ 
+     if ($tenant && method_exists($tenant, 'isSuspended') && $tenant->isSuspended()) {
+-        Response::html('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Content unavailable | ArtsFolio</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/platform.css"></head><body class="platform-page"><main class="platform-main"><section class="platform-page-heading"><p class="eyebrow">ArtsFolio</p><h1>We are sorry, this content cannot be shown right now.</h1><p>This artist site is temporarily unavailable. Please check back later or contact ArtsFolio support.</p><p><a class="button primary" href="https://artsfol.io/">Return to ArtsFolio</a></p></section></main></body></html>', 403)->send();
++        Response::error(403, 'This artist site is temporarily unavailable. Please check back later or contact ArtsFolio support.')->send();
+         exit;
+     }
+ 
+@@ -246,9 +263,9 @@
+     ))->resolve($request);
+ 
+     if ($request->path() === '/caddy/ask') {
+-    echo (new CaddyAskController($pdo))->ask($request)->send();
+-    exit;
+-}
++        (new CaddyAskController($pdo))->ask($request)->send();
++        exit;
++    }
+     if ($request->path() === '/stripe/webhook') {
+         (new StripeWebhookController(new PlatformSettingsRepository($pdo), new SalesRepository($pdo)))->receive($request)->send();
+         exit;
+@@ -257,8 +274,7 @@
+ 
+ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTTP_HOST') ?? '');
+     if (!$tenant && $suspendedTenant) {
+-        $tenantName = htmlspecialchars((string) ($suspendedTenant['name'] ?? 'this artist site'), ENT_QUOTES, 'UTF-8');
+-        Response::html("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>Content unavailable | ArtsFolio</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><link rel=\"stylesheet\" href=\"/assets/platform.css\"></head><body class=\"platform-page\"><header class=\"platform-header\"><a class=\"platform-logo\" href=\"https://artsfol.io/\"><img src=\"/assets/logo_2.png\" alt=\"ArtsFolio\"></a></header><main class=\"platform-main\"><section class=\"platform-hero\"><p class=\"eyebrow\">ArtsFolio</p><h1>We’re sorry, this content can’t be shown.</h1><p>The site for {$tenantName} is not currently available. Please check back later or contact the artist directly if you have an existing relationship.</p><p><a class=\"button primary\" href=\"https://artsfol.io/\">Return to ArtsFolio</a></p></section></main></body></html>", 503)->send();
++        Response::error(503, 'This artist site is not currently available. Please check back later or contact the artist directly if you have an existing relationship.')->send();
+         exit;
+     }
+ 
+@@ -301,6 +317,7 @@
+         );
+ 
+         $router = new Router();
++        $router->get('/error/{code}', fn (Request $request, array $params): Response => Response::error((int) ($params['code'] ?? 500)));
+ 
+ 
+         // ARTSFOLIO_GLOBAL_PASSWORD_ROUTES
+@@ -554,7 +571,10 @@
+     $marketingController = new MarketingController($pdo);
+     $helpController = new PlatformHelpController();
+ 
++    $GLOBALS['artsfolio_platform_context'] = true;
++
+     $router = new Router();
++    $router->get('/error/{code}', fn (Request $request, array $params): Response => Response::error((int) ($params['code'] ?? 500)));
+ 
+     // Track platform-host page views, including platform admin pages, after the
+     // tenant router has had its chance to handle tenant sites.
+@@ -779,10 +799,7 @@
+ 
+     $router->dispatch($request)->send();
+ } catch (Throwable $e) {
+-    Response::html(
+-        "<h1>Application error</h1>\n<pre>" . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . "</pre>\n",
+-        500
+-    )->send();
++    ErrorPage::sendException($e);
+ }
+ 
+ // End of file.
+diff -ruN '--exclude=._*' artsfolio_orig/scripts/test/branded_error_pages_static.php artsfolio_work/scripts/test/branded_error_pages_static.php
+--- artsfolio_orig/scripts/test/branded_error_pages_static.php	1970-01-01 00:00:00.000000000 +0000
++++ artsfolio_work/scripts/test/branded_error_pages_static.php	2026-06-20 17:36:58.005655762 +0000
+@@ -0,0 +1,81 @@
++<?php
++
++/**
++ * Static and render regression checks for branded browser-facing error pages.
++ */
++
++declare(strict_types=1);
++
++use App\Http\View\ErrorPage;
++use App\Platform\Tenancy\TenantContext;
++
++$root = dirname(__DIR__, 2);
++require $root . '/bootstrap/app.php';
++
++$filesAndMarkers = [
++    'front controller exception handler' => [$root . '/public/index.php', 'ErrorPage::sendException($e)'],
++    'front controller fatal handler' => [$root . '/public/index.php', 'ErrorPage::sendFatal($error)'],
++    'front controller error route' => [$root . '/public/index.php', "/error/{code}"],
++    'router generic not found' => [$root . '/app/Http/Router.php', 'return Response::notFound();'],
++    'response generic error helper' => [$root . '/app/Http/Response.php', 'public static function error(int $statusCode'],
++    'apache error document fallback' => [$root . '/public/.htaccess', 'ErrorDocument 404 /error/404'],
++    'branded error css' => [$root . '/public/assets/error.css', '.error-brand'],
++];
++
++foreach ($filesAndMarkers as $label => [$file, $needle]) {
++    $source = is_file($file) ? (string) file_get_contents($file) : '';
++    if ($source === '' || !str_contains($source, $needle)) {
++        fwrite(STDERR, "Missing branded error marker for {$label}: {$needle}\n");
++        exit(1);
++    }
++}
++
++$forbiddenLeakMarkers = [
++    'No route for',
++    '<h1>Application error</h1>',
++    'Stack trace',
++];
++
++foreach ([$root . '/app/Http/Router.php', $root . '/public/index.php', $root . '/app/Http/View/ErrorPage.php'] as $file) {
++    $source = (string) file_get_contents($file);
++    foreach ($forbiddenLeakMarkers as $needle) {
++        if (str_contains($source, $needle)) {
++            fwrite(STDERR, "Raw error marker still present in {$file}: {$needle}\n");
++            exit(1);
++        }
++    }
++}
++
++$GLOBALS['artsfolio_tenant_context'] = null;
++$GLOBALS['artsfolio_platform_context'] = true;
++$platformHtml = ErrorPage::status(404);
++if (!str_contains($platformHtml, 'ArtsFolio') || !str_contains($platformHtml, '/assets/error.css')) {
++    fwrite(STDERR, "Platform error page did not render expected ArtsFolio branding.\n");
++    exit(1);
++}
++
++$GLOBALS['artsfolio_tenant_context'] = new TenantContext(
++    tenantId: 1,
++    tenantUuid: 'test-tenant-uuid',
++    slug: 'bxiie',
++    name: 'James Payne Art',
++    hostname: 'bxiie.artsfol.io',
++    domainType: 'platform_subdomain',
++    isPrimaryDomain: true,
++    status: 'active',
++);
++$GLOBALS['artsfolio_platform_context'] = false;
++$tenantHtml = ErrorPage::status(404);
++if (!str_contains($tenantHtml, 'James Payne Art') || !str_contains($tenantHtml, 'Powered by ArtsFolio')) {
++    fwrite(STDERR, "Tenant error page did not render expected tenant branding.\n");
++    exit(1);
++}
++
++if (str_contains($tenantHtml, 'No route for') || str_contains($tenantHtml, 'Application error')) {
++    fwrite(STDERR, "Tenant error page leaked raw routing/application copy.\n");
++    exit(1);
++}
++
++echo "Branded error page static checks passed.\n";
++
++// End of file.
+diff -ruN '--exclude=._*' artsfolio_orig/scripts/test/preflight.sh artsfolio_work/scripts/test/preflight.sh
+--- artsfolio_orig/scripts/test/preflight.sh	2026-06-17 03:00:29.760114205 +0000
++++ artsfolio_work/scripts/test/preflight.sh	2026-06-20 17:36:59.419010982 +0000
+@@ -139,6 +139,7 @@
+ run_if_exists scripts/test/email_outbox_diagnostics_static.php
+ 
+ php scripts/test/email_logo_branding_static.php
++php scripts/test/branded_error_pages_static.php
+ php scripts/test/email_html_logo_pipeline_static.php
+ php scripts/test/password_reset_route_email_static.php
+ run_if_exists scripts/test/artwork_placement_password_reset_static.php

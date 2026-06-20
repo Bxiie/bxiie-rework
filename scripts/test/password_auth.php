@@ -33,8 +33,82 @@ $auth = new PasswordAuthService(
     tokens: $tokens,
 );
 
+function cleanupPasswordAuthFixture(PDO $pdo, string $email): void
+{
+    $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email');
+    $stmt->execute(['email' => $email]);
+    $userIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+
+    if ($userIds === []) {
+        return;
+    }
+
+    $placeholders = implode(', ', array_fill(0, count($userIds), '?'));
+
+    foreach ([
+        'audit_log',
+        'email_outbox',
+        'role_assignments',
+        'platform_roles',
+        'tenant_memberships',
+        'tenant_users',
+        'user_sessions',
+        'user_identities',
+        'oauth_access_tokens',
+        'password_reset_tokens',
+        'email_verification_tokens',
+    ] as $table) {
+        if (!tableExists($pdo, $table)) {
+            continue;
+        }
+
+        if (!columnExists($pdo, $table, 'user_id')) {
+            continue;
+        }
+
+        $delete = $pdo->prepare("DELETE FROM {$table} WHERE user_id IN ({$placeholders})");
+        $delete->execute($userIds);
+    }
+
+    $deleteUsers = $pdo->prepare("DELETE FROM users WHERE id IN ({$placeholders})");
+    $deleteUsers->execute($userIds);
+}
+
+function tableExists(PDO $pdo, string $table): bool
+{
+    $stmt = $pdo->prepare(
+        'SELECT COUNT(*)
+         FROM information_schema.tables
+         WHERE table_schema = DATABASE()
+           AND table_name = :table'
+    );
+    $stmt->execute(['table' => $table]);
+
+    return (int) $stmt->fetchColumn() > 0;
+}
+
+function columnExists(PDO $pdo, string $table, string $column): bool
+{
+    $stmt = $pdo->prepare(
+        'SELECT COUNT(*)
+         FROM information_schema.columns
+         WHERE table_schema = DATABASE()
+           AND table_name = :table
+           AND column_name = :column'
+    );
+    $stmt->execute([
+        'table' => $table,
+        'column' => $column,
+    ]);
+
+    return (int) $stmt->fetchColumn() > 0;
+}
+
+
 $email = 'password-auth-test@example.test';
 $password = 'local-test-password';
+
+cleanupPasswordAuthFixture($pdo, $email);
 
 $user = $users->findByEmail($email);
 

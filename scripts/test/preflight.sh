@@ -139,6 +139,7 @@ run_if_exists scripts/test/tenant_chrome_static.php
 run_if_exists scripts/test/email_outbox_diagnostics_static.php
 
 php scripts/test/email_logo_branding_static.php
+php scripts/test/branded_error_pages_static.php
 php scripts/test/email_html_logo_pipeline_static.php
 php scripts/test/password_reset_route_email_static.php
 run_if_exists scripts/test/artwork_placement_password_reset_static.php
