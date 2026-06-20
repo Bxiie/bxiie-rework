@@ -45,13 +45,13 @@ The font picker is intentionally curated and local/system only. The application 
 Validation happens during settings save:
 
 - `safeFontFamily()` restricts family values to the curated list.
-- `fontSizeControl()` renders a range slider, numeric pixel field, and hidden submitted CSS value for each size.
+- `fontSizeControl()` renders a range slider, numeric pixel field, and hidden submitted CSS value for each size. It does not render a separate size preview; JavaScript applies size changes to the matching font preview.
 - `fontSizePixels()` converts older `rem`, `em`, and `clamp(...)` values to friendly pixel values for the UI.
 - `safePublicFontSize()` still accepts conservative CSS values for backward compatibility, but the admin UI now submits pixel values.
 
 ## Public rendering
 
-`HomeController::tenantTypographyCssVariables()` emits CSS variables into the public tenant `<body>` style attribute. `HomeController::tenantTypographyStyleBlock()` also emits a late inline stylesheet after `/tenant.css`, because tenant custom CSS and older generated markup can otherwise override the shared stylesheet.
+`HomeController::tenantTypographyCssVariables()` emits CSS variables into the public tenant `<body>` style attribute. `HomeController::tenantTypographyStyleBlock()` also emits computed literal font-family and font-size rules at the end of the public page, after `/tenant.css`, because tenant custom CSS and older generated markup can otherwise override the shared stylesheet or variable-only rules.
 
 The public CSS applies variables to broad public-site groups:
 

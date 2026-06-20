@@ -32,6 +32,6 @@ The font picker uses built-in browser/system fonts so your site stays fast and a
 
 ## Live preview and cache behavior
 
-The font preview samples update immediately when a font picker, slider, or size box changes. After saving, the public pages should use the selected fonts and sizes on home, portfolio, about, contact, artwork, forms, and footer text.
+The font preview samples update immediately when a font picker, slider, or size box changes. Size sliders change the same sample text used by the font picker, so you can see both font and size together. After saving, the public pages should use the selected fonts and sizes on home, portfolio, about, contact, artwork, forms, and footer text.
 
 # End of file.

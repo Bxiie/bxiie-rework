@@ -191,23 +191,23 @@ final class SettingsController
             <legend>Typography</legend>
             <p class="admin-help">Choose font families and sizes for text on the public home, portfolio, about, and contact pages. These fields update CSS variables, so the individual controls remain editable after selecting a font.</p>
             <div class="admin-grid-2 tenant-typography-grid">
-                <label>Body text font{$bodyFontSelect}<span class="font-picker-preview" style="font-family: {$bodyFontPreview}; font-size: {$bodyFontSize}">Body text preview</span></label>
+                <label>Body text font{$bodyFontSelect}<span class="font-picker-preview" data-font-preview="font_size_body" style="font-family: {$bodyFontPreview}; font-size: {$bodyFontSize}">Body text preview</span></label>
                 {$bodySizeControl}
-                <label>Heading font{$headingFontSelect}<span class="font-picker-preview" style="font-family: {$headingFontPreview}; font-size: {$headingFontSize}">Heading preview</span></label>
+                <label>Heading font{$headingFontSelect}<span class="font-picker-preview" data-font-preview="font_size_heading" style="font-family: {$headingFontPreview}; font-size: {$headingFontSize}">Heading preview</span></label>
                 {$headingSizeControl}
                 {$subheadingSizeControl}
-                <label>Site title font{$brandFontSelect}<span class="font-picker-preview" style="font-family: {$brandFontPreview}; font-size: {$brandFontSize}">Site title preview</span></label>
+                <label>Site title font{$brandFontSelect}<span class="font-picker-preview" data-font-preview="font_size_brand" style="font-family: {$brandFontPreview}; font-size: {$brandFontSize}">Site title preview</span></label>
                 {$brandSizeControl}
-                <label>Navigation font{$navFontSelect}<span class="font-picker-preview" style="font-family: {$navFontPreview}; font-size: {$navFontSize}">Navigation preview</span></label>
+                <label>Navigation font{$navFontSelect}<span class="font-picker-preview" data-font-preview="font_size_nav" style="font-family: {$navFontPreview}; font-size: {$navFontSize}">Navigation preview</span></label>
                 {$navSizeControl}
                 {$proseSizeControl}
-                <label>Artwork title font{$artworkTitleFontSelect}<span class="font-picker-preview" style="font-family: {$artworkTitleFontPreview}; font-size: {$artworkTitleFontSize}">Artwork title preview</span></label>
+                <label>Artwork title font{$artworkTitleFontSelect}<span class="font-picker-preview" data-font-preview="font_size_artwork_title" style="font-family: {$artworkTitleFontPreview}; font-size: {$artworkTitleFontSize}">Artwork title preview</span></label>
                 {$artworkTitleSizeControl}
-                <label>Artwork metadata font{$artworkMetaFontSelect}<span class="font-picker-preview" style="font-family: {$artworkMetaFontPreview}; font-size: {$artworkMetaFontSize}">Artwork metadata preview</span></label>
+                <label>Artwork metadata font{$artworkMetaFontSelect}<span class="font-picker-preview" data-font-preview="font_size_artwork_meta" style="font-family: {$artworkMetaFontPreview}; font-size: {$artworkMetaFontSize}">Artwork metadata preview</span></label>
                 {$artworkMetaSizeControl}
-                <label>Forms font{$formFontSelect}<span class="font-picker-preview" style="font-family: {$formFontPreview}; font-size: {$formFontSize}">Form field preview</span></label>
+                <label>Forms font{$formFontSelect}<span class="font-picker-preview" data-font-preview="font_size_form" style="font-family: {$formFontPreview}; font-size: {$formFontSize}">Form field preview</span></label>
                 {$formSizeControl}
-                <label>Footer font{$footerFontSelect}<span class="font-picker-preview" style="font-family: {$footerFontPreview}; font-size: {$footerFontSize}">Footer preview</span></label>
+                <label>Footer font{$footerFontSelect}<span class="font-picker-preview" data-font-preview="font_size_footer" style="font-family: {$footerFontPreview}; font-size: {$footerFontSize}">Footer preview</span></label>
                 {$footerSizeControl}
             </div>
         </fieldset>
@@ -462,12 +462,12 @@ HTML;
 <label class="tenant-font-size-control" data-font-size-control="{$safeName}">
     <span class="tenant-font-size-label">{$safeLabel}</span>
     <span class="tenant-font-size-row">
-        <input class="tenant-font-size-range" type="range" min="{$minPx}" max="{$maxPx}" step="1" value="{$pixels}" data-font-size-range="{$safeName}">
-        <input class="tenant-font-size-number" type="number" min="{$minPx}" max="{$maxPx}" step="1" value="{$pixels}" data-font-size-number="{$safeName}">
+        <input class="tenant-font-size-range" type="range" min="{$minPx}" max="{$maxPx}" step="1" value="{$pixels}" data-font-size-range="{$safeName}" aria-label="{$safeLabel}">
+        <input class="tenant-font-size-number" type="number" min="{$minPx}" max="{$maxPx}" step="1" value="{$pixels}" data-font-size-number="{$safeName}" aria-label="{$safeLabel} pixels">
         <input type="hidden" name="{$safeName}" value="{$pixels}px" data-font-size-value="{$safeName}">
         <span class="tenant-font-size-unit">px</span>
     </span>
-    <span class="font-picker-preview tenant-font-size-preview" data-font-size-preview="{$safeName}" style="font-size: {$pixels}px">{$safeSample}</span>
+    <span class="admin-help">Drag the slider or type a pixel size. The matching text preview updates above.</span>
 </label>
 HTML;
     }

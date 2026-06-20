@@ -43,6 +43,19 @@
     font_size_footer: '--tenant-font-size-footer'
   };
 
+  var SIZE_TO_PREVIEW = {
+    font_size_body: 'font_size_body',
+    font_size_heading: 'font_size_heading',
+    font_size_subheading: 'font_size_heading',
+    font_size_brand: 'font_size_brand',
+    font_size_nav: 'font_size_nav',
+    font_size_prose: 'font_size_body',
+    font_size_artwork_title: 'font_size_artwork_title',
+    font_size_artwork_meta: 'font_size_artwork_meta',
+    font_size_form: 'font_size_form',
+    font_size_footer: 'font_size_footer'
+  };
+
   function closestLabel(node) {
     while (node && node !== document) {
       if (node.tagName && node.tagName.toLowerCase() === 'label') {
@@ -83,6 +96,11 @@
     return sizeFieldName ? pxValue(sizeFieldName) : '';
   }
 
+  function previewForSize(sizeName) {
+    var target = SIZE_TO_PREVIEW[sizeName] || sizeName;
+    return document.querySelector('[data-font-preview="' + target + '"]');
+  }
+
   function updateOnePreview(select) {
     if (!select || !select.name) {
       return;
@@ -105,11 +123,11 @@
       : 'Font preview';
   }
 
-  function syncOneSizeControl(name) {
+  function syncOneSizeControl(name, source) {
     var range = document.querySelector('[data-font-size-range="' + name + '"]');
     var number = document.querySelector('[data-font-size-number="' + name + '"]');
     var hidden = document.querySelector('[data-font-size-value="' + name + '"]');
-    var preview = document.querySelector('[data-font-size-preview="' + name + '"]');
+    var preview = previewForSize(name);
 
     if (!range || !number || !hidden) {
       return;
@@ -117,7 +135,8 @@
 
     var min = parseInt(range.getAttribute('min') || number.getAttribute('min') || '8', 10);
     var max = parseInt(range.getAttribute('max') || number.getAttribute('max') || '160', 10);
-    var value = clamp(number.value || range.value, min, max);
+    var rawValue = source && source.value ? source.value : (hidden.value || number.value || range.value);
+    var value = clamp(rawValue, min, max);
     var cssValue = value + 'px';
 
     range.value = String(value);
@@ -164,11 +183,22 @@
     updateCssVariables();
   }
 
+  function handleSizeInput(event) {
+    var target = event.target;
+    var name = target.getAttribute('data-font-size-range') || target.getAttribute('data-font-size-number');
+    if (!name) {
+      return;
+    }
+
+    syncOneSizeControl(name, target);
+    updateCssVariables();
+  }
+
   function bindSizeControls() {
     var fields = document.querySelectorAll('[data-font-size-range], [data-font-size-number]');
     for (var index = 0; index < fields.length; index += 1) {
-      fields[index].addEventListener('input', refreshAll);
-      fields[index].addEventListener('change', refreshAll);
+      fields[index].addEventListener('input', handleSizeInput);
+      fields[index].addEventListener('change', handleSizeInput);
     }
   }
 

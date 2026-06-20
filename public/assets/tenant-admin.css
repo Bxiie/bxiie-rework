@@ -773,43 +773,47 @@ body.tenant-admin-page {
    raw CSS text boxes so admins can make visible adjustments without knowing
    clamp(), rem, or other CSS sizing syntax. */
 .tenant-admin-panel .tenant-font-size-control {
-  display: grid;
-  gap: 0.45rem;
-  align-content: start;
+  display: grid !important;
+  gap: 0.45rem !important;
+  align-content: start !important;
 }
 
 .tenant-admin-panel .tenant-font-size-label {
-  font-weight: 700;
+  font-weight: 700 !important;
 }
 
 .tenant-admin-panel .tenant-font-size-row {
-  display: grid;
-  grid-template-columns: minmax(140px, 1fr) 5.25rem auto;
-  gap: 0.55rem;
-  align-items: center;
+  display: grid !important;
+  grid-template-columns: minmax(160px, 1fr) 5.25rem auto !important;
+  gap: 0.55rem !important;
+  align-items: center !important;
 }
 
-.tenant-admin-panel .tenant-font-size-range {
-  width: 100%;
-  min-height: 2rem;
+.tenant-admin-panel input.tenant-font-size-range[type="range"] {
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  width: 100% !important;
+  height: 2rem !important;
+  min-height: 2rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  cursor: ew-resize !important;
+  pointer-events: auto !important;
 }
 
-.tenant-admin-panel .tenant-font-size-number {
-  width: 100%;
+.tenant-admin-panel input.tenant-font-size-number[type="number"] {
+  width: 100% !important;
 }
 
 .tenant-admin-panel .tenant-font-size-unit {
-  color: #5c5145;
-  font-weight: 700;
+  color: #5c5145 !important;
+  font-weight: 700 !important;
 }
 
-.tenant-admin-panel .tenant-font-size-preview {
-  display: block;
-  padding: 0.75rem;
-  border: 1px dashed rgba(17, 17, 17, 0.28);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.64);
-  line-height: 1.15;
+.tenant-admin-panel .tenant-font-size-control .admin-help {
+  margin: 0 !important;
 }
 
 /* End of file. */

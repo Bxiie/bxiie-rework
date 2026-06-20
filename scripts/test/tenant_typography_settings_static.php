@@ -24,6 +24,8 @@ $mustContain = [
     [$settingsController, 'private function fontSizePixels(', 'Settings controller converts existing CSS sizes to slider pixels'],
     [$settingsController, 'data-font-size-value=', 'Typography size controls submit hidden CSS px values'],
     [$typographyJs, 'syncSizeControls', 'Tenant typography JS syncs range and number controls'],
+    [$typographyJs, 'handleSizeInput', 'Tenant typography JS updates from the control that changed instead of snapping sliders back'],
+    [$typographyJs, 'data-font-preview', 'Tenant typography JS updates the matching text preview instead of a separate size preview'],
     [$settingsController, 'private function safeFontFamily(', 'Settings controller validates font family selections'],
     [$settingsController, 'private function safePublicFontSize(', 'Settings controller validates public font sizes'],
     [$settingsController, "fontSelect('font_family_body'", 'Body font picker rendered'],
@@ -67,13 +69,16 @@ $mustContain = [
     [$tenantAdminCss, '.font-picker-preview', 'Tenant admin CSS styles font picker preview'],
     [$typographyJs, 'ArtsFolioTenantTypographyRefresh', 'Tenant typography JS exposes refresh helper'],
     [$typographyJs, '[data-font-size-range], [data-font-size-number]', 'Tenant typography JS listens to slider and numeric size controls'],
+    [$tenantAdminCss, 'appearance: auto !important;', 'Tenant admin CSS leaves native range sliders slideable'],
     [$typographyJs, 'preview.style.fontFamily', 'Tenant typography JS updates preview font family'],
     [$typographyJs, 'preview.style.fontSize', 'Tenant typography JS updates preview font size'],
     [$homeController, 'site.css?v=20260620-typography-apply', 'Public layout cache-busts applied typography CSS'],
     [$tenantAdminCss, 'Tenant typography size controls use sliders', 'Tenant admin CSS styles friendly typography size sliders'],
     [$homeController, 'private function tenantTypographyStyleBlock', 'Public layout emits late typography rules after tenant CSS'],
     [$homeController, '<style id="tenant-typography-style">', 'Public layout renders inline typography stylesheet after tenant CSS'],
-    [$homeController, 'font-size: var(--tenant-font-size-heading, 72px) !important;', 'Public typography rules beat tenant CSS and inline font sizes'],
+    [$homeController, '$this->tenantTypographyStyleBlock($tenant)', 'Public layout emits typography style block at the end of the page after tenant CSS'],
+    [$homeController, 'html body .site-main h1', 'Public typography rules use high-specificity selectors'],
+    [$homeController, 'font-size: {$headingSize} !important;', 'Public typography rules emit computed saved sizes instead of depending only on CSS variables'],
     [$preflight, 'tenant_typography_settings_static.php', 'Preflight runs tenant typography settings static check'],
 ];
 
@@ -91,6 +96,11 @@ foreach (['font_family_', 'font_size_'] as $prefix) {
 
 if (substr_count($settingsController, '<select class="tenant-font-picker"') < 1) {
     $failures[] = 'Font picker select markup is missing.';
+}
+
+
+if (str_contains($settingsController, 'tenant-font-size-preview')) {
+    $failures[] = 'Typography size controls still render a separate size preview instead of updating the matching text preview.';
 }
 
 if ($failures !== []) {

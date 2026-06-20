@@ -34,7 +34,7 @@ Each tenant can also choose sizes with sliders and numeric pixel boxes for:
 
 The font picker uses curated local/system font stacks. This avoids external font downloads, tracking requests, privacy concerns, and slow page loads.
 
-The picker includes a small preview sample below each select. The preview is an admin aid only; saved values take effect on public tenant pages after saving.
+The picker includes a small preview sample below each select. Size sliders update that same text preview, so there is not a second separate size-only preview. The preview is an admin aid only; saved values take effect on public tenant pages after saving.
 
 ## Safe values
 

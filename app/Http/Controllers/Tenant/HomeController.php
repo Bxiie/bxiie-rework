@@ -558,7 +558,6 @@ HTML;
     <meta name="description" content="Artist portfolio">
     <link rel="stylesheet" href="/assets/site.css?v=20260620-typography-apply">
     <link rel="stylesheet" href="/tenant.css">
-    {$this->tenantTypographyStyleBlock()}
     <script src="/assets/tenant-forms.js?v=20260602a" defer></script>
     {$turnstileScript}
 </head>
@@ -583,6 +582,7 @@ HTML;
     {$footerSignupForm}
 </footer>
 {$this->cookieConsentBanner()}
+{$this->tenantTypographyStyleBlock($tenant)}
 </body>
 </html>
 HTML;
@@ -597,96 +597,122 @@ HTML;
      * typography settings visible on home, portfolio, about, contact, artwork,
      * forms, and footer pages without asking tenants to edit CSS manually.
      */
-    private function tenantTypographyStyleBlock(): string
+    private function tenantTypographyStyleBlock(TenantContext $tenant): string
     {
+        $bodyFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_body', 'Inter, ui-sans-serif, system-ui, sans-serif'));
+        $headingFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_heading', $bodyFamily));
+        $brandFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_brand', $headingFamily));
+        $navFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_nav', $bodyFamily));
+        $artworkTitleFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_artwork_title', $headingFamily));
+        $artworkMetaFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_artwork_meta', $bodyFamily));
+        $formFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_form', $bodyFamily));
+        $footerFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_footer', $bodyFamily));
+        $bodySize = $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_body', '18px'), '18px');
+        $headingSize = $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_heading', '72px'), '72px');
+        $subheadingSize = $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_subheading', '32px'), '32px');
+        $brandSize = $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_brand', '52px'), '52px');
+        $navSize = $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_nav', '15px'), '15px');
+        $proseSize = $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_prose', '22px'), '22px');
+        $artworkTitleSize = $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_artwork_title', '20px'), '20px');
+        $artworkMetaSize = $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_artwork_meta', '15px'), '15px');
+        $formSize = $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_form', '16px'), '16px');
+        $footerSize = $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_footer', '15px'), '15px');
+
         return <<<HTML
 <style id="tenant-typography-style">
-body,
-.site-main,
-.tenant-content-surface {
-  font-family: var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif) !important;
-  font-size: var(--tenant-font-size-body, 18px) !important;
+/* Saved tenant typography. This block is intentionally emitted at the end of
+   the page, after tenant CSS, so home, portfolio, about, contact, artwork,
+   form, and footer text honor Settings > Typography without custom CSS edits. */
+html body,
+html body .site-main,
+html body .tenant-content-surface {
+  font-family: {$bodyFamily} !important;
+  font-size: {$bodySize} !important;
 }
 
-.site-header .brand {
-  font-family: var(--tenant-font-brand, var(--tenant-font-heading, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif))) !important;
-  font-size: var(--tenant-font-size-brand, 52px) !important;
+html body .site-header .brand,
+html body header.site-header .brand {
+  font-family: {$brandFamily} !important;
+  font-size: {$brandSize} !important;
 }
 
-.site-header nav,
-.site-header nav a,
-.portfolio-tabs a,
-.chips a,
-.tenant-admin-top-link {
-  font-family: var(--tenant-font-nav, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
-  font-size: var(--tenant-font-size-nav, 15px) !important;
+html body .site-header nav,
+html body .site-header nav a,
+html body .portfolio-tabs a,
+html body .chips a,
+html body .tenant-admin-top-link,
+html body .site-main nav,
+html body .site-main nav a {
+  font-family: {$navFamily} !important;
+  font-size: {$navSize} !important;
 }
 
-.site-main h1,
-.site-main .hero h1 {
-  font-family: var(--tenant-font-heading, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
-  font-size: var(--tenant-font-size-heading, 72px) !important;
+html body .site-main h1,
+html body .site-main .hero h1 {
+  font-family: {$headingFamily} !important;
+  font-size: {$headingSize} !important;
 }
 
-.site-main h2,
-.site-main h3,
-.events h2,
-.contact-grid h2,
-.artwork-sales-panel h2 {
-  font-family: var(--tenant-font-heading, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
-  font-size: var(--tenant-font-size-subheading, 32px) !important;
+html body .site-main h2,
+html body .site-main h3,
+html body .events h2,
+html body .contact-grid h2,
+html body .artwork-sales-panel h2 {
+  font-family: {$headingFamily} !important;
+  font-size: {$subheadingSize} !important;
 }
 
-.site-main .prose,
-.site-main .hero p,
-.site-main .sales-notes,
-.site-main .event-card,
-.site-main .events-table,
-.site-main article,
-.site-main p,
-.contact-grid p {
-  font-family: var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif) !important;
-  font-size: var(--tenant-font-size-prose, 22px) !important;
+html body .site-main .prose,
+html body .site-main .hero p,
+html body .site-main .hero div,
+html body .site-main .sales-notes,
+html body .site-main .event-card,
+html body .site-main .events-table,
+html body .site-main article,
+html body .site-main p,
+html body .contact-grid p {
+  font-family: {$bodyFamily} !important;
+  font-size: {$proseSize} !important;
 }
 
-.card span,
-.artwork-card span,
-.home-grid .card span,
-.site-main article h2,
-.site-main article h2 a {
-  font-family: var(--tenant-font-artwork-title, var(--tenant-font-heading, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif))) !important;
-  font-size: var(--tenant-font-size-artwork-title, 20px) !important;
+html body .card span,
+html body .artwork-card span,
+html body .home-grid .card span,
+html body .site-main article h2,
+html body .site-main article h2 a {
+  font-family: {$artworkTitleFamily} !important;
+  font-size: {$artworkTitleSize} !important;
 }
 
-.card small,
-.art-meta,
-.site-main article small,
-.site-main article p,
-.artwork-price {
-  font-family: var(--tenant-font-artwork-meta, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
-  font-size: var(--tenant-font-size-artwork-meta, 15px) !important;
+html body .card small,
+html body .art-meta,
+html body .site-main article small,
+html body .site-main article p,
+html body .artwork-price {
+  font-family: {$artworkMetaFamily} !important;
+  font-size: {$artworkMetaSize} !important;
 }
 
-.form,
-.plan-edit-form,
-.contact-grid form,
-.tenant-footer-signup,
-.site-main input,
-.site-main textarea,
-.site-main select,
-.site-main button,
-.tenant-footer-signup input,
-.tenant-footer-signup button {
-  font-family: var(--tenant-font-form, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
-  font-size: var(--tenant-font-size-form, 16px) !important;
+html body .form,
+html body .plan-edit-form,
+html body .contact-grid form,
+html body .tenant-footer-signup,
+html body .site-main input,
+html body .site-main textarea,
+html body .site-main select,
+html body .site-main button,
+html body .tenant-footer-signup input,
+html body .tenant-footer-signup button {
+  font-family: {$formFamily} !important;
+  font-size: {$formSize} !important;
 }
 
-.site-footer,
-.site-footer a,
-.tenant-public-footer,
-.tenant-social-links a {
-  font-family: var(--tenant-font-footer, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
-  font-size: var(--tenant-font-size-footer, 15px) !important;
+html body .site-footer,
+html body .site-footer a,
+html body .tenant-public-footer,
+html body .tenant-social-links a {
+  font-family: {$footerFamily} !important;
+  font-size: {$footerSize} !important;
 }
 </style>
 HTML;
