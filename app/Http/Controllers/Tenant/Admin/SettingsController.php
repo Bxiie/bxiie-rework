@@ -38,6 +38,9 @@ final class SettingsController
         $notice = ((string) ($_GET['notice'] ?? '')) === 'saved'
             ? '<p class="admin-notice admin-notice-success">Site settings saved.</p>'
             : '';
+        $activeSection = $this->activeSettingsSection((string) ($_GET['section'] ?? 'identity'));
+        $sectionLabels = $this->settingsSections();
+        $sectionLabel = $sectionLabels[$activeSection]['label'];
 
         $csrf = $this->escape($this->csrf->getOrCreate());
         $siteTitle = $this->setting($tenant, 'site_title', $tenant->name);
@@ -144,11 +147,9 @@ final class SettingsController
         $selected = static fn (string $actual, string $expected): string => $actual === $expected ? ' selected' : '';
         $checked = static fn (string $actual, string $expected): string => $actual === $expected ? ' checked' : '';
 
-        $body = <<<HTML
-{$notice}
-<form class="plan-edit-form" method="post" action="/admin/settings" class="admin-form tenant-settings-form">
-        <input type="hidden" name="csrf_token" value="{$csrf}">
-
+        $settingsNav = $this->settingsSubnav($activeSection);
+        $sectionAction = '/admin/settings?section=' . rawurlencode($activeSection);
+        $identityContent = <<<HTML
         <fieldset>
             <legend>Identity</legend>
             <label>Site title / menu and browser brand<input name="site_title" value="{$siteTitle}" required></label>
@@ -157,23 +158,10 @@ final class SettingsController
             <label>Copyright name<input name="copyright_name" value="{$copyrightName}"></label>
             <label>Site admin notification email<input type="email" name="site_admin_email" value="{$siteAdminEmail}"></label>
         </fieldset>
-        {$saveButton}
-
         <fieldset>
             <legend>Home page</legend>
             <label>Home intro text<textarea name="home_intro" rows="5">{$homeIntro}</textarea></label>
         </fieldset>
-        {$saveButton}
-
-        <fieldset>
-            <legend>Sales notes</legend>
-            <label>Public sales explanation<textarea name="sales_notes" rows="5">{$salesNotes}</textarea></label>
-            <p class="admin-help">Shown on artwork detail pages beside price/contact actions. Use this for shipping, pickup, edition, commission, and payment workflow notes.</p>
-            <label>Stripe connected account ID<input name="stripe_connected_account_id" value="{$stripeConnectedAccountId}" placeholder="acct_..."></label>
-            <p class="admin-help">Required for direct Stripe Connect payouts. Leave blank only during platform testing.</p>
-        </fieldset>
-        {$saveButton}
-
         <fieldset>
             <legend>Navigation</legend>
             <div class="admin-grid-2">
@@ -186,8 +174,8 @@ final class SettingsController
                 <label>Contact slug<input name="contact_slug" value="{$contactSlug}"></label>
             </div>
         </fieldset>
-        {$saveButton}
-
+HTML;
+        $typographyContent = <<<HTML
         <fieldset>
             <legend>Typography</legend>
             <p class="admin-help">Choose font families and sizes for text on the public home, portfolio, about, and contact pages. Select a typography preset to fill the controls, then fine-tune individual fonts and sizes below.</p>
@@ -213,10 +201,10 @@ final class SettingsController
                 {$footerSizeControl}
             </div>
         </fieldset>
-        {$saveButton}
-
+HTML;
+        $colorsContent = <<<HTML
         <fieldset>
-            <legend>Colors and background</legend>
+            <legend>Colors and backgrounds</legend>
             {$paletteButtons}
             <div class="admin-grid-2">
                 <label>Primary color<input name="primary_color" value="{$primaryColor}"></label>
@@ -270,8 +258,15 @@ final class SettingsController
             {$backgroundPicker}
             <p class="admin-help">Only published artwork marked as Site Images appears here. Use opacity between 0 and 1; tile size accepts CSS values like 240px or 18rem.</p>
         </fieldset>
-        {$saveButton}
-
+HTML;
+        $miscContent = <<<HTML
+        <fieldset>
+            <legend>Sales notes</legend>
+            <label>Public sales explanation<textarea name="sales_notes" rows="5">{$salesNotes}</textarea></label>
+            <p class="admin-help">Shown on artwork detail pages beside price/contact actions. Use this for shipping, pickup, installation, and timing details.</p>
+            <label>Stripe connected account ID<input name="stripe_connected_account_id" value="{$stripeConnectedAccountId}" placeholder="acct_..."></label>
+            <p class="admin-help">Required for direct Stripe Connect payouts. Leave blank only during platform testing.</p>
+        </fieldset>
         <fieldset>
             <legend>Artwork display</legend>
             <label>Default artwork order
@@ -284,14 +279,10 @@ final class SettingsController
                 </select>
             </label>
         </fieldset>
-        {$saveButton}
-
         <fieldset>
             <legend>Spam protection</legend>
             <p class="admin-help">Tenant public contact and email-list forms use the built-in ArtsFolio CAPTCHA. Cloudflare Turnstile is reserved for ArtsFolio platform-domain forms.</p>
         </fieldset>
-        {$saveButton}
-
         <fieldset>
             <legend>Exhibitions</legend>
             <label>Exhibitions heading<input name="exhibitions_heading" value="{$exhibitionsHeading}"></label>
@@ -302,18 +293,35 @@ final class SettingsController
                 </select>
             </label>
         </fieldset>
-        {$saveButton}
-
+HTML;
+        $cssContent = <<<HTML
         <fieldset>
-            <legend>Tenant CSS</legend>
+            <legend>Custom CSS</legend>
             <label>Custom CSS<textarea name="tenant_css" rows="18" spellcheck="false">{$tenantCss}</textarea></label>
             <p class="admin-help">This CSS is loaded after the default public stylesheet.</p>
         </fieldset>
+HTML;
+
+        $sectionContent = match ($activeSection) {
+            'typography' => $typographyContent,
+            'colors-backgrounds' => $colorsContent,
+            'miscellaneous' => $miscContent,
+            'custom-css' => $cssContent,
+            default => $identityContent,
+        };
+
+        $body = <<<HTML
+{$notice}
+{$settingsNav}
+<form class="plan-edit-form admin-form tenant-settings-form" method="post" action="{$sectionAction}">
+        <input type="hidden" name="csrf_token" value="{$csrf}">
+        <input type="hidden" name="settings_section" value="{$activeSection}">
+        {$sectionContent}
         {$saveButton}
 </form>
 HTML;
 
-        return Response::html((new TenantAdminLayout($this->settings))->render($tenant, 'Site settings', $body, 'settings'));
+        return Response::html((new TenantAdminLayout($this->settings))->render($tenant, 'Site settings: ' . $sectionLabel, $body, 'settings'));
     }
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -326,17 +334,8 @@ HTML;
             return Response::html('<h1>Invalid request</h1><p>Security check failed.</p>', 419);
         }
 
-        $keys = [
-            'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro', 'sales_notes', 'stripe_connected_account_id',
-            'home_tab', 'portfolio_tab', 'about_tab', 'contact_tab', 'portfolio_slug', 'about_slug', 'contact_slug',
-            'font_family_body', 'font_family_heading', 'font_family_brand', 'font_family_nav', 'font_family_artwork_title', 'font_family_artwork_meta', 'font_family_form', 'font_family_footer',
-            'font_size_body', 'font_size_heading', 'font_size_subheading', 'font_size_brand', 'font_size_nav', 'font_size_prose', 'font_size_artwork_title', 'font_size_artwork_meta', 'font_size_form', 'font_size_footer',
-            'primary_color', 'accent_color', 'text_color', 'background_color', 'topbar_background_color', 'topbar_text_color', 'topbar_background_opacity', 'topbar_media_uuid',
-            'menu_background_color', 'menu_text_color', 'menu_background_enabled', 'menu_background_opacity', 'menu_media_uuid', 'heading_background_color', 'heading_background_opacity',
-            'content_background_color', 'content_background_opacity', 'text_background_color', 'text_background_opacity', 'header_drop_shadow_enabled', 'header_drop_shadow', 'artwork_card_background_color', 'artwork_card_background_opacity', 'artwork_card_background_size', 'artwork_card_media_uuid', 'background_media_uuid',
-            'background_mode', 'background_tile_size', 'background_opacity', 'exhibitions_heading', 'exhibitions_display_mode',
-            'tenant_css', 'artwork_display_order',
-        ];
+        $activeSection = $this->activeSettingsSection((string) ($_POST['settings_section'] ?? $_GET['section'] ?? 'identity'));
+        $keys = $this->settingsKeysForSection($activeSection);
 
         $before = [];
         $after = [];
@@ -368,9 +367,102 @@ HTML;
 
         $this->auditAction($request, $tenant, $currentUser, ['before' => $before, 'after' => $after]);
 
-        return new Response('', 303, ['Location' => '/admin/settings?notice=saved']);
+        return new Response('', 303, ['Location' => '/admin/settings?section=' . rawurlencode($activeSection) . '&notice=saved']);
     }
 
+
+    /**
+     * Returns the tenant settings subpages in display order.
+     *
+     * @return array<string, array{label: string, help: string}>
+     */
+    private function settingsSections(): array
+    {
+        return [
+            'identity' => [
+                'label' => 'Identity',
+                'help' => 'Site identity, home intro text, public navigation labels, and public slugs.',
+            ],
+            'typography' => [
+                'label' => 'Typography',
+                'help' => 'Public font families, typography presets, and text sizing.',
+            ],
+            'colors-backgrounds' => [
+                'label' => 'Colors & Backgrounds',
+                'help' => 'Color palettes, nav colors, page backgrounds, and site image backgrounds.',
+            ],
+            'miscellaneous' => [
+                'label' => 'Miscellaneous',
+                'help' => 'Sales notes, artwork ordering, spam protection notes, and exhibition display options.',
+            ],
+            'custom-css' => [
+                'label' => 'Custom CSS',
+                'help' => 'Advanced tenant CSS loaded after the standard public stylesheet.',
+            ],
+        ];
+    }
+
+    /**
+     * Normalizes the requested settings subpage to a known section key.
+     */
+    private function activeSettingsSection(string $section): string
+    {
+        $section = strtolower(trim($section));
+
+        return array_key_exists($section, $this->settingsSections()) ? $section : 'identity';
+    }
+
+    /**
+     * Renders tenant settings subpage navigation.
+     */
+    private function settingsSubnav(string $activeSection): string
+    {
+        $links = '';
+        foreach ($this->settingsSections() as $key => $section) {
+            $label = $this->escape($section['label']);
+            $help = $this->escape($section['help']);
+            $activeClass = $key === $activeSection ? ' is-active' : '';
+            $ariaCurrent = $key === $activeSection ? ' aria-current="page"' : '';
+            $href = '/admin/settings?section=' . rawurlencode($key);
+            $links .= '<a class="tenant-settings-subnav-link' . $activeClass . '" href="' . $href . '" title="' . $help . '"' . $ariaCurrent . '>' . $label . '</a>';
+        }
+
+        return '<nav class="tenant-settings-subnav" aria-label="Settings sections">' . $links . '</nav>';
+    }
+
+    /**
+     * Returns the persisted setting keys owned by a settings subpage.
+     *
+     * Saving one subpage must not clear values from fields that are hidden on
+     * another subpage, so POST handling only writes the keys for the active page.
+     *
+     * @return list<string>
+     */
+    private function settingsKeysForSection(string $section): array
+    {
+        return match ($section) {
+            'typography' => [
+                'font_family_body', 'font_family_heading', 'font_family_brand', 'font_family_nav', 'font_family_artwork_title', 'font_family_artwork_meta', 'font_family_form', 'font_family_footer',
+                'font_size_body', 'font_size_heading', 'font_size_subheading', 'font_size_brand', 'font_size_nav', 'font_size_prose', 'font_size_artwork_title', 'font_size_artwork_meta', 'font_size_form', 'font_size_footer',
+            ],
+            'colors-backgrounds' => [
+                'primary_color', 'accent_color', 'text_color', 'background_color', 'topbar_background_color', 'topbar_text_color', 'topbar_background_opacity', 'topbar_media_uuid',
+                'menu_background_color', 'menu_text_color', 'menu_background_enabled', 'menu_background_opacity', 'menu_media_uuid', 'heading_background_color', 'heading_background_opacity',
+                'content_background_color', 'content_background_opacity', 'text_background_color', 'text_background_opacity', 'header_drop_shadow_enabled', 'header_drop_shadow', 'artwork_card_background_color', 'artwork_card_background_opacity', 'artwork_card_background_size', 'artwork_card_media_uuid', 'background_media_uuid',
+                'background_mode', 'background_tile_size', 'background_opacity',
+            ],
+            'miscellaneous' => [
+                'sales_notes', 'stripe_connected_account_id', 'artwork_display_order', 'exhibitions_heading', 'exhibitions_display_mode',
+            ],
+            'custom-css' => [
+                'tenant_css',
+            ],
+            default => [
+                'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro',
+                'home_tab', 'portfolio_tab', 'about_tab', 'contact_tab', 'portfolio_slug', 'about_slug', 'contact_slug',
+            ],
+        };
+    }
 
     /**
      * Returns public-safe font family choices for tenant typography controls.

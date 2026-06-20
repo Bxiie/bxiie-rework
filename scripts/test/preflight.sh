@@ -176,3 +176,4 @@ run_if_exists scripts/test/platform_terms_privacy_static.php
 run_if_exists scripts/test/canonical_oauth_logout_static.php
 run_if_exists scripts/test/oauth_signup_email_lock_static.php
 run_if_exists scripts/test/tenant_settings_section_save_static.php
+run_if_exists scripts/test/tenant_settings_subpages_static.php
