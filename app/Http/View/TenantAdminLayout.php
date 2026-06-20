@@ -62,7 +62,7 @@ final class TenantAdminLayout
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/assets/site.css">
     <link rel="stylesheet" href="/assets/tenant-admin.css">
-    <script defer src="/assets/admin-color-fields.js?v=20260620-palette-mood"></script>
+    <script defer src="/assets/admin-color-fields.js?v=20260620-topbar-preview"></script>
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
 </head>
 <body class="tenant-admin-page" style="--primary: {$primaryColor}; --accent: {$accentColor}; --bg: {$backgroundColor}; --tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText}; --text-color: {$textColor}; {$backgroundStyle}{$surfaceStyle}">
@@ -148,7 +148,12 @@ HTML;
         $vars .= '--menu-panel-padding:' . ($menuEnabled ? '0.35rem 0.55rem' : '0') . ';';
         $vars .= '--menu-panel-radius:' . ($menuEnabled ? '999px' : '0') . ';';
         $vars .= '--menu-panel-shadow:' . ($menuEnabled ? '0 12px 32px rgba(0,0,0,0.08)' : 'none') . ';';
-        $vars .= '--topbar-bg-opacity:' . self::safeOpacity((string) $settings->get($tenant, 'topbar_background_opacity', '0.86')) . ';';
+        $topbarColor = (string) $settings->get($tenant, 'topbar_background_color', '#fff8ec');
+        $topbarOpacity = self::safeOpacity((string) $settings->get($tenant, 'topbar_background_opacity', '0.86'));
+        $vars .= '--topbar-bg:' . self::safeCssColor($topbarColor) . ';';
+        $vars .= '--tenant-topbar-bg:' . self::safeCssColor($topbarColor) . ';';
+        $vars .= '--topbar-bg-overlay:' . self::cssColorWithOpacity($topbarColor, $topbarOpacity) . ';';
+        $vars .= '--topbar-bg-opacity:' . $topbarOpacity . ';';
         $vars .= '--tenant-header-shadow:' . ($settings->get($tenant, 'header_drop_shadow_enabled', '1') === '1' ? self::safeCssShadow((string) $settings->get($tenant, 'header_drop_shadow', '0 18px 45px rgba(0,0,0,0.24)')) : 'none') . ';';
         $vars .= '--artwork-card-bg:' . self::safeCssColor($cardColor) . ';';
         $vars .= '--artwork-card-bg-overlay:' . self::cssColorWithOpacity($cardColor, $cardOpacity) . ';';

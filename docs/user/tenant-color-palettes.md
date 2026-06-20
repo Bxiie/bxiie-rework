@@ -10,4 +10,6 @@ Palette buttons do not replace your selected background images. Use the existing
 
 Opacity fields accept values from `0` to `1`, including two-decimal values such as `0.72`.
 
+Palette clicks update the visible settings-page preview immediately, including the top navigation bar, menu panel, and page surface variables. Save site settings is still required to persist the selected values.
+
 # End of file.

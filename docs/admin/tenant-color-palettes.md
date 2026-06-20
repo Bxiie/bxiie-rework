@@ -21,4 +21,6 @@ Palette buttons do not change selected background images. Background, top bar, m
 
 Opacity fields in this section accept hundredth values such as `0.72`; the browser should not force rounding to `.70` or `.75`.
 
+Palette clicks update the visible settings-page preview immediately, including the top navigation bar, menu panel, and page surface variables. Save site settings is still required to persist the selected values.
+
 # End of file.

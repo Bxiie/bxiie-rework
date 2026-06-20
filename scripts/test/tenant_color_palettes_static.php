@@ -13,6 +13,7 @@ $css = file_get_contents($root . '/public/assets/tenant-admin.css');
 $preflight = file_get_contents($root . '/scripts/test/preflight.sh');
 $tenantLayout = file_get_contents($root . '/app/Http/View/TenantAdminLayout.php');
 $platformLayout = file_get_contents($root . '/app/Http/View/AdminLayout.php');
+$homeController = file_get_contents($root . '/app/Http/Controllers/Tenant/HomeController.php');
 
 $failures = [];
 
@@ -36,6 +37,10 @@ $mustContain = [
     [$controller, "'background_color' =>", 'Palettes set page background color'],
     [$controller, "'menu_background_color' =>", 'Palettes set menu background color'],
     [$controller, "'background_opacity' =>", 'Palettes set background opacity'],
+    [$homeController, "--topbar-bg-overlay", 'Public tenant layout exposes topbar overlay CSS variable'],
+    [$tenantLayout, "--topbar-bg-overlay", 'Tenant admin layout exposes topbar overlay CSS variable'],
+    [$homeController, "--tenant-topbar-bg", 'Public tenant layout exposes tenant topbar background variable'],
+    [$tenantLayout, "--tenant-topbar-bg", 'Tenant admin layout exposes tenant topbar background variable'],
 
     [$controller, 'step="0.01"', 'Opacity fields accept hundredths so values like 0.72 are browser-valid'],
     [$script, "document.addEventListener('click'", 'Palette buttons use delegated click handling'],
@@ -45,14 +50,18 @@ $mustContain = [
     [$script, 'function applyNamedValue(name, value)', 'Palette application writes named form controls'],
     [$script, 'function applyPalette(button)', 'Admin color script applies palettes'],
     [$script, 'notifyFieldChanged(fields[0])', 'Palette application updates enhanced color fields'],
+    [$script, 'function syncTenantPreviewVariables()', 'Palette changes update tenant admin preview CSS variables'],
+    [$script, "setRootVariable('--topbar-bg-overlay'", 'Palette changes update top bar overlay color live'],
+    [$script, "setRootVariable('--tenant-topbar-bg'", 'Palette changes update tenant admin top bar color live'],
+    [$script, "setRootVariable('--menu-bg-overlay'", 'Palette changes update menu panel color live'],
     [$css, '.tenant-palette-toolbar', 'Tenant admin CSS styles palette toolbar'],
     [$css, '.tenant-palette-button', 'Tenant admin CSS styles palette buttons'],
     [$css, '.tenant-palette-swatch', 'Tenant admin CSS styles palette swatches'],
     [$css, 'var(--palette-button-bg', 'Tenant admin CSS colors palette buttons by mood'],
     [$css, 'content: attr(data-palette-tone)', 'Tenant admin CSS displays palette mood/temperature'],
     [$preflight, 'tenant_color_palettes_static.php', 'Preflight runs tenant color palette check'],
-    [$tenantLayout, '/assets/admin-color-fields.js?v=20260620-palette-mood', 'Tenant admin layout cache-busts palette JavaScript'],
-    [$platformLayout, '/assets/admin-color-fields.js?v=20260620-palette-mood', 'Platform admin layout cache-busts shared color JavaScript'],
+    [$tenantLayout, '/assets/admin-color-fields.js?v=20260620-topbar-preview', 'Tenant admin layout cache-busts palette JavaScript'],
+    [$platformLayout, '/assets/admin-color-fields.js?v=20260620-topbar-preview', 'Platform admin layout cache-busts shared color JavaScript'],
 ];
 
 foreach ($mustContain as [$haystack, $needle, $label]) {
