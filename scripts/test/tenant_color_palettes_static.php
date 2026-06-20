@@ -11,6 +11,8 @@ $controller = file_get_contents($root . '/app/Http/Controllers/Tenant/Admin/Sett
 $script = file_get_contents($root . '/public/assets/admin-color-fields.js');
 $css = file_get_contents($root . '/public/assets/tenant-admin.css');
 $preflight = file_get_contents($root . '/scripts/test/preflight.sh');
+$tenantLayout = file_get_contents($root . '/app/Http/View/TenantAdminLayout.php');
+$platformLayout = file_get_contents($root . '/app/Http/View/AdminLayout.php');
 
 $failures = [];
 
@@ -26,6 +28,9 @@ $mustContain = [
     [$controller, "'name' => 'Rose Paper'", 'Rose Paper palette exists'],
     [$controller, "'name' => 'Concrete Pop'", 'Concrete Pop palette exists'],
     [$controller, 'data-tenant-palette', 'Palette buttons carry data payloads'],
+    [$controller, 'data-palette-tone', 'Palette buttons expose mood/temperature labels'],
+    [$controller, '--palette-button-bg', 'Palette buttons carry mood background color'],
+    [$controller, '--palette-button-accent', 'Palette buttons carry mood accent color'],
     [$controller, '{$paletteButtons}', 'Palette buttons are rendered in the colors/background section'],
     [$controller, "'primary_color' =>", 'Palettes set primary color'],
     [$controller, "'background_color' =>", 'Palettes set page background color'],
@@ -34,7 +39,8 @@ $mustContain = [
 
     [$controller, 'step="0.01"', 'Opacity fields accept hundredths so values like 0.72 are browser-valid'],
     [$script, "document.addEventListener('click'", 'Palette buttons use delegated click handling'],
-    [$script, "event.target.closest('.tenant-palette-button[data-tenant-palette]')", 'Palette click handler works from nested swatch/name elements'],
+    [$script, 'function findPaletteButton(target)', 'Palette click handler does not depend on Element.closest support'],
+    [$script, 'window.ArtsFolioApplyTenantPalette = applyPalette', 'Palette applier is exposed for browser-console diagnostics'],
     [$script, "if (document.readyState === 'loading')", 'Palette/color script boots even if loaded after DOMContentLoaded'],
     [$script, 'function applyNamedValue(name, value)', 'Palette application writes named form controls'],
     [$script, 'function applyPalette(button)', 'Admin color script applies palettes'],
@@ -42,7 +48,11 @@ $mustContain = [
     [$css, '.tenant-palette-toolbar', 'Tenant admin CSS styles palette toolbar'],
     [$css, '.tenant-palette-button', 'Tenant admin CSS styles palette buttons'],
     [$css, '.tenant-palette-swatch', 'Tenant admin CSS styles palette swatches'],
+    [$css, 'var(--palette-button-bg', 'Tenant admin CSS colors palette buttons by mood'],
+    [$css, 'content: attr(data-palette-tone)', 'Tenant admin CSS displays palette mood/temperature'],
     [$preflight, 'tenant_color_palettes_static.php', 'Preflight runs tenant color palette check'],
+    [$tenantLayout, '/assets/admin-color-fields.js?v=20260620-palette-mood', 'Tenant admin layout cache-busts palette JavaScript'],
+    [$platformLayout, '/assets/admin-color-fields.js?v=20260620-palette-mood', 'Platform admin layout cache-busts shared color JavaScript'],
 ];
 
 foreach ($mustContain as [$haystack, $needle, $label]) {
@@ -69,6 +79,24 @@ if (substr_count($controller, 'step="0.01"') < 7) {
 
 if (str_contains($controller, 'step="0.05"')) {
     $failures[] = 'Opacity inputs still contain step="0.05", which rejects values like 0.72.';
+}
+
+if (substr_count($controller, "'tone' =>") !== 8) {
+    $failures[] = 'Expected exactly 8 palette tone labels.';
+}
+
+if (substr_count($controller, "'button_background' =>") !== 8
+    || substr_count($controller, "'button_text' =>") !== 8
+    || substr_count($controller, "'button_accent' =>") !== 8) {
+    $failures[] = 'Expected exactly 8 palette button mood color sets.';
+}
+
+if (substr_count($tenantLayout, 'admin-color-fields.js') !== 1) {
+    $failures[] = 'Tenant admin layout should include admin-color-fields.js exactly once.';
+}
+
+if (substr_count($platformLayout, 'admin-color-fields.js') !== 1) {
+    $failures[] = 'Platform admin layout should include admin-color-fields.js exactly once.';
 }
 
 if ($failures !== []) {

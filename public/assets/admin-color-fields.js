@@ -66,6 +66,10 @@
     }
 
     function cssNameSelector(name) {
+        if (window.CSS && typeof window.CSS.escape === 'function') {
+            return '[name="' + window.CSS.escape(String(name)) + '"]';
+        }
+
         return '[name="' + String(name).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"]';
     }
 
@@ -74,55 +78,95 @@
         field.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
+    function coerceBoolean(value) {
+        return value === true || value === '1' || value === 1 || value === 'true' || value === 'on';
+    }
+
     function applyNamedValue(name, value) {
         var selector = cssNameSelector(name);
         var fields = Array.prototype.slice.call(document.querySelectorAll(selector));
 
         if (fields.length === 0) {
-            return;
+            return false;
         }
 
         if (fields[0].type === 'radio') {
             fields.forEach(function (field) {
                 field.checked = String(field.value) === String(value);
-                if (field.checked) {
-                    notifyFieldChanged(field);
-                }
+                notifyFieldChanged(field);
             });
-            return;
+            return true;
         }
 
         if (fields[0].type === 'checkbox') {
-            fields[0].checked = value === true || value === '1' || value === 1 || value === 'true';
+            fields[0].checked = coerceBoolean(value);
             notifyFieldChanged(fields[0]);
-            return;
+            return true;
         }
 
-        fields[0].value = value;
+        fields[0].value = String(value);
         notifyFieldChanged(fields[0]);
+        return true;
+    }
+
+    function decodePalettePayload(button) {
+        var raw = button.getAttribute('data-tenant-palette') || '';
+
+        if (!raw && button.dataset) {
+            raw = button.dataset.tenantPalette || '';
+        }
+
+        if (!raw) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(raw);
+        } catch (error) {
+            /* A malformed palette should not break the rest of the settings page. */
+            console.error('Could not parse tenant palette payload.', error, button);
+            return {};
+        }
     }
 
     function applyPalette(button) {
-        var values = {};
-
-        try {
-            values = JSON.parse(button.getAttribute('data-tenant-palette') || '{}');
-        } catch (error) {
-            return;
-        }
+        var values = decodePalettePayload(button);
+        var applied = 0;
 
         Object.keys(values).forEach(function (name) {
-            applyNamedValue(name, values[name]);
+            if (applyNamedValue(name, values[name])) {
+                applied += 1;
+            }
         });
 
         document.querySelectorAll('.tenant-palette-button[aria-pressed="true"]').forEach(function (pressed) {
             pressed.setAttribute('aria-pressed', 'false');
         });
         button.setAttribute('aria-pressed', 'true');
+
+        if (applied > 0) {
+            button.classList.add('tenant-palette-button-applied');
+            window.setTimeout(function () {
+                button.classList.remove('tenant-palette-button-applied');
+            }, 900);
+        }
+
+        return applied;
     }
 
     function enhanceColorFields() {
         document.querySelectorAll('input[type="text"], input:not([type])').forEach(enhance);
+    }
+
+    function findPaletteButton(target) {
+        while (target && target !== document) {
+            if (target.classList && target.classList.contains('tenant-palette-button')) {
+                return target;
+            }
+            target = target.parentNode;
+        }
+
+        return null;
     }
 
     function bindPaletteButtons() {
@@ -132,9 +176,9 @@
 
         paletteBound = true;
         document.addEventListener('click', function (event) {
-            var button = event.target.closest('.tenant-palette-button[data-tenant-palette]');
+            var button = findPaletteButton(event.target);
 
-            if (!button) {
+            if (!button || !button.hasAttribute('data-tenant-palette')) {
                 return;
             }
 
@@ -153,6 +197,9 @@
         enhanceColorFields();
         bindPaletteButtons();
     }
+
+    window.ArtsFolioApplyTenantPalette = applyPalette;
+    window.ArtsFolioTenantPaletteBoot = boot;
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', boot);

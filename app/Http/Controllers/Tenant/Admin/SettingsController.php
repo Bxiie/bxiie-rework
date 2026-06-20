@@ -298,6 +298,10 @@ HTML;
             $data = htmlspecialchars(json_encode($palette['values'], JSON_THROW_ON_ERROR), ENT_QUOTES, 'UTF-8');
             $name = $this->escape($palette['name']);
             $description = $this->escape($palette['description']);
+            $tone = $this->escape($palette['tone']);
+            $buttonBackground = $this->escape($palette['button_background']);
+            $buttonText = $this->escape($palette['button_text']);
+            $buttonAccent = $this->escape($palette['button_accent']);
             $swatches = '';
 
             foreach ($palette['swatches'] as $swatch) {
@@ -306,7 +310,7 @@ HTML;
             }
 
             $buttons .= <<<HTML
-<button type="button" class="tenant-palette-button" data-tenant-palette="{$data}">
+<button type="button" class="tenant-palette-button" data-tenant-palette="{$data}" data-palette-tone="{$tone}" style="--palette-button-bg: {$buttonBackground}; --palette-button-text: {$buttonText}; --palette-button-accent: {$buttonAccent};">
     <span class="tenant-palette-name">{$name}</span>
     <span class="tenant-palette-swatches">{$swatches}</span>
     <span class="tenant-palette-description">{$description}</span>
@@ -327,7 +331,7 @@ HTML;
     /**
      * Defines tenant color/background presets. The first palette is the platform default for new sites.
      *
-     * @return array<int, array{name: string, description: string, swatches: array<int, string>, values: array<string, string>}>
+     * @return array<int, array{name: string, description: string, tone: string, button_background: string, button_text: string, button_accent: string, swatches: array<int, string>, values: array<string, string>}>
      */
     private function palettes(): array
     {
@@ -335,6 +339,10 @@ HTML;
             [
                 'name' => 'Default',
                 'description' => 'Warm paper, black text, muted gold accent.',
+                'tone' => 'warm neutral',
+                'button_background' => '#f7f2e8',
+                'button_text' => '#1f1a14',
+                'button_accent' => '#c9a85f',
                 'swatches' => ['#f7f2e8', '#1f1a14', '#111111', '#c9a85f'],
                 'values' => [
                     'primary_color' => '#111111',
@@ -364,6 +372,10 @@ HTML;
             [
                 'name' => 'Gallery White',
                 'description' => 'Clean wall, charcoal type, quiet blue accent.',
+                'tone' => 'cool neutral',
+                'button_background' => '#ffffff',
+                'button_text' => '#202124',
+                'button_accent' => '#44546a',
                 'swatches' => ['#ffffff', '#202124', '#44546a', '#e9edf2'],
                 'values' => [
                     'primary_color' => '#202124',
@@ -393,6 +405,10 @@ HTML;
             [
                 'name' => 'Ink Studio',
                 'description' => 'Deep ink surfaces with warm bone panels.',
+                'tone' => 'dark warm',
+                'button_background' => '#151515',
+                'button_text' => '#f4efe4',
+                'button_accent' => '#d5a85d',
                 'swatches' => ['#151515', '#f4efe4', '#d5a85d', '#29241f'],
                 'values' => [
                     'primary_color' => '#f4efe4',
@@ -422,6 +438,10 @@ HTML;
             [
                 'name' => 'Desert Clay',
                 'description' => 'Clay, sand, rust, and dark espresso text.',
+                'tone' => 'warm earthy',
+                'button_background' => '#efe0cc',
+                'button_text' => '#3a2418',
+                'button_accent' => '#b45d35',
                 'swatches' => ['#efe0cc', '#3a2418', '#b45d35', '#d49f6a'],
                 'values' => [
                     'primary_color' => '#3a2418',
@@ -451,6 +471,10 @@ HTML;
             [
                 'name' => 'Forest Linen',
                 'description' => 'Moss, linen, walnut, and soft sage.',
+                'tone' => 'green natural',
+                'button_background' => '#edf0e4',
+                'button_text' => '#253322',
+                'button_accent' => '#6f8f5b',
                 'swatches' => ['#eef0df', '#203224', '#6f7f4f', '#c9d0a3'],
                 'values' => [
                     'primary_color' => '#203224',
@@ -480,6 +504,10 @@ HTML;
             [
                 'name' => 'Signal Blue',
                 'description' => 'Cold blue field with bright signal accent.',
+                'tone' => 'cool electric',
+                'button_background' => '#e8f1ff',
+                'button_text' => '#10233f',
+                'button_accent' => '#1463ff',
                 'swatches' => ['#e8f0f7', '#142033', '#0f6b8f', '#f2b84b'],
                 'values' => [
                     'primary_color' => '#142033',
@@ -509,6 +537,10 @@ HTML;
             [
                 'name' => 'Rose Paper',
                 'description' => 'Soft blush paper, plum text, copper accent.',
+                'tone' => 'warm rose',
+                'button_background' => '#fff0f2',
+                'button_text' => '#3a2028',
+                'button_accent' => '#c45d75',
                 'swatches' => ['#f6e7df', '#321824', '#ad6a5a', '#f8f0ea'],
                 'values' => [
                     'primary_color' => '#321824',
@@ -538,6 +570,10 @@ HTML;
             [
                 'name' => 'Concrete Pop',
                 'description' => 'Neutral concrete with black type and hot accent.',
+                'tone' => 'cool industrial',
+                'button_background' => '#ecebe7',
+                'button_text' => '#1e2227',
+                'button_accent' => '#ff6b35',
                 'swatches' => ['#e6e2da', '#151515', '#ff5a3d', '#f8f7f4'],
                 'values' => [
                     'primary_color' => '#151515',
