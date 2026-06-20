@@ -167,3 +167,4 @@ php scripts/test/signup_code_used_filter_static.php
 php scripts/test/signup_code_invite_status_static.php
 run_if_exists scripts/test/platform_terms_privacy_static.php
 run_if_exists scripts/test/canonical_oauth_logout_static.php
+run_if_exists scripts/test/oauth_signup_email_lock_static.php

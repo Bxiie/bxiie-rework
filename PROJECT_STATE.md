@@ -1633,6 +1633,13 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 ## Signup code invite status
 
 - Platform signup code list now shows invite email delivery state by reading matching `platform.tenant_signup_invite` outbox rows: not sent, queued/not sent yet, partially sent, or sent with counts and latest timestamps.
+## OAuth-backed site signup email locking
+
+- Google/Facebook OAuth-backed tenant signup now uses the provider email from `$_SESSION['artsfolio_oauth_profile']` as the site-owner email.
+- The `/signup` details form renders that email as a readonly field and explains that it cannot be changed during OAuth signup.
+- The signup POST handler uses the session provider email instead of trusting the browser-submitted `email` field.
+- Signup-page OAuth links include a trusted `return_to` path that preserves the signup passcode query string.
+- Regression coverage lives in `scripts/test/oauth_signup_email_lock_static.php` and is called from `scripts/test/preflight.sh`.
 
 ## Branded browser-facing error pages
 

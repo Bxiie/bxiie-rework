@@ -48,6 +48,12 @@ Expected result with credentials: both `curl` commands return `302` provider red
 
 Expected result without credentials: both routes return an ArtsFolio `501 OAuth provider not configured` page.
 
+## Site creation after social login
+
+When a user creates a new site after Google or Facebook login, ArtsFolio fills the signup email field from the provider email and locks the field. The user can choose the site name, slug, display name, and plan/code details, but cannot change the account email during that OAuth-backed signup.
+
+If the user needs a different email address, have them sign out and use the provider account that owns that email, or use the email/password signup path when allowed.
+
 ## Operational traps
 
 - A provider `redirect_uri_mismatch` almost always means the Platform Settings OAuth callback base URL or the provider console callback URL is wrong.

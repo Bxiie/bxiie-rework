@@ -102,6 +102,12 @@ curl -I https://artsfol.io/auth/facebook
 
 Both should return a `302` to the provider when credentials are configured. Without credentials, they should return `501 OAuth provider not configured`.
 
+## OAuth signup email locking
+
+When a Google or Facebook user reaches `/signup` without an existing tenant membership, the signup details form reads the provider profile from `$_SESSION['artsfolio_oauth_profile']`. The email field is populated from that provider profile and rendered `readonly`, and the POST handler uses the session email instead of trusting the submitted form value.
+
+Signup links on the details page include `return_to=/signup` and preserve the signup passcode query string so OAuth returns the browser to the same site-creation flow.
+
 ## Troubleshooting
 
 - `redirect_uri_mismatch`: make `oauth_auth_base_url` in Platform Admin and provider console redirect URIs exactly match `https://artsfol.io/auth/{provider}/callback`.

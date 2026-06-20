@@ -42,12 +42,22 @@ final class SignupController
         }
 
         $csrfToken = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
-        $signupCode = htmlspecialchars((string) ($_GET['code'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $oauthName = htmlspecialchars((string) ($_SESSION['artsfolio_oauth_profile']['name'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $oauthEmail = htmlspecialchars((string) ($_SESSION['artsfolio_oauth_profile']['email'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $passwordBlock = $oauthEmail !== ''
-            ? '<p class="auth-notice">Signed in with SSO as ' . $oauthEmail . '. Choose a site name and slug to create your tenant.</p>'
+        $signupCodeRaw = (string) ($_GET['code'] ?? '');
+        $signupCode = htmlspecialchars($signupCodeRaw, ENT_QUOTES, 'UTF-8');
+        $oauthProfile = is_array($_SESSION['artsfolio_oauth_profile'] ?? null) ? $_SESSION['artsfolio_oauth_profile'] : null;
+        $oauthName = htmlspecialchars((string) ($oauthProfile['name'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $oauthEmailRaw = strtolower(trim((string) ($oauthProfile['email'] ?? '')));
+        $oauthEmail = htmlspecialchars($oauthEmailRaw, ENT_QUOTES, 'UTF-8');
+        $oauthProvider = htmlspecialchars(ucfirst((string) ($oauthProfile['provider'] ?? 'SSO')), ENT_QUOTES, 'UTF-8');
+        $emailField = $oauthEmailRaw !== ''
+            ? '<label>Email<input type="email" name="email" autocomplete="email" value="' . $oauthEmail . '" readonly aria-readonly="true" class="readonly-input" required></label><p class="auth-notice">This email came from ' . $oauthProvider . ' and cannot be changed during OAuth signup.</p>'
+            : '<label>Email<input type="email" name="email" autocomplete="email" required></label>';
+        $passwordBlock = $oauthEmailRaw !== ''
+            ? '<p class="auth-notice">Signed in with ' . $oauthProvider . ' as ' . $oauthEmail . '. Choose a site name and slug to create your tenant.</p>'
             : '<label>Password<input type="password" name="password" autocomplete="new-password" minlength="10" required></label>';
+        $oauthReturnTo = htmlspecialchars($this->signupReturnTo($signupCodeRaw), ENT_QUOTES, 'UTF-8');
+        $googleSignupUrl = '/auth/google?return_to=' . rawurlencode($oauthReturnTo);
+        $facebookSignupUrl = '/auth/facebook?return_to=' . rawurlencode($oauthReturnTo);
         $planBlock = $this->freeAccessPlanBlock($signupCodeData);
 
         return Response::html(<<<HTML
@@ -69,8 +79,8 @@ final class SignupController
         <h1>Create an ArtsFolio site</h1>
         <p class="auth-copy">Create the tenant, public subdomain, first owner account, membership, provisioning jobs, and welcome email queue in one flow.</p>
         <div class="sso-row">
-            <a href="/auth/google">Continue with Google</a>
-            <a href="/auth/facebook">Continue with Facebook</a>
+            <a href="{$googleSignupUrl}">Continue with Google</a>
+            <a href="{$facebookSignupUrl}">Continue with Facebook</a>
         </div>
         <div class="divider"><span>or continue below</span></div>
         <form method="post" action="/signup" class="auth-form">
@@ -78,7 +88,7 @@ final class SignupController
             <label>Site name<input type="text" name="site_name" required></label>
             <label>Site slug<input type="text" name="slug" pattern="[a-z0-9-]{3,63}" required></label>
             <label>Your name<input type="text" name="admin_name" autocomplete="name" value="{$oauthName}"></label>
-            <label>Email<input type="email" name="email" autocomplete="email" value="{$oauthEmail}" required></label>
+            {$emailField}
             <label>Signup passcode<input type="text" name="signup_code" value="{$signupCode}" autocomplete="off"></label>
             {$planBlock}
             {$passwordBlock}
@@ -101,6 +111,12 @@ HTML);
         $password = (string) ($_POST['password'] ?? '');
         $oauthProfile = is_array($_SESSION['artsfolio_oauth_profile'] ?? null) ? $_SESSION['artsfolio_oauth_profile'] : null;
         $oauthUserId = isset($_SESSION['artsfolio_oauth_user_id']) ? max(0, (int) $_SESSION['artsfolio_oauth_user_id']) : null;
+        $oauthEmail = strtolower(trim((string) ($oauthProfile['email'] ?? '')));
+        $adminEmail = $oauthProfile !== null ? $oauthEmail : (string) ($_POST['email'] ?? '');
+
+        if ($oauthProfile !== null && ($oauthEmail === '' || !filter_var($oauthEmail, FILTER_VALIDATE_EMAIL))) {
+            return Response::html('<h1>Could not create site</h1><p>The OAuth provider did not provide a valid email address.</p>', 422);
+        }
 
         if ($oauthProfile === null && strlen($password) < 10) {
             return Response::html('<h1>Password too short</h1><p>Use at least 10 characters.</p>', 422);
@@ -114,7 +130,7 @@ HTML);
             $result = $this->signups->register(
                 slug: (string) ($_POST['slug'] ?? ''),
                 siteName: (string) ($_POST['site_name'] ?? ''),
-                adminEmail: (string) ($_POST['email'] ?? ''),
+                adminEmail: $adminEmail,
                 adminName: (string) ($_POST['admin_name'] ?? ''),
                 passwordHash: $this->passwords->hash($password),
                 signupCode: (string) ($_POST['signup_code'] ?? ''),
@@ -142,6 +158,19 @@ HTML);
         return new Response('', 302, $headers);
     }
 
+
+    /**
+     * Builds the return path used when OAuth is launched from tenant signup.
+     */
+    private function signupReturnTo(string $signupCode): string
+    {
+        $signupCode = trim($signupCode);
+        if ($signupCode === '') {
+            return '/signup';
+        }
+
+        return '/signup?code=' . rawurlencode($signupCode);
+    }
 
     /**
      * Renders the plan selector shown only for free-month signup codes.
