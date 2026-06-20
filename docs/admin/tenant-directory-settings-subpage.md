@@ -12,4 +12,6 @@ The old `/admin/directory` URL redirects to `/admin/settings?section=directory` 
 
 Saving the Directory subpage writes only directory-owned settings and does not touch Identity, Typography, Colors & Backgrounds, Miscellaneous, or Custom CSS settings.
 
+
+Directory thumbnail selection moved to Tenant Admin -> Artworks. Use the Directory thumbnail checkbox beside an eligible published artwork; the Directory settings subpage only displays the current selection and manages opt-in/summary text.
 # End of file.

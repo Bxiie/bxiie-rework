@@ -16,4 +16,6 @@ The section persists these tenant setting keys:
 
 Static coverage lives in `scripts/test/tenant_directory_settings_subpage_static.php` and is run by `scripts/test/preflight.sh`.
 
+
+Directory thumbnail selection moved to Tenant Admin -> Artworks. Use the Directory thumbnail checkbox beside an eligible published artwork; the Directory settings subpage only displays the current selection and manages opt-in/summary text.
 # End of file.

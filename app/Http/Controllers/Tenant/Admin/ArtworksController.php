@@ -61,6 +61,11 @@ final class ArtworksController
                 a.price,
                 COALESCE(a.is_one_off, 1) AS is_one_off,
                 COALESCE(a.inventory_quantity, 1) AS inventory_quantity,
+                (SELECT ts.setting_value
+                 FROM tenant_settings ts
+                 WHERE ts.tenant_id = a.tenant_id
+                   AND ts.setting_key = 'platform_directory_thumbnail_artwork_id'
+                 LIMIT 1) AS directory_thumbnail_artwork_id,
                 a.created_at,
                 (SELECT GROUP_CONCAT(atype.code ORDER BY atype.code SEPARATOR ',')
                  FROM artwork_type_assignments ata
@@ -108,6 +113,21 @@ final class ArtworksController
             $notes = htmlspecialchars((string) ($row['description'] ?? ''), ENT_QUOTES, 'UTF-8');
             $created = htmlspecialchars((string) $row['created_at'], ENT_QUOTES, 'UTF-8');
             $image = '';
+            $artworkId = (int) $row['id'];
+            $isDirectoryThumbnail = (int) ($row['directory_thumbnail_artwork_id'] ?? 0) === $artworkId;
+            $directoryChecked = $isDirectoryThumbnail ? ' checked' : '';
+            $directoryDisabled = '';
+            $directoryHelp = $isDirectoryThumbnail ? 'Current directory thumbnail' : 'Use as directory thumbnail';
+
+            if ((string) $row['status'] !== 'published') {
+                $directoryDisabled = ' disabled';
+                $directoryHelp = 'Publish first';
+            } elseif (empty($row['storage_path'])) {
+                $directoryDisabled = ' disabled';
+                $directoryHelp = 'Primary image required';
+            }
+
+            $directoryHelp = htmlspecialchars($directoryHelp, ENT_QUOTES, 'UTF-8');
 
             if (!empty($row['storage_path'])) {
                 $src = '/admin/media?uuid=' . rawurlencode((string) $row['media_uuid']);
@@ -129,6 +149,18 @@ final class ArtworksController
     <td>{$price}</td>
     <td>{$notes}</td>
     <td>
+        <form method="post" action="/admin/artworks/directory-thumbnail" class="directory-thumbnail-form">
+            <input type="hidden" name="id" value="{$artworkId}">
+            <input type="hidden" name="return_to" value="{$returnToValue}">
+            <label class="directory-thumbnail-toggle">
+                <input type="checkbox" name="directory_thumbnail" value="1"{$directoryChecked}{$directoryDisabled} onchange="this.form.submit()">
+                <span>Directory thumbnail</span>
+            </label>
+            <small>{$directoryHelp}</small>
+            <noscript><button type="submit">Save</button></noscript>
+        </form>
+    </td>
+    <td>
         <a href="/admin/artworks/edit?id={$row['id']}">Edit</a>
         {$this->statusActionButton($row, $returnToValue)}
         <form method="post" action="/admin/artworks/delete" class="js-artwork-action" style="display:inline" onsubmit="return confirm('Archive this artwork? It will disappear from normal review and public pages, but the file will not be deleted yet.');">
@@ -142,13 +174,14 @@ HTML;
         }
 
         if ($items === '') {
-            $items = '<tr><td colspan="9">No artwork uploaded yet.</td></tr>';
+            $items = '<tr><td colspan="10">No artwork uploaded yet.</td></tr>';
         }
 
         $notice = match ((string) ($_GET['notice'] ?? '')) {
             'status-updated' => '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Artwork status updated.</p>',
             'artwork-archived' => '<p style="padding:.75rem;background:#fff4df;border:1px solid #d9b36a;">Artwork archived.</p>',
             'artwork-saved' => '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Artwork saved.</p>',
+            'directory-thumbnail-updated' => '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Directory thumbnail updated.</p>',
             default => '',
         };
 
@@ -185,6 +218,7 @@ HTML;
                 <th>Sale</th>
                 <th>Price</th>
                 <th>Notes</th>
+                <th>Directory thumbnail</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -361,6 +395,38 @@ HTML;
         return new Response('', 303, ['Location' => '/admin/artworks?notice=artwork-saved#artwork-' . $id]);
     }
 
+
+
+    public function updateDirectoryThumbnail(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+
+        $id = (int) ($_POST['id'] ?? 0);
+        $checked = isset($_POST['directory_thumbnail']);
+        $returnTo = $this->safeReturnTo((string) ($_POST['return_to'] ?? '/admin/artworks'));
+        $separator = str_contains($returnTo, '?') ? '&' : '?';
+
+        if ($id <= 0) {
+            return Response::html('<h1>Invalid artwork</h1>', 422);
+        }
+
+        if ($checked) {
+            if (!$this->isValidDirectoryThumbnailArtwork($tenant, $id)) {
+                return Response::html('<h1>Invalid directory thumbnail</h1><p>Choose a published artwork with a primary image.</p>', 422);
+            }
+
+            $this->setTenantSetting($tenant, 'platform_directory_thumbnail_artwork_id', (string) $id);
+        } else {
+            $current = (int) $this->getTenantSetting($tenant, 'platform_directory_thumbnail_artwork_id', '0');
+            if ($current === $id) {
+                $this->setTenantSetting($tenant, 'platform_directory_thumbnail_artwork_id', '');
+            }
+        }
+
+        return new Response('', 303, ['Location' => $returnTo . $separator . 'notice=directory-thumbnail-updated#artwork-' . $id]);
+    }
 
     public function updateStatus(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
@@ -651,6 +717,62 @@ HTML;
                 'section_id' => $sectionId,
             ]);
         }
+    }
+
+
+    private function isValidDirectoryThumbnailArtwork(TenantContext $tenant, int $artworkId): bool
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT a.id
+             FROM artworks a
+             JOIN media_assets m ON m.id = a.primary_media_id AND m.tenant_id = a.tenant_id
+             WHERE a.tenant_id = :tenant_id
+               AND a.id = :artwork_id
+               AND a.status = 'published'
+               AND a.primary_media_id IS NOT NULL
+             LIMIT 1"
+        );
+        $stmt->execute([
+            'tenant_id' => $tenant->tenantId,
+            'artwork_id' => $artworkId,
+        ]);
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+    private function getTenantSetting(TenantContext $tenant, string $key, string $default = ''): string
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT setting_value
+             FROM tenant_settings
+             WHERE tenant_id = :tenant_id
+               AND setting_key = :setting_key
+             LIMIT 1"
+        );
+        $stmt->execute([
+            'tenant_id' => $tenant->tenantId,
+            'setting_key' => $key,
+        ]);
+
+        $value = $stmt->fetchColumn();
+
+        return $value === false || $value === null ? $default : (string) $value;
+    }
+
+    private function setTenantSetting(TenantContext $tenant, string $key, string $value): void
+    {
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO tenant_settings (tenant_id, setting_key, setting_value, updated_at)
+             VALUES (:tenant_id, :setting_key, :setting_value, CURRENT_TIMESTAMP)
+             ON DUPLICATE KEY UPDATE
+                setting_value = VALUES(setting_value),
+                updated_at = CURRENT_TIMESTAMP"
+        );
+        $stmt->execute([
+            'tenant_id' => $tenant->tenantId,
+            'setting_key' => $key,
+            'setting_value' => $value,
+        ]);
     }
 
     private function findArtwork(TenantContext $tenant, int $id): ?array

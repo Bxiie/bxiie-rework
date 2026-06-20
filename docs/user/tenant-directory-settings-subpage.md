@@ -6,4 +6,6 @@ Use this page to decide whether your artist site can appear in the public ArtsFo
 
 Click `Save site settings` after changing the Directory page. Saving Directory does not change the other settings sections.
 
+
+Directory thumbnail selection moved to Tenant Admin -> Artworks. Use the Directory thumbnail checkbox beside an eligible published artwork; the Directory settings subpage only displays the current selection and manages opt-in/summary text.
 # End of file.

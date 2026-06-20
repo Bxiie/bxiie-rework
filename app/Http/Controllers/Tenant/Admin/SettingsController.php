@@ -468,7 +468,7 @@ HTML;
                 'background_mode', 'background_tile_size', 'background_opacity',
             ],
             'directory' => [
-                'platform_directory_opt_in', 'platform_directory_thumbnail_artwork_id', 'platform_directory_summary',
+                'platform_directory_opt_in', 'platform_directory_summary',
             ],
             'miscellaneous' => [
                 'sales_notes', 'stripe_connected_account_id', 'artwork_display_order', 'exhibitions_heading', 'exhibitions_display_mode',
@@ -493,7 +493,6 @@ HTML;
         $checked = $this->truthy((string) $this->settings->get($tenant, 'platform_directory_opt_in', '0')) ? ' checked' : '';
         $summary = $this->escape((string) $this->settings->get($tenant, 'platform_directory_summary', ''));
         $selectedArtworkId = (int) ($this->settings->get($tenant, 'platform_directory_thumbnail_artwork_id', '0') ?? '0');
-        $artworkOptions = $this->directoryArtworkOptions($tenant, $selectedArtworkId);
         $preview = $this->directoryThumbnailPreview($tenant, $selectedArtworkId);
 
         return <<<HTML
@@ -508,15 +507,9 @@ HTML;
 
         <fieldset>
             <legend>Directory thumbnail artwork</legend>
-            <p class="admin-help">Select a published artwork with a primary image. This thumbnail appears on the public ArtsFolio directory card.</p>
-            <label>Directory thumbnail
-                <select name="platform_directory_thumbnail_artwork_id">
-                    <option value="0">Use automatic fallback</option>
-                    {$artworkOptions}
-                </select>
-            </label>
+            <p class="admin-help">Set the directory thumbnail from the Artworks page using the Directory thumbnail checkbox. Only one published artwork with a primary image can be selected.</p>
             {$preview}
-            <p><a href="/admin/artworks">Manage artworks</a></p>
+            <p><a href="/admin/artworks">Manage artworks and choose directory thumbnail</a></p>
         </fieldset>
 
         <fieldset>
