@@ -55,6 +55,41 @@ final class SettingsController
         $portfolioSlug = $this->setting($tenant, 'portfolio_slug', 'portfolio');
         $aboutSlug = $this->setting($tenant, 'about_slug', 'about');
         $contactSlug = $this->setting($tenant, 'contact_slug', 'contact');
+        $fontFamilies = $this->fontFamilyOptions();
+        $bodyFontFamily = $this->setting($tenant, 'font_family_body', 'Inter, ui-sans-serif, system-ui, sans-serif');
+        $headingFontFamily = $this->setting($tenant, 'font_family_heading', $bodyFontFamily);
+        $brandFontFamily = $this->setting($tenant, 'font_family_brand', $headingFontFamily);
+        $navFontFamily = $this->setting($tenant, 'font_family_nav', $bodyFontFamily);
+        $artworkTitleFontFamily = $this->setting($tenant, 'font_family_artwork_title', $headingFontFamily);
+        $artworkMetaFontFamily = $this->setting($tenant, 'font_family_artwork_meta', $bodyFontFamily);
+        $formFontFamily = $this->setting($tenant, 'font_family_form', $bodyFontFamily);
+        $footerFontFamily = $this->setting($tenant, 'font_family_footer', $bodyFontFamily);
+        $bodyFontSize = $this->setting($tenant, 'font_size_body', '1rem');
+        $headingFontSize = $this->setting($tenant, 'font_size_heading', 'clamp(2.5rem, 8vw, 6.875rem)');
+        $subheadingFontSize = $this->setting($tenant, 'font_size_subheading', 'clamp(1.5rem, 3vw, 2.25rem)');
+        $brandFontSize = $this->setting($tenant, 'font_size_brand', 'clamp(1.75rem, 5vw, 4rem)');
+        $navFontSize = $this->setting($tenant, 'font_size_nav', '0.875rem');
+        $proseFontSize = $this->setting($tenant, 'font_size_prose', 'clamp(1.125rem, 2vw, 1.5rem)');
+        $artworkTitleFontSize = $this->setting($tenant, 'font_size_artwork_title', '1.1rem');
+        $artworkMetaFontSize = $this->setting($tenant, 'font_size_artwork_meta', '0.95rem');
+        $formFontSize = $this->setting($tenant, 'font_size_form', '1rem');
+        $footerFontSize = $this->setting($tenant, 'font_size_footer', '0.95rem');
+        $bodyFontSelect = $this->fontSelect('font_family_body', $bodyFontFamily, $fontFamilies);
+        $headingFontSelect = $this->fontSelect('font_family_heading', $headingFontFamily, $fontFamilies);
+        $brandFontSelect = $this->fontSelect('font_family_brand', $brandFontFamily, $fontFamilies);
+        $navFontSelect = $this->fontSelect('font_family_nav', $navFontFamily, $fontFamilies);
+        $artworkTitleFontSelect = $this->fontSelect('font_family_artwork_title', $artworkTitleFontFamily, $fontFamilies);
+        $artworkMetaFontSelect = $this->fontSelect('font_family_artwork_meta', $artworkMetaFontFamily, $fontFamilies);
+        $formFontSelect = $this->fontSelect('font_family_form', $formFontFamily, $fontFamilies);
+        $footerFontSelect = $this->fontSelect('font_family_footer', $footerFontFamily, $fontFamilies);
+        $bodyFontPreview = $this->escape($bodyFontFamily);
+        $headingFontPreview = $this->escape($headingFontFamily);
+        $brandFontPreview = $this->escape($brandFontFamily);
+        $navFontPreview = $this->escape($navFontFamily);
+        $artworkTitleFontPreview = $this->escape($artworkTitleFontFamily);
+        $artworkMetaFontPreview = $this->escape($artworkMetaFontFamily);
+        $formFontPreview = $this->escape($formFontFamily);
+        $footerFontPreview = $this->escape($footerFontFamily);
         $primaryColor = $this->setting($tenant, 'primary_color', '#111111');
         $accentColor = $this->setting($tenant, 'accent_color', '#c9a85f');
         $textColor = $this->setting($tenant, 'text_color', '#1f1a14');
@@ -138,6 +173,32 @@ final class SettingsController
                 <label>Portfolio slug<input name="portfolio_slug" value="{$portfolioSlug}"></label>
                 <label>About slug<input name="about_slug" value="{$aboutSlug}"></label>
                 <label>Contact slug<input name="contact_slug" value="{$contactSlug}"></label>
+            </div>
+        </fieldset>
+        {$saveButton}
+
+        <fieldset>
+            <legend>Typography</legend>
+            <p class="admin-help">Choose font families and sizes for text on the public home, portfolio, about, and contact pages. These fields update CSS variables, so the individual controls remain editable after selecting a font.</p>
+            <div class="admin-grid-2 tenant-typography-grid">
+                <label>Body text font{$bodyFontSelect}<span class="font-picker-preview" style="font-family: {$bodyFontPreview}">Body text preview</span></label>
+                <label>Body text size<input name="font_size_body" value="{$bodyFontSize}" placeholder="1rem"></label>
+                <label>Heading font{$headingFontSelect}<span class="font-picker-preview" style="font-family: {$headingFontPreview}">Heading preview</span></label>
+                <label>Main heading size<input name="font_size_heading" value="{$headingFontSize}" placeholder="clamp(2.5rem, 8vw, 6.875rem)"></label>
+                <label>Subheading size<input name="font_size_subheading" value="{$subheadingFontSize}" placeholder="clamp(1.5rem, 3vw, 2.25rem)"></label>
+                <label>Site title font{$brandFontSelect}<span class="font-picker-preview" style="font-family: {$brandFontPreview}">Site title preview</span></label>
+                <label>Site title size<input name="font_size_brand" value="{$brandFontSize}" placeholder="clamp(1.75rem, 5vw, 4rem)"></label>
+                <label>Navigation font{$navFontSelect}<span class="font-picker-preview" style="font-family: {$navFontPreview}">Navigation preview</span></label>
+                <label>Navigation size<input name="font_size_nav" value="{$navFontSize}" placeholder="0.875rem"></label>
+                <label>Intro/prose size<input name="font_size_prose" value="{$proseFontSize}" placeholder="clamp(1.125rem, 2vw, 1.5rem)"></label>
+                <label>Artwork title font{$artworkTitleFontSelect}<span class="font-picker-preview" style="font-family: {$artworkTitleFontPreview}">Artwork title preview</span></label>
+                <label>Artwork title size<input name="font_size_artwork_title" value="{$artworkTitleFontSize}" placeholder="1.1rem"></label>
+                <label>Artwork metadata font{$artworkMetaFontSelect}<span class="font-picker-preview" style="font-family: {$artworkMetaFontPreview}">Artwork metadata preview</span></label>
+                <label>Artwork metadata size<input name="font_size_artwork_meta" value="{$artworkMetaFontSize}" placeholder="0.95rem"></label>
+                <label>Forms font{$formFontSelect}<span class="font-picker-preview" style="font-family: {$formFontPreview}">Form field preview</span></label>
+                <label>Forms size<input name="font_size_form" value="{$formFontSize}" placeholder="1rem"></label>
+                <label>Footer font{$footerFontSelect}<span class="font-picker-preview" style="font-family: {$footerFontPreview}">Footer preview</span></label>
+                <label>Footer size<input name="font_size_footer" value="{$footerFontSize}" placeholder="0.95rem"></label>
             </div>
         </fieldset>
         {$saveButton}
@@ -256,6 +317,8 @@ HTML;
         $keys = [
             'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro', 'sales_notes', 'stripe_connected_account_id',
             'home_tab', 'portfolio_tab', 'about_tab', 'contact_tab', 'portfolio_slug', 'about_slug', 'contact_slug',
+            'font_family_body', 'font_family_heading', 'font_family_brand', 'font_family_nav', 'font_family_artwork_title', 'font_family_artwork_meta', 'font_family_form', 'font_family_footer',
+            'font_size_body', 'font_size_heading', 'font_size_subheading', 'font_size_brand', 'font_size_nav', 'font_size_prose', 'font_size_artwork_title', 'font_size_artwork_meta', 'font_size_form', 'font_size_footer',
             'primary_color', 'accent_color', 'text_color', 'background_color', 'topbar_background_color', 'topbar_text_color', 'topbar_background_opacity', 'topbar_media_uuid',
             'menu_background_color', 'menu_text_color', 'menu_background_enabled', 'menu_background_opacity', 'menu_media_uuid', 'heading_background_color', 'heading_background_opacity',
             'content_background_color', 'content_background_opacity', 'text_background_color', 'text_background_opacity', 'header_drop_shadow_enabled', 'header_drop_shadow', 'artwork_card_background_color', 'artwork_card_background_opacity', 'artwork_card_background_size', 'artwork_card_media_uuid', 'background_media_uuid',
@@ -281,6 +344,12 @@ HTML;
             if (str_ends_with($key, '_slug')) {
                 $value = $this->safeSlug($value, str_replace('_slug', '', $key));
             }
+            if (str_starts_with($key, 'font_family_')) {
+                $value = $this->safeFontFamily($value);
+            }
+            if (str_starts_with($key, 'font_size_')) {
+                $value = $this->safePublicFontSize($value, $this->defaultFontSize($key));
+            }
             $this->settings->set($tenant, $key, $value);
             $after[$key] = $value;
         }
@@ -290,6 +359,98 @@ HTML;
         return new Response('', 303, ['Location' => '/admin/settings?notice=saved']);
     }
 
+
+    /**
+     * Returns public-safe font family choices for tenant typography controls.
+     *
+     * The values intentionally use system/local font stacks only so tenant pages
+     * do not depend on external font hosts, tracking requests, or slow downloads.
+     *
+     * @return array<string, string>
+     */
+    private function fontFamilyOptions(): array
+    {
+        return [
+            'Inter, ui-sans-serif, system-ui, sans-serif' => 'Inter / modern sans',
+            'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' => 'Serif / editorial',
+            'Georgia, "Times New Roman", Times, serif' => 'Georgia / gallery text',
+            'Baskerville, "Libre Baskerville", Georgia, serif' => 'Baskerville / formal serif',
+            'Didot, "Bodoni 72", "Bodoni 72 Smallcaps", Georgia, serif' => 'Didot / high contrast',
+            'Avenir, "Avenir Next", Montserrat, ui-sans-serif, system-ui, sans-serif' => 'Avenir / clean geometric',
+            'Futura, "Trebuchet MS", Arial, ui-sans-serif, sans-serif' => 'Futura / modernist',
+            'Helvetica Neue, Helvetica, Arial, ui-sans-serif, sans-serif' => 'Helvetica / neutral sans',
+            'Optima, Candara, "Noto Sans", source-sans-pro, sans-serif' => 'Optima / humanist sans',
+            'Menlo, Monaco, Consolas, "Liberation Mono", monospace' => 'Monospace / technical',
+        ];
+    }
+
+    /**
+     * Renders a font picker select with previewable option labels.
+     *
+     * @param array<string, string> $fonts
+     */
+    private function fontSelect(string $name, string $selectedValue, array $fonts): string
+    {
+        $options = '';
+        $selectedValue = $this->safeFontFamily($selectedValue);
+
+        foreach ($fonts as $value => $label) {
+            $safeValue = $this->escape($value);
+            $safeLabel = $this->escape($label);
+            $selected = $value === $selectedValue ? ' selected' : '';
+            $options .= '<option value="' . $safeValue . '" style="font-family:' . $safeValue . '"' . $selected . '>' . $safeLabel . '</option>';
+        }
+
+        return '<select class="tenant-font-picker" name="' . $this->escape($name) . '">' . $options . '</select>';
+    }
+
+    /**
+     * Restricts saved font families to the curated local/system list.
+     */
+    private function safeFontFamily(string $value): string
+    {
+        $value = trim($value);
+        $fonts = $this->fontFamilyOptions();
+
+        return array_key_exists($value, $fonts) ? $value : 'Inter, ui-sans-serif, system-ui, sans-serif';
+    }
+
+    /**
+     * Restricts public font sizes to conservative CSS size expressions.
+     */
+    private function safePublicFontSize(string $value, string $default): string
+    {
+        $value = trim($value);
+
+        if ($value === '') {
+            return $default;
+        }
+
+        if (preg_match('/^(?:[0-9]+(?:\.[0-9]+)?(?:px|rem|em|%)|clamp\([0-9.]+(?:px|rem|em|%),\s*[0-9.]+(?:vw|vh|rem|em|%),\s*[0-9.]+(?:px|rem|em|%)\))$/', $value) === 1) {
+            return $value;
+        }
+
+        return $default;
+    }
+
+    /**
+     * Provides per-field typography defaults for validation fallbacks.
+     */
+    private function defaultFontSize(string $key): string
+    {
+        return match ($key) {
+            'font_size_heading' => 'clamp(2.5rem, 8vw, 6.875rem)',
+            'font_size_subheading' => 'clamp(1.5rem, 3vw, 2.25rem)',
+            'font_size_brand' => 'clamp(1.75rem, 5vw, 4rem)',
+            'font_size_nav' => '0.875rem',
+            'font_size_prose' => 'clamp(1.125rem, 2vw, 1.5rem)',
+            'font_size_artwork_title' => '1.1rem',
+            'font_size_artwork_meta' => '0.95rem',
+            'font_size_form' => '1rem',
+            'font_size_footer' => '0.95rem',
+            default => '1rem',
+        };
+    }
 
     /**
      * Renders quick palette buttons for the color/background controls.

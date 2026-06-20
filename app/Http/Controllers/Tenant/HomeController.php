@@ -534,6 +534,7 @@ HTML;
         $topbarTextColor = $this->escape($this->settings->get($tenant, 'topbar_text_color', $textColor));
         $menuTextColor = $this->escape($this->settings->get($tenant, 'menu_text_color', $topbarTextColor));
         $surfaceStyle = $this->tenantSurfaceCssVariables($tenant);
+        $typographyStyle = $this->tenantTypographyCssVariables($tenant);
         $homeTab = $this->escape($this->settings->get($tenant, 'home_tab', 'Home'));
         $portfolioTab = $this->escape($this->settings->get($tenant, 'portfolio_tab', 'Portfolio'));
         $aboutTab = $this->escape($this->settings->get($tenant, 'about_tab', 'About'));
@@ -560,7 +561,7 @@ HTML;
     <script src="/assets/tenant-forms.js?v=20260602a" defer></script>
     {$turnstileScript}
 </head>
-<body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};--tenant-topbar-text:{$topbarTextColor};--menu-text-color:{$menuTextColor};--text-color:{$textColor};{$backgroundStyle}{$surfaceStyle}">
+<body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};--tenant-topbar-text:{$topbarTextColor};--menu-text-color:{$menuTextColor};--text-color:{$textColor};{$backgroundStyle}{$surfaceStyle}{$typographyStyle}">
 <header class="site-header">
     <a class="brand" href="/">{$siteTitle}</a>
     <nav>
@@ -586,6 +587,41 @@ HTML;
 HTML;
     }
 
+
+    /**
+     * Returns tenant typography CSS variables for public home, portfolio, about,
+     * contact, artwork, and shared footer/form text.
+     */
+    private function tenantTypographyCssVariables(TenantContext $tenant): string
+    {
+        $bodyFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_body', 'Inter, ui-sans-serif, system-ui, sans-serif'));
+        $headingFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_heading', $bodyFamily));
+        $brandFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_brand', $headingFamily));
+        $navFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_nav', $bodyFamily));
+        $artworkTitleFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_artwork_title', $headingFamily));
+        $artworkMetaFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_artwork_meta', $bodyFamily));
+        $formFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_form', $bodyFamily));
+        $footerFamily = $this->safeCssFontFamily((string) $this->settings->get($tenant, 'font_family_footer', $bodyFamily));
+
+        return '--tenant-font-body:' . $bodyFamily . ';'
+            . '--tenant-font-heading:' . $headingFamily . ';'
+            . '--tenant-font-brand:' . $brandFamily . ';'
+            . '--tenant-font-nav:' . $navFamily . ';'
+            . '--tenant-font-artwork-title:' . $artworkTitleFamily . ';'
+            . '--tenant-font-artwork-meta:' . $artworkMetaFamily . ';'
+            . '--tenant-font-form:' . $formFamily . ';'
+            . '--tenant-font-footer:' . $footerFamily . ';'
+            . '--tenant-font-size-body:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_body', '1rem'), '1rem') . ';'
+            . '--tenant-font-size-heading:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_heading', 'clamp(2.5rem, 8vw, 6.875rem)'), 'clamp(2.5rem, 8vw, 6.875rem)') . ';'
+            . '--tenant-font-size-subheading:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_subheading', 'clamp(1.5rem, 3vw, 2.25rem)'), 'clamp(1.5rem, 3vw, 2.25rem)') . ';'
+            . '--tenant-font-size-brand:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_brand', 'clamp(1.75rem, 5vw, 4rem)'), 'clamp(1.75rem, 5vw, 4rem)') . ';'
+            . '--tenant-font-size-nav:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_nav', '0.875rem'), '0.875rem') . ';'
+            . '--tenant-font-size-prose:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_prose', 'clamp(1.125rem, 2vw, 1.5rem)'), 'clamp(1.125rem, 2vw, 1.5rem)') . ';'
+            . '--tenant-font-size-artwork-title:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_artwork_title', '1.1rem'), '1.1rem') . ';'
+            . '--tenant-font-size-artwork-meta:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_artwork_meta', '0.95rem'), '0.95rem') . ';'
+            . '--tenant-font-size-form:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_form', '1rem'), '1rem') . ';'
+            . '--tenant-font-size-footer:' . $this->safeCssSize((string) $this->settings->get($tenant, 'font_size_footer', '0.95rem'), '0.95rem') . ';';
+    }
 
     /**
      * Returns public and admin-visible surface CSS variables from tenant settings.
@@ -932,13 +968,28 @@ HTML;
     }
 
     /**
+     * Allows only conservative local/system font stack characters in tenant CSS.
+     */
+    private function safeCssFontFamily(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return 'Inter, ui-sans-serif, system-ui, sans-serif';
+        }
+
+        return preg_match('/^[#a-zA-Z0-9.,\s"\-]+$/', $value) === 1
+            ? $value
+            : 'Inter, ui-sans-serif, system-ui, sans-serif';
+    }
+
+    /**
      * Allows simple CSS size values while rejecting characters that could break style attributes.
      */
     private function safeCssSize(string $value, string $default): string
     {
         $value = trim($value);
 
-        if (preg_match('/^(auto|cover|contain|[0-9.]+(px|rem|em|%|vw|vh))$/', $value)) {
+        if (preg_match('/^(auto|cover|contain|[0-9.]+(px|rem|em|%|vw|vh)|clamp\([0-9.]+(px|rem|em|%),\s*[0-9.]+(vw|vh|rem|em|%),\s*[0-9.]+(px|rem|em|%)\))$/', $value)) {
             return $value;
         }
 

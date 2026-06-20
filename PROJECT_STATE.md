@@ -1628,10 +1628,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - OAuth `return_to` accepts relative URLs, `artsfol.io` hosts, `*.artsfol.io` hosts, and active tenant custom domains from `tenant_domains`.
 - Platform `/logout` supports GET for direct navigation and POST with CSRF for form logout.
 
-
-
-## Signup code invite status
-
 - Platform signup code list now shows invite email delivery state by reading matching `platform.tenant_signup_invite` outbox rows: not sent, queued/not sent yet, partially sent, or sent with counts and latest timestamps.
 ## OAuth-backed site signup email locking
 
@@ -1640,16 +1636,33 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The signup POST handler uses the session provider email instead of trusting the browser-submitted `email` field.
 - Signup-page OAuth links include a trusted `return_to` path that preserves the signup passcode query string.
 - Regression coverage lives in `scripts/test/oauth_signup_email_lock_static.php` and is called from `scripts/test/preflight.sh`.
-- Tenant getting-started page (`/admin/getting-started`) is platform-branded with the ArtsFolio logo and “Tenant setup powered by ArtsFolio.” The page text is currently maintained in `app/Http/Controllers/Tenant/Admin/GettingStartedController.php`; there is not yet an admin-editable content setting for this page.
-
-## Branded browser-facing error pages
-
-- Browser-facing error responses are rendered through `App\Http\View\ErrorPage` with either platform branding or tenant branding.
-- The router no longer returns raw `No route for ...` copy for missing routes.
-- `public/index.php` catches uncaught exceptions and shutdown-handler fatal errors and returns branded 500 pages while logging the underlying failure.
-- `public/.htaccess` maps common Apache `ErrorDocument` statuses to `/error/{code}` so web-server fallbacks route through the branded application renderer.
-- Static regression coverage lives in `scripts/test/branded_error_pages_static.php` and is called from `scripts/test/preflight.sh`.
 
 <!-- End of file. -->
+- 2026-06-20: CSRF failures now render through the branded error page system via `Response::invalidCsrf()`. Controllers must not return raw `Invalid CSRF token` HTML; platform logout and tenant/admin POST security failures should show platform or tenant chrome. Static preflight coverage checks this behavior.
+
+
+## 2026-06-20 - Platform user lifecycle UI repair
+
+- Fixed `/platform/admin/users` so the user list reads `users.status` instead of hardcoding every platform user as active.
+- Soft-deleted platform users are hidden from the default platform user list. Suspended users remain visible with a suspended status and a reactivate action.
+- Platform user suspend/delete helpers now route through `setUserStatus()` so sessions are revoked consistently.
+- Platform user lifecycle validation failures now render through branded error pages instead of raw `<h1>` responses.
+- Added `scripts/test/platform_user_lifecycle_static.php` to preflight.
+
+
+## 2026-06-20 14:55 America/New_York
+
+- Tenant `/admin/getting-started` now includes ArtsFolio platform branding because the page is part of the platform signup/OAuth tenant-creation handoff.
+- Tenant getting-started text remains source-controlled in `app/Http/Controllers/Tenant/Admin/GettingStartedController.php`; no database-backed editor currently exists for this page.
+- Added `scripts/test/tenant_getting_started_branding_static.php` and wired it into preflight to prevent removal of the platform logo/handoff branding.
+
+- Tenant public navigation/sidebar readability: new tenant sites default menu/sidebar text to dark `--text-color` / `#1f1a14` on light/tan menu panels. The tenant-admin application sidebar remains white text on a dark background. Static coverage lives in `scripts/test/tenant_sidebar_readability_static.php`.
+
+- Tenant color palette buttons on `/admin/settings` use delegated JavaScript click handling in `public/assets/admin-color-fields.js` so nested swatch/name clicks apply presets reliably. Tenant opacity inputs use `step="0.01"` so palette values and manual values such as `0.72` pass browser validation.
+
+- Tenant Admin Settings repeats the `Save site settings` submit button below each major settings section. All buttons submit the full `/admin/settings` form; they are convenience controls, not section-scoped partial saves. Regression coverage: `scripts/test/tenant_settings_section_save_static.php`.
+
+- Tenant color palette buttons use versioned tenant admin CSS and high-specificity palette styles so generic admin button rules cannot force all palette buttons to black.
 - Tenant color palettes now include ten presets; Midnight Olive and Ultraviolet Paper were added after the original eight. Static checks require every palette to define topbar/menu text colors with at least 4.5:1 contrast against their backgrounds.
+- Tenant Admin > Settings includes a Typography section with curated local/system font pickers and public font-size controls for home, portfolio, about, contact, artwork, forms, and footer text. Public pages emit tenant typography CSS variables from `HomeController`; `site.css` consumes them; static coverage lives in `scripts/test/tenant_typography_settings_static.php`.
 # End of file.
