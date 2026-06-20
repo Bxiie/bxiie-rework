@@ -36,4 +36,6 @@ scripts/test/preflight.sh
 
 When adding or changing palettes, update the static test and documentation at the same time.
 
+Palette buttons are bound with delegated click handling so clicks on nested label, description, or swatch elements still apply the palette. Opacity inputs in `SettingsController::index()` must use `step="0.01"` so palette values such as `0.72`, `0.86`, and `0.03` pass browser validation.
+
 # End of file.

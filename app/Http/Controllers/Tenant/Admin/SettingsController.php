@@ -149,7 +149,7 @@ final class SettingsController
                 <label>Default text color<input name="text_color" value="{$textColor}"></label>
                 <label>Page background color<input name="background_color" value="{$backgroundColor}"></label>
                 <label>Top bar background color<input name="topbar_background_color" value="{$topbarBackgroundColor}"></label>
-                <label>Top bar opacity<input type="number" name="topbar_background_opacity" min="0" max="1" step="0.05" value="{$topbarBackgroundOpacity}"></label>
+                <label>Top bar opacity<input type="number" name="topbar_background_opacity" min="0" max="1" step="0.01" value="{$topbarBackgroundOpacity}"></label>
                 <label>Menu background color<input name="menu_background_color" value="{$menuBackgroundColor}"></label>
                 <label>Menu background panel
                     <select name="menu_background_enabled">
@@ -157,13 +157,13 @@ final class SettingsController
                         <option value="0"{$selected($menuBackgroundEnabled, '0')}>Suppress panel</option>
                     </select>
                 </label>
-                <label>Menu opacity<input type="number" name="menu_background_opacity" min="0" max="1" step="0.05" value="{$menuBackgroundOpacity}"><span class="admin-help">Use 0, or suppress the panel, to remove the tan/nav wash.</span></label>
+                <label>Menu opacity<input type="number" name="menu_background_opacity" min="0" max="1" step="0.01" value="{$menuBackgroundOpacity}"><span class="admin-help">Use 0, or suppress the panel, to remove the tan/nav wash.</span></label>
                 <label>Heading spread color<input name="heading_background_color" value="{$headingBackgroundColor}"></label>
-                <label>Heading spread opacity<input type="number" name="heading_background_opacity" min="0" max="1" step="0.05" value="{$headingBackgroundOpacity}"></label>
+                <label>Heading spread opacity<input type="number" name="heading_background_opacity" min="0" max="1" step="0.01" value="{$headingBackgroundOpacity}"></label>
                 <label>Content/artwork area background color<input name="content_background_color" value="{$contentBackgroundColor}"></label>
-                <label>Content/artwork area opacity<input type="number" name="content_background_opacity" min="0" max="1" step="0.05" value="{$contentBackgroundOpacity}"></label>
+                <label>Content/artwork area opacity<input type="number" name="content_background_opacity" min="0" max="1" step="0.01" value="{$contentBackgroundOpacity}"></label>
                 <label>Text spread color<input name="text_background_color" value="{$textBackgroundColor}"></label>
-                <label>Text spread opacity<input type="number" name="text_background_opacity" min="0" max="1" step="0.05" value="{$textBackgroundOpacity}"></label>
+                <label>Text spread opacity<input type="number" name="text_background_opacity" min="0" max="1" step="0.01" value="{$textBackgroundOpacity}"></label>
                 <label>Header drop shadow
                     <select name="header_drop_shadow_enabled">
                         <option value="1"{$selected($headerDropShadowEnabled, '1')}>On</option>
@@ -172,7 +172,7 @@ final class SettingsController
                 </label>
                 <label>Header shadow CSS<input name="header_drop_shadow" value="{$headerDropShadow}"></label>
                 <label>Artwork card background color<input name="artwork_card_background_color" value="{$artworkCardBackgroundColor}"></label>
-                <label>Artwork card opacity<input type="number" name="artwork_card_background_opacity" min="0" max="1" step="0.05" value="{$artworkCardBackgroundOpacity}"><span class="admin-help">Use 0 for no card wash over artwork; increase only when text needs a panel.</span></label>
+                <label>Artwork card opacity<input type="number" name="artwork_card_background_opacity" min="0" max="1" step="0.01" value="{$artworkCardBackgroundOpacity}"><span class="admin-help">Use 0 for no card wash over artwork; increase only when text needs a panel.</span></label>
                 <label>Artwork card background size<input name="artwork_card_background_size" value="{$artworkCardBackgroundSize}"></label>
                 <label>Background mode
                     <select name="background_mode">
@@ -181,7 +181,7 @@ final class SettingsController
                     </select>
                 </label>
                 <label>Background tile size<input name="background_tile_size" value="{$backgroundTileSize}"></label>
-                <label>Background opacity<input type="number" name="background_opacity" min="0" max="1" step="0.05" value="{$backgroundOpacity}"></label>
+                <label>Background opacity<input type="number" name="background_opacity" min="0" max="1" step="0.01" value="{$backgroundOpacity}"></label>
             </div>
             <h3>Top bar background image</h3>
             {$topbarPicker}

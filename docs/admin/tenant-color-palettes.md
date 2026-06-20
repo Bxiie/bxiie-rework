@@ -19,4 +19,6 @@ Palette choices:
 
 Palette buttons do not change selected background images. Background, top bar, menu, and artwork-card images remain controlled by the existing Site Images pickers.
 
+Opacity fields in this section accept hundredth values such as `0.72`; the browser should not force rounding to `.70` or `.75`.
+
 # End of file.

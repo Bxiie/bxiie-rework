@@ -1,13 +1,15 @@
 /*
- * Adds color picker behavior and live swatches to admin fields whose names
- * indicate that they store colors. This is intentionally progressive: normal
- * text inputs still work if JavaScript is disabled or a value is not hex.
+ * Adds color picker behavior, live swatches, and tenant color palette buttons to
+ * admin fields whose names indicate that they store colors. This is intentionally
+ * progressive: normal text inputs still work if JavaScript is disabled or a
+ * value is not hex.
  */
 (function () {
     'use strict';
 
     var colorNamePattern = /(^|_)(color|colour)($|_)/i;
     var hexPattern = /^#[0-9a-f]{6}$/i;
+    var paletteBound = false;
 
     function normalize(value) {
         value = String(value || '').trim();
@@ -67,6 +69,39 @@
         return '[name="' + String(name).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"]';
     }
 
+    function notifyFieldChanged(field) {
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+        field.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function applyNamedValue(name, value) {
+        var selector = cssNameSelector(name);
+        var fields = Array.prototype.slice.call(document.querySelectorAll(selector));
+
+        if (fields.length === 0) {
+            return;
+        }
+
+        if (fields[0].type === 'radio') {
+            fields.forEach(function (field) {
+                field.checked = String(field.value) === String(value);
+                if (field.checked) {
+                    notifyFieldChanged(field);
+                }
+            });
+            return;
+        }
+
+        if (fields[0].type === 'checkbox') {
+            fields[0].checked = value === true || value === '1' || value === 1 || value === 'true';
+            notifyFieldChanged(fields[0]);
+            return;
+        }
+
+        fields[0].value = value;
+        notifyFieldChanged(fields[0]);
+    }
+
     function applyPalette(button) {
         var values = {};
 
@@ -77,26 +112,7 @@
         }
 
         Object.keys(values).forEach(function (name) {
-            var field = document.querySelector(cssNameSelector(name));
-
-            if (!field) {
-                return;
-            }
-
-            if (field.type === 'radio') {
-                var radio = Array.prototype.slice.call(document.querySelectorAll(cssNameSelector(name))).find(function (candidate) {
-                    return candidate.value === values[name];
-                });
-                if (radio) {
-                    radio.checked = true;
-                    radio.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-                return;
-            }
-
-            field.value = values[name];
-            field.dispatchEvent(new Event('input', { bubbles: true }));
-            field.dispatchEvent(new Event('change', { bubbles: true }));
+            applyNamedValue(name, values[name]);
         });
 
         document.querySelectorAll('.tenant-palette-button[aria-pressed="true"]').forEach(function (pressed) {
@@ -105,16 +121,44 @@
         button.setAttribute('aria-pressed', 'true');
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    function enhanceColorFields() {
         document.querySelectorAll('input[type="text"], input:not([type])').forEach(enhance);
+    }
+
+    function bindPaletteButtons() {
+        if (paletteBound) {
+            return;
+        }
+
+        paletteBound = true;
+        document.addEventListener('click', function (event) {
+            var button = event.target.closest('.tenant-palette-button[data-tenant-palette]');
+
+            if (!button) {
+                return;
+            }
+
+            event.preventDefault();
+            applyPalette(button);
+        });
 
         document.querySelectorAll('.tenant-palette-button[data-tenant-palette]').forEach(function (button) {
-            button.setAttribute('aria-pressed', 'false');
-            button.addEventListener('click', function () {
-                applyPalette(button);
-            });
+            if (!button.hasAttribute('aria-pressed')) {
+                button.setAttribute('aria-pressed', 'false');
+            }
         });
-    });
+    }
+
+    function boot() {
+        enhanceColorFields();
+        bindPaletteButtons();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
 }());
 
 // End of file.

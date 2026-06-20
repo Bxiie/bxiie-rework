@@ -8,4 +8,6 @@ The first palette, **Default**, restores the standard ArtsFolio new-site color d
 
 Palette buttons do not replace your selected background images. Use the existing image pickers in the same section to choose page, menu, top bar, or artwork-card background images.
 
+Opacity fields accept values from `0` to `1`, including two-decimal values such as `0.72`.
+
 # End of file.
