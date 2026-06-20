@@ -76,4 +76,8 @@ Admin control styling lives in:
 public/assets/tenant-admin.css
 ```
 
+## Live preview and cache behavior
+
+The font preview samples update immediately when a font picker or related size field changes. Public pages load `site.css` with a typography cache-bust query so saved font changes are not hidden by stale browser CSS.
+
 # End of file.

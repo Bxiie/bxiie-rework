@@ -556,7 +556,7 @@ HTML;
     <title>{$browserTitle}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Artist portfolio">
-    <link rel="stylesheet" href="/assets/site.css">
+    <link rel="stylesheet" href="/assets/site.css?v=20260620-typography-live">
     <link rel="stylesheet" href="/tenant.css">
     <script src="/assets/tenant-forms.js?v=20260602a" defer></script>
     {$turnstileScript}

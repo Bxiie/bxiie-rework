@@ -78,4 +78,8 @@ Preflight runs this test from:
 scripts/test/preflight.sh
 ```
 
+## Live preview and cache behavior
+
+The font preview samples update immediately when a font picker or related size field changes. Public pages load `site.css` with a typography cache-bust query so saved font changes are not hidden by stale browser CSS.
+
 # End of file.

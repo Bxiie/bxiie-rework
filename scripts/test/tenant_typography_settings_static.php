@@ -11,6 +11,7 @@ $settingsController = file_get_contents($root . '/app/Http/Controllers/Tenant/Ad
 $homeController = file_get_contents($root . '/app/Http/Controllers/Tenant/HomeController.php');
 $siteCss = file_get_contents($root . '/public/assets/site.css');
 $tenantAdminCss = file_get_contents($root . '/public/assets/tenant-admin.css');
+$typographyJs = file_get_contents($root . '/public/assets/admin-typography-fields.js');
 $preflight = file_get_contents($root . '/scripts/test/preflight.sh');
 
 $failures = [];
@@ -60,6 +61,13 @@ $mustContain = [
     [$siteCss, 'var(--tenant-font-footer', 'Public CSS uses footer font variable'],
     [$tenantAdminCss, '.tenant-typography-grid', 'Tenant admin CSS styles typography controls'],
     [$tenantAdminCss, '.font-picker-preview', 'Tenant admin CSS styles font picker preview'],
+    [$typographyJs, 'ArtsFolioTenantTypographyRefresh', 'Tenant typography JS exposes refresh helper'],
+    [$typographyJs, '.tenant-font-picker, input[name^="font_size_"]', 'Tenant typography JS listens to font and size controls'],
+    [$typographyJs, 'preview.style.fontFamily', 'Tenant typography JS updates preview font family'],
+    [$typographyJs, 'preview.style.fontSize', 'Tenant typography JS updates preview font size'],
+    [$homeController, 'site.css?v=20260620-typography-live', 'Public layout cache-busts typography CSS'],
+    [$tenantAdminCss, 'Tenant typography preview repair', 'Tenant admin CSS repairs live typography preview styling'],
+    [$siteCss, 'Tenant typography live repair', 'Public CSS has late high-specificity typography repair block'],
     [$preflight, 'tenant_typography_settings_static.php', 'Preflight runs tenant typography settings static check'],
 ];
 

@@ -1664,5 +1664,6 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 - Tenant color palette buttons use versioned tenant admin CSS and high-specificity palette styles so generic admin button rules cannot force all palette buttons to black.
 - Tenant color palettes now include ten presets; Midnight Olive and Ultraviolet Paper were added after the original eight. Static checks require every palette to define topbar/menu text colors with at least 4.5:1 contrast against their backgrounds.
+- Tenant typography settings use a versioned public `site.css` link and `admin-typography-fields.js` live preview helper so font picker/size previews update immediately and saved public font settings are not hidden by stale CSS.
 - Tenant Admin > Settings includes a Typography section with curated local/system font pickers and public font-size controls for home, portfolio, about, contact, artwork, forms, and footer text. Public pages emit tenant typography CSS variables from `HomeController`; `site.css` consumes them; static coverage lives in `scripts/test/tenant_typography_settings_static.php`.
 # End of file.

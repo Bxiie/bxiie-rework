@@ -105,6 +105,30 @@ body.tenant-admin-page{margin:0;min-height:100vh;background:#f4efe7;color:#17171
 .tenant-admin-public-header{isolation:isolate;background-color:var(--topbar-bg-overlay,var(--tenant-topbar-bg,rgba(255,248,236,.86)))!important;background-image:var(--topbar-bg-image);background-position:center;background-size:cover;background-repeat:no-repeat}.tenant-admin-public-header::before{z-index:0;background-color:var(--topbar-bg-overlay,rgba(255,248,236,.86));background-image:none}.tenant-admin-public-header>*{position:relative;z-index:1}.tenant-admin-panel{background-color:var(--content-bg-overlay,rgba(255,250,240,0))!important;box-shadow:0 20px 60px rgba(0,0,0,calc(var(--content-bg-opacity,0) * .10))}
 /* End tenant visual correction shared with public header. */
 
+
+
+/* Tenant typography preview repair. Keep font previews readable and make live
+   changes visible immediately when the select or size field changes. */
+.tenant-admin-panel .tenant-typography-grid .font-picker-preview,
+.tenant-typography-grid .font-picker-preview {
+  display: block !important;
+  min-height: 2.25rem !important;
+  margin-top: 0.35rem !important;
+  padding: 0.55rem 0.7rem !important;
+  border: 1px solid rgba(0, 0, 0, 0.18) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  color: #1f1a14 !important;
+  line-height: 1.25 !important;
+}
+
+.tenant-admin-panel .tenant-typography-grid .tenant-font-picker,
+.tenant-typography-grid .tenant-font-picker {
+  width: 100% !important;
+}
+
+/* End tenant typography preview repair. */
+
 /* End of file. */
 
 /* Platform/tenant separation and directory thumbnail picker. */

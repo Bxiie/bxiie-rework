@@ -412,6 +412,105 @@ body[style*="--background-image"]::before {
 
 
 
+
+
+/* Tenant typography live repair. This late block intentionally carries higher
+   specificity and !important on public typography declarations so saved tenant
+   settings beat older responsive rules and earlier hard-coded sizes. */
+body,
+body .site-main,
+body .site-main p,
+body .site-main li,
+body .site-main td,
+body .site-main th {
+  font-family: var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif) !important;
+  font-size: var(--tenant-font-size-body, 1rem) !important;
+}
+
+body .site-header .brand,
+body header.site-header .brand {
+  font-family: var(--tenant-font-brand, var(--tenant-font-heading, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif))) !important;
+  font-size: var(--tenant-font-size-brand, clamp(28px, 5vw, 64px)) !important;
+}
+
+body .site-header nav a,
+body header.site-header nav a,
+body .portfolio-tabs a,
+body .chips a {
+  font-family: var(--tenant-font-nav, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
+  font-size: var(--tenant-font-size-nav, 14px) !important;
+}
+
+body .site-main h1,
+body .site-main .hero h1,
+body .artwork h1,
+body h1 {
+  font-family: var(--tenant-font-heading, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
+  font-size: var(--tenant-font-size-heading, clamp(40px, 8vw, 110px)) !important;
+}
+
+body .site-main h2,
+body .site-main h3,
+body .events h2,
+body .contact-grid h2,
+body .artwork-sales-panel h2 {
+  font-family: var(--tenant-font-heading, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
+  font-size: var(--tenant-font-size-subheading, clamp(1.5rem, 3vw, 2.25rem)) !important;
+}
+
+body .site-main .prose,
+body .site-main .hero p,
+body .site-main .sales-notes,
+body .site-main .event-card,
+body .site-main .events-table {
+  font-family: var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif) !important;
+  font-size: var(--tenant-font-size-prose, clamp(18px, 2vw, 24px)) !important;
+}
+
+body .card span,
+body .artwork-card span,
+body .home-grid .card span,
+body .site-main article h2,
+body .site-main article h2 a {
+  font-family: var(--tenant-font-artwork-title, var(--tenant-font-heading, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif))) !important;
+  font-size: var(--tenant-font-size-artwork-title, 1.1rem) !important;
+}
+
+body .card small,
+body .art-meta,
+body .site-main article small {
+  font-family: var(--tenant-font-artwork-meta, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
+  font-size: var(--tenant-font-size-artwork-meta, 0.95rem) !important;
+}
+
+body .form,
+body .plan-edit-form,
+body .contact-grid form,
+body .tenant-footer-signup,
+body .form input,
+body .form textarea,
+body .form select,
+body .form button,
+body .plan-edit-form input,
+body .plan-edit-form textarea,
+body .plan-edit-form select,
+body .plan-edit-form button,
+body .tenant-footer-signup input,
+body .tenant-footer-signup button {
+  font-family: var(--tenant-font-form, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
+  font-size: var(--tenant-font-size-form, 1rem) !important;
+}
+
+body .site-footer,
+body .site-footer a,
+body .tenant-public-footer,
+body .tenant-social-links a {
+  font-family: var(--tenant-font-footer, var(--tenant-font-body, Inter, ui-sans-serif, system-ui, sans-serif)) !important;
+  font-size: var(--tenant-font-size-footer, 0.95rem) !important;
+}
+
+/* End tenant typography live repair. */
+
 /* End of file. */
 
 
