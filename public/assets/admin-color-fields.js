@@ -63,8 +63,57 @@
         syncFromText();
     }
 
+    function cssNameSelector(name) {
+        return '[name="' + String(name).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"]';
+    }
+
+    function applyPalette(button) {
+        var values = {};
+
+        try {
+            values = JSON.parse(button.getAttribute('data-tenant-palette') || '{}');
+        } catch (error) {
+            return;
+        }
+
+        Object.keys(values).forEach(function (name) {
+            var field = document.querySelector(cssNameSelector(name));
+
+            if (!field) {
+                return;
+            }
+
+            if (field.type === 'radio') {
+                var radio = Array.prototype.slice.call(document.querySelectorAll(cssNameSelector(name))).find(function (candidate) {
+                    return candidate.value === values[name];
+                });
+                if (radio) {
+                    radio.checked = true;
+                    radio.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                return;
+            }
+
+            field.value = values[name];
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
+        document.querySelectorAll('.tenant-palette-button[aria-pressed="true"]').forEach(function (pressed) {
+            pressed.setAttribute('aria-pressed', 'false');
+        });
+        button.setAttribute('aria-pressed', 'true');
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('input[type="text"], input:not([type])').forEach(enhance);
+
+        document.querySelectorAll('.tenant-palette-button[data-tenant-palette]').forEach(function (button) {
+            button.setAttribute('aria-pressed', 'false');
+            button.addEventListener('click', function () {
+                applyPalette(button);
+            });
+        });
     });
 }());
 

@@ -517,3 +517,69 @@ body.tenant-admin-page {
 }
 
 /* End of file. */
+
+/* Tenant color palette buttons for site settings. */
+.tenant-palette-toolbar {
+  display: grid !important;
+  gap: 0.9rem !important;
+  margin: 0 0 1.25rem !important;
+  padding: 1rem !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.74) !important;
+}
+
+.tenant-palette-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)) !important;
+  gap: 0.85rem !important;
+}
+
+.tenant-palette-button {
+  display: grid !important;
+  gap: 0.5rem !important;
+  align-content: start !important;
+  min-height: 132px !important;
+  padding: 0.9rem !important;
+  border: 1px solid rgba(0, 0, 0, 0.16) !important;
+  border-radius: 16px !important;
+  background: #fff !important;
+  color: #1f1a14 !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06) !important;
+}
+
+.tenant-palette-button:hover,
+.tenant-palette-button:focus,
+.tenant-palette-button[aria-pressed="true"] {
+  border-color: #111 !important;
+  outline: 3px solid rgba(0, 0, 0, 0.13) !important;
+}
+
+.tenant-palette-name {
+  font-weight: 950 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.tenant-palette-swatches {
+  display: flex !important;
+  gap: 0.35rem !important;
+  flex-wrap: wrap !important;
+}
+
+.tenant-palette-swatch {
+  width: 2rem !important;
+  height: 2rem !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(0, 0, 0, 0.25) !important;
+  background: var(--palette-swatch) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.36) !important;
+}
+
+.tenant-palette-description {
+  color: #5d5549 !important;
+  font-size: 0.9rem !important;
+  line-height: 1.35 !important;
+}
+
+/* End of file. */

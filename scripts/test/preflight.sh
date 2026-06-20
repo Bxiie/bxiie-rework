@@ -143,6 +143,7 @@ run_if_exists scripts/test/email_outbox_diagnostics_static.php
 php scripts/test/email_logo_branding_static.php
 php scripts/test/branded_error_pages_static.php
 php scripts/test/tenant_getting_started_branding_static.php
+php scripts/test/tenant_color_palettes_static.php
 php scripts/test/tenant_sidebar_readability_static.php
 php scripts/test/branded_csrf_static.php
 php scripts/test/email_html_logo_pipeline_static.php

@@ -1,0 +1,39 @@
+# Tenant color palettes
+
+Tenant color/background palette presets are defined in:
+
+```text
+app/Http/Controllers/Tenant/Admin/SettingsController.php
+```
+
+The `palettes()` method returns the eight named palettes. The first entry must remain the new-site **Default** palette. `paletteButtons()` renders non-submit buttons with a JSON payload in `data-tenant-palette`.
+
+Palette application is progressive JavaScript in:
+
+```text
+public/assets/admin-color-fields.js
+```
+
+The same script already enhances color text fields with color pickers and swatches. Palette clicks update existing form fields, dispatch `input` and `change` events, and therefore keep the enhanced picker/swatch UI in sync. The settings form still saves through the normal `SettingsController::update()` path.
+
+Styles live in:
+
+```text
+public/assets/tenant-admin.css
+```
+
+Regression coverage lives in:
+
+```text
+scripts/test/tenant_color_palettes_static.php
+```
+
+and is called from:
+
+```text
+scripts/test/preflight.sh
+```
+
+When adding or changing palettes, update the static test and documentation at the same time.
+
+# End of file.

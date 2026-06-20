@@ -90,6 +90,7 @@ final class SettingsController
         $backgroundPicker = $this->siteImagePicker($tenant, 'background_media_uuid', $backgroundMediaUuid, true);
         $tenantCss = $this->setting($tenant, 'tenant_css', '');
         $artworkDisplayOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
+        $paletteButtons = $this->paletteButtons();
 
         $selected = static fn (string $actual, string $expected): string => $actual === $expected ? ' selected' : '';
         $checked = static fn (string $actual, string $expected): string => $actual === $expected ? ' checked' : '';
@@ -136,6 +137,7 @@ final class SettingsController
 
         <fieldset>
             <legend>Colors and background</legend>
+            {$paletteButtons}
             <div class="admin-grid-2">
                 <label>Primary color<input name="primary_color" value="{$primaryColor}"></label>
                 <label>Accent color<input name="accent_color" value="{$accentColor}"></label>
@@ -274,6 +276,287 @@ HTML;
         $this->auditAction($request, $tenant, $currentUser, ['before' => $before, 'after' => $after]);
 
         return new Response('', 303, ['Location' => '/admin/settings?notice=saved']);
+    }
+
+
+    /**
+     * Renders quick palette buttons for the color/background controls.
+     */
+    private function paletteButtons(): string
+    {
+        $buttons = '';
+
+        foreach ($this->palettes() as $palette) {
+            $data = htmlspecialchars(json_encode($palette['values'], JSON_THROW_ON_ERROR), ENT_QUOTES, 'UTF-8');
+            $name = $this->escape($palette['name']);
+            $description = $this->escape($palette['description']);
+            $swatches = '';
+
+            foreach ($palette['swatches'] as $swatch) {
+                $safeSwatch = $this->escape($swatch);
+                $swatches .= '<span class="tenant-palette-swatch" style="--palette-swatch:' . $safeSwatch . '" aria-hidden="true"></span>';
+            }
+
+            $buttons .= <<<HTML
+<button type="button" class="tenant-palette-button" data-tenant-palette="{$data}">
+    <span class="tenant-palette-name">{$name}</span>
+    <span class="tenant-palette-swatches">{$swatches}</span>
+    <span class="tenant-palette-description">{$description}</span>
+</button>
+HTML;
+        }
+
+        return <<<HTML
+<div class="tenant-palette-toolbar" aria-label="Color palette presets">
+    <p class="admin-help">Choose a palette to fill the color and background controls below. After applying one, adjust any individual picker or field before saving.</p>
+    <div class="tenant-palette-grid">
+        {$buttons}
+    </div>
+</div>
+HTML;
+    }
+
+    /**
+     * Defines tenant color/background presets. The first palette is the platform default for new sites.
+     *
+     * @return array<int, array{name: string, description: string, swatches: array<int, string>, values: array<string, string>}>
+     */
+    private function palettes(): array
+    {
+        return [
+            [
+                'name' => 'Default',
+                'description' => 'Warm paper, black text, muted gold accent.',
+                'swatches' => ['#f7f2e8', '#1f1a14', '#111111', '#c9a85f'],
+                'values' => [
+                    'primary_color' => '#111111',
+                    'accent_color' => '#c9a85f',
+                    'text_color' => '#1f1a14',
+                    'background_color' => '#f7f2e8',
+                    'topbar_background_color' => '#f7f2e8',
+                    'topbar_background_opacity' => '0.86',
+                    'menu_background_color' => '#f7f2e8',
+                    'menu_background_enabled' => '1',
+                    'menu_background_opacity' => '0.82',
+                    'heading_background_color' => '#fff8ec',
+                    'heading_background_opacity' => '0.72',
+                    'content_background_color' => '#fffaf0',
+                    'content_background_opacity' => '0',
+                    'text_background_color' => '#fff7e8',
+                    'text_background_opacity' => '0.72',
+                    'artwork_card_background_color' => '#fffaf0',
+                    'artwork_card_background_opacity' => '0',
+                    'background_mode' => 'single',
+                    'background_tile_size' => '360px',
+                    'background_opacity' => '0.12',
+                    'header_drop_shadow_enabled' => '1',
+                    'header_drop_shadow' => '0 18px 45px rgba(0,0,0,0.24)',
+                ],
+            ],
+            [
+                'name' => 'Gallery White',
+                'description' => 'Clean wall, charcoal type, quiet blue accent.',
+                'swatches' => ['#ffffff', '#202124', '#44546a', '#e9edf2'],
+                'values' => [
+                    'primary_color' => '#202124',
+                    'accent_color' => '#44546a',
+                    'text_color' => '#202124',
+                    'background_color' => '#ffffff',
+                    'topbar_background_color' => '#ffffff',
+                    'topbar_background_opacity' => '0.94',
+                    'menu_background_color' => '#ffffff',
+                    'menu_background_enabled' => '1',
+                    'menu_background_opacity' => '0.9',
+                    'heading_background_color' => '#f3f5f7',
+                    'heading_background_opacity' => '0.62',
+                    'content_background_color' => '#ffffff',
+                    'content_background_opacity' => '0',
+                    'text_background_color' => '#ffffff',
+                    'text_background_opacity' => '0.7',
+                    'artwork_card_background_color' => '#ffffff',
+                    'artwork_card_background_opacity' => '0',
+                    'background_mode' => 'single',
+                    'background_tile_size' => '360px',
+                    'background_opacity' => '0.05',
+                    'header_drop_shadow_enabled' => '1',
+                    'header_drop_shadow' => '0 14px 34px rgba(0,0,0,0.12)',
+                ],
+            ],
+            [
+                'name' => 'Ink Studio',
+                'description' => 'Deep ink surfaces with warm bone panels.',
+                'swatches' => ['#151515', '#f4efe4', '#d5a85d', '#29241f'],
+                'values' => [
+                    'primary_color' => '#f4efe4',
+                    'accent_color' => '#d5a85d',
+                    'text_color' => '#f4efe4',
+                    'background_color' => '#151515',
+                    'topbar_background_color' => '#151515',
+                    'topbar_background_opacity' => '0.9',
+                    'menu_background_color' => '#29241f',
+                    'menu_background_enabled' => '1',
+                    'menu_background_opacity' => '0.9',
+                    'heading_background_color' => '#29241f',
+                    'heading_background_opacity' => '0.78',
+                    'content_background_color' => '#151515',
+                    'content_background_opacity' => '0.15',
+                    'text_background_color' => '#29241f',
+                    'text_background_opacity' => '0.72',
+                    'artwork_card_background_color' => '#1f1c18',
+                    'artwork_card_background_opacity' => '0.12',
+                    'background_mode' => 'single',
+                    'background_tile_size' => '360px',
+                    'background_opacity' => '0.1',
+                    'header_drop_shadow_enabled' => '1',
+                    'header_drop_shadow' => '0 18px 50px rgba(0,0,0,0.45)',
+                ],
+            ],
+            [
+                'name' => 'Desert Clay',
+                'description' => 'Clay, sand, rust, and dark espresso text.',
+                'swatches' => ['#efe0cc', '#3a2418', '#b45d35', '#d49f6a'],
+                'values' => [
+                    'primary_color' => '#3a2418',
+                    'accent_color' => '#b45d35',
+                    'text_color' => '#3a2418',
+                    'background_color' => '#efe0cc',
+                    'topbar_background_color' => '#e6c7a5',
+                    'topbar_background_opacity' => '0.9',
+                    'menu_background_color' => '#e6c7a5',
+                    'menu_background_enabled' => '1',
+                    'menu_background_opacity' => '0.84',
+                    'heading_background_color' => '#f6eadc',
+                    'heading_background_opacity' => '0.68',
+                    'content_background_color' => '#f7ead9',
+                    'content_background_opacity' => '0.08',
+                    'text_background_color' => '#f6eadc',
+                    'text_background_opacity' => '0.7',
+                    'artwork_card_background_color' => '#f6eadc',
+                    'artwork_card_background_opacity' => '0.04',
+                    'background_mode' => 'single',
+                    'background_tile_size' => '360px',
+                    'background_opacity' => '0.1',
+                    'header_drop_shadow_enabled' => '1',
+                    'header_drop_shadow' => '0 16px 42px rgba(92,54,28,0.24)',
+                ],
+            ],
+            [
+                'name' => 'Forest Linen',
+                'description' => 'Moss, linen, walnut, and soft sage.',
+                'swatches' => ['#eef0df', '#203224', '#6f7f4f', '#c9d0a3'],
+                'values' => [
+                    'primary_color' => '#203224',
+                    'accent_color' => '#6f7f4f',
+                    'text_color' => '#203224',
+                    'background_color' => '#eef0df',
+                    'topbar_background_color' => '#dfe6c8',
+                    'topbar_background_opacity' => '0.88',
+                    'menu_background_color' => '#dfe6c8',
+                    'menu_background_enabled' => '1',
+                    'menu_background_opacity' => '0.82',
+                    'heading_background_color' => '#f5f3e7',
+                    'heading_background_opacity' => '0.68',
+                    'content_background_color' => '#f5f3e7',
+                    'content_background_opacity' => '0.05',
+                    'text_background_color' => '#f5f3e7',
+                    'text_background_opacity' => '0.72',
+                    'artwork_card_background_color' => '#f5f3e7',
+                    'artwork_card_background_opacity' => '0.04',
+                    'background_mode' => 'single',
+                    'background_tile_size' => '360px',
+                    'background_opacity' => '0.08',
+                    'header_drop_shadow_enabled' => '1',
+                    'header_drop_shadow' => '0 16px 40px rgba(32,50,36,0.2)',
+                ],
+            ],
+            [
+                'name' => 'Signal Blue',
+                'description' => 'Cold blue field with bright signal accent.',
+                'swatches' => ['#e8f0f7', '#142033', '#0f6b8f', '#f2b84b'],
+                'values' => [
+                    'primary_color' => '#142033',
+                    'accent_color' => '#0f6b8f',
+                    'text_color' => '#142033',
+                    'background_color' => '#e8f0f7',
+                    'topbar_background_color' => '#d8e7f2',
+                    'topbar_background_opacity' => '0.9',
+                    'menu_background_color' => '#d8e7f2',
+                    'menu_background_enabled' => '1',
+                    'menu_background_opacity' => '0.86',
+                    'heading_background_color' => '#f6fbff',
+                    'heading_background_opacity' => '0.7',
+                    'content_background_color' => '#f6fbff',
+                    'content_background_opacity' => '0.06',
+                    'text_background_color' => '#f6fbff',
+                    'text_background_opacity' => '0.72',
+                    'artwork_card_background_color' => '#f6fbff',
+                    'artwork_card_background_opacity' => '0.04',
+                    'background_mode' => 'single',
+                    'background_tile_size' => '360px',
+                    'background_opacity' => '0.08',
+                    'header_drop_shadow_enabled' => '1',
+                    'header_drop_shadow' => '0 16px 44px rgba(20,32,51,0.22)',
+                ],
+            ],
+            [
+                'name' => 'Rose Paper',
+                'description' => 'Soft blush paper, plum text, copper accent.',
+                'swatches' => ['#f6e7df', '#321824', '#ad6a5a', '#f8f0ea'],
+                'values' => [
+                    'primary_color' => '#321824',
+                    'accent_color' => '#ad6a5a',
+                    'text_color' => '#321824',
+                    'background_color' => '#f6e7df',
+                    'topbar_background_color' => '#f1d5cb',
+                    'topbar_background_opacity' => '0.88',
+                    'menu_background_color' => '#f1d5cb',
+                    'menu_background_enabled' => '1',
+                    'menu_background_opacity' => '0.82',
+                    'heading_background_color' => '#fff4ef',
+                    'heading_background_opacity' => '0.7',
+                    'content_background_color' => '#fff4ef',
+                    'content_background_opacity' => '0.06',
+                    'text_background_color' => '#fff4ef',
+                    'text_background_opacity' => '0.72',
+                    'artwork_card_background_color' => '#fff4ef',
+                    'artwork_card_background_opacity' => '0.03',
+                    'background_mode' => 'single',
+                    'background_tile_size' => '360px',
+                    'background_opacity' => '0.08',
+                    'header_drop_shadow_enabled' => '1',
+                    'header_drop_shadow' => '0 16px 42px rgba(50,24,36,0.18)',
+                ],
+            ],
+            [
+                'name' => 'Concrete Pop',
+                'description' => 'Neutral concrete with black type and hot accent.',
+                'swatches' => ['#e6e2da', '#151515', '#ff5a3d', '#f8f7f4'],
+                'values' => [
+                    'primary_color' => '#151515',
+                    'accent_color' => '#ff5a3d',
+                    'text_color' => '#151515',
+                    'background_color' => '#e6e2da',
+                    'topbar_background_color' => '#f8f7f4',
+                    'topbar_background_opacity' => '0.9',
+                    'menu_background_color' => '#f8f7f4',
+                    'menu_background_enabled' => '1',
+                    'menu_background_opacity' => '0.84',
+                    'heading_background_color' => '#f8f7f4',
+                    'heading_background_opacity' => '0.66',
+                    'content_background_color' => '#f8f7f4',
+                    'content_background_opacity' => '0.05',
+                    'text_background_color' => '#f8f7f4',
+                    'text_background_opacity' => '0.72',
+                    'artwork_card_background_color' => '#f8f7f4',
+                    'artwork_card_background_opacity' => '0.03',
+                    'background_mode' => 'single',
+                    'background_tile_size' => '360px',
+                    'background_opacity' => '0.08',
+                    'header_drop_shadow_enabled' => '1',
+                    'header_drop_shadow' => '0 16px 40px rgba(0,0,0,0.18)',
+                ],
+            ],
+        ];
     }
 
     /**
