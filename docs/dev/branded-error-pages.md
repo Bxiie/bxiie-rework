@@ -49,5 +49,11 @@ curl -ksS https://bxiie.artsfol.io/__definitely_missing_tenant_page__ | grep -E 
 
 Invalid or expired CSRF token responses must use `Response::invalidCsrf()` so security failures render inside the same platform or tenant branded error shell as 404 and 500 responses. Controllers must not return raw `<h1>Invalid CSRF token</h1>` markup.
 
+
+## Platform user lifecycle validation
+
+`Platform\Admin\UsersController` must use `Response::error()` for invalid user lifecycle requests. The regression check in `scripts/test/platform_user_lifecycle_static.php` verifies that platform user lifecycle failures are branded and that the list reads real `users.status` values rather than hardcoded active status.
+
 <!-- End of file. -->
+
 

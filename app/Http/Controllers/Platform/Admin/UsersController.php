@@ -42,6 +42,7 @@ final class UsersController
         $noticeText = match ((string) ($_GET['notice'] ?? '')) {
             'password-updated' => 'Platform user password updated.',
             'status-updated' => 'Platform user status updated.',
+            'self-status-blocked' => 'You cannot suspend or delete your own platform admin account.',
             'invite-queued' => 'Platform admin invite queued.',
             'invite-resent' => 'Platform admin invite resent.',
             default => '',
@@ -54,8 +55,14 @@ final class UsersController
             $email = AdminLayout::escape((string) $user['email']);
             $name = AdminLayout::escape((string) ($user['display_name'] ?? ''));
             $roles = AdminLayout::escape((string) ($user['roles'] ?? ''));
-            $status = AdminLayout::escape((string) ($user['user_status'] ?? 'active'));
-            $statusActions = $this->userStatusActions($id, (string) ($user['user_status'] ?? 'active'), $csrf);
+            $rawStatus = (string) ($user['user_status'] ?? 'active');
+            $status = AdminLayout::escape($rawStatus);
+            $statusActions = $this->userStatusActions(
+                $id,
+                $rawStatus,
+                $csrf,
+                $id === (int) ($currentUser['user_id'] ?? 0),
+            );
             $created = AdminLayout::escape((string) ($user['created_at'] ?? ''));
             $lastLogin = AdminLayout::escape((string) ($user['last_login_at'] ?? 'Never'));
             $rows .= <<<HTML
@@ -103,7 +110,7 @@ HTML;
     </form>
 </section>
 <table class="admin-table">
-    <thead><tr><th>ID</th><th>User</th><th>Roles</th><th>Last log on</th><th>Created</th><th>Password</th><th>Lifecycle</th></tr></thead>
+    <thead><tr><th>ID</th><th>User</th><th>Roles</th><th>Last log on</th><th>Created</th><th>Actions</th></tr></thead>
     <tbody>{$rows}</tbody>
 </table>
 <script>document.querySelectorAll('.confirm-platform-user-action').forEach(function(form){form.addEventListener('submit',function(event){var action=form.getAttribute('data-action')||'update';if(!confirm('Confirm '+action+' for this user. This affects access immediately.')){event.preventDefault();}});});</script>
@@ -227,8 +234,13 @@ HTML,
 
         $userId = (int) ($_POST['user_id'] ?? 0);
         $status = (string) ($_POST['status'] ?? '');
-        if ($userId < 1 || !in_array($status, ['active', 'suspended', 'deleted'], true)) {
-            return Response::html('<h1>Invalid user status request</h1>', 422);
+        if ($userId < 1 || !in_array($status, ['active', 'suspended', 'deleted'], true) || !$this->users->userIsPlatformUser($userId)) {
+            return Response::error(422, 'Invalid user status request', 'The requested platform user status change could not be applied.');
+        }
+
+        if ($userId === (int) ($currentUser['user_id'] ?? 0) && $status !== 'active') {
+            FlashMessages::error('You cannot suspend or delete your own platform admin account.');
+            return new Response('', 303, ['Location' => '/platform/admin/users?notice=self-status-blocked']);
         }
 
         $this->users->setUserStatus($userId, $status);
@@ -238,14 +250,18 @@ HTML,
         return new Response('', 303, ['Location' => '/platform/admin/users?notice=status-updated']);
     }
 
-    private function userStatusActions(int $userId, string $status, string $csrf): string
+    private function userStatusActions(int $userId, string $status, string $csrf, bool $isCurrentUser = false): string
     {
+        if ($isCurrentUser) {
+            return '<small class="admin-muted">Current user lifecycle actions are disabled.</small>';
+        }
+
         $buttons = '';
         foreach (['active' => 'Reactivate', 'suspended' => 'Suspend', 'deleted' => 'Delete'] as $target => $label) {
             if ($target === $status) {
                 continue;
             }
-            $buttons .= '<form method="post" action="/platform/admin/users/status" class="admin-inline-form">'
+            $buttons .= '<form method="post" action="/platform/admin/users/status" class="admin-inline-form confirm-platform-user-action" data-action="' . AdminLayout::escape(strtolower($label)) . '">'
                 . '<input type="hidden" name="csrf_token" value="' . $csrf . '">'
                 . '<input type="hidden" name="user_id" value="' . $userId . '">'
                 . '<input type="hidden" name="status" value="' . AdminLayout::escape($target) . '">'
@@ -276,7 +292,11 @@ HTML,
         }
         $userId = (int) ($_POST['user_id'] ?? 0);
         if ($userId < 1 || !$this->users->userIsPlatformUser($userId)) {
-            return Response::html('<h1>Invalid user lifecycle request</h1>', 422);
+            return Response::error(422, 'Invalid user lifecycle request', 'The requested platform user lifecycle action could not be applied.');
+        }
+        if ($userId === (int) ($currentUser['user_id'] ?? 0)) {
+            FlashMessages::error('You cannot suspend or delete your own platform admin account.');
+            return new Response('', 303, ['Location' => '/platform/admin/users?notice=self-status-blocked']);
         }
         if ($action === 'delete') {
             $this->users->deleteUser($userId);

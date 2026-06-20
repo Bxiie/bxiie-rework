@@ -37,5 +37,11 @@ Application exception details are logged server-side and intentionally hidden fr
 
 Invalid or expired CSRF token responses must use `Response::invalidCsrf()` so security failures render inside the same platform or tenant branded error shell as 404 and 500 responses. Controllers must not return raw `<h1>Invalid CSRF token</h1>` markup.
 
+
+## Platform user lifecycle errors
+
+Platform-admin user suspend/delete validation failures render through the branded error system instead of raw `<h1>` responses. The default platform user list hides soft-deleted users and displays suspended users with their real `users.status` value.
+
 <!-- End of file. -->
+
 

@@ -91,6 +91,7 @@ run_if_exists scripts/test/tenant_audit_log_list.php
 run_if_exists scripts/test/platform_admin_role.php
 run_if_exists scripts/test/platform_admin_lists.php
 run_if_exists scripts/test/platform_user_invite_repository_static.php
+run_if_exists scripts/test/platform_user_lifecycle_static.php
 run_if_exists scripts/test/platform_settings.php
 
 run_if_exists scripts/test/tenant_admin_role.php

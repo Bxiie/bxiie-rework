@@ -47,15 +47,18 @@ final class AdminUserRepository
         return $stmt->fetchAll();
     }
 
-    public function platformUsers(): array
+    public function platformUsers(bool $includeDeleted = false): array
     {
+        $where = $includeDeleted ? '' : "WHERE COALESCE(u.status, 'active') <> 'deleted'";
         $stmt = $this->pdo->query(
             "SELECT
                 u.id,
                 u.uuid,
                 u.email,
                 u.display_name,
-                'active' AS user_status,
+                COALESCE(u.status, 'active') AS user_status,
+                u.suspended_at,
+                u.deleted_at,
                 u.created_at,
                 GROUP_CONCAT(DISTINCT r.slug ORDER BY r.slug SEPARATOR ', ') AS roles,
                 MAX(us.created_at) AS last_login_at
@@ -63,7 +66,8 @@ final class AdminUserRepository
              JOIN role_assignments ra ON ra.user_id = u.id AND ra.tenant_id IS NULL
              JOIN roles r ON r.id = ra.role_id AND r.scope = 'platform'
              LEFT JOIN user_sessions us ON us.user_id = u.id
-             GROUP BY u.id, u.uuid, u.email, u.display_name, u.created_at
+             {$where}
+             GROUP BY u.id, u.uuid, u.email, u.display_name, u.status, u.suspended_at, u.deleted_at, u.created_at
              ORDER BY u.email"
         );
 
@@ -319,8 +323,7 @@ final class AdminUserRepository
      */
     public function suspendUser(int $userId): void
     {
-        $stmt = $this->pdo->prepare("UPDATE users SET status = 'suspended', suspended_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = :user_id");
-        $stmt->execute(['user_id' => $userId]);
+        $this->setUserStatus($userId, 'suspended');
     }
 
     /**
@@ -328,8 +331,7 @@ final class AdminUserRepository
      */
     public function deleteUser(int $userId): void
     {
-        $stmt = $this->pdo->prepare("UPDATE users SET status = 'deleted', deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = :user_id");
-        $stmt->execute(['user_id' => $userId]);
+        $this->setUserStatus($userId, 'deleted');
     }
 }
 
