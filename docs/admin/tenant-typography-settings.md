@@ -4,6 +4,20 @@ Tenant Admin > Settings includes a Typography section for controlling public-sit
 
 The typography controls are convenience settings for the public tenant site. They save with the same full-page **Save site settings** buttons as the other settings sections.
 
+## Typography presets
+
+The top of the Typography section includes preset buttons. A preset fills the font-family and font-size controls, but does not save immediately. After selecting a preset, tenant admins can tweak every individual font and size control before clicking **Save site settings**.
+
+Current presets:
+
+- Clean Gallery
+- Editorial Serif
+- Museum Label
+- Poster Modern
+- Studio Notes
+- Bookish Warmth
+- Slab Signal
+
 ## Available controls
 
 Each tenant can choose font families for:
@@ -32,7 +46,7 @@ Each tenant can also choose sizes with sliders and numeric pixel boxes for:
 
 ## Font picker behavior
 
-The font picker uses curated local/system font stacks. This avoids external font downloads, tracking requests, privacy concerns, and slow page loads.
+The font picker uses an expanded curated local/system font list, including modern sans, humanist sans, editorial serifs, display faces, slab faces, and monospace/typewriter choices. This avoids external font downloads, tracking requests, privacy concerns, and slow page loads.
 
 The picker includes a small preview sample below each select. Size sliders update that same text preview, so there is not a second separate size-only preview. The preview is an admin aid only; saved values take effect on public tenant pages after saving.
 

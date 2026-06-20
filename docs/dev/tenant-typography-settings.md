@@ -32,6 +32,12 @@ font_size_form
 font_size_footer
 ```
 
+## Typography presets
+
+Typography preset data is defined in `SettingsController::typographyPresets()`. Preset buttons are rendered by `SettingsController::typographyPresetButtons()` and use `data-typography-preset` JSON payloads. The JavaScript helper applies those values to the existing editable controls, syncs slider/number/hidden size fields, refreshes previews, and leaves saving to the normal settings form.
+
+Presets currently include Clean Gallery, Editorial Serif, Museum Label, Poster Modern, Studio Notes, Bookish Warmth, and Slab Signal. Add new presets by using only fonts returned by `fontFamilyOptions()` and pixel values supported by the existing size controls.
+
 ## Admin UI
 
 The Typography fieldset is rendered by:
@@ -44,6 +50,9 @@ The font picker is intentionally curated and local/system only. The application 
 
 Validation happens during settings save:
 
+- `fontFamilyOptions()` provides the expanded local/system font list.
+- `typographyPresets()` provides preset font/size combinations.
+- `typographyPresetButtons()` renders preset buttons whose payloads fill the editable controls.
 - `safeFontFamily()` restricts family values to the curated list.
 - `fontSizeControl()` renders a range slider, numeric pixel field, and hidden submitted CSS value for each size. It does not render a separate size preview; JavaScript applies size changes to the matching font preview.
 - `fontSizePixels()` converts older `rem`, `em`, and `clamp(...)` values to friendly pixel values for the UI.
@@ -82,6 +91,6 @@ scripts/test/preflight.sh
 
 ## Live preview and cache behavior
 
-The font preview samples update immediately when a font picker, range slider, or numeric size field changes. Public pages load `site.css` with a typography cache-bust query and emit the late typography block after `/tenant.css`.
+The font preview samples update immediately when a font picker, typography preset, range slider, or numeric size field changes. Public pages load `site.css` with a typography cache-bust query and emit the late typography block after `/tenant.css`.
 
 # End of file.

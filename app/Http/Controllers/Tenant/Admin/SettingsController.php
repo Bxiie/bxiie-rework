@@ -138,6 +138,7 @@ final class SettingsController
         $tenantCss = $this->setting($tenant, 'tenant_css', '');
         $artworkDisplayOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
         $paletteButtons = $this->paletteButtons();
+        $typographyPresetButtons = $this->typographyPresetButtons();
         $saveButton = '<div class="settings-section-actions"><button type="submit">Save site settings</button></div>';
 
         $selected = static fn (string $actual, string $expected): string => $actual === $expected ? ' selected' : '';
@@ -189,7 +190,8 @@ final class SettingsController
 
         <fieldset>
             <legend>Typography</legend>
-            <p class="admin-help">Choose font families and sizes for text on the public home, portfolio, about, and contact pages. These fields update CSS variables, so the individual controls remain editable after selecting a font.</p>
+            <p class="admin-help">Choose font families and sizes for text on the public home, portfolio, about, and contact pages. Select a typography preset to fill the controls, then fine-tune individual fonts and sizes below.</p>
+            {$typographyPresetButtons}
             <div class="admin-grid-2 tenant-typography-grid">
                 <label>Body text font{$bodyFontSelect}<span class="font-picker-preview" data-font-preview="font_size_body" style="font-family: {$bodyFontPreview}; font-size: {$bodyFontSize}">Body text preview</span></label>
                 {$bodySizeControl}
@@ -382,15 +384,264 @@ HTML;
     {
         return [
             'Inter, ui-sans-serif, system-ui, sans-serif' => 'Inter / modern sans',
-            'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' => 'Serif / editorial',
-            'Georgia, "Times New Roman", Times, serif' => 'Georgia / gallery text',
-            'Baskerville, "Libre Baskerville", Georgia, serif' => 'Baskerville / formal serif',
-            'Didot, "Bodoni 72", "Bodoni 72 Smallcaps", Georgia, serif' => 'Didot / high contrast',
+            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' => 'System UI / native sans',
+            'Helvetica Neue, Helvetica, Arial, ui-sans-serif, sans-serif' => 'Helvetica / neutral sans',
+            'Arial, Helvetica, ui-sans-serif, sans-serif' => 'Arial / clean sans',
+            'Verdana, Geneva, ui-sans-serif, sans-serif' => 'Verdana / screen friendly',
+            'Trebuchet MS, Lucida Grande, Lucida Sans Unicode, Lucida Sans, Arial, sans-serif' => 'Trebuchet / casual sans',
             'Avenir, "Avenir Next", Montserrat, ui-sans-serif, system-ui, sans-serif' => 'Avenir / clean geometric',
             'Futura, "Trebuchet MS", Arial, ui-sans-serif, sans-serif' => 'Futura / modernist',
-            'Helvetica Neue, Helvetica, Arial, ui-sans-serif, sans-serif' => 'Helvetica / neutral sans',
-            'Optima, Candara, "Noto Sans", source-sans-pro, sans-serif' => 'Optima / humanist sans',
+            'Gill Sans, Gill Sans MT, Calibri, ui-sans-serif, sans-serif' => 'Gill Sans / humanist',
+            'Optima, Candara, "Noto Sans", source-sans-pro, sans-serif' => 'Optima / elegant sans',
+            'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' => 'Serif / editorial',
+            'Georgia, "Times New Roman", Times, serif' => 'Georgia / gallery text',
+            'Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif' => 'Palatino / literary serif',
+            'Baskerville, "Libre Baskerville", Georgia, serif' => 'Baskerville / formal serif',
+            'Garamond, "Times New Roman", Times, serif' => 'Garamond / bookish serif',
+            'Charter, "Bitstream Charter", Georgia, serif' => 'Charter / readable serif',
+            'Hoefler Text, "Iowan Old Style", "Times New Roman", serif' => 'Hoefler / refined serif',
+            'Didot, "Bodoni 72", "Bodoni 72 Smallcaps", Georgia, serif' => 'Didot / high contrast',
+            'Copperplate, Copperplate Gothic Light, fantasy' => 'Copperplate / engraved display',
+            'Rockwell, "Courier Bold", Courier, Georgia, serif' => 'Rockwell / slab display',
             'Menlo, Monaco, Consolas, "Liberation Mono", monospace' => 'Monospace / technical',
+            'Courier New, Courier, monospace' => 'Courier / typewriter',
+        ];
+    }
+
+    /**
+     * Renders quick preset buttons for the typography controls.
+     */
+    private function typographyPresetButtons(): string
+    {
+        $buttons = '';
+
+        foreach ($this->typographyPresets() as $preset) {
+            $data = htmlspecialchars(json_encode($preset['values'], JSON_THROW_ON_ERROR), ENT_QUOTES, 'UTF-8');
+            $name = $this->escape($preset['name']);
+            $description = $this->escape($preset['description']);
+            $tone = $this->escape($preset['tone']);
+            $heading = $this->escape($preset['values']['font_family_heading']);
+            $body = $this->escape($preset['values']['font_family_body']);
+            $accent = $this->escape($preset['accent']);
+
+            $buttons .= <<<HTML
+<button type="button" class="tenant-typography-preset-button" data-typography-preset="{$data}" style="--typography-preset-heading: {$heading}; --typography-preset-body: {$body}; --typography-preset-accent: {$accent};">
+    <span class="typography-preset-name">{$name}</span>
+    <span class="typography-preset-tone">{$tone}</span>
+    <span class="typography-preset-heading">Sample heading</span>
+    <span class="typography-preset-body">Sample body text</span>
+    <span class="typography-preset-description">{$description}</span>
+</button>
+HTML;
+        }
+
+        return '<div class="tenant-typography-presets" aria-label="Typography presets">' . $buttons . '</div>';
+    }
+
+    /**
+     * Returns public-safe typography presets. Applying a preset only fills the
+     * editable font and size controls; tenants can continue tweaking afterward.
+     *
+     * @return list<array{name: string, tone: string, description: string, accent: string, values: array<string, string>}>
+     */
+    private function typographyPresets(): array
+    {
+        $modernSans = 'Inter, ui-sans-serif, system-ui, sans-serif';
+        $nativeSans = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+        $editorial = 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif';
+        $georgia = 'Georgia, "Times New Roman", Times, serif';
+        $baskerville = 'Baskerville, "Libre Baskerville", Georgia, serif';
+        $didot = 'Didot, "Bodoni 72", "Bodoni 72 Smallcaps", Georgia, serif';
+        $futura = 'Futura, "Trebuchet MS", Arial, ui-sans-serif, sans-serif';
+        $optima = 'Optima, Candara, "Noto Sans", source-sans-pro, sans-serif';
+        $menlo = 'Menlo, Monaco, Consolas, "Liberation Mono", monospace';
+        $palatino = 'Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif';
+        $gill = 'Gill Sans, Gill Sans MT, Calibri, ui-sans-serif, sans-serif';
+        $rockwell = 'Rockwell, "Courier Bold", Courier, Georgia, serif';
+
+        return [
+            [
+                'name' => 'Clean Gallery',
+                'tone' => 'balanced sans',
+                'description' => 'Modern, quiet, and legible for image-first portfolios.',
+                'accent' => '#44546a',
+                'values' => [
+                    'font_family_body' => $modernSans,
+                    'font_family_heading' => $modernSans,
+                    'font_family_brand' => $modernSans,
+                    'font_family_nav' => $modernSans,
+                    'font_family_artwork_title' => $modernSans,
+                    'font_family_artwork_meta' => $modernSans,
+                    'font_family_form' => $modernSans,
+                    'font_family_footer' => $modernSans,
+                    'font_size_body' => '18px',
+                    'font_size_heading' => '68px',
+                    'font_size_subheading' => '30px',
+                    'font_size_brand' => '48px',
+                    'font_size_nav' => '15px',
+                    'font_size_prose' => '22px',
+                    'font_size_artwork_title' => '20px',
+                    'font_size_artwork_meta' => '15px',
+                    'font_size_form' => '16px',
+                    'font_size_footer' => '15px',
+                ],
+            ],
+            [
+                'name' => 'Editorial Serif',
+                'tone' => 'magazine serif',
+                'description' => 'Serif body with crisp sans navigation for essays and statements.',
+                'accent' => '#8c6239',
+                'values' => [
+                    'font_family_body' => $editorial,
+                    'font_family_heading' => $baskerville,
+                    'font_family_brand' => $baskerville,
+                    'font_family_nav' => $nativeSans,
+                    'font_family_artwork_title' => $baskerville,
+                    'font_family_artwork_meta' => $nativeSans,
+                    'font_family_form' => $nativeSans,
+                    'font_family_footer' => $editorial,
+                    'font_size_body' => '19px',
+                    'font_size_heading' => '72px',
+                    'font_size_subheading' => '32px',
+                    'font_size_brand' => '54px',
+                    'font_size_nav' => '15px',
+                    'font_size_prose' => '23px',
+                    'font_size_artwork_title' => '22px',
+                    'font_size_artwork_meta' => '15px',
+                    'font_size_form' => '16px',
+                    'font_size_footer' => '15px',
+                ],
+            ],
+            [
+                'name' => 'Museum Label',
+                'tone' => 'formal quiet',
+                'description' => 'Refined headings, restrained labels, and readable catalog text.',
+                'accent' => '#6c6a5f',
+                'values' => [
+                    'font_family_body' => $georgia,
+                    'font_family_heading' => $didot,
+                    'font_family_brand' => $didot,
+                    'font_family_nav' => $optima,
+                    'font_family_artwork_title' => $didot,
+                    'font_family_artwork_meta' => $optima,
+                    'font_family_form' => $optima,
+                    'font_family_footer' => $georgia,
+                    'font_size_body' => '18px',
+                    'font_size_heading' => '78px',
+                    'font_size_subheading' => '30px',
+                    'font_size_brand' => '58px',
+                    'font_size_nav' => '14px',
+                    'font_size_prose' => '21px',
+                    'font_size_artwork_title' => '22px',
+                    'font_size_artwork_meta' => '14px',
+                    'font_size_form' => '16px',
+                    'font_size_footer' => '14px',
+                ],
+            ],
+            [
+                'name' => 'Poster Modern',
+                'tone' => 'bold geometric',
+                'description' => 'Large modernist display typography with sturdy sans details.',
+                'accent' => '#ff6b35',
+                'values' => [
+                    'font_family_body' => $nativeSans,
+                    'font_family_heading' => $futura,
+                    'font_family_brand' => $futura,
+                    'font_family_nav' => $futura,
+                    'font_family_artwork_title' => $futura,
+                    'font_family_artwork_meta' => $nativeSans,
+                    'font_family_form' => $nativeSans,
+                    'font_family_footer' => $nativeSans,
+                    'font_size_body' => '18px',
+                    'font_size_heading' => '88px',
+                    'font_size_subheading' => '34px',
+                    'font_size_brand' => '64px',
+                    'font_size_nav' => '16px',
+                    'font_size_prose' => '22px',
+                    'font_size_artwork_title' => '24px',
+                    'font_size_artwork_meta' => '15px',
+                    'font_size_form' => '16px',
+                    'font_size_footer' => '15px',
+                ],
+            ],
+            [
+                'name' => 'Studio Notes',
+                'tone' => 'technical calm',
+                'description' => 'Monospace metadata with humanist text for process-heavy work.',
+                'accent' => '#1463ff',
+                'values' => [
+                    'font_family_body' => $optima,
+                    'font_family_heading' => $optima,
+                    'font_family_brand' => $optima,
+                    'font_family_nav' => $menlo,
+                    'font_family_artwork_title' => $optima,
+                    'font_family_artwork_meta' => $menlo,
+                    'font_family_form' => $menlo,
+                    'font_family_footer' => $menlo,
+                    'font_size_body' => '18px',
+                    'font_size_heading' => '64px',
+                    'font_size_subheading' => '28px',
+                    'font_size_brand' => '46px',
+                    'font_size_nav' => '14px',
+                    'font_size_prose' => '21px',
+                    'font_size_artwork_title' => '20px',
+                    'font_size_artwork_meta' => '13px',
+                    'font_size_form' => '15px',
+                    'font_size_footer' => '13px',
+                ],
+            ],
+            [
+                'name' => 'Bookish Warmth',
+                'tone' => 'warm literary',
+                'description' => 'Classic book typography, good for about pages and longer prose.',
+                'accent' => '#a35d35',
+                'values' => [
+                    'font_family_body' => $palatino,
+                    'font_family_heading' => $palatino,
+                    'font_family_brand' => $palatino,
+                    'font_family_nav' => $gill,
+                    'font_family_artwork_title' => $palatino,
+                    'font_family_artwork_meta' => $gill,
+                    'font_family_form' => $gill,
+                    'font_family_footer' => $palatino,
+                    'font_size_body' => '19px',
+                    'font_size_heading' => '66px',
+                    'font_size_subheading' => '30px',
+                    'font_size_brand' => '50px',
+                    'font_size_nav' => '15px',
+                    'font_size_prose' => '24px',
+                    'font_size_artwork_title' => '21px',
+                    'font_size_artwork_meta' => '15px',
+                    'font_size_form' => '16px',
+                    'font_size_footer' => '15px',
+                ],
+            ],
+            [
+                'name' => 'Slab Signal',
+                'tone' => 'graphic punch',
+                'description' => 'Slab display type for bolder, more poster-like artist sites.',
+                'accent' => '#c45d75',
+                'values' => [
+                    'font_family_body' => $nativeSans,
+                    'font_family_heading' => $rockwell,
+                    'font_family_brand' => $rockwell,
+                    'font_family_nav' => $nativeSans,
+                    'font_family_artwork_title' => $rockwell,
+                    'font_family_artwork_meta' => $nativeSans,
+                    'font_family_form' => $nativeSans,
+                    'font_family_footer' => $nativeSans,
+                    'font_size_body' => '18px',
+                    'font_size_heading' => '76px',
+                    'font_size_subheading' => '30px',
+                    'font_size_brand' => '56px',
+                    'font_size_nav' => '15px',
+                    'font_size_prose' => '22px',
+                    'font_size_artwork_title' => '22px',
+                    'font_size_artwork_meta' => '15px',
+                    'font_size_form' => '16px',
+                    'font_size_footer' => '15px',
+                ],
+            ],
         ];
     }
 

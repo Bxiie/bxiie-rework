@@ -4,6 +4,20 @@ Use Tenant Admin > Settings > Typography to change how text looks on your public
 
 The controls affect the public home, portfolio, about, contact, artwork, forms, and footer areas.
 
+## Typography presets
+
+At the top of the Typography section, preset buttons let you quickly try complete font-and-size combinations. A preset only fills the controls. It does not save immediately, and you can adjust any font or size afterward.
+
+Preset choices include:
+
+- Clean Gallery
+- Editorial Serif
+- Museum Label
+- Poster Modern
+- Studio Notes
+- Bookish Warmth
+- Slab Signal
+
 ## What you can change
 
 You can choose fonts for:
@@ -23,12 +37,12 @@ You can choose sizes for the same public-site areas.
 
 1. Open Tenant Admin > Settings.
 2. Scroll to Typography.
-3. Choose fonts from the picker.
+3. Choose a typography preset, or choose fonts from the picker manually.
 4. Adjust sizes with the slider or type a pixel number in the size box.
 5. Click any **Save site settings** button.
 6. View the public site and refresh the page.
 
-The font picker uses built-in browser/system fonts so your site stays fast and avoids external font downloads.
+The expanded font picker uses built-in browser/system fonts so your site stays fast and avoids external font downloads.
 
 ## Live preview and cache behavior
 

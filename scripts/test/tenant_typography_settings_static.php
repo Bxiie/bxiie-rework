@@ -19,11 +19,29 @@ $failures = [];
 $mustContain = [
     [$settingsController, '<legend>Typography</legend>', 'Settings page has Typography section'],
     [$settingsController, 'private function fontFamilyOptions(): array', 'Settings controller defines curated font picker choices'],
+
+    [$settingsController, 'private function typographyPresetButtons(): string', 'Settings controller renders typography preset buttons'],
+    [$settingsController, 'private function typographyPresets(): array', 'Settings controller defines typography presets'],
+    [$settingsController, 'data-typography-preset=', 'Typography preset buttons carry JSON payloads'],
+    [$settingsController, 'Clean Gallery', 'Typography preset Clean Gallery exists'],
+    [$settingsController, 'Editorial Serif', 'Typography preset Editorial Serif exists'],
+    [$settingsController, 'Museum Label', 'Typography preset Museum Label exists'],
+    [$settingsController, 'Poster Modern', 'Typography preset Poster Modern exists'],
+    [$settingsController, 'Studio Notes', 'Typography preset Studio Notes exists'],
+    [$settingsController, 'Bookish Warmth', 'Typography preset Bookish Warmth exists'],
+    [$settingsController, 'Slab Signal', 'Typography preset Slab Signal exists'],
+    [$settingsController, 'Gill Sans', 'Expanded font choices include Gill Sans'],
+    [$settingsController, 'Palatino', 'Expanded font choices include Palatino'],
+    [$settingsController, 'Rockwell', 'Expanded font choices include Rockwell'],
     [$settingsController, 'private function fontSelect(', 'Settings controller renders font picker selects'],
     [$settingsController, 'private function fontSizeControl(', 'Settings controller renders friendly font size controls'],
     [$settingsController, 'private function fontSizePixels(', 'Settings controller converts existing CSS sizes to slider pixels'],
     [$settingsController, 'data-font-size-value=', 'Typography size controls submit hidden CSS px values'],
     [$typographyJs, 'syncSizeControls', 'Tenant typography JS syncs range and number controls'],
+
+    [$typographyJs, 'handleTypographyPresetClick', 'Tenant typography JS handles preset button clicks'],
+    [$typographyJs, 'ArtsFolioApplyTenantTypographyPreset', 'Tenant typography JS exposes preset apply helper'],
+    [$typographyJs, 'syncSizeInputsFromPreset', 'Tenant typography JS syncs preset size values to range, number, and hidden inputs'],
     [$typographyJs, 'handleSizeInput', 'Tenant typography JS updates from the control that changed instead of snapping sliders back'],
     [$typographyJs, 'data-font-preview', 'Tenant typography JS updates the matching text preview instead of a separate size preview'],
     [$settingsController, 'private function safeFontFamily(', 'Settings controller validates font family selections'],
@@ -66,6 +84,10 @@ $mustContain = [
     [$siteCss, 'var(--tenant-font-form', 'Public CSS uses form font variable'],
     [$siteCss, 'var(--tenant-font-footer', 'Public CSS uses footer font variable'],
     [$tenantAdminCss, '.tenant-typography-grid', 'Tenant admin CSS styles typography controls'],
+
+    [$tenantAdminCss, '.tenant-typography-presets', 'Tenant admin CSS lays out typography preset buttons'],
+    [$tenantAdminCss, '.tenant-typography-preset-button', 'Tenant admin CSS styles typography preset buttons'],
+    [$tenantAdminCss, 'typography-preset-heading', 'Typography preset buttons preview heading font'],
     [$tenantAdminCss, '.font-picker-preview', 'Tenant admin CSS styles font picker preview'],
     [$typographyJs, 'ArtsFolioTenantTypographyRefresh', 'Tenant typography JS exposes refresh helper'],
     [$typographyJs, '[data-font-size-range], [data-font-size-number]', 'Tenant typography JS listens to slider and numeric size controls'],
@@ -92,6 +114,11 @@ foreach (['font_family_', 'font_size_'] as $prefix) {
     if (!str_contains($settingsController, "str_starts_with(\$key, '" . $prefix . "')")) {
         $failures[] = 'Settings update path does not validate ' . $prefix . ' keys.';
     }
+}
+
+
+if (substr_count($settingsController, "'name' =>") < 7 || substr_count($settingsController, 'data-typography-preset=') < 1) {
+    $failures[] = 'Typography presets should define at least seven presets and render preset buttons.';
 }
 
 if (substr_count($settingsController, '<select class="tenant-font-picker"') < 1) {

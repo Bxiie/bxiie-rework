@@ -70,6 +70,64 @@
     return document.querySelector('[name="' + name + '"]');
   }
 
+  function findTypographyPresetButton(node) {
+    while (node && node !== document) {
+      if (node.classList && node.classList.contains('tenant-typography-preset-button')) {
+        return node;
+      }
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function decodePresetPayload(button) {
+    var raw = button.getAttribute('data-typography-preset') || '';
+    if (!raw) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(raw);
+    } catch (error) {
+      if (window.console && window.console.warn) {
+        window.console.warn('Unable to parse ArtsFolio typography preset payload.', error);
+      }
+      return null;
+    }
+  }
+
+  function setFieldValue(name, value) {
+    var input = field(name);
+    if (!input) {
+      return;
+    }
+
+    input.value = value;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  function syncSizeInputsFromPreset(name, cssValue) {
+    var range = document.querySelector('[data-font-size-range="' + name + '"]');
+    var number = document.querySelector('[data-font-size-number="' + name + '"]');
+    var hidden = document.querySelector('[data-font-size-value="' + name + '"]');
+    var pixels = parseInt(cssValue, 10);
+
+    if (Number.isNaN(pixels)) {
+      return;
+    }
+
+    if (range) {
+      range.value = String(pixels);
+    }
+    if (number) {
+      number.value = String(pixels);
+    }
+    if (hidden) {
+      hidden.value = pixels + 'px';
+    }
+  }
+
   function isSafePreviewSize(value) {
     return /^(?:[0-9]+(?:\.[0-9]+)?(?:px|rem|em|%)|clamp\([0-9.]+(?:px|rem|em|%),\s*[0-9.]+(?:vw|vh|rem|em|%),\s*[0-9.]+(?:px|rem|em|%)\))$/.test(String(value || '').trim());
   }
@@ -183,6 +241,40 @@
     updateCssVariables();
   }
 
+  function applyTypographyPreset(button) {
+    var preset = decodePresetPayload(button);
+    if (!preset) {
+      return;
+    }
+
+    Object.keys(preset).forEach(function (name) {
+      setFieldValue(name, preset[name]);
+      if (SIZE_TO_VAR[name]) {
+        syncSizeInputsFromPreset(name, preset[name]);
+      }
+    });
+
+    var buttons = document.querySelectorAll('.tenant-typography-preset-button');
+    for (var index = 0; index < buttons.length; index += 1) {
+      buttons[index].classList.remove('tenant-typography-preset-applied');
+      buttons[index].setAttribute('aria-pressed', 'false');
+    }
+
+    button.classList.add('tenant-typography-preset-applied');
+    button.setAttribute('aria-pressed', 'true');
+    refreshAll();
+  }
+
+  function handleTypographyPresetClick(event) {
+    var button = findTypographyPresetButton(event.target);
+    if (!button) {
+      return;
+    }
+
+    event.preventDefault();
+    applyTypographyPreset(button);
+  }
+
   function handleSizeInput(event) {
     var target = event.target;
     var name = target.getAttribute('data-font-size-range') || target.getAttribute('data-font-size-number');
@@ -203,6 +295,8 @@
   }
 
   function boot() {
+    document.addEventListener('click', handleTypographyPresetClick);
+
     var fields = document.querySelectorAll('.tenant-font-picker');
     for (var index = 0; index < fields.length; index += 1) {
       fields[index].addEventListener('input', refreshAll);
@@ -214,6 +308,7 @@
 
   window.ArtsFolioTenantTypographyRefresh = refreshAll;
   window.ArtsFolioTenantTypographyBoot = boot;
+  window.ArtsFolioApplyTenantTypographyPreset = applyTypographyPreset;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);

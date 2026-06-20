@@ -129,6 +129,83 @@ body.tenant-admin-page{margin:0;min-height:100vh;background:#f4efe7;color:#17171
 
 /* End tenant typography preview repair. */
 
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 /* End of file. */
 
 /* Platform/tenant separation and directory thumbnail picker. */
@@ -243,6 +320,83 @@ body.tenant-admin-page{margin:0;min-height:100vh;background:#f4efe7;color:#17171
 .tenant-admin-public-header{isolation:isolate;background-color:var(--topbar-bg-overlay,var(--tenant-topbar-bg,rgba(255,248,236,.86)))!important;background-image:var(--topbar-bg-image);background-position:center;background-size:cover;background-repeat:no-repeat}.tenant-admin-public-header::before{z-index:0;background-color:var(--topbar-bg-overlay,rgba(255,248,236,.86));background-image:none}.tenant-admin-public-header>*{position:relative;z-index:1}.tenant-admin-panel{background-color:var(--content-bg-overlay,rgba(255,250,240,0))!important;box-shadow:0 20px 60px rgba(0,0,0,calc(var(--content-bg-opacity,0) * .10))}
 /* End tenant visual correction shared with public header. */
 
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 /* End of file. */
 
 /* Tenant admin readability and site-image picker controls. */
@@ -303,6 +457,83 @@ body.tenant-admin-page{margin:0;min-height:100vh;background:#f4efe7;color:#17171
 .tenant-admin-public-header{isolation:isolate;background-color:var(--topbar-bg-overlay,var(--tenant-topbar-bg,rgba(255,248,236,.86)))!important;background-image:var(--topbar-bg-image);background-position:center;background-size:cover;background-repeat:no-repeat}.tenant-admin-public-header::before{z-index:0;background-color:var(--topbar-bg-overlay,rgba(255,248,236,.86));background-image:none}.tenant-admin-public-header>*{position:relative;z-index:1}.tenant-admin-panel{background-color:var(--content-bg-overlay,rgba(255,250,240,0))!important;box-shadow:0 20px 60px rgba(0,0,0,calc(var(--content-bg-opacity,0) * .10))}
 /* End tenant visual correction shared with public header. */
 
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 /* End of file. */
 
 
@@ -337,6 +568,83 @@ body.tenant-admin-page{margin:0;min-height:100vh;background:#f4efe7;color:#17171
 }
 
 /* End tenant-admin surface variables. */
+
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
 
 /* End of file. */
 /* Tenant admin settings must preview the same page surfaces as the public site. */
@@ -448,6 +756,83 @@ body.tenant-admin-page {
 
 /* End tenant admin visual authority repair. */
 
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 /* End of file. */
 
 /* Tenant admin header buttons match link styling. */
@@ -471,10 +856,164 @@ body.tenant-admin-page {
   cursor: pointer !important;
 }
 
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 /* End of file. */
 
 /* Dashboard signal panels shared by platform and tenant admin home pages. */
 .dashboard-metric-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))!important;gap:16px!important;margin:0 0 22px!important}.dashboard-metric-card{display:grid!important;gap:8px!important;min-height:132px!important;padding:20px!important;border:1px solid rgba(0,0,0,.10)!important;border-radius:20px!important;background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(250,245,236,.94))!important;color:#171717!important;text-decoration:none!important;box-shadow:0 14px 34px rgba(0,0,0,.07)!important}.dashboard-metric-card:hover{transform:translateY(-1px);box-shadow:0 18px 42px rgba(0,0,0,.10)!important}.dashboard-metric-card span{font-size:.78rem!important;line-height:1.2!important;text-transform:uppercase!important;letter-spacing:.09em!important;color:#716858!important;font-weight:900!important}.dashboard-metric-card strong{font-size:clamp(1.75rem,4vw,2.9rem)!important;line-height:.95!important;letter-spacing:-.06em!important}.dashboard-metric-card small{font-size:.9rem!important;line-height:1.35!important;color:#5d5549!important}.dashboard-split-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))!important;gap:18px!important;margin:0 0 22px!important}.dashboard-section-head{display:flex!important;justify-content:space-between!important;gap:12px!important;align-items:center!important;margin:0 0 12px!important}.dashboard-section-head h2{margin:0!important;font-size:1.35rem!important;letter-spacing:-.03em!important}.dashboard-section-head a{font-weight:900!important;color:var(--primary,#111)!important}.dashboard-action-grid{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))!important}.dashboard-plan-panel{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))!important;gap:18px!important;margin:0 0 22px!important}.dashboard-plan-panel h2{margin:.15rem 0!important;font-size:clamp(1.35rem,3vw,2.2rem)!important;letter-spacing:-.05em!important}
+
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
 
 /* End of file. */
 
@@ -520,6 +1059,83 @@ body.tenant-admin-page {
     min-width: 11rem;
 }
 
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 /* End of file. */
 
 /* Tenant admin sidebar readability: default new-site menu text to dark on light menu panels. */
@@ -538,6 +1154,83 @@ body.tenant-admin-page {
 .tenant-admin-sidebar a,
 .tenant-admin-brand {
   color: #fff !important;
+}
+
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
 }
 
 /* End of file. */
@@ -630,6 +1323,83 @@ body.tenant-admin-page {
   line-height: 1.35 !important;
 }
 
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 /* End of file. */
 
 
@@ -705,6 +1475,83 @@ body.tenant-admin-page {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--palette-button-text, #111) 12%, transparent) !important;
 }
 
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 /* End of file. */
 
 /* Tenant palette buttons must beat the generic tenant-admin button rule above.
@@ -749,6 +1596,83 @@ body.tenant-admin-page {
   color: var(--palette-button-text, #1f1a14) !important;
 }
 
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 /* End of file. */
 
 /* Tenant typography controls. Font pickers use local/system font stacks only and
@@ -767,6 +1691,83 @@ body.tenant-admin-page {
   background: rgba(255, 255, 255, 0.72);
   color: #1f1a14;
 }
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 /* End of file. */
 
 /* Tenant typography size controls use sliders and numeric fields instead of
@@ -814,6 +1815,83 @@ body.tenant-admin-page {
 
 .tenant-admin-panel .tenant-font-size-control .admin-help {
   margin: 0 !important;
+}
+
+
+/* Tenant typography preset buttons mirror color palettes: choose a preset, then tweak individual controls. */
+.tenant-admin-panel .tenant-typography-presets,
+.tenant-typography-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button,
+.tenant-admin-panel fieldset .tenant-typography-preset-button,
+.tenant-admin-panel .admin-panel .tenant-typography-preset-button,
+.tenant-typography-preset-button {
+  display: grid !important;
+  gap: 0.45rem !important;
+  min-height: 160px !important;
+  padding: 0.95rem !important;
+  border: 2px solid color-mix(in srgb, var(--typography-preset-accent, #111) 56%, transparent) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--typography-preset-accent, #111) 16%, transparent), transparent 62%),
+    #fffaf4 !important;
+  color: #191714 !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.tenant-admin-panel .tenant-typography-preset-button:hover,
+.tenant-admin-panel .tenant-typography-preset-button:focus,
+.tenant-admin-panel .tenant-typography-preset-button[aria-pressed="true"],
+.tenant-typography-preset-button:hover,
+.tenant-typography-preset-button:focus,
+.tenant-typography-preset-button[aria-pressed="true"] {
+  border-color: var(--typography-preset-accent, #111) !important;
+  outline: 3px solid color-mix(in srgb, var(--typography-preset-accent, #111) 24%, transparent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tenant-typography-preset-applied {
+  outline: 4px solid var(--typography-preset-accent, #111) !important;
+}
+
+.tenant-typography-preset-button .typography-preset-name {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tenant-typography-preset-button .typography-preset-tone {
+  justify-self: start;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--typography-preset-accent, #111) 18%, #fff);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tenant-typography-preset-button .typography-preset-heading {
+  font-family: var(--typography-preset-heading, serif);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.tenant-typography-preset-button .typography-preset-body {
+  font-family: var(--typography-preset-body, sans-serif);
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.tenant-typography-preset-button .typography-preset-description {
+  color: rgba(25, 23, 20, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
 }
 
 /* End of file. */
