@@ -46,6 +46,7 @@ final class TenantAdminLayout
         $backgroundColor = self::escape($this->settings->get($tenant, 'background_color', '#f7f2e8'));
         $topbarBackground = self::escape($this->settings->get($tenant, 'topbar_background_color', '#f7f2e8'));
         $topbarText = self::escape($this->settings->get($tenant, 'topbar_text_color', '#111111'));
+        $menuText = self::escape($this->settings->get($tenant, 'menu_text_color', $topbarText));
         $textColor = self::escape($this->settings->get($tenant, 'text_color', '#1f1a14'));
         $surfaceStyle = self::tenantSurfaceCssVariables($tenant, $this->settings);
         $backgroundStyle = self::backgroundCssVariables($tenant, $this->settings);
@@ -62,10 +63,10 @@ final class TenantAdminLayout
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/assets/site.css">
     <link rel="stylesheet" href="/assets/tenant-admin.css">
-    <script defer src="/assets/admin-color-fields.js?v=20260620-topbar-preview"></script>
+    <script defer src="/assets/admin-color-fields.js?v=20260620-palette-contrast"></script>
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
 </head>
-<body class="tenant-admin-page" style="--primary: {$primaryColor}; --accent: {$accentColor}; --bg: {$backgroundColor}; --tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText}; --text-color: {$textColor}; {$backgroundStyle}{$surfaceStyle}">
+<body class="tenant-admin-page" style="--primary: {$primaryColor}; --accent: {$accentColor}; --bg: {$backgroundColor}; --tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText}; --menu-text-color: {$menuText}; --text-color: {$textColor}; {$backgroundStyle}{$surfaceStyle}">
 <header class="site-header tenant-admin-public-header">
     <a class="brand tenant-admin-brand" href="/"><strong>{$siteTitle}</strong><span>Tenant Admin</span></a>
     <nav>
@@ -152,6 +153,8 @@ HTML;
         $topbarOpacity = self::safeOpacity((string) $settings->get($tenant, 'topbar_background_opacity', '0.86'));
         $vars .= '--topbar-bg:' . self::safeCssColor($topbarColor) . ';';
         $vars .= '--tenant-topbar-bg:' . self::safeCssColor($topbarColor) . ';';
+        $vars .= '--tenant-topbar-text:' . self::safeCssColor((string) $settings->get($tenant, 'topbar_text_color', (string) $settings->get($tenant, 'text_color', '#1f1a14'))) . ';';
+        $vars .= '--menu-text-color:' . self::safeCssColor((string) $settings->get($tenant, 'menu_text_color', (string) $settings->get($tenant, 'topbar_text_color', (string) $settings->get($tenant, 'text_color', '#1f1a14')))) . ';';
         $vars .= '--topbar-bg-overlay:' . self::cssColorWithOpacity($topbarColor, $topbarOpacity) . ';';
         $vars .= '--topbar-bg-opacity:' . $topbarOpacity . ';';
         $vars .= '--tenant-header-shadow:' . ($settings->get($tenant, 'header_drop_shadow_enabled', '1') === '1' ? self::safeCssShadow((string) $settings->get($tenant, 'header_drop_shadow', '0 18px 45px rgba(0,0,0,0.24)')) : 'none') . ';';

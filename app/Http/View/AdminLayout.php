@@ -66,7 +66,7 @@ final class AdminLayout
     <link rel="stylesheet" href="/assets/platform.css">
     <link rel="stylesheet" href="/assets/platform-custom.css">
     <link rel="stylesheet" href="/assets/tenant-admin.css">
-    <script defer src="/assets/admin-color-fields.js?v=20260620-topbar-preview"></script>
+    <script defer src="/assets/admin-color-fields.js?v=20260620-palette-contrast"></script>
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
 </head>
 <body class="platform-admin-page">

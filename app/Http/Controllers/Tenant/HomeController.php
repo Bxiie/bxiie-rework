@@ -531,6 +531,8 @@ HTML;
         $backgroundColor = $this->escape($this->settings->get($tenant, 'background_color', '#f7f2e8'));
         $topbarBackgroundColor = $this->escape($this->settings->get($tenant, 'topbar_background_color', 'color-mix(in srgb, var(--bg), white 50%)'));
         $textColor = $this->escape($this->settings->get($tenant, 'text_color', '#1f1a14'));
+        $topbarTextColor = $this->escape($this->settings->get($tenant, 'topbar_text_color', $textColor));
+        $menuTextColor = $this->escape($this->settings->get($tenant, 'menu_text_color', $topbarTextColor));
         $surfaceStyle = $this->tenantSurfaceCssVariables($tenant);
         $homeTab = $this->escape($this->settings->get($tenant, 'home_tab', 'Home'));
         $portfolioTab = $this->escape($this->settings->get($tenant, 'portfolio_tab', 'Portfolio'));
@@ -558,7 +560,7 @@ HTML;
     <script src="/assets/tenant-forms.js?v=20260602a" defer></script>
     {$turnstileScript}
 </head>
-<body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};--text-color:{$textColor};{$backgroundStyle}{$surfaceStyle}">
+<body style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--topbar-bg:{$topbarBackgroundColor};--tenant-topbar-text:{$topbarTextColor};--menu-text-color:{$menuTextColor};--text-color:{$textColor};{$backgroundStyle}{$surfaceStyle}">
 <header class="site-header">
     <a class="brand" href="/">{$siteTitle}</a>
     <nav>
@@ -622,6 +624,8 @@ HTML;
         $topbarOpacity = $this->safeOpacity((string) $this->settings->get($tenant, 'topbar_background_opacity', '0.86'));
         $vars .= '--topbar-bg:' . $this->safeCssColor($topbarColor) . ';';
         $vars .= '--tenant-topbar-bg:' . $this->safeCssColor($topbarColor) . ';';
+        $vars .= '--tenant-topbar-text:' . $this->safeCssColor((string) $this->settings->get($tenant, 'topbar_text_color', (string) $this->settings->get($tenant, 'text_color', '#1f1a14'))) . ';';
+        $vars .= '--menu-text-color:' . $this->safeCssColor((string) $this->settings->get($tenant, 'menu_text_color', (string) $this->settings->get($tenant, 'topbar_text_color', (string) $this->settings->get($tenant, 'text_color', '#1f1a14')))) . ';';
         $vars .= '--topbar-bg-overlay:' . $this->cssColorWithOpacity($topbarColor, $topbarOpacity) . ';';
         $vars .= '--topbar-bg-opacity:' . $topbarOpacity . ';';
         $vars .= '--tenant-header-shadow:' . ($this->settings->get($tenant, 'header_drop_shadow_enabled', '1') === '1' ? $this->safeCssShadow((string) $this->settings->get($tenant, 'header_drop_shadow', '0 18px 45px rgba(0,0,0,0.24)')) : 'none') . ';';

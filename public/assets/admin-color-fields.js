@@ -149,9 +149,11 @@
     function syncTenantPreviewVariables() {
         var topbarColor = fieldValue('topbar_background_color');
         var topbarOpacity = fieldValue('topbar_background_opacity') || '0.86';
+        var topbarTextColor = fieldValue('topbar_text_color');
         var menuColor = fieldValue('menu_background_color');
         var menuOpacity = fieldValue('menu_background_opacity') || '0.86';
         var menuEnabled = fieldValue('menu_background_enabled') !== '0';
+        var menuTextColor = fieldValue('menu_text_color');
         var textColor = fieldValue('text_color');
         var backgroundColor = fieldValue('background_color');
         var headingColor = fieldValue('heading_background_color');
@@ -170,6 +172,10 @@
             setRootVariable('--topbar-bg-opacity', String(safeOpacity(topbarOpacity, 0.86)));
         }
 
+        if (topbarTextColor) {
+            setRootVariable('--tenant-topbar-text', topbarTextColor);
+        }
+
         if (menuColor) {
             setRootVariable('--menu-bg', menuColor);
             setRootVariable('--menu-bg-overlay', menuEnabled && safeOpacity(menuOpacity, 0.86) > 0 ? rgbaFromFields(menuColor, menuOpacity, 0.86) : 'transparent');
@@ -177,6 +183,10 @@
             setRootVariable('--menu-panel-padding', menuEnabled && safeOpacity(menuOpacity, 0.86) > 0 ? '0.35rem 0.55rem' : '0');
             setRootVariable('--menu-panel-radius', menuEnabled && safeOpacity(menuOpacity, 0.86) > 0 ? '999px' : '0');
             setRootVariable('--menu-panel-shadow', menuEnabled && safeOpacity(menuOpacity, 0.86) > 0 ? '0 12px 32px rgba(0,0,0,0.08)' : 'none');
+        }
+
+        if (menuTextColor) {
+            setRootVariable('--menu-text-color', menuTextColor);
         }
 
         if (textColor) {
@@ -212,9 +222,11 @@
         [
             'topbar_background_color',
             'topbar_background_opacity',
+            'topbar_text_color',
             'menu_background_color',
             'menu_background_opacity',
             'menu_background_enabled',
+            'menu_text_color',
             'text_color',
             'background_color',
             'heading_background_color',

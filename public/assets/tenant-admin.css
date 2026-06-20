@@ -616,3 +616,69 @@ body.tenant-admin-page {
   justify-content: flex-end;
   margin: -8px 0 8px;
 }
+
+/* Tenant palette contrast repair for the public header inside tenant admin. */
+.site-header.tenant-admin-public-header,
+.site-header.tenant-admin-public-header .brand,
+.site-header.tenant-admin-public-header .tenant-admin-brand {
+  color: var(--tenant-topbar-text, var(--text-color, #1f1a14)) !important;
+}
+
+.site-header.tenant-admin-public-header nav,
+.site-header.tenant-admin-public-header nav a,
+.site-header.tenant-admin-public-header nav .link-button {
+  color: var(--menu-text-color, var(--tenant-topbar-text, var(--text-color, #1f1a14))) !important;
+}
+
+.site-header.tenant-admin-public-header nav a:hover,
+.site-header.tenant-admin-public-header nav a:focus-visible,
+.site-header.tenant-admin-public-header nav .link-button:hover,
+.site-header.tenant-admin-public-header nav .link-button:focus-visible {
+  background: color-mix(in srgb, currentColor 14%, transparent) !important;
+}
+
+.tenant-palette-preview {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  grid-template-rows: auto 1fr !important;
+  overflow: hidden !important;
+  min-height: 4.5rem !important;
+  border-radius: 12px !important;
+  border: 1px solid color-mix(in srgb, var(--palette-button-text, #111) 20%, transparent) !important;
+  background: var(--palette-button-page, var(--palette-button-bg, #fff)) !important;
+}
+
+.tenant-palette-preview-topbar {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 1.65rem !important;
+  padding: 0.15rem 0.45rem !important;
+  background: var(--palette-button-topbar, var(--palette-button-bg, #fff)) !important;
+  color: var(--palette-button-topbar-text, var(--palette-button-text, #111)) !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.tenant-palette-preview-menu {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0.45rem !important;
+  border-radius: 999px !important;
+  background: var(--palette-button-menu, var(--palette-button-bg, #fff)) !important;
+  color: var(--palette-button-menu-text, var(--palette-button-text, #111)) !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.tenant-palette-preview-page {
+  margin: 0.45rem 0.45rem 0.45rem 0 !important;
+  border-radius: 10px !important;
+  background: var(--palette-button-surface, var(--palette-button-page, #fff)) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--palette-button-text, #111) 12%, transparent) !important;
+}
+
+/* End of file. */

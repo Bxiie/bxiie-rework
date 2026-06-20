@@ -60,9 +60,11 @@ final class SettingsController
         $textColor = $this->setting($tenant, 'text_color', '#1f1a14');
         $backgroundColor = $this->setting($tenant, 'background_color', '#f7f2e8');
         $topbarBackgroundColor = $this->setting($tenant, 'topbar_background_color', '');
+        $topbarTextColor = $this->setting($tenant, 'topbar_text_color', $textColor);
         $topbarBackgroundOpacity = $this->setting($tenant, 'topbar_background_opacity', '0.86');
         $topbarMediaUuid = (string) $this->settings->get($tenant, 'topbar_media_uuid', '');
         $menuBackgroundColor = $this->setting($tenant, 'menu_background_color', $topbarBackgroundColor);
+        $menuTextColor = $this->setting($tenant, 'menu_text_color', $topbarTextColor);
         $menuBackgroundOpacity = $this->setting($tenant, 'menu_background_opacity', '0.82');
         $menuBackgroundEnabled = $this->setting($tenant, 'menu_background_enabled', '1');
         $menuMediaUuid = (string) $this->settings->get($tenant, 'menu_media_uuid', '');
@@ -149,8 +151,10 @@ final class SettingsController
                 <label>Default text color<input name="text_color" value="{$textColor}"></label>
                 <label>Page background color<input name="background_color" value="{$backgroundColor}"></label>
                 <label>Top bar background color<input name="topbar_background_color" value="{$topbarBackgroundColor}"></label>
+                <label>Top bar text color<input name="topbar_text_color" value="{$topbarTextColor}"><span class="admin-help">Used for the site title against the top bar.</span></label>
                 <label>Top bar opacity<input type="number" name="topbar_background_opacity" min="0" max="1" step="0.01" value="{$topbarBackgroundOpacity}"></label>
                 <label>Menu background color<input name="menu_background_color" value="{$menuBackgroundColor}"></label>
+                <label>Menu text color<input name="menu_text_color" value="{$menuTextColor}"><span class="admin-help">Used for nav links and logout against the menu panel.</span></label>
                 <label>Menu background panel
                     <select name="menu_background_enabled">
                         <option value="1"{$selected($menuBackgroundEnabled, '1')}>Show panel</option>
@@ -252,8 +256,8 @@ HTML;
         $keys = [
             'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro', 'sales_notes', 'stripe_connected_account_id',
             'home_tab', 'portfolio_tab', 'about_tab', 'contact_tab', 'portfolio_slug', 'about_slug', 'contact_slug',
-            'primary_color', 'accent_color', 'text_color', 'background_color', 'topbar_background_color', 'topbar_background_opacity', 'topbar_media_uuid',
-            'menu_background_color', 'menu_background_enabled', 'menu_background_opacity', 'menu_media_uuid', 'heading_background_color', 'heading_background_opacity',
+            'primary_color', 'accent_color', 'text_color', 'background_color', 'topbar_background_color', 'topbar_text_color', 'topbar_background_opacity', 'topbar_media_uuid',
+            'menu_background_color', 'menu_text_color', 'menu_background_enabled', 'menu_background_opacity', 'menu_media_uuid', 'heading_background_color', 'heading_background_opacity',
             'content_background_color', 'content_background_opacity', 'text_background_color', 'text_background_opacity', 'header_drop_shadow_enabled', 'header_drop_shadow', 'artwork_card_background_color', 'artwork_card_background_opacity', 'artwork_card_background_size', 'artwork_card_media_uuid', 'background_media_uuid',
             'background_mode', 'background_tile_size', 'background_opacity', 'exhibitions_heading', 'exhibitions_display_mode',
             'tenant_css', 'artwork_display_order',
@@ -302,6 +306,12 @@ HTML;
             $buttonBackground = $this->escape($palette['button_background']);
             $buttonText = $this->escape($palette['button_text']);
             $buttonAccent = $this->escape($palette['button_accent']);
+            $buttonTopbar = $this->escape($palette['values']['topbar_background_color'] ?? $palette['button_background']);
+            $buttonTopbarText = $this->escape($palette['values']['topbar_text_color'] ?? $palette['button_text']);
+            $buttonMenu = $this->escape($palette['values']['menu_background_color'] ?? $palette['button_background']);
+            $buttonMenuText = $this->escape($palette['values']['menu_text_color'] ?? $palette['button_text']);
+            $buttonPage = $this->escape($palette['values']['background_color'] ?? $palette['button_background']);
+            $buttonSurface = $this->escape($palette['values']['text_background_color'] ?? $palette['button_background']);
             $swatches = '';
 
             foreach ($palette['swatches'] as $swatch) {
@@ -310,7 +320,12 @@ HTML;
             }
 
             $buttons .= <<<HTML
-<button type="button" class="tenant-palette-button" data-tenant-palette="{$data}" data-palette-tone="{$tone}" style="--palette-button-bg: {$buttonBackground}; --palette-button-text: {$buttonText}; --palette-button-accent: {$buttonAccent};">
+<button type="button" class="tenant-palette-button" data-tenant-palette="{$data}" data-palette-tone="{$tone}" style="--palette-button-bg: {$buttonBackground}; --palette-button-text: {$buttonText}; --palette-button-accent: {$buttonAccent}; --palette-button-topbar: {$buttonTopbar}; --palette-button-topbar-text: {$buttonTopbarText}; --palette-button-menu: {$buttonMenu}; --palette-button-menu-text: {$buttonMenuText}; --palette-button-page: {$buttonPage}; --palette-button-surface: {$buttonSurface};">
+    <span class="tenant-palette-preview" aria-hidden="true">
+        <span class="tenant-palette-preview-topbar">Aa</span>
+        <span class="tenant-palette-preview-menu">Nav</span>
+        <span class="tenant-palette-preview-page"></span>
+    </span>
     <span class="tenant-palette-name">{$name}</span>
     <span class="tenant-palette-swatches">{$swatches}</span>
     <span class="tenant-palette-description">{$description}</span>
@@ -350,8 +365,10 @@ HTML;
                     'text_color' => '#1f1a14',
                     'background_color' => '#f7f2e8',
                     'topbar_background_color' => '#f7f2e8',
+                    'topbar_text_color' => '#111111',
                     'topbar_background_opacity' => '0.86',
                     'menu_background_color' => '#f7f2e8',
+                    'menu_text_color' => '#1f1a14',
                     'menu_background_enabled' => '1',
                     'menu_background_opacity' => '0.82',
                     'heading_background_color' => '#fff8ec',
@@ -383,8 +400,10 @@ HTML;
                     'text_color' => '#202124',
                     'background_color' => '#ffffff',
                     'topbar_background_color' => '#ffffff',
+                    'topbar_text_color' => '#202124',
                     'topbar_background_opacity' => '0.94',
                     'menu_background_color' => '#ffffff',
+                    'menu_text_color' => '#202124',
                     'menu_background_enabled' => '1',
                     'menu_background_opacity' => '0.9',
                     'heading_background_color' => '#f3f5f7',
@@ -416,8 +435,10 @@ HTML;
                     'text_color' => '#f4efe4',
                     'background_color' => '#151515',
                     'topbar_background_color' => '#151515',
+                    'topbar_text_color' => '#f4efe4',
                     'topbar_background_opacity' => '0.9',
                     'menu_background_color' => '#29241f',
+                    'menu_text_color' => '#f4efe4',
                     'menu_background_enabled' => '1',
                     'menu_background_opacity' => '0.9',
                     'heading_background_color' => '#29241f',
@@ -449,8 +470,10 @@ HTML;
                     'text_color' => '#3a2418',
                     'background_color' => '#efe0cc',
                     'topbar_background_color' => '#e6c7a5',
+                    'topbar_text_color' => '#3a2418',
                     'topbar_background_opacity' => '0.9',
                     'menu_background_color' => '#e6c7a5',
+                    'menu_text_color' => '#3a2418',
                     'menu_background_enabled' => '1',
                     'menu_background_opacity' => '0.84',
                     'heading_background_color' => '#f6eadc',
@@ -482,8 +505,10 @@ HTML;
                     'text_color' => '#203224',
                     'background_color' => '#eef0df',
                     'topbar_background_color' => '#dfe6c8',
+                    'topbar_text_color' => '#203224',
                     'topbar_background_opacity' => '0.88',
                     'menu_background_color' => '#dfe6c8',
+                    'menu_text_color' => '#203224',
                     'menu_background_enabled' => '1',
                     'menu_background_opacity' => '0.82',
                     'heading_background_color' => '#f5f3e7',
@@ -515,8 +540,10 @@ HTML;
                     'text_color' => '#142033',
                     'background_color' => '#e8f0f7',
                     'topbar_background_color' => '#d8e7f2',
+                    'topbar_text_color' => '#142033',
                     'topbar_background_opacity' => '0.9',
                     'menu_background_color' => '#d8e7f2',
+                    'menu_text_color' => '#142033',
                     'menu_background_enabled' => '1',
                     'menu_background_opacity' => '0.86',
                     'heading_background_color' => '#f6fbff',
@@ -548,8 +575,10 @@ HTML;
                     'text_color' => '#321824',
                     'background_color' => '#f6e7df',
                     'topbar_background_color' => '#f1d5cb',
+                    'topbar_text_color' => '#321824',
                     'topbar_background_opacity' => '0.88',
                     'menu_background_color' => '#f1d5cb',
+                    'menu_text_color' => '#321824',
                     'menu_background_enabled' => '1',
                     'menu_background_opacity' => '0.82',
                     'heading_background_color' => '#fff4ef',
@@ -581,8 +610,10 @@ HTML;
                     'text_color' => '#151515',
                     'background_color' => '#e6e2da',
                     'topbar_background_color' => '#f8f7f4',
+                    'topbar_text_color' => '#151515',
                     'topbar_background_opacity' => '0.9',
                     'menu_background_color' => '#f8f7f4',
+                    'menu_text_color' => '#151515',
                     'menu_background_enabled' => '1',
                     'menu_background_opacity' => '0.84',
                     'heading_background_color' => '#f8f7f4',

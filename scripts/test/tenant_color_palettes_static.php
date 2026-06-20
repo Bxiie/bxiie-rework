@@ -10,6 +10,7 @@ $root = dirname(__DIR__, 2);
 $controller = file_get_contents($root . '/app/Http/Controllers/Tenant/Admin/SettingsController.php');
 $script = file_get_contents($root . '/public/assets/admin-color-fields.js');
 $css = file_get_contents($root . '/public/assets/tenant-admin.css');
+$siteCss = file_get_contents($root . '/public/assets/site.css');
 $preflight = file_get_contents($root . '/scripts/test/preflight.sh');
 $tenantLayout = file_get_contents($root . '/app/Http/View/TenantAdminLayout.php');
 $platformLayout = file_get_contents($root . '/app/Http/View/AdminLayout.php');
@@ -30,6 +31,25 @@ $mustContain = [
     [$controller, "'name' => 'Concrete Pop'", 'Concrete Pop palette exists'],
     [$controller, 'data-tenant-palette', 'Palette buttons carry data payloads'],
     [$controller, 'data-palette-tone', 'Palette buttons expose mood/temperature labels'],
+
+    [$controller, "'topbar_text_color' =>", 'Palettes set top bar text color for contrast'],
+    [$controller, "'menu_text_color' =>", 'Palettes set menu text color for contrast'],
+    [$controller, 'name="topbar_text_color"', 'Settings form exposes top bar text color editing'],
+    [$controller, 'name="menu_text_color"', 'Settings form exposes menu text color editing'],
+    [$controller, '--palette-button-topbar', 'Palette buttons preview top bar color'],
+    [$controller, '--palette-button-menu', 'Palette buttons preview menu color'],
+    [$controller, 'tenant-palette-preview', 'Palette buttons include a visual palette preview'],
+    [$homeController, '--tenant-topbar-text', 'Public tenant layout exposes top bar text variable'],
+    [$homeController, '--menu-text-color', 'Public tenant layout exposes menu text variable'],
+    [$tenantLayout, '--tenant-topbar-text', 'Tenant admin layout exposes top bar text variable'],
+    [$tenantLayout, '--menu-text-color', 'Tenant admin layout exposes menu text variable'],
+    [$script, "fieldValue('topbar_text_color')", 'Live preview reads top bar text color'],
+    [$script, "fieldValue('menu_text_color')", 'Live preview reads menu text color'],
+    [$script, "setRootVariable('--tenant-topbar-text'", 'Live preview updates top bar text color'],
+    [$script, "setRootVariable('--menu-text-color'", 'Live preview updates menu text color'],
+    [$css, '.tenant-palette-preview', 'Tenant admin CSS styles palette preview'],
+    [$siteCss, '--tenant-topbar-text', 'Public CSS uses top bar text variable'],
+    [$siteCss, '--menu-text-color', 'Public CSS uses menu text variable'],
     [$controller, '--palette-button-bg', 'Palette buttons carry mood background color'],
     [$controller, '--palette-button-accent', 'Palette buttons carry mood accent color'],
     [$controller, '{$paletteButtons}', 'Palette buttons are rendered in the colors/background section'],
@@ -60,8 +80,8 @@ $mustContain = [
     [$css, 'var(--palette-button-bg', 'Tenant admin CSS colors palette buttons by mood'],
     [$css, 'content: attr(data-palette-tone)', 'Tenant admin CSS displays palette mood/temperature'],
     [$preflight, 'tenant_color_palettes_static.php', 'Preflight runs tenant color palette check'],
-    [$tenantLayout, '/assets/admin-color-fields.js?v=20260620-topbar-preview', 'Tenant admin layout cache-busts palette JavaScript'],
-    [$platformLayout, '/assets/admin-color-fields.js?v=20260620-topbar-preview', 'Platform admin layout cache-busts shared color JavaScript'],
+    [$tenantLayout, '/assets/admin-color-fields.js?v=20260620-palette-contrast', 'Tenant admin layout cache-busts palette JavaScript'],
+    [$platformLayout, '/assets/admin-color-fields.js?v=20260620-palette-contrast', 'Platform admin layout cache-busts shared color JavaScript'],
 ];
 
 foreach ($mustContain as [$haystack, $needle, $label]) {
@@ -94,6 +114,10 @@ if (substr_count($controller, "'tone' =>") !== 8) {
     $failures[] = 'Expected exactly 8 palette tone labels.';
 }
 
+if (substr_count($controller, "'topbar_text_color' =>") !== 8 || substr_count($controller, "'menu_text_color' =>") !== 8) {
+    $failures[] = 'Expected exactly 8 topbar/menu text contrast colors.';
+}
+
 if (substr_count($controller, "'button_background' =>") !== 8
     || substr_count($controller, "'button_text' =>") !== 8
     || substr_count($controller, "'button_accent' =>") !== 8) {
@@ -106,6 +130,61 @@ if (substr_count($tenantLayout, 'admin-color-fields.js') !== 1) {
 
 if (substr_count($platformLayout, 'admin-color-fields.js') !== 1) {
     $failures[] = 'Platform admin layout should include admin-color-fields.js exactly once.';
+}
+
+
+function hex_luminance(string $hex): float
+{
+    $hex = ltrim($hex, '#');
+    if (!preg_match('/^[0-9a-fA-F]{6}$/', $hex)) {
+        return 0.0;
+    }
+
+    $parts = [substr($hex, 0, 2), substr($hex, 2, 2), substr($hex, 4, 2)];
+    $channels = array_map(static function (string $part): float {
+        $value = hexdec($part) / 255;
+        return $value <= 0.03928 ? $value / 12.92 : (($value + 0.055) / 1.055) ** 2.4;
+    }, $parts);
+
+    return 0.2126 * $channels[0] + 0.7152 * $channels[1] + 0.0722 * $channels[2];
+}
+
+function contrast_ratio(string $a, string $b): float
+{
+    $l1 = hex_luminance($a);
+    $l2 = hex_luminance($b);
+    $lighter = max($l1, $l2);
+    $darker = min($l1, $l2);
+
+    return ($lighter + 0.05) / ($darker + 0.05);
+}
+
+$paletteBlocks = [];
+if (preg_match_all("/'name' => '([^']+)',.*?'values' => \[([^\]]+)\]/s", $controller, $matches, PREG_SET_ORDER)) {
+    foreach ($matches as $match) {
+        $values = [];
+        if (preg_match_all("/'([^']+)' => '([^']+)'/", $match[2], $valueMatches, PREG_SET_ORDER)) {
+            foreach ($valueMatches as $valueMatch) {
+                $values[$valueMatch[1]] = $valueMatch[2];
+            }
+        }
+        $paletteBlocks[$match[1]] = $values;
+    }
+}
+
+foreach ($paletteBlocks as $paletteName => $values) {
+    foreach ([['topbar_background_color', 'topbar_text_color', 'top bar'], ['menu_background_color', 'menu_text_color', 'menu']] as [$bgKey, $textKey, $surface]) {
+        $bg = $values[$bgKey] ?? '';
+        $text = $values[$textKey] ?? '';
+        if (!preg_match('/^#[0-9a-fA-F]{6}$/', $bg) || !preg_match('/^#[0-9a-fA-F]{6}$/', $text)) {
+            $failures[] = $paletteName . ' palette has non-hex ' . $surface . ' contrast values.';
+            continue;
+        }
+
+        if (contrast_ratio($bg, $text) < 4.5) {
+            $failures[] = $paletteName . ' palette ' . $surface . ' contrast is below 4.5:1.';
+        }
+    }
 }
 
 if ($failures !== []) {

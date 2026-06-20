@@ -1468,3 +1468,40 @@ body article.pricing-card.featured h3 {
 }
 
 /* End of file. */
+
+/* Tenant palette contrast repair: header title and nav text get independent colors. */
+.site-header,
+.site-header.tenant-admin-public-header {
+  color: var(--tenant-topbar-text, var(--text-color, #1f1a14)) !important;
+}
+
+.site-header .brand,
+.site-header.tenant-admin-public-header .brand,
+.site-header.tenant-admin-public-header .tenant-admin-brand {
+  color: var(--tenant-topbar-text, var(--text-color, #1f1a14)) !important;
+}
+
+.site-header nav,
+.site-header.tenant-admin-public-header nav {
+  color: var(--menu-text-color, var(--tenant-topbar-text, var(--text-color, #1f1a14))) !important;
+}
+
+.site-header nav a,
+.site-header nav .link-button,
+.site-header.tenant-admin-public-header nav a,
+.site-header.tenant-admin-public-header nav .link-button {
+  color: var(--menu-text-color, var(--tenant-topbar-text, var(--text-color, #1f1a14))) !important;
+}
+
+.site-header nav a:hover,
+.site-header nav a:focus-visible,
+.site-header nav .link-button:hover,
+.site-header nav .link-button:focus-visible,
+.site-header.tenant-admin-public-header nav a:hover,
+.site-header.tenant-admin-public-header nav a:focus-visible,
+.site-header.tenant-admin-public-header nav .link-button:hover,
+.site-header.tenant-admin-public-header nav .link-button:focus-visible {
+  background: color-mix(in srgb, currentColor 14%, transparent) !important;
+}
+
+/* End of file. */

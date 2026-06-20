@@ -40,4 +40,6 @@ Palette buttons are bound with delegated click handling so clicks on nested labe
 
 Palette clicks update the visible settings-page preview immediately, including the top navigation bar, menu panel, and page surface variables. Save site settings is still required to persist the selected values.
 
+Each palette also sets separate **Top bar text color** and **Menu text color** values. These keep the site title and navigation legible when a palette uses dark surfaces, such as Ink Studio. The palette buttons include a miniature preview showing the top bar, menu pill, and page/surface colors so the palette mood is visible before applying it.
+
 # End of file.
