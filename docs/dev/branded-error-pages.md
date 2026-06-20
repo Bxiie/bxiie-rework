@@ -44,4 +44,10 @@ curl -ksS https://artsfol.io/__definitely_missing_platform_page__ | grep -E 'No 
 curl -ksS https://bxiie.artsfol.io/__definitely_missing_tenant_page__ | grep -E 'No route for|Application error|Fatal error|Stack trace|Apache/[0-9]' && exit 1 || true
 ```
 
+
+## CSRF failures
+
+Invalid or expired CSRF token responses must use `Response::invalidCsrf()` so security failures render inside the same platform or tenant branded error shell as 404 and 500 responses. Controllers must not return raw `<h1>Invalid CSRF token</h1>` markup.
+
 <!-- End of file. -->
+

@@ -32,4 +32,10 @@ Escalate to development if any public browser page shows:
 
 Application exception details are logged server-side and intentionally hidden from users.
 
+
+## CSRF failures
+
+Invalid or expired CSRF token responses must use `Response::invalidCsrf()` so security failures render inside the same platform or tenant branded error shell as 404 and 500 responses. Controllers must not return raw `<h1>Invalid CSRF token</h1>` markup.
+
 <!-- End of file. -->
+

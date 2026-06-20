@@ -128,7 +128,7 @@ HTML, active: 'pricing'));
             return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
         }
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $commissionPercent = max(0.0, min(100.0, (float) ($_POST['platform_sales_commission_percent'] ?? 0)));

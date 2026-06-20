@@ -142,7 +142,7 @@ HTML;
             return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
         }
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         if ((string) ($_POST['bulk'] ?? '') === '1') {
@@ -169,7 +169,7 @@ HTML;
             return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
         }
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
         $id = (int) ($_POST['id'] ?? 0);
         $email = strtolower(trim((string) ($_POST['recipient_email'] ?? '')));
@@ -190,7 +190,7 @@ HTML;
             return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
         }
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $id = (int) ($_POST['id'] ?? 0);

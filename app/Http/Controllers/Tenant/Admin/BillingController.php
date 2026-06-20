@@ -108,7 +108,7 @@ HTML;
             return Response::html('<h1>Forbidden</h1><p>Only tenant owners may change plans.</p>', 403);
         }
         if (!$this->validCsrf((string) ($_POST['csrf_token'] ?? ''))) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
         $slug = strtolower(trim((string) ($_POST['plan_slug'] ?? '')));
         $plan = $this->planBySlug($slug);
@@ -127,7 +127,7 @@ HTML;
             return Response::html('<h1>Forbidden</h1><p>Only tenant owners may apply billing codes.</p>', 403);
         }
         if (!$this->validCsrf((string) ($_POST['csrf_token'] ?? ''))) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $code = strtoupper(trim((string) ($_POST['signup_code'] ?? '')));

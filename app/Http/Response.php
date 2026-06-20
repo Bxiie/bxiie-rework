@@ -53,6 +53,11 @@ final class Response
         return self::html(ErrorPage::status($statusCode, $message), $statusCode);
     }
 
+    public static function invalidCsrf(string $message = 'The security check expired or could not be verified. Please refresh the page and try again.'): self
+    {
+        return self::error(419, $message);
+    }
+
     public function send(): void
     {
         http_response_code($this->status);

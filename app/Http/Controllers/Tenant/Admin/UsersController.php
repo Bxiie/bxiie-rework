@@ -127,7 +127,7 @@ HTML;
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $userId = (int) ($_POST['user_id'] ?? 0);
@@ -150,7 +150,7 @@ HTML;
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $email = strtolower(trim((string) ($_POST['email'] ?? '')));
@@ -175,7 +175,7 @@ HTML;
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $userId = (int) ($_POST['user_id'] ?? 0);
@@ -208,7 +208,7 @@ HTML;
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant owner access required.'), 403);
         }
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $userId = (int) ($_POST['user_id'] ?? 0);
@@ -229,7 +229,7 @@ HTML;
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant owner access required.'), 403);
         }
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $userId = (int) ($_POST['user_id'] ?? 0);

@@ -188,7 +188,7 @@ HTML,
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
         if (!$this->validCsrf()) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $signupId = (int) ($_POST['signup_id'] ?? 0);
@@ -210,7 +210,7 @@ HTML,
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
         if (!$this->validCsrf()) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $signupId = (int) ($_POST['signup_id'] ?? 0);
@@ -231,7 +231,7 @@ HTML,
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
         if (!$this->validCsrf()) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $signupId = (int) ($_POST['signup_id'] ?? 0);
@@ -252,7 +252,7 @@ HTML,
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
         if (!$this->validCsrf()) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $file = $_FILES['csv'] ?? null;

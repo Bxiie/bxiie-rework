@@ -271,6 +271,11 @@ HTML;
                 'heading' => 'Not enough keys for this door.',
                 'message' => 'You do not have access to this page.',
             ],
+            419 => [
+                'title' => 'Security check expired',
+                'heading' => 'The security check expired.',
+                'message' => 'Please go back, refresh the page, and try again.',
+            ],
             404 => [
                 'title' => 'Page not found',
                 'heading' => 'This page wandered off.',

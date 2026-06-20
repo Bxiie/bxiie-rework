@@ -105,7 +105,7 @@ HTML);
     public function submit(Request $request): Response
     {
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $password = (string) ($_POST['password'] ?? '');

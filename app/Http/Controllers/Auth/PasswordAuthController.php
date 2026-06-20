@@ -38,7 +38,7 @@ final class PasswordAuthController
     {
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
             $this->auditAuth($request, 'auth.password_login.denied.invalid_csrf', null, ['email' => (string) ($_POST['email'] ?? '')]);
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $email = (string) ($_POST['email'] ?? '');
@@ -100,7 +100,7 @@ HTML);
     {
         if ($request->method() === 'POST' && !$this->csrf->validate($_POST['csrf_token'] ?? null)) {
             $this->auditAuth($request, 'auth.logout.denied.invalid_csrf');
-            return Response::html('<h1>Invalid CSRF token</h1>', 419);
+            return Response::invalidCsrf();
         }
 
         $rawToken = $_COOKIE[CurrentUser::COOKIE_NAME] ?? null;
