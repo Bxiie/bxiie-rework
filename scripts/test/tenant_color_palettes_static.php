@@ -89,19 +89,56 @@ $mustContain = [
     [$platformLayout, '/assets/admin-color-fields.js?v=20260620-palette-contrast', 'Platform admin layout cache-busts shared color JavaScript'],
 ];
 
+
+function extract_method_body(string $source, string $methodName): string
+{
+    $needle = 'function ' . $methodName . '(';
+    $start = strpos($source, $needle);
+    if ($start === false) {
+        return '';
+    }
+
+    $brace = strpos($source, '{', $start);
+    if ($brace === false) {
+        return '';
+    }
+
+    $depth = 0;
+    $length = strlen($source);
+    for ($i = $brace; $i < $length; $i++) {
+        $char = $source[$i];
+        if ($char === '{') {
+            $depth++;
+        } elseif ($char === '}') {
+            $depth--;
+            if ($depth === 0) {
+                return substr($source, $brace + 1, $i - $brace - 1);
+            }
+        }
+    }
+
+    return '';
+}
+
+$paletteSource = extract_method_body($controller, 'palettes');
+if ($paletteSource === '') {
+    $failures[] = 'Could not locate SettingsController::palettes() for color palette checks.';
+    $paletteSource = $controller;
+}
+
 foreach ($mustContain as [$haystack, $needle, $label]) {
     if (!str_contains((string) $haystack, $needle)) {
         $failures[] = $label . ' missing: ' . $needle;
     }
 }
 
-$paletteCount = substr_count($controller, "'name' =>");
+$paletteCount = substr_count($paletteSource, "'name' =>");
 if ($paletteCount !== 10) {
     $failures[] = 'Expected exactly 10 tenant palettes, found ' . $paletteCount . '.';
 }
 
-$defaultPosition = strpos($controller, "'name' => 'Default'");
-$galleryPosition = strpos($controller, "'name' => 'Gallery White'");
+$defaultPosition = strpos($paletteSource, "'name' => 'Default'");
+$galleryPosition = strpos($paletteSource, "'name' => 'Gallery White'");
 if ($defaultPosition === false || $galleryPosition === false || $defaultPosition > $galleryPosition) {
     $failures[] = 'Default palette must be the first palette choice.';
 }
@@ -115,17 +152,17 @@ if (str_contains($controller, 'step="0.05"')) {
     $failures[] = 'Opacity inputs still contain step="0.05", which rejects values like 0.72.';
 }
 
-if (substr_count($controller, "'tone' =>") !== 10) {
+if (substr_count($paletteSource, "'tone' =>") !== 10) {
     $failures[] = 'Expected exactly 10 palette tone labels.';
 }
 
-if (substr_count($controller, "'topbar_text_color' =>") !== 10 || substr_count($controller, "'menu_text_color' =>") !== 10) {
+if (substr_count($paletteSource, "'topbar_text_color' =>") !== 10 || substr_count($paletteSource, "'menu_text_color' =>") !== 10) {
     $failures[] = 'Expected exactly 10 topbar/menu text contrast colors.';
 }
 
-if (substr_count($controller, "'button_background' =>") !== 10
-    || substr_count($controller, "'button_text' =>") !== 10
-    || substr_count($controller, "'button_accent' =>") !== 10) {
+if (substr_count($paletteSource, "'button_background' =>") !== 10
+    || substr_count($paletteSource, "'button_text' =>") !== 10
+    || substr_count($paletteSource, "'button_accent' =>") !== 10) {
     $failures[] = 'Expected exactly 10 palette button mood color sets.';
 }
 
@@ -165,7 +202,7 @@ function contrast_ratio(string $a, string $b): float
 }
 
 $paletteBlocks = [];
-if (preg_match_all("/'name' => '([^']+)',.*?'values' => \[([^\]]+)\]/s", $controller, $matches, PREG_SET_ORDER)) {
+if (preg_match_all("/'name' => '([^']+)',.*?'values' => \[([^\]]+)\]/s", $paletteSource, $matches, PREG_SET_ORDER)) {
     foreach ($matches as $match) {
         $values = [];
         if (preg_match_all("/'([^']+)' => '([^']+)'/", $match[2], $valueMatches, PREG_SET_ORDER)) {
