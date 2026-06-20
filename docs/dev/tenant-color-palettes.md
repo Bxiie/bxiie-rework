@@ -6,7 +6,7 @@ Tenant color/background palette presets are defined in:
 app/Http/Controllers/Tenant/Admin/SettingsController.php
 ```
 
-The `palettes()` method returns the eight named palettes. The first entry must remain the new-site **Default** palette. `paletteButtons()` renders non-submit buttons with a JSON payload in `data-tenant-palette`.
+The `palettes()` method returns the ten named palettes. The first entry must remain the new-site **Default** palette. Current additional palettes include Midnight Olive and Ultraviolet Paper; every palette must define topbar/menu text colors that pass the contrast static test. `paletteButtons()` renders non-submit buttons with a JSON payload in `data-tenant-palette`.
 
 Palette application is progressive JavaScript in:
 

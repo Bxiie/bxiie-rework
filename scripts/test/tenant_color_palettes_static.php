@@ -29,6 +29,8 @@ $mustContain = [
     [$controller, "'name' => 'Signal Blue'", 'Signal Blue palette exists'],
     [$controller, "'name' => 'Rose Paper'", 'Rose Paper palette exists'],
     [$controller, "'name' => 'Concrete Pop'", 'Concrete Pop palette exists'],
+    [$controller, "'name' => 'Midnight Olive'", 'Midnight Olive palette exists'],
+    [$controller, "'name' => 'Ultraviolet Paper'", 'Ultraviolet Paper palette exists'],
     [$controller, 'data-tenant-palette', 'Palette buttons carry data payloads'],
     [$controller, 'data-palette-tone', 'Palette buttons expose mood/temperature labels'],
 
@@ -94,8 +96,8 @@ foreach ($mustContain as [$haystack, $needle, $label]) {
 }
 
 $paletteCount = substr_count($controller, "'name' =>");
-if ($paletteCount !== 8) {
-    $failures[] = 'Expected exactly 8 tenant palettes, found ' . $paletteCount . '.';
+if ($paletteCount !== 10) {
+    $failures[] = 'Expected exactly 10 tenant palettes, found ' . $paletteCount . '.';
 }
 
 $defaultPosition = strpos($controller, "'name' => 'Default'");
@@ -113,18 +115,18 @@ if (str_contains($controller, 'step="0.05"')) {
     $failures[] = 'Opacity inputs still contain step="0.05", which rejects values like 0.72.';
 }
 
-if (substr_count($controller, "'tone' =>") !== 8) {
-    $failures[] = 'Expected exactly 8 palette tone labels.';
+if (substr_count($controller, "'tone' =>") !== 10) {
+    $failures[] = 'Expected exactly 10 palette tone labels.';
 }
 
-if (substr_count($controller, "'topbar_text_color' =>") !== 8 || substr_count($controller, "'menu_text_color' =>") !== 8) {
-    $failures[] = 'Expected exactly 8 topbar/menu text contrast colors.';
+if (substr_count($controller, "'topbar_text_color' =>") !== 10 || substr_count($controller, "'menu_text_color' =>") !== 10) {
+    $failures[] = 'Expected exactly 10 topbar/menu text contrast colors.';
 }
 
-if (substr_count($controller, "'button_background' =>") !== 8
-    || substr_count($controller, "'button_text' =>") !== 8
-    || substr_count($controller, "'button_accent' =>") !== 8) {
-    $failures[] = 'Expected exactly 8 palette button mood color sets.';
+if (substr_count($controller, "'button_background' =>") !== 10
+    || substr_count($controller, "'button_text' =>") !== 10
+    || substr_count($controller, "'button_accent' =>") !== 10) {
+    $failures[] = 'Expected exactly 10 palette button mood color sets.';
 }
 
 if (substr_count($tenantLayout, 'admin-color-fields.js') !== 1) {

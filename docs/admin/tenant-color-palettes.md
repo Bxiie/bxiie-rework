@@ -16,6 +16,8 @@ Palette choices:
 - Signal Blue
 - Rose Paper
 - Concrete Pop
+- Midnight Olive
+- Ultraviolet Paper
 
 Palette buttons do not change selected background images. Background, top bar, menu, and artwork-card images remain controlled by the existing Site Images pickers.
 

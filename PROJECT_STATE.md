@@ -1651,3 +1651,5 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Static regression coverage lives in `scripts/test/branded_error_pages_static.php` and is called from `scripts/test/preflight.sh`.
 
 <!-- End of file. -->
+- Tenant color palettes now include ten presets; Midnight Olive and Ultraviolet Paper were added after the original eight. Static checks require every palette to define topbar/menu text colors with at least 4.5:1 contrast against their backgrounds.
+# End of file.
