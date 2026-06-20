@@ -583,3 +583,12 @@ body.tenant-admin-page {
 }
 
 /* End of file. */
+
+
+/* Settings pages repeat the primary save action below each section so long forms
+   can be saved without scrolling back to the bottom. */
+.settings-section-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: -8px 0 8px;
+}

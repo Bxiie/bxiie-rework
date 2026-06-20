@@ -91,6 +91,7 @@ final class SettingsController
         $tenantCss = $this->setting($tenant, 'tenant_css', '');
         $artworkDisplayOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
         $paletteButtons = $this->paletteButtons();
+        $saveButton = '<div class="settings-section-actions"><button type="submit">Save site settings</button></div>';
 
         $selected = static fn (string $actual, string $expected): string => $actual === $expected ? ' selected' : '';
         $checked = static fn (string $actual, string $expected): string => $actual === $expected ? ' checked' : '';
@@ -108,11 +109,13 @@ final class SettingsController
             <label>Copyright name<input name="copyright_name" value="{$copyrightName}"></label>
             <label>Site admin notification email<input type="email" name="site_admin_email" value="{$siteAdminEmail}"></label>
         </fieldset>
+        {$saveButton}
 
         <fieldset>
             <legend>Home page</legend>
             <label>Home intro text<textarea name="home_intro" rows="5">{$homeIntro}</textarea></label>
         </fieldset>
+        {$saveButton}
 
         <fieldset>
             <legend>Sales notes</legend>
@@ -121,6 +124,7 @@ final class SettingsController
             <label>Stripe connected account ID<input name="stripe_connected_account_id" value="{$stripeConnectedAccountId}" placeholder="acct_..."></label>
             <p class="admin-help">Required for direct Stripe Connect payouts. Leave blank only during platform testing.</p>
         </fieldset>
+        {$saveButton}
 
         <fieldset>
             <legend>Navigation</legend>
@@ -134,6 +138,7 @@ final class SettingsController
                 <label>Contact slug<input name="contact_slug" value="{$contactSlug}"></label>
             </div>
         </fieldset>
+        {$saveButton}
 
         <fieldset>
             <legend>Colors and background</legend>
@@ -188,6 +193,7 @@ final class SettingsController
             {$backgroundPicker}
             <p class="admin-help">Only published artwork marked as Site Images appears here. Use opacity between 0 and 1; tile size accepts CSS values like 240px or 18rem.</p>
         </fieldset>
+        {$saveButton}
 
         <fieldset>
             <legend>Artwork display</legend>
@@ -201,11 +207,13 @@ final class SettingsController
                 </select>
             </label>
         </fieldset>
+        {$saveButton}
 
         <fieldset>
             <legend>Spam protection</legend>
             <p class="admin-help">Tenant public contact and email-list forms use the built-in ArtsFolio CAPTCHA. Cloudflare Turnstile is reserved for ArtsFolio platform-domain forms.</p>
         </fieldset>
+        {$saveButton}
 
         <fieldset>
             <legend>Exhibitions</legend>
@@ -217,14 +225,14 @@ final class SettingsController
                 </select>
             </label>
         </fieldset>
+        {$saveButton}
 
         <fieldset>
             <legend>Tenant CSS</legend>
             <label>Custom CSS<textarea name="tenant_css" rows="18" spellcheck="false">{$tenantCss}</textarea></label>
             <p class="admin-help">This CSS is loaded after the default public stylesheet.</p>
         </fieldset>
-
-        <button type="submit">Save site settings</button>
+        {$saveButton}
 </form>
 HTML;
 
