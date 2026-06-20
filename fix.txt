@@ -1,5 +1,10 @@
 ## Now
 
+- On tenant - admin - settings, allow selection of font and size for all text elements on home, portfolio, about, and contact pages.  Use a text/font picker for this.
+- Review the entire site.  What areas are going to become fragile or bogged down if we scale to 1000 tenants?
+
+##
+
 - Pricing page should show number of admin users per price tier
 - Price on studio plan is not visible due to div color
 
