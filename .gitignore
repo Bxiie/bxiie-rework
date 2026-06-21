@@ -16,6 +16,7 @@ database/*.db-*
 storage/uploads/*
 storage/cache/*
 storage/private/*
+storage/patch_backups/*
 
 .patch-backups/*
 bundle/*

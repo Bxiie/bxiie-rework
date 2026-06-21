@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tenant\Artwork;
 
 use App\Platform\Tenancy\TenantContext;
+use App\Tenant\Media\MediaVariantService;
 use PDO;
 use RuntimeException;
 
@@ -92,6 +93,15 @@ final class ArtworkUploadService
                 title: $title,
                 altText: $title,
                 caption: $notes,
+            );
+
+            $this->createMediaVariants(
+                mediaId: $mediaId,
+                storagePath: $relativePath,
+                mimeType: $mime,
+                width: $width !== 0 ? $width : null,
+                height: $height !== 0 ? $height : null,
+                fileSizeBytes: $fileSize !== null ? (int) $fileSize : null,
             );
 
             $artworkId = $this->createArtwork(
@@ -190,6 +200,26 @@ final class ArtworkUploadService
         ]);
 
         return (int) $this->pdo->lastInsertId();
+    }
+
+
+    private function createMediaVariants(
+        int $mediaId,
+        string $storagePath,
+        string $mimeType,
+        ?int $width,
+        ?int $height,
+        ?int $fileSizeBytes,
+    ): void {
+        $variantService = new MediaVariantService($this->pdo, dirname(__DIR__, 3));
+        $variantService->createForMediaAsset(
+            mediaAssetId: $mediaId,
+            sourceRelativePath: $storagePath,
+            mimeType: $mimeType,
+            sourceWidth: $width,
+            sourceHeight: $height,
+            sourceBytes: $fileSizeBytes,
+        );
     }
 
     private function createArtwork(

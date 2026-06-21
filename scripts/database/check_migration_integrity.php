@@ -62,6 +62,9 @@ $expected = [
     '0011_repair_email_signups.sql' => [
         'email_signups',
     ],
+    '0038_media_asset_variants.sql' => [
+        'media_asset_variants',
+    ],
 ];
 
 $appliedStmt = $pdo->query("SELECT migration FROM schema_migrations");

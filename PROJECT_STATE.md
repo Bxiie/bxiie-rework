@@ -1672,4 +1672,28 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant typography settings now apply through a late public inline typography style block emitted after `/tenant.css`, so saved fonts and sizes win on home, portfolio, about, contact, artwork, forms, and footer pages. Typography size controls use sliders plus numeric pixel fields instead of raw CSS text entry.
 - Tenant typography settings use a versioned public `site.css` link and `admin-typography-fields.js` live preview helper so font picker/size previews update immediately and saved public font settings are not hidden by stale CSS.
 - Tenant Admin > Settings includes a Typography section with curated local/system font pickers and public font-size controls for home, portfolio, about, contact, artwork, forms, and footer text. Public pages emit tenant typography CSS variables from `HomeController`; `site.css` consumes them; static coverage lives in `scripts/test/tenant_typography_settings_static.php`.
+
+## 2026-06-20 - Scale readiness phase 0 and media variants phase 1
+
+- Added `scripts/dev/seed_scale_dataset.php` for non-production scale fixtures. Scale tenants use slugs like `scale-0001`, hostnames like `scale-0001.artsfol.io`, and the tenant setting `scale_dataset_marker = artsfolio-scale-fixture-v1`.
+- Scale fixture cleanup only removes tenants matching both the `scale-` slug prefix and the scale marker setting, then deletes dependent tenant rows and `storage/uploads/artwork/scale-*` directories.
+- The scale fixture script refuses production-looking environments unless `--allow-production-like` is explicitly passed for disposable staging databases.
+- Added `database/migrations/0038_media_asset_variants.sql` and `App\Tenant\Media\MediaVariantService` so media assets can have `original`, `thumb`, `medium`, and `large` variants.
+- `ArtworkUploadService` now creates media variant rows during upload, and `MediaController` honors `/media?uuid=...&variant=thumb|medium|large|original` with long-lived cache headers and ETags.
+- Added `scripts/maintenance/backfill_media_variants.php` for existing media records after migration 0038.
+- Static regression coverage lives in `scripts/test/scale_fixture_static.php` and `scripts/test/media_variants_static.php`; both are wired into preflight.
+## 2026-06-20 - Platform-admin scale tenant controls
+
+- Added `/platform/admin/scale-tenants` for platform owners/admins to create, reset, and remove synthetic scale fixture tenants from the UI.
+- The UI and CLI now share `App\Platform\ScaleTesting\ScaleTenantFixtureService`, so isolation rules stay consistent across browser and script use.
+- Scale fixture removal remains constrained to tenants with both slug prefix `scale-` and tenant setting `scale_dataset_marker = artsfolio-scale-fixture-v1`; real tenant rows are not selected by cleanup unless both markers are present.
+- Platform admin create/remove actions require typed confirmation text and write audit log events.
+- Added `/admin/scale-tenants` redirect to `/platform/admin/scale-tenants`, platform admin sidebar navigation, and `scripts/test/platform_scale_tenants_static.php` preflight coverage.
+- Deployment docs now point to the workstation Downloads paths for the combined Phase 0/1 plus scale-admin update script and archive.
+
+## 2026-06-20 - PHP 8.5 media variant compatibility hotfix
+
+- Removed deprecated `imagedestroy()` calls from `App\Tenant\Media\MediaVariantService`; PHP 8.5 reports these calls because GDImage objects are released automatically when references leave scope.
+- `scripts/test/media_variants_static.php` now fails if the new media variant service reintroduces `imagedestroy()`.
+
 # End of file.

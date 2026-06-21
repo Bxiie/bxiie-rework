@@ -27,6 +27,7 @@ use App\Http\Controllers\Platform\Admin\JobsController as PlatformAdminJobsContr
 use App\Http\Controllers\Platform\Admin\WorkersController as PlatformAdminWorkersController;
 use App\Http\Controllers\Platform\Admin\AuditLogController as PlatformAdminAuditLogController;
 use App\Http\Controllers\Platform\Admin\TenantsController as PlatformAdminTenantsController;
+use App\Http\Controllers\Platform\Admin\ScaleTenantsController as PlatformAdminScaleTenantsController;
 use App\Http\Controllers\Platform\Admin\UsersController as PlatformAdminUsersController;
 use App\Http\Controllers\Platform\HelpController as PlatformHelpController;
 use App\Http\Controllers\Platform\Admin\StatsController as PlatformAdminStatsController;
@@ -105,6 +106,7 @@ use App\Platform\Settings\PlatformSettingsRepository;
 use App\Platform\Signup\SignupCodeRepository;
 use App\Platform\Signup\TenantSignupService;
 use App\Platform\Tenants\TenantAdminRepository;
+use App\Platform\ScaleTesting\ScaleTenantFixtureService;
 use App\Platform\Tenancy\TenantResolver;
 use App\Support\Database;
 use App\Support\Security\CsrfTokenService;
@@ -633,6 +635,7 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->get('/admin/platform-settings', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/platform-settings']));
     $router->get('/admin/routes', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/routes']));
     $router->get('/admin/tenants', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/tenants']));
+    $router->get('/admin/scale-tenants', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/scale-tenants']));
     $router->get('/admin/stats', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/stats']));
     $router->get('/admin/contact-messages', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/contact-messages']));
     $router->get('/admin/domains', fn (Request $request): Response => (new TenantAdminDomainsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), $pdo))->index($request, $tenant, $currentUser));
@@ -719,6 +722,9 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
     $router->get('/platform/admin/settings', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/platform-settings']));
     $router->get('/platform/admin/routes', fn (Request $request): Response => (new PlatformAdminRoutesController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
     $router->get('/platform/admin/tenants', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
+    $router->get('/platform/admin/scale-tenants', fn (Request $request): Response => (new PlatformAdminScaleTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new ScaleTenantFixtureService($pdo, $root), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
+    $router->post('/platform/admin/scale-tenants/create', fn (Request $request): Response => (new PlatformAdminScaleTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new ScaleTenantFixtureService($pdo, $root), new CsrfTokenService(), new AuditLogRepository($pdo)))->create($request, $currentUser));
+    $router->post('/platform/admin/scale-tenants/remove', fn (Request $request): Response => (new PlatformAdminScaleTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new ScaleTenantFixtureService($pdo, $root), new CsrfTokenService(), new AuditLogRepository($pdo)))->remove($request, $currentUser));
     $router->get('/platform/admin/tenants/{id}', fn (Request $request, array $params): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->show($request, $currentUser, (int) ($params['id'] ?? 0)));
     $router->post('/platform/admin/tenants/users/password', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->updateTenantUserPassword($request, $currentUser));
     $router->post('/platform/admin/tenants/complementary', fn (Request $request): Response => (new PlatformAdminTenantsController(new RequirePlatformRole(new MembershipRepository($pdo)), new TenantAdminRepository($pdo), new AdminUserRepository($pdo), new PasswordHasher(), new CsrfTokenService(), new AuditLogRepository($pdo)))->updateComplementary($request, $currentUser));

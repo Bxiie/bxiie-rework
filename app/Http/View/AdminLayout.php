@@ -237,6 +237,7 @@ HTML;
         $items = [
             'dashboard' => ['/platform/admin', 'Dashboard'],
             'tenants' => ['/platform/admin/tenants', 'Tenants'],
+            'scale' => ['/platform/admin/scale-tenants', 'Scale Tenants'],
             'users' => ['/platform/admin/users', 'Users'],
             'codes' => ['/platform/admin/signup-codes', 'Signup Codes'],
             'domains' => ['/platform/admin/domains', 'Domains'],
