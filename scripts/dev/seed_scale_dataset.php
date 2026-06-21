@@ -15,7 +15,7 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $options = parseOptions($argv);
 $operation = (string) ($options['operation'] ?? 'seed');
-$tenantCount = boundedInt((string) ($options['tenants'] ?? '1000'), 0, 5000, 1000);
+$tenantCount = positiveInt((string) ($options['tenants'] ?? '1000'), 1000);
 $artworksPerTenant = boundedInt((string) ($options['artworks-per-tenant'] ?? '20'), 0, 500, 20);
 $eventsPerTenant = boundedInt((string) ($options['events-per-tenant'] ?? '0'), 0, 5000, 0);
 
@@ -86,6 +86,15 @@ function usage(): void
     echo "\nScale tenants are identified by slug prefix '" . ScaleTenantFixtureService::SLUG_PREFIX . "' and tenant_settings." . ScaleTenantFixtureService::MARKER_KEY . ".\n";
 }
 
+function positiveInt(string $value, int $default): int
+{
+    if (!preg_match('/^\d+$/', $value)) {
+        return $default;
+    }
+
+    return max(1, (int) $value);
+}
+
 function boundedInt(string $value, int $min, int $max, int $default): int
 {
     if (!preg_match('/^\d+$/', $value)) {
@@ -127,6 +136,8 @@ function printSummary(array $summary): void
     echo 'Scale fixture marker: ' . $summary['marker_key'] . '=' . $summary['marker_value'] . "\n";
     echo 'Scale fixture slug prefix: ' . $summary['slug_prefix'] . "\n";
     echo 'Scale fixture tenants present: ' . (int) $summary['tenants'] . "\n";
+    echo 'Scale fixture users present: ' . (int) ($summary['users'] ?? 0) . "\n";
+    echo 'Scale fixture plan distribution: ' . (string) ($summary['plan_distribution'] ?? 'unavailable') . "\n";
     echo 'Scale fixture artworks present: ' . (int) $summary['artworks'] . "\n";
     echo 'Scale fixture media assets present: ' . (int) $summary['media_assets'] . "\n";
     echo 'Scale fixture analytics events present: ' . (int) $summary['analytics_events'] . "\n";

@@ -1,6 +1,6 @@
 # Operating Scale Readiness
 
-Before launch, use the scale fixture tooling to check ArtsFolio with many tenants and media-heavy catalogs.
+Before launch, use the scale fixture tooling to check ArtsFolio with many tenants, users, plans, and media-heavy catalogs.
 
 ## Apply the update from Downloads
 
@@ -14,6 +14,8 @@ php scripts/database/migrate.php
 ./scripts/test/preflight.sh
 ```
 
+Apply later hotfix archives from `/Users/bxiie/Downloads` in the order they were provided.
+
 ## Add synthetic tenants from platform admin
 
 Open:
@@ -24,7 +26,7 @@ https://artsfol.io/platform/admin/scale-tenants
 
 For local development, use the matching local platform-admin URL.
 
-The page can create, reset, and remove synthetic tenants. The default test dataset is:
+The page queues create, reset, and remove operations as background jobs so the browser does not time out while building the fixture dataset. The default test dataset is:
 
 ```text
 1000 tenants
@@ -32,7 +34,47 @@ The page can create, reset, and remove synthetic tenants. The default test datas
 200 analytics events per tenant
 ```
 
+The tenant count defaults to `1000` but can be any positive number. Very large fixture jobs should be run only against disposable local/staging databases because they intentionally create a lot of rows.
+
 Synthetic tenants use slugs like `scale-0001` and hostnames like `scale-0001.artsfol.io`.
+
+## Generated users and plans
+
+Each synthetic tenant receives a plan assignment and tenant users:
+
+```text
+free       -> 1 tenant user
+studio     -> 3 tenant users
+pro        -> 10 tenant users
+collective -> 25 tenant users
+```
+
+The fixture service reads `plans.allowed_admin_users` when available, so edited plan limits are reflected in new scale data. The first generated user is the tenant owner. Remaining generated users are tenant admins.
+
+Generated scale users have emails ending in:
+
+```text
+@scale-fixtures.artsfol.io
+```
+
+They are removed by scale cleanup along with their memberships, identities, sessions, tokens, role assignments, and user rows.
+
+## Background worker requirement
+
+Platform-admin scale actions create background jobs. Make sure the worker is running before using the web controls:
+
+```bash
+systemctl status artsfolio-background-worker.service --no-pager
+journalctl -u artsfolio-background-worker.service -n 100 --no-pager
+```
+
+For local development without systemd, run queued jobs manually from the project root:
+
+```bash
+php scripts/workers/run_once.php
+```
+
+Repeat `run_once.php` until the queued `scale_tenants.seed` or `scale_tenants.cleanup` job has completed. Progress and failures are visible at `/platform/admin/jobs`.
 
 ## Add synthetic tenants from CLI
 
@@ -54,7 +96,7 @@ Or from CLI:
 php scripts/dev/seed_scale_dataset.php cleanup
 ```
 
-Cleanup is constrained to tenants that have both a `scale-` slug and the `scale_dataset_marker` tenant setting. It is designed not to affect real tenant data.
+Cleanup is constrained to tenants that have both a `scale-` slug and the `scale_dataset_marker` tenant setting. Fixture users are constrained to marked scale tenants and `@scale-fixtures.artsfol.io` email addresses. It is designed not to affect real tenant data.
 
 ## Media variant maintenance
 

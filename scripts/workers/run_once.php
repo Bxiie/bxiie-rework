@@ -14,9 +14,11 @@ use App\Platform\Domains\DomainArtifactRepository;
 use App\Platform\Domains\DnsVerifier;
 use App\Platform\Jobs\BackgroundJobRepository;
 use App\Platform\Jobs\Handlers\RenderVhostJobHandler;
+use App\Platform\Jobs\Handlers\ScaleTenantFixtureJobHandler;
 use App\Platform\Jobs\Handlers\TenantSiteBootstrapJobHandler;
 use App\Platform\Jobs\Handlers\VerifyDnsJobHandler;
 use App\Platform\Jobs\Handlers\WriteApprovedVhostJobHandler;
+use App\Platform\ScaleTesting\ScaleTenantFixtureService;
 use App\Platform\Tenancy\TenantDomainRepository;
 use App\Support\Database;
 
@@ -59,6 +61,21 @@ try {
         case 'custom_domain.render_vhost':
             $handler = new RenderVhostJobHandler(new ApacheVhostRenderer(), new DomainArtifactRepository($pdo), new TenantDomainRepository($pdo));
             echo $handler->handle($job['payload'], isset($job['tenant_id']) ? (int) $job['tenant_id'] : null) . "\n";
+            $jobs->markComplete((int) $job['id']);
+            break;
+
+
+        case 'scale_tenants.seed':
+            $handler = new ScaleTenantFixtureJobHandler(new ScaleTenantFixtureService($pdo, $root));
+            echo $handler->handle($job['payload']) . "\n";
+            $jobs->markComplete((int) $job['id']);
+            break;
+
+        case 'scale_tenants.cleanup':
+            $handler = new ScaleTenantFixtureJobHandler(new ScaleTenantFixtureService($pdo, $root));
+            $payload = $job['payload'];
+            $payload['action'] = 'cleanup';
+            echo $handler->handle($payload) . "\n";
             $jobs->markComplete((int) $job['id']);
             break;
 

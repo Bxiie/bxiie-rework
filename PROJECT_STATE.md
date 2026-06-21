@@ -1696,4 +1696,23 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Removed deprecated `imagedestroy()` calls from `App\Tenant\Media\MediaVariantService`; PHP 8.5 reports these calls because GDImage objects are released automatically when references leave scope.
 - `scripts/test/media_variants_static.php` now fails if the new media variant service reintroduces `imagedestroy()`.
 
+
+## 2026-06-20 - Scale tenant admin browser-timeout hotfix
+
+- Platform-admin scale tenant create/reset/remove actions now enqueue background jobs instead of running large fixture creation or cleanup inside the browser request.
+- Added `App\Platform\Jobs\Handlers\ScaleTenantFixtureJobHandler` and registered `scale_tenants.seed` and `scale_tenants.cleanup` in `scripts/workers/run_once.php`.
+- `/platform/admin/scale-tenants` now tells operators that fixture actions require the background worker and that progress is visible under `/platform/admin/jobs`.
+- Scale fixture audit logging is best-effort so audit-log schema/user-id drift cannot break the admin action.
+- Static coverage in `scripts/test/platform_scale_tenants_static.php` now checks that scale admin actions enqueue jobs and that the worker has handlers for them.
+
+
+## 2026-06-20 - Scale tenant users and plan-mix fixture hotfix
+
+- Scale fixture seeding now assigns each synthetic tenant a plan, rotating through `free`, `studio`, `pro`, and `collective`. The tenant setting `billing_plan` is kept in sync with the assigned plan.
+- Each scale tenant now receives active tenant users. The first generated user is tenant owner and the remaining generated users are tenant admins. User counts follow `plans.allowed_admin_users` when available, with defaults of free=1, studio=3, pro=10, and collective=25.
+- Generated scale users use the isolated email domain `@scale-fixtures.artsfol.io` and local test password `ScaleTenantFixture!2026`. These accounts are fixtures only and must not be treated as real user accounts.
+- Scale cleanup now removes generated fixture users and their tenant memberships, tenant_users rows, role assignments, identities, sessions, OAuth tokens, reset/verification tokens, platform role rows, audit user rows, and email outbox user rows before deleting the users. Users are selected only when linked to marked scale tenants and using the fixture email domain.
+- Platform-admin and CLI tenant count defaults remain 1000, but the previous 5000-tenant artificial cap has been removed. Operators can request any positive tenant count against disposable local/staging databases.
+- Platform-admin scale tenant summary now shows generated user counts and plan distribution. Static coverage in `scripts/test/platform_scale_tenants_static.php` checks the plan mix, generated users, cleanup user deletion, and uncapped tenant count behavior.
+
 # End of file.

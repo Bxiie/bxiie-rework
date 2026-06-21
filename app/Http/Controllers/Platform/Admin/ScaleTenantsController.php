@@ -14,6 +14,7 @@ use App\Http\Response;
 use App\Http\View\AdminLayout;
 use App\Http\View\ErrorPage;
 use App\Platform\Audit\AuditLogRepository;
+use App\Platform\Jobs\BackgroundJobRepository;
 use App\Platform\Membership\Roles;
 use App\Platform\ScaleTesting\ScaleTenantFixtureService;
 use App\Support\Flash\FlashMessages;
@@ -28,6 +29,7 @@ final class ScaleTenantsController
     public function __construct(
         private readonly RequirePlatformRole $roles,
         private readonly ScaleTenantFixtureService $fixtures,
+        private readonly BackgroundJobRepository $jobs,
         private readonly CsrfTokenService $csrf,
         private readonly ?AuditLogRepository $auditLog = null,
     ) {
@@ -45,19 +47,26 @@ final class ScaleTenantsController
         $artworkCount = AdminLayout::escape((string) $summary['artworks']);
         $mediaCount = AdminLayout::escape((string) $summary['media_assets']);
         $eventCount = AdminLayout::escape((string) $summary['analytics_events']);
+        $userCount = AdminLayout::escape((string) ($summary['users'] ?? 0));
+        $planDistribution = AdminLayout::escape((string) ($summary['plan_distribution'] ?? 'unavailable'));
+        $userEmailDomain = AdminLayout::escape((string) ($summary['user_email_domain'] ?? 'scale-fixtures.artsfol.io'));
         $markerKey = AdminLayout::escape((string) $summary['marker_key']);
         $markerValue = AdminLayout::escape((string) $summary['marker_value']);
         $slugPrefix = AdminLayout::escape((string) $summary['slug_prefix']);
 
         $body = <<<HTML
 <p class="admin-muted">Create or remove synthetic scale-test tenants from platform admin. These fixtures are deliberately isolated from real tenants by both slug prefix and marker setting.</p>
+<p class="admin-notice admin-notice-info">Create, reset, and remove operations are queued as background jobs so the browser request does not time out while generating a large fixture dataset.</p>
 <section class="admin-panel">
     <h2>Current scale fixtures</h2>
     <table class="admin-table">
         <tbody>
             <tr><th>Tenant marker</th><td><code>{$markerKey}</code> = <code>{$markerValue}</code></td></tr>
             <tr><th>Slug prefix</th><td><code>{$slugPrefix}</code></td></tr>
+            <tr><th>User email domain</th><td><code>{$userEmailDomain}</code></td></tr>
             <tr><th>Scale tenants</th><td>{$tenantCount}</td></tr>
+            <tr><th>Scale users</th><td>{$userCount}</td></tr>
+            <tr><th>Plan distribution</th><td>{$planDistribution}</td></tr>
             <tr><th>Scale artworks</th><td>{$artworkCount}</td></tr>
             <tr><th>Scale media assets</th><td>{$mediaCount}</td></tr>
             <tr><th>Scale analytics events</th><td>{$eventCount}</td></tr>
@@ -69,7 +78,7 @@ final class ScaleTenantsController
     <p class="admin-muted">Use <strong>Reset</strong> for a clean 1000-tenant test dataset. Reset first removes existing marked scale fixtures, then recreates them.</p>
     <form method="post" action="/platform/admin/scale-tenants/create" class="admin-stacked-form confirm-scale-fixture-form" data-confirm="Type create scale tenants to seed synthetic scale data.">
         <input type="hidden" name="csrf_token" value="{$csrf}">
-        <label>Tenants <input type="number" name="tenants" value="1000" min="1" max="5000"></label>
+        <label>Tenants <input type="number" name="tenants" value="1000" min="1"></label>
         <label>Artworks per tenant <input type="number" name="artworks_per_tenant" value="50" min="0" max="500"></label>
         <label>Analytics events per tenant <input type="number" name="events_per_tenant" value="200" min="0" max="5000"></label>
         <label>Action
@@ -120,29 +129,34 @@ HTML;
             return Response::html('<h1>Scale tenant confirmation required</h1>', 422);
         }
 
-        $tenantCount = $this->boundedInt($_POST['tenants'] ?? 1000, 1, 5000, 1000);
+        $tenantCount = $this->positiveInt($_POST['tenants'] ?? 1000, 1000);
         $artworksPerTenant = $this->boundedInt($_POST['artworks_per_tenant'] ?? 50, 0, 500, 50);
         $eventsPerTenant = $this->boundedInt($_POST['events_per_tenant'] ?? 200, 0, 5000, 200);
         $action = (string) ($_POST['scale_action'] ?? 'reset');
 
-        try {
-            if ($action === 'reset') {
-                $this->fixtures->cleanup();
-            } elseif ($action !== 'seed') {
-                return Response::html('<h1>Invalid scale fixture action</h1>', 422);
-            }
+        if (!in_array($action, ['reset', 'seed'], true)) {
+            return Response::html('<h1>Invalid scale fixture action</h1>', 422);
+        }
 
-            $summary = $this->fixtures->seed($tenantCount, $artworksPerTenant, $eventsPerTenant);
-            $this->auditLog?->record('platform.scale_tenants.created', null, (int) ($currentUser['user_id'] ?? 0), 'scale-fixtures', 'scale-tenants', [
+        try {
+            $jobId = $this->jobs->enqueue('scale_tenants.seed', [
                 'action' => $action,
                 'tenants' => $tenantCount,
                 'artworks_per_tenant' => $artworksPerTenant,
                 'events_per_tenant' => $eventsPerTenant,
-                'summary' => $summary,
+                'requested_by_user_id' => (int) ($currentUser['user_id'] ?? $currentUser['id'] ?? 0),
+            ]);
+            $this->recordAuditSafely('platform.scale_tenants.queued', $currentUser, [
+                'job_id' => $jobId,
+                'action' => $action,
+                'tenants' => $tenantCount,
+                'artworks_per_tenant' => $artworksPerTenant,
+                'events_per_tenant' => $eventsPerTenant,
             ], $request->server('REMOTE_ADDR'));
-            FlashMessages::success('Scale tenant fixtures created.');
+            FlashMessages::success('Scale tenant fixture job queued as background job #' . $jobId . '. Check Platform Admin → Jobs for progress.');
         } catch (Throwable $e) {
-            FlashMessages::error('Scale tenant creation failed: ' . $e->getMessage());
+            error_log('Scale tenant creation enqueue failed: ' . $e->getMessage());
+            FlashMessages::error('Scale tenant creation could not be queued: ' . $e->getMessage());
         }
 
         return new Response('', 303, ['Location' => '/platform/admin/scale-tenants']);
@@ -161,11 +175,14 @@ HTML;
         }
 
         try {
-            $summary = $this->fixtures->cleanup();
-            $this->auditLog?->record('platform.scale_tenants.removed', null, (int) ($currentUser['user_id'] ?? 0), 'scale-fixtures', 'scale-tenants', $summary, $request->server('REMOTE_ADDR'));
-            FlashMessages::success('Scale tenant fixtures removed.');
+            $jobId = $this->jobs->enqueue('scale_tenants.cleanup', [
+                'requested_by_user_id' => (int) ($currentUser['user_id'] ?? $currentUser['id'] ?? 0),
+            ]);
+            $this->recordAuditSafely('platform.scale_tenants.cleanup_queued', $currentUser, ['job_id' => $jobId], $request->server('REMOTE_ADDR'));
+            FlashMessages::success('Scale tenant removal queued as background job #' . $jobId . '. Check Platform Admin → Jobs for progress.');
         } catch (Throwable $e) {
-            FlashMessages::error('Scale tenant removal failed: ' . $e->getMessage());
+            error_log('Scale tenant removal enqueue failed: ' . $e->getMessage());
+            FlashMessages::error('Scale tenant removal could not be queued: ' . $e->getMessage());
         }
 
         return new Response('', 303, ['Location' => '/platform/admin/scale-tenants']);
@@ -174,6 +191,42 @@ HTML;
     private function canManage(?array $currentUser): bool
     {
         return $this->roles->allows($currentUser, [Roles::PLATFORM_OWNER, Roles::PLATFORM_ADMIN]);
+    }
+
+    /**
+     * Records best-effort audit events without letting audit-log schema drift break the admin action.
+     *
+     * @param array<string,mixed> $details
+     */
+    private function recordAuditSafely(string $action, ?array $currentUser, array $details, ?string $ipAddress): void
+    {
+        if (!$this->auditLog) {
+            return;
+        }
+
+        try {
+            $this->auditLog->record(
+                $action,
+                null,
+                (int) ($currentUser['user_id'] ?? $currentUser['id'] ?? 0) ?: null,
+                'scale-fixtures',
+                'scale-tenants',
+                $details,
+                $ipAddress,
+            );
+        } catch (Throwable $e) {
+            error_log('Scale tenant audit event failed: ' . $e->getMessage());
+        }
+    }
+
+    private function positiveInt(mixed $value, int $default): int
+    {
+        $string = trim((string) $value);
+        if (!preg_match('/^\d+$/', $string)) {
+            return $default;
+        }
+
+        return max(1, (int) $string);
     }
 
     private function boundedInt(mixed $value, int $min, int $max, int $default): int
