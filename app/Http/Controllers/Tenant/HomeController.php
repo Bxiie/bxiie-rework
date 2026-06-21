@@ -432,57 +432,13 @@ HTML;
 
     private function track(Request $request, TenantContext $tenant, string $eventType, ?string $entityType = null, ?int $entityId = null): void
     {
-        try {
-            $stmt = $this->pdo->prepare(
-                'INSERT INTO analytics_events (
-                    tenant_id,
-                    event_type,
-                    path,
-                    referrer,
-                    ip_hash,
-                    user_agent,
-                    entity_type,
-                    entity_id,
-                    country,
-                    region,
-                    city,
-                    created_at
-                ) VALUES (
-                    :tenant_id,
-                    :event_type,
-                    :path,
-                    :referrer,
-                    :ip_hash,
-                    :user_agent,
-                    :entity_type,
-                    :entity_id,
-                    :country,
-                    :region,
-                    :city,
-                    NOW()
-                )'
-            );
-
-            $ip = $this->requestIp($request);
-            $ipHash = hash('sha256', $ip . '|artsfolio-analytics');
-            $location = (new \App\Platform\Analytics\AnalyticsLocationResolver($this->pdo))->resolve($request, $ip, $ipHash);
-
-            $stmt->execute([
-                'tenant_id' => $tenant->tenantId,
-                'event_type' => $eventType,
-                'path' => $request->path(),
-                'referrer' => mb_substr((string) $request->server('HTTP_REFERER', ''), 0, 1000),
-                'ip_hash' => $ipHash,
-                'user_agent' => mb_substr((string) $request->server('HTTP_USER_AGENT', ''), 0, 1000),
-                'entity_type' => $entityType,
-                'entity_id' => $entityId,
-                'country' => $location['country'],
-                'region' => $location['region'],
-                'city' => $location['city'],
-            ]);
-        } catch (Throwable) {
-            // Analytics must never break the public tenant site.
-        }
+        (new \App\Platform\Analytics\AnalyticsRecorder($this->pdo))->record(
+            $request,
+            $tenant->tenantId,
+            $eventType,
+            $entityType,
+            $entityId,
+        );
     }
 
     private function requestIp(Request $request): string

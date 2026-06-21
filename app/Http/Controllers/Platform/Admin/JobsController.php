@@ -57,6 +57,7 @@ final class JobsController
             $attemptRows .= '<tr>'
                 . '<td>' . AdminLayout::escape((string) $attempt['id']) . '</td>'
                 . '<td>' . AdminLayout::escape((string) $attempt['status']) . '</td>'
+                . '<td>' . $this->formatDuration((string) ($attempt['started_at'] ?? ''), (string) ($attempt['finished_at'] ?? '')) . '</td>'
                 . '<td>' . AdminLayout::escape((string) ($attempt['message'] ?? '')) . '</td>'
                 . '<td>' . AdminLayout::escape((string) ($attempt['started_at'] ?? '')) . '</td>'
                 . '<td>' . AdminLayout::escape((string) ($attempt['finished_at'] ?? '')) . '</td>'
@@ -65,7 +66,7 @@ final class JobsController
         }
 
         if ($attemptRows === '') {
-            $attemptRows = '<tr><td colspan="6">No attempt history found.</td></tr>';
+            $attemptRows = '<tr><td colspan="7">No attempt history found.</td></tr>';
         }
 
         $body = '<dl>'
@@ -276,22 +277,46 @@ HTML,
      */
     private function formatJobExecutionTime(array $job): string
     {
-        $started = (string) ($job['started_at'] ?? $job['reserved_at'] ?? $job['run_at'] ?? $job['available_at'] ?? '');
-        $completed = (string) ($job['completed_at'] ?? $job['finished_at'] ?? $job['failed_at'] ?? '');
+        $started = (string) ($job['started_at'] ?? $job['first_started_at'] ?? '');
+        $finished = (string) ($job['completed_at'] ?? $job['failed_at'] ?? $job['last_finished_at'] ?? '');
 
-        if ($started === '' && $completed === '') {
+        if ($started === '') {
             return '<span class="admin-muted">Not run yet</span>';
         }
 
-        $parts = [];
-        if ($started !== '') {
-            $parts[] = 'Started ' . htmlspecialchars($started, ENT_QUOTES, 'UTF-8');
-        }
-        if ($completed !== '') {
-            $parts[] = 'Finished ' . htmlspecialchars($completed, ENT_QUOTES, 'UTF-8');
+        $duration = $this->formatDuration($started, $finished);
+        if ($finished === '') {
+            return $duration . '<br><span class="admin-muted">Running since ' . AdminLayout::escape($started) . '</span>';
         }
 
-        return implode('<br>', $parts);
+        return $duration . '<br><span class="admin-muted">' . AdminLayout::escape($started) . ' to ' . AdminLayout::escape($finished) . '</span>';
+    }
+
+    private function formatDuration(string $started, string $finished): string
+    {
+        if ($started === '') {
+            return '<span class="admin-muted">Not started</span>';
+        }
+
+        $startTime = strtotime($started);
+        $finishTime = $finished !== '' ? strtotime($finished) : time();
+        if ($startTime === false || $finishTime === false || $finishTime < $startTime) {
+            return '<span class="admin-muted">Unknown</span>';
+        }
+
+        $seconds = $finishTime - $startTime;
+        if ($seconds < 60) {
+            return AdminLayout::escape($seconds . 's');
+        }
+
+        $minutes = intdiv($seconds, 60);
+        $remainingSeconds = $seconds % 60;
+        if ($minutes < 60) {
+            return AdminLayout::escape($minutes . 'm ' . $remainingSeconds . 's');
+        }
+
+        $hours = intdiv($minutes, 60);
+        return AdminLayout::escape($hours . 'h ' . ($minutes % 60) . 'm');
     }
 
 }

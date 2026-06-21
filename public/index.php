@@ -590,28 +590,12 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
         if (str_starts_with($path, '/assets/') || $path === '/favicon.ico' || $path === '/caddy/ask') {
             return;
         }
-        try {
-            $ip = trim((string) ($request->server('HTTP_CF_CONNECTING_IP') ?: $request->server('REMOTE_ADDR', '')));
-            $ipHash = hash('sha256', $ip . '|artsfolio-analytics');
-            $location = (new \App\Platform\Analytics\AnalyticsLocationResolver($pdo))->resolve($request, $ip, $ipHash);
-            $stmt = $pdo->prepare(
-                'INSERT INTO analytics_events (tenant_id, event_type, path, referrer, ip_hash, ip_address, user_agent, country, region, city, created_at)
-                 VALUES (NULL, :event_type, :path, :referrer, :ip_hash, :ip_address, :user_agent, :country, :region, :city, NOW())'
-            );
-            $stmt->execute([
-                'event_type' => str_starts_with($path, '/platform/admin') ? 'platform_admin_page_view' : 'platform_page_view',
-                'path' => $path,
-                'referrer' => mb_substr((string) $request->server('HTTP_REFERER', ''), 0, 1000),
-                'ip_hash' => $ipHash,
-                'ip_address' => mb_substr($ip, 0, 64),
-                'user_agent' => mb_substr((string) $request->server('HTTP_USER_AGENT', ''), 0, 1000),
-                'country' => $location['country'],
-                'region' => $location['region'],
-                'city' => $location['city'],
-            ]);
-        } catch (\Throwable) {
-            // Analytics must never break platform pages.
-        }
+
+        (new \App\Platform\Analytics\AnalyticsRecorder($pdo))->record(
+            $request,
+            null,
+            str_starts_with($path, '/platform/admin') ? 'platform_admin_page_view' : 'platform_page_view',
+        );
     };
     $trackPlatformPage($request);
 

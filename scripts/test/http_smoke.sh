@@ -132,7 +132,7 @@ assert_status() {
   local expected_status="$4"
 
   local status
-  status="$(curl -sS -o /tmp/artsfolio-http-smoke-body.txt -w "%{http_code}" -H "Host: ${host}" "${BASE_URL}${path}")"
+  status="$(curl -sS -o /tmp/artsfolio-http-smoke-body.txt -w "%{http_code}" -H "Host: ${host}" -H "X-ArtsFolio-Test-Probe: http-smoke" "${BASE_URL}${path}")"
 
   if [[ "${status}" != "${expected_status}" ]]; then
     echo "FAILED: ${description}" >&2

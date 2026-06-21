@@ -184,3 +184,6 @@ run_if_exists scripts/test/scale_fixture_static.php
 run_if_exists scripts/test/media_variants_static.php
 run_if_exists scripts/test/platform_scale_tenants_static.php
 run_if_exists scripts/test/tenant_settings_snapshot_static.php
+
+php scripts/test/phase3_analytics_static.php
+php scripts/test/platform_jobs_execution_time_static.php

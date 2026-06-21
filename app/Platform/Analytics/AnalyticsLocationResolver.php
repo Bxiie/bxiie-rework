@@ -45,16 +45,7 @@ final class AnalyticsLocationResolver
             return $cachedLocation;
         }
 
-        if (!$this->isPublicIp($ipAddress)) {
-            return $this->emptyLocation('private_ip');
-        }
-
-        $lookupLocation = $this->fromIpApi($ipAddress);
-        if ($this->hasLocation($lookupLocation)) {
-            $this->cache($ipHash, $lookupLocation);
-        }
-
-        return $lookupLocation;
+        return $this->emptyLocation($this->isPublicIp($ipAddress) ? 'background_lookup_pending' : 'private_ip');
     }
 
     /** @return array{country:string,region:string,city:string,source:string} */
@@ -112,10 +103,6 @@ final class AnalyticsLocationResolver
     private function fromCache(string $ipHash): array
     {
         try {
-            if (!$this->tableExists(self::CACHE_TABLE)) {
-                return $this->emptyLocation('cache_missing');
-            }
-
             $stmt = $this->pdo->prepare(
                 'SELECT country, region, city, source
                    FROM analytics_ip_locations
@@ -142,10 +129,6 @@ final class AnalyticsLocationResolver
     private function cache(string $ipHash, array $location): void
     {
         try {
-            if (!$this->tableExists(self::CACHE_TABLE)) {
-                return;
-            }
-
             $stmt = $this->pdo->prepare(
                 'INSERT INTO analytics_ip_locations (
                     ip_hash,
@@ -183,40 +166,6 @@ final class AnalyticsLocationResolver
     }
 
     /** @return array{country:string,region:string,city:string,source:string} */
-    private function fromIpApi(string $ipAddress): array
-    {
-        try {
-            $url = 'http://ip-api.com/json/' . rawurlencode($ipAddress) . '?fields=status,country,regionName,city';
-            $context = stream_context_create([
-                'http' => [
-                    'method' => 'GET',
-                    'timeout' => 1.5,
-                    'ignore_errors' => true,
-                    'header' => "User-Agent: ArtsFolio analytics location resolver\r\n",
-                ],
-            ]);
-
-            $json = @file_get_contents($url, false, $context);
-            if (!is_string($json) || $json === '') {
-                return $this->emptyLocation('ip_api_empty');
-            }
-
-            $decoded = json_decode($json, true);
-            if (!is_array($decoded) || ($decoded['status'] ?? '') !== 'success') {
-                return $this->emptyLocation('ip_api_no_match');
-            }
-
-            return [
-                'country' => $this->limit((string) ($decoded['country'] ?? ''), 120),
-                'region' => $this->limit((string) ($decoded['regionName'] ?? ''), 120),
-                'city' => $this->limit((string) ($decoded['city'] ?? ''), 120),
-                'source' => 'ip_api',
-            ];
-        } catch (Throwable) {
-            return $this->emptyLocation('ip_api_error');
-        }
-    }
-
     private function isPublicIp(string $ipAddress): bool
     {
         return filter_var(
@@ -236,19 +185,6 @@ final class AnalyticsLocationResolver
     private function emptyLocation(string $source): array
     {
         return ['country' => '', 'region' => '', 'city' => '', 'source' => $source];
-    }
-
-    private function tableExists(string $tableName): bool
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT COUNT(*)
-               FROM information_schema.tables
-              WHERE table_schema = DATABASE()
-                AND table_name = :table_name'
-        );
-        $stmt->execute(['table_name' => $tableName]);
-
-        return (int) $stmt->fetchColumn() > 0;
     }
 
     private function limit(string $value, int $length): string

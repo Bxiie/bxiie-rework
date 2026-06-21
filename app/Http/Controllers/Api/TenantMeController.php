@@ -82,7 +82,7 @@ final class TenantMeController
 
     private function auditDenied(Request $request, TenantContext $tenant, ?array $accessToken, string $action): void
     {
-        if (!$this->auditLog) {
+        if (!$this->auditLog || $this->isTrustedLocalSmokeProbe($request)) {
             return;
         }
 
@@ -100,6 +100,18 @@ final class TenantMeController
             ipAddress: $request->server('REMOTE_ADDR'),
         );
     }
+    /**
+     * Suppress only deliberate localhost smoke probes carrying the private test marker.
+     */
+    private function isTrustedLocalSmokeProbe(Request $request): bool
+    {
+        $ip = trim((string) $request->server('REMOTE_ADDR', ''));
+        $marker = trim((string) $request->server('HTTP_X_ARTSFOLIO_TEST_PROBE', ''));
+
+        return in_array($ip, ['127.0.0.1', '::1'], true)
+            && hash_equals('http-smoke', $marker);
+    }
+
 }
 
 // End of file.

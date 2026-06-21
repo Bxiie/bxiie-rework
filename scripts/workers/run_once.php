@@ -8,11 +8,13 @@ declare(strict_types=1);
  * Current behavior is intentionally dry-run only for domain automation.
  */
 
+use App\Platform\Analytics\AnalyticsRollupService;
 use App\Platform\Domains\ApacheVhostRenderer;
 use App\Platform\Domains\ApacheVhostWritePlanner;
 use App\Platform\Domains\DomainArtifactRepository;
 use App\Platform\Domains\DnsVerifier;
 use App\Platform\Jobs\BackgroundJobRepository;
+use App\Platform\Jobs\Handlers\AnalyticsRollupJobHandler;
 use App\Platform\Jobs\Handlers\RenderVhostJobHandler;
 use App\Platform\Jobs\Handlers\ScaleTenantFixtureJobHandler;
 use App\Platform\Jobs\Handlers\TenantSiteBootstrapJobHandler;
@@ -77,6 +79,14 @@ try {
             $payload['action'] = 'cleanup';
             echo $handler->handle($payload) . "\n";
             $jobs->markComplete((int) $job['id']);
+            break;
+
+
+        case 'analytics.rollup':
+            $handler = new AnalyticsRollupJobHandler(new AnalyticsRollupService($pdo));
+            echo $handler->handle($job['payload']) . "\n";
+            $jobs->markComplete((int) $job['id']);
+            $jobs->enqueue('analytics.rollup', ['days' => (int) ($job['payload']['days'] ?? 3)], null, 300);
             break;
 
         case 'custom_domain.write_approved_vhost':
