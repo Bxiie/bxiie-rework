@@ -9,9 +9,16 @@ use PDO;
 
 /**
  * Handles tenant-scoped settings persistence.
+ *
+ * A tenant's settings are bulk-loaded once per repository lifetime. In the
+ * normal PHP request lifecycle this means one query per tenant per request,
+ * even when a controller performs many setting lookups.
  */
 final class TenantSettingsRepository
 {
+    /** @var array<int, TenantSettingsSnapshot> */
+    private array $snapshots = [];
+
     public function __construct(
         private readonly PDO $pdo,
     ) {
@@ -19,22 +26,7 @@ final class TenantSettingsRepository
 
     public function get(TenantContext $tenant, string $key, ?string $default = null): ?string
     {
-        $stmt = $this->pdo->prepare(
-            "SELECT setting_value
-             FROM tenant_settings
-             WHERE tenant_id = :tenant_id
-               AND setting_key = :setting_key
-             LIMIT 1"
-        );
-
-        $stmt->execute([
-            'tenant_id' => $tenant->tenantId,
-            'setting_key' => $key,
-        ]);
-
-        $row = $stmt->fetch();
-
-        return $row ? (string) $row['setting_value'] : $default;
+        return $this->snapshot($tenant)->get($key, $default);
     }
 
     public function set(TenantContext $tenant, string $key, ?string $value): void
@@ -61,9 +53,43 @@ final class TenantSettingsRepository
             'setting_key' => $key,
             'setting_value' => $value,
         ]);
+
+        // Keep an already-loaded request snapshot coherent after a save.
+        if (isset($this->snapshots[$tenant->tenantId])) {
+            $this->snapshots[$tenant->tenantId] = $this->snapshots[$tenant->tenantId]->with($key, $value);
+        }
     }
 
+    /**
+     * Returns all tenant settings while preserving the existing array API.
+     *
+     * @return array<string, string|null>
+     */
     public function all(TenantContext $tenant): array
+    {
+        return $this->snapshot($tenant)->all();
+    }
+
+    public function snapshot(TenantContext $tenant): TenantSettingsSnapshot
+    {
+        if (!isset($this->snapshots[$tenant->tenantId])) {
+            $this->snapshots[$tenant->tenantId] = $this->loadSnapshot($tenant);
+        }
+
+        return $this->snapshots[$tenant->tenantId];
+    }
+
+    /**
+     * Invalidates one request-local snapshot.
+     *
+     * This is primarily useful after direct SQL changes that bypass set().
+     */
+    public function invalidate(TenantContext $tenant): void
+    {
+        unset($this->snapshots[$tenant->tenantId]);
+    }
+
+    private function loadSnapshot(TenantContext $tenant): TenantSettingsSnapshot
     {
         $stmt = $this->pdo->prepare(
             "SELECT setting_key, setting_value
@@ -77,10 +103,12 @@ final class TenantSettingsRepository
         $settings = [];
 
         foreach ($stmt->fetchAll() as $row) {
-            $settings[(string) $row['setting_key']] = $row['setting_value'];
+            $settings[(string) $row['setting_key']] = $row['setting_value'] === null
+                ? null
+                : (string) $row['setting_value'];
         }
 
-        return $settings;
+        return new TenantSettingsSnapshot($settings);
     }
 }
 

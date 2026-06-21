@@ -18,7 +18,8 @@ final class TenantCssController
 
     public function show(Request $request, TenantContext $tenant): Response
     {
-        $css = $this->settings->get($tenant, 'tenant_css', '');
+        $settings = $this->settings->snapshot($tenant);
+        $css = $settings->get('tenant_css', '');
 
         return new Response($css, 200, [
             'Content-Type' => 'text/css; charset=utf-8',

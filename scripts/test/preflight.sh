@@ -183,3 +183,4 @@ run_if_exists scripts/test/tenant_directory_thumbnail_artworks_static.php
 run_if_exists scripts/test/scale_fixture_static.php
 run_if_exists scripts/test/media_variants_static.php
 run_if_exists scripts/test/platform_scale_tenants_static.php
+run_if_exists scripts/test/tenant_settings_snapshot_static.php

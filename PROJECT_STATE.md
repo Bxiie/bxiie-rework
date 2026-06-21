@@ -1715,4 +1715,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform-admin and CLI tenant count defaults remain 1000, but the previous 5000-tenant artificial cap has been removed. Operators can request any positive tenant count against disposable local/staging databases.
 - Platform-admin scale tenant summary now shows generated user counts and plan distribution. Static coverage in `scripts/test/platform_scale_tenants_static.php` checks the plan mix, generated users, cleanup user deletion, and uncapped tenant count behavior.
 
+## Tenant settings request snapshots (Phase 2)
+
+- `TenantSettingsRepository` bulk-loads all settings for a tenant once per repository/request lifetime.
+- Existing `get()` and `all()` APIs read from `TenantSettingsSnapshot`; repeated setting lookups no longer issue per-key SQL queries.
+- `set()` keeps an already-loaded snapshot coherent, and `invalidate()` is available for direct-SQL mutation paths.
+- Regression coverage: `scripts/test/tenant_settings_snapshot_static.php`.
+
 # End of file.
