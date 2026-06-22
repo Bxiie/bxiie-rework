@@ -117,17 +117,33 @@ SQL;
     }
 
     /** @return array<int, array<string, mixed>> */
-    public function page(int $page, int $perPage): array
+    public function page(int $page, int $perPage, string $query = '', string $sort = 'name_asc'): array
     {
         $offset = max(0, ($page - 1) * $perPage);
+        $where = 'is_listed = 1';
+        $params = [];
+        if ($query !== '') {
+            $where .= " AND (display_name LIKE :query ESCAPE '\\\\' OR summary LIKE :query ESCAPE '\\\\')";
+            $params['query'] = '%' . self::escapeLike($query) . '%';
+        }
+
+        $orderBy = match ($sort) {
+            'name_desc' => 'sort_name DESC, tenant_id DESC',
+            'updated_desc' => 'updated_at DESC, sort_name ASC, tenant_id ASC',
+            default => 'sort_name ASC, tenant_id ASC',
+        };
+
         $stmt = $this->pdo->prepare(
             "SELECT tenant_id, display_name, summary, thumbnail_media_uuid,
-                    thumbnail_title, primary_hostname
+                    thumbnail_title, primary_hostname, updated_at
              FROM tenant_directory_profiles
-             WHERE is_listed = 1
-             ORDER BY sort_name ASC, tenant_id ASC
+             WHERE {$where}
+             ORDER BY {$orderBy}
              LIMIT :limit OFFSET :offset"
         );
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value, PDO::PARAM_STR);
+        }
         $stmt->bindValue('limit', $perPage, PDO::PARAM_INT);
         $stmt->bindValue('offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
@@ -135,11 +151,32 @@ SQL;
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
-    public function listedCount(): int
+    public function listedCount(string $query = ''): int
     {
-        return (int) $this->pdo->query(
-            'SELECT COUNT(*) FROM tenant_directory_profiles WHERE is_listed = 1'
-        )->fetchColumn();
+        if ($query === '') {
+            return (int) $this->pdo->query(
+                'SELECT COUNT(*) FROM tenant_directory_profiles WHERE is_listed = 1'
+            )->fetchColumn();
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT COUNT(*)
+             FROM tenant_directory_profiles
+             WHERE is_listed = 1
+               AND (display_name LIKE :query ESCAPE '\\\\' OR summary LIKE :query ESCAPE '\\\\')"
+        );
+        $stmt->execute(['query' => '%' . self::escapeLike($query) . '%']);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    private static function escapeLike(string $value): string
+    {
+        return strtr($value, [
+            '\\' => '\\\\',
+            '%' => '\\%',
+            '_' => '\\_',
+        ]);
     }
 }
 

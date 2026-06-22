@@ -25,3 +25,7 @@ SELECT COUNT(*) FROM tenant_directory_profiles WHERE is_listed = 1;
 ```
 
 Directory pages display 24 artists at a time with Previous and Next controls.
+
+## Public directory search and sorting
+
+The public directory supports a name/summary search and three explicit sort modes: Name A–Z, Name Z–A, and Recently updated. Search, sort, and paging values remain in the URL so filtered views can be bookmarked. JavaScript replaces only the directory results region; ordinary GET forms and links remain the fallback.

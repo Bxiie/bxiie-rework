@@ -531,3 +531,9 @@ Phase 6 directory projection:
 - Load `bootstrap/app.php` and connect through `App\Support\Database`.
 - Add regression coverage for the maintenance command bootstrap.
 
+
+2026-06-22 Phase 6 directory search and sorting
+- Add public artist search by projected name and summary.
+- Add Name A–Z, Name Z–A, and Recently updated sorting.
+- Preserve filter state in pagination URLs and update directory results in place.
+- Add documentation, tests, preflight wiring, and project-state notes.

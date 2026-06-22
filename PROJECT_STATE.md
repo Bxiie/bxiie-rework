@@ -1762,3 +1762,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Replaced the compact inline Portfolio Sections action links with three prominent responsive action cards.
 - Added short descriptions clarifying the difference between section creation, section/home ordering, and bulk placement.
 - Added focused static regression coverage and preflight wiring.
+
+## 2026-06-22 - Directory search and sorting
+
+- Added public directory search across projected artist display name and directory summary.
+- Added allow-listed Name A–Z, Name Z–A, and Recently updated sort modes.
+- Preserved search/sort state through pagination and bookmarkable URLs.
+- Added progressive AJAX replacement for the directory results region with normal GET fallback and Back/Forward support.
+- Added focused static regression coverage and preflight wiring.
