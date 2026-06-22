@@ -274,9 +274,7 @@ HTML;
         $captcha = FirstPartyCaptcha::render('contact', (int) $tenant->tenantId, $this->turnstileSiteKey($tenant));
         $signupCaptcha = FirstPartyCaptcha::render('signup', (int) $tenant->tenantId, $this->turnstileSiteKey($tenant));
         $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
-        $requestedArtworkSlug = trim((string) ($_GET['artwork'] ?? ''));
-        $artworkSubject = $this->contactArtworkSubject($tenant, $requestedArtworkSlug);
-        $artworkSlug = $artworkSubject !== '' ? $this->escape($requestedArtworkSlug) : '';
+        $artworkSubject = $this->contactArtworkSubject($tenant, (string) ($_GET['artwork'] ?? ''));
 
         return Response::html($this->layout(
             tenant: $tenant,
@@ -290,7 +288,6 @@ HTML;
     <h2>Send a message</h2>
     <div id="contact-form-result" data-af-form-result class="af-form-result" hidden></div>
     <input type="hidden" name="csrf_token" value="{$csrf}">
-    <input type="hidden" name="artwork_slug" value="{$artworkSlug}">
     <p>
         <label>Name<br>
             <input type="text" name="name" autocomplete="name" required>

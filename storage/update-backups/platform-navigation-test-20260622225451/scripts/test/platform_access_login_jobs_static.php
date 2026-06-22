@@ -23,7 +23,6 @@ Missing: {$needle}
 $authPage = $root . '/app/Http/View/AuthPage.php';
 $loginController = $root . '/app/Http/Controllers/Auth/LoginController.php';
 $marketingController = $root . '/app/Http/Controllers/Platform/MarketingController.php';
-$platformChrome = $root . '/app/Http/View/PlatformChrome.php';
 $helpController = $root . '/app/Http/Controllers/Platform/HelpController.php';
 $jobsController = $root . '/app/Http/Controllers/Platform/Admin/JobsController.php';
 $jobsRepository = $root . '/app/Platform/Jobs/JobAdminRepository.php';
@@ -32,9 +31,8 @@ requireNeedle('developer resources are gated', $helpController, 'isDeveloperReso
 requireNeedle('developer resources are gated', $helpController, '?array $currentUser = null');
 requireNeedle('developer resources are gated', $helpController, "['Location' => '/login']");
 
-requireNeedle('shared platform navigation declares its renderer', $platformChrome, 'public static function topNavigation');
-requireNeedle('platform pricing appears in shared top navigation', $platformChrome, "'pricing' => ['/pricing', 'Pricing']");
-requireNeedle('marketing pages render shared platform navigation', $marketingController, 'PlatformChrome::topNavigation');
+requireNeedle('platform pricing appears in top navigation', $marketingController, 'href="/pricing"');
+requireNeedle('platform pricing appears in top navigation', $marketingController, 'Pricing');
 
 requireNeedle('auth page login supports optional create-account link', $authPage, 'bool $showCreateAccount = true');
 requireNeedle('auth page login supports optional create-account link', $authPage, '$createAccountLink');

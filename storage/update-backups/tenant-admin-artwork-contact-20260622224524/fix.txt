@@ -13,9 +13,11 @@
 ## billing
 - when changing plans, require definite confirmation.  Warn that difference between this month's payment and the new plan, scaled by days left in the month, will be billed immediatly, unless changing from a free plan.
 - For a billing plan, the free plan should not show credit card rates as checkout is unavailable.
-- Change 'I am a real person, not an automated form submission.' to 'I am a real person.'
 
 ## misc
+- Allow the admin to specify if new artworks are published or unpublished by default.
+- rework platform contact form.
+- in contact messages regarding an artwork, include a link to the image URL in the contact message body on send
 
 ## Bugs ##
 - tenant googlesignup received 6h and 1d email messages.  facebooktest received neither.
@@ -32,10 +34,6 @@
 
 ## #########################
  
-- Allow the admin to specify if new artworks are published or unpublished by default.
-- rework platform contact form.
-- in contact messages regarding an artwork, include a link to the image URL in the contact message body on send
-
 ##
 
 - Add indicator to messages tab if there are new messages.
@@ -506,8 +504,4 @@ Too few arguments to function App\Http\Controllers\Platform\HelpController::inde
 
 # later
 
-#
-2026-06-22
-- Repaired the platform navigation regression test to inspect the shared PlatformChrome navigation source instead of stale inline MarketingController markup.
-
-# End of file.
+## End of file.

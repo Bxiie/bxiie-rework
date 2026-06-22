@@ -71,10 +71,10 @@ final class DashboardController
     <section class="admin-panel">
         <div class="dashboard-section-head"><h2>Workbench</h2><a href="/admin/getting-started">Getting started</a></div>
         <div class="admin-card-grid dashboard-action-grid">
-            <a class="admin-button tenant-admin-action-button" href="/admin/artwork/upload"><strong>Upload work</strong><span>Add portfolio or site images and set sales details.</span></a>
-            <a class="admin-button tenant-admin-action-button" href="/admin/settings"><strong>Style site</strong><span>Branding, page settings, top bar, backgrounds, and navigation.</span></a>
-            <a class="admin-button tenant-admin-action-button" href="/admin/sales"><strong>Process sales</strong><span>Acknowledge, pack, ship, and track customer orders.</span></a>
-            <a class="admin-button tenant-admin-action-button" href="/admin/stats"><strong>Study traffic</strong><span>Find what visitors view, where they come from, and what earns attention.</span></a>
+            <a class="dashboard-card" href="/admin/artwork/upload"><h3>Upload work</h3><p>Add portfolio or site images and set sales details.</p></a>
+            <a class="dashboard-card" href="/admin/settings"><h3>Style site</h3><p>Branding, page settings, top bar, backgrounds, and navigation.</p></a>
+            <a class="dashboard-card" href="/admin/sales"><h3>Process sales</h3><p>Acknowledge, pack, ship, and track customer orders.</p></a>
+            <a class="dashboard-card" href="/admin/stats"><h3>Study traffic</h3><p>Find what visitors view, where they come from, and what earns attention.</p></a>
         </div>
     </section>
 </div>

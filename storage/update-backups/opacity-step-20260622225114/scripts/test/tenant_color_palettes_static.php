@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
 $controller = file_get_contents($root . '/app/Http/Controllers/Tenant/Admin/SettingsController.php');
-$contentController = file_get_contents($root . '/app/Http/Controllers/Tenant/Admin/ContentController.php');
 $script = file_get_contents($root . '/public/assets/admin-color-fields.js');
 $css = file_get_contents($root . '/public/assets/tenant-admin.css');
 $siteCss = file_get_contents($root . '/public/assets/site.css');
@@ -149,15 +148,8 @@ if (substr_count($controller, 'step="0.01"') < 7) {
     $failures[] = 'Expected opacity inputs to use step="0.01" for hundredth values like 0.72.';
 }
 
-if (str_contains($controller, 'step="0.05"') || str_contains($contentController, 'step="0.05"')) {
+if (str_contains($controller, 'step="0.05"')) {
     $failures[] = 'Opacity inputs still contain step="0.05", which rejects values like 0.72.';
-}
-
-foreach (['watermark_opacity', 'about_image_opacity', 'contact_image_opacity'] as $opacityField) {
-    $source = $opacityField === 'watermark_opacity' ? $controller : $contentController;
-    if (!preg_match('/name="' . preg_quote($opacityField, '/') . '"[^>]*step="0\\.01"/', $source)) {
-        $failures[] = 'Opacity field does not accept hundredth values: ' . $opacityField;
-    }
 }
 
 if (substr_count($paletteSource, "'tone' =>") !== 10) {

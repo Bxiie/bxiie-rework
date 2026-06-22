@@ -52,9 +52,6 @@ final class ArtworkUploadService
         $notes = $this->cleanText((string) ($metadata['notes'] ?? ''));
         $saleStatus = $this->normalizeSaleStatus((string) ($metadata['sale_status'] ?? 'nfs'));
         $price = $this->cleanText((string) ($metadata['price'] ?? ''));
-        $status = in_array((string) ($metadata['status'] ?? 'draft'), ['draft', 'published'], true)
-            ? (string) $metadata['status']
-            : 'draft';
 
         if ($saleStatus === 'nfs') {
             $price = '';
@@ -116,7 +113,6 @@ final class ArtworkUploadService
                 notes: $notes,
                 saleStatus: $saleStatus,
                 price: $price,
-                status: $status,
             );
 
             $this->pdo->commit();
@@ -135,10 +131,8 @@ final class ArtworkUploadService
             'artwork_date' => $artworkDate,
             'medium' => $medium,
             'notes' => $notes,
-            'status' => $status,
             'sale_status' => $saleStatus,
             'price' => $price,
-            'status' => $status,
             'storage_path' => $relativePath,
             'sha256' => $sha256,
             'mime_type' => $mime,
@@ -237,7 +231,6 @@ final class ArtworkUploadService
         string $notes,
         string $saleStatus,
         string $price,
-        string $status,
     ): int {
         $stmt = $this->pdo->prepare(
             "INSERT INTO artworks (
@@ -264,7 +257,7 @@ final class ArtworkUploadService
                 :description,
                 :medium,
                 :year_created,
-                :status,
+                'draft',
                 :sale_status,
                 :price,
                 0,
@@ -281,7 +274,6 @@ final class ArtworkUploadService
             'description' => $notes !== '' ? $notes : null,
             'medium' => $medium !== '' ? $medium : null,
             'year_created' => $artworkDate !== '' ? $artworkDate : null,
-            'status' => $status,
             'sale_status' => $saleStatus,
             'price' => $price !== '' ? $price : null,
         ]);

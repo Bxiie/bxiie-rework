@@ -51,7 +51,6 @@ final class SettingsController
         $homeIntro = $this->setting($tenant, 'home_intro', 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.');
         $salesNotes = $this->setting($tenant, 'sales_notes', 'Sales are handled directly by the artist. Contact the studio for shipping, pickup, installation, and timing details.');
         $stripeConnectedAccountId = $this->setting($tenant, 'stripe_connected_account_id', '');
-        $newArtworkDefaultStatus = $this->setting($tenant, 'new_artwork_default_status', 'draft');
         $homeTab = $this->setting($tenant, 'home_tab', 'Home');
         $portfolioTab = $this->setting($tenant, 'portfolio_tab', 'Portfolio');
         $aboutTab = $this->setting($tenant, 'about_tab', 'About');
@@ -282,16 +281,6 @@ HTML;
             </label>
         </fieldset>
         <fieldset>
-            <legend>New artwork defaults</legend>
-            <label>New artwork publication status
-                <select name="new_artwork_default_status">
-                    <option value="draft"{$selected($newArtworkDefaultStatus, 'draft')}>Unpublished (draft)</option>
-                    <option value="published"{$selected($newArtworkDefaultStatus, 'published')}>Published</option>
-                </select>
-            </label>
-            <p class="admin-help">This applies to newly uploaded artwork only. Existing artwork is not changed.</p>
-        </fieldset>
-        <fieldset>
             <legend>Spam protection</legend>
             <p class="admin-help">Tenant public contact and email-list forms use the built-in ArtsFolio CAPTCHA. Cloudflare Turnstile is reserved for ArtsFolio platform-domain forms.</p>
         </fieldset>
@@ -306,27 +295,6 @@ HTML;
             </label>
         </fieldset>
 HTML;
-        $watermarkEnabled = $this->setting($tenant, 'watermark_enabled', '0');
-        $watermarkFormat = $this->setting($tenant, 'watermark_format', 'copyright_artist');
-        $watermarkText = $this->setting($tenant, 'watermark_text', '');
-        $watermarkPosition = $this->setting($tenant, 'watermark_position', 'bottom-right');
-        $watermarkOpacity = $this->setting($tenant, 'watermark_opacity', '0.55');
-        $watermarkSize = $this->setting($tenant, 'watermark_size', '3');
-        $watermarkColor = $this->setting($tenant, 'watermark_color', 'white');
-        $watermarkContent = <<<HTML
-        <fieldset><legend>Public image watermark</legend>
-            <label><input type="checkbox" name="watermark_enabled" value="1"{$checked($watermarkEnabled, '1')}> Add a watermark to public medium, large, and original artwork images</label>
-            <p class="admin-help">Admin thumbnails and stored originals are unchanged. Watermarks are rendered only for public image responses.</p>
-            <div class="admin-grid-2">
-                <label>Format<select name="watermark_format"><option value="copyright_artist"{$selected($watermarkFormat,'copyright_artist')}>© year + artist name</option><option value="artist"{$selected($watermarkFormat,'artist')}>Artist name</option><option value="site"{$selected($watermarkFormat,'site')}>Site title</option><option value="custom"{$selected($watermarkFormat,'custom')}>Custom text</option></select></label>
-                <label>Custom text<input name="watermark_text" maxlength="120" value="{$watermarkText}"></label>
-                <label>Position<select name="watermark_position"><option value="bottom-right"{$selected($watermarkPosition,'bottom-right')}>Bottom right</option><option value="bottom-left"{$selected($watermarkPosition,'bottom-left')}>Bottom left</option><option value="top-right"{$selected($watermarkPosition,'top-right')}>Top right</option><option value="top-left"{$selected($watermarkPosition,'top-left')}>Top left</option><option value="center"{$selected($watermarkPosition,'center')}>Center</option></select></label>
-                <label>Appearance<select name="watermark_color"><option value="white"{$selected($watermarkColor,'white')}>White with shadow</option><option value="black"{$selected($watermarkColor,'black')}>Black with shadow</option></select></label>
-                <label>Opacity<input type="number" name="watermark_opacity" min="0.05" max="1" step="0.01" value="{$watermarkOpacity}"></label>
-                <label>Size<select name="watermark_size"><option value="2"{$selected($watermarkSize,'2')}>Small</option><option value="3"{$selected($watermarkSize,'3')}>Medium</option><option value="4"{$selected($watermarkSize,'4')}>Large</option><option value="5"{$selected($watermarkSize,'5')}>Extra large</option></select></label>
-            </div>
-        </fieldset>
-HTML;
         $cssContent = <<<HTML
         <fieldset>
             <legend>Custom CSS</legend>
@@ -339,7 +307,6 @@ HTML;
             'typography' => $typographyContent,
             'colors-backgrounds' => $colorsContent,
             'directory' => $directoryContent,
-            'watermark' => $watermarkContent,
             'miscellaneous' => $miscContent,
             'custom-css' => $cssContent,
             default => $identityContent,
@@ -378,7 +345,7 @@ HTML;
         foreach ($keys as $key) {
             $before[$key] = $this->settings->get($tenant, $key, '');
             $value = trim((string) ($_POST[$key] ?? ''));
-            if (in_array($key, ['platform_directory_opt_in', 'watermark_enabled'], true)) {
+            if ($key === 'platform_directory_opt_in') {
                 $value = isset($_POST[$key]) ? '1' : '0';
             }
             if ($key === 'platform_directory_summary') {
@@ -391,15 +358,11 @@ HTML;
             if (in_array($key, ['background_media_uuid', 'topbar_media_uuid', 'menu_media_uuid', 'artwork_card_media_uuid'], true)) {
                 $value = $this->safeSiteImageMediaUuid($tenant, $value);
             }
-            if ($key === 'watermark_text') { $value = mb_substr($value, 0, 120); }
             if (str_ends_with($key, '_opacity')) {
                 $value = $this->safeOpacity($value, in_array($key, ['background_opacity'], true) ? '0.12' : (in_array($key, ['artwork_card_background_opacity', 'content_background_opacity'], true) ? '0.00' : '0.72'));
             }
             if (in_array($key, ['header_drop_shadow_enabled', 'menu_background_enabled'], true)) {
                 $value = $value === '0' ? '0' : '1';
-            }
-            if ($key === 'new_artwork_default_status') {
-                $value = in_array($value, ['draft', 'published'], true) ? $value : 'draft';
             }
             if (str_ends_with($key, '_slug')) {
                 $value = $this->safeSlug($value, str_replace('_slug', '', $key));
@@ -443,10 +406,6 @@ HTML;
             'directory' => [
                 'label' => 'Directory',
                 'help' => 'Public ArtsFolio directory opt-in, summary, and thumbnail artwork.',
-            ],
-            'watermark' => [
-                'label' => 'Watermark',
-                'help' => 'Opt-in watermark text, format, placement, color, size, and opacity.',
             ],
             'miscellaneous' => [
                 'label' => 'Miscellaneous',
@@ -511,11 +470,8 @@ HTML;
             'directory' => [
                 'platform_directory_opt_in', 'platform_directory_summary',
             ],
-            'watermark' => [
-                'watermark_enabled', 'watermark_format', 'watermark_text', 'watermark_position', 'watermark_opacity', 'watermark_size', 'watermark_color',
-            ],
             'miscellaneous' => [
-                'sales_notes', 'stripe_connected_account_id', 'new_artwork_default_status', 'artwork_display_order', 'exhibitions_heading', 'exhibitions_display_mode',
+                'sales_notes', 'stripe_connected_account_id', 'artwork_display_order', 'exhibitions_heading', 'exhibitions_display_mode',
             ],
             'custom-css' => [
                 'tenant_css',

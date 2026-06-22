@@ -139,7 +139,6 @@ HTML;
                 'notes' => (string) ($_POST['notes'] ?? ''),
                 'sale_status' => (string) ($_POST['sale_status'] ?? 'nfs'),
                 'price' => (string) ($_POST['price'] ?? ''),
-                'status' => $this->newArtworkDefaultStatus($tenant),
             ]);
         } catch (\Throwable $e) {
             return Response::html('<h1>Upload failed</h1><p>' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>', 422);
@@ -168,9 +167,8 @@ HTML;
         }
 
         $title = htmlspecialchars((string) $record['title'], ENT_QUOTES, 'UTF-8');
-        $statusLabel = ((string) ($record['status'] ?? 'draft')) === 'published' ? 'published' : 'saved as an unpublished draft';
 
-        return Response::html("<h1>Artwork uploaded</h1><p>{$title} has been {$statusLabel}.</p><p><a href=\"/admin/artworks\">Review artworks</a></p>");
+        return Response::html("<h1>Artwork uploaded</h1><p>{$title} has been saved as a draft.</p><p><a href=\"/admin/artworks\">Review artworks</a></p>");
     }
 
     /**
@@ -236,25 +234,6 @@ HTML;
             'inventory_quantity' => $inventoryQuantity,
             'id' => $artworkId,
         ]);
-    }
-
-
-    /**
-     * Returns the tenant preference used for newly uploaded artwork.
-     */
-    private function newArtworkDefaultStatus(TenantContext $tenant): string
-    {
-        if ($this->pdo === null) {
-            return 'draft';
-        }
-
-        $stmt = $this->pdo->prepare(
-            "SELECT setting_value FROM tenant_settings WHERE tenant_id = :tenant_id AND setting_key = 'new_artwork_default_status' LIMIT 1"
-        );
-        $stmt->execute(['tenant_id' => $tenant->tenantId]);
-        $status = (string) ($stmt->fetchColumn() ?: 'draft');
-
-        return in_array($status, ['draft', 'published'], true) ? $status : 'draft';
     }
 
     private function validAuditUserId(?array $currentUser): ?int

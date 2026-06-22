@@ -67,7 +67,7 @@ final class ContentController
                 <textarea name="about_content" rows="14">{$aboutContent}</textarea>
             </label>
             <label>About image opacity
-                <input type="number" name="about_image_opacity" min="0" max="1" step="0.01" value="{$aboutImageOpacity}">
+                <input type="number" name="about_image_opacity" min="0" max="1" step="0.05" value="{$aboutImageOpacity}">
             </label>
             <h3>About image</h3>
             {$aboutImagePicker}
@@ -79,7 +79,7 @@ final class ContentController
                 <textarea name="contact_details" rows="14">{$contactDetails}</textarea>
             </label>
             <label>Contact image opacity
-                <input type="number" name="contact_image_opacity" min="0" max="1" step="0.01" value="{$contactImageOpacity}">
+                <input type="number" name="contact_image_opacity" min="0" max="1" step="0.05" value="{$contactImageOpacity}">
             </label>
             <h3>Contact image</h3>
             {$contactImagePicker}

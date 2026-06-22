@@ -18,29 +18,6 @@ use Throwable;
 final class PlatformChrome
 {
     /**
-     * Renders the canonical public platform navigation in the required order.
-     */
-    public static function topNavigation(string $active = ''): string
-    {
-        $items = [
-            'platform' => ['/', 'Platform'],
-            'help' => ['/help', 'Help'],
-            'artists' => ['/directory', 'Artists'],
-            'pricing' => ['/pricing', 'Pricing'],
-            'home' => ['/', 'Home'],
-            'developers' => ['/developer', 'Developers'],
-            'contact' => ['/contact', 'Contact'],
-        ];
-
-        $html = '<nav class="platform-canonical-nav">';
-        foreach ($items as $key => [$href, $label]) {
-            $class = $active === $key ? ' class="active"' : '';
-            $html .= '<a' . $class . ' href="' . $href . '">' . $label . '</a>';
-        }
-
-        return $html . self::platformAdminLink() . '</nav>';
-    }
-    /**
      * Returns the configured platform copyright string with a safe default.
      */
     public static function copyrightLine(): string

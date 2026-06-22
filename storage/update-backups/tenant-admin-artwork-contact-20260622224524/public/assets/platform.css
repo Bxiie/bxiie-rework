@@ -796,6 +796,3 @@ body article.pricing-card.featured h3 {
 
 /* End of file. */
 
-/* Public platform contact form uses a clear support-context and form split. */
-.platform-contact-layout{display:grid;grid-template-columns:minmax(240px,.75fr) minmax(0,1.25fr);gap:clamp(1.25rem,4vw,3rem);align-items:start}.platform-contact-intro{padding:clamp(1.25rem,3vw,2rem);border:1px solid rgba(0,0,0,.1);border-radius:20px;background:rgba(255,255,255,.72)}.platform-contact-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.platform-contact-layout .platform-form{margin:0}.platform-contact-layout label{display:grid;gap:.4rem}@media(max-width:760px){.platform-contact-layout,.platform-contact-fields{grid-template-columns:1fr}}
-/* End of file. */

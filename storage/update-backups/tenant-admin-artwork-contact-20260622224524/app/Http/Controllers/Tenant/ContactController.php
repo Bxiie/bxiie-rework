@@ -51,11 +51,6 @@ final class ContactController
         $senderEmail = trim((string) ($_POST['email'] ?? ''));
         $subject = trim((string) ($_POST['subject'] ?? ''));
         $message = trim((string) ($_POST['message'] ?? ''));
-        $artworkSlug = trim((string) ($_POST['artwork_slug'] ?? ''));
-        $artworkImageUrl = $this->artworkImageUrl($request, $tenant, $artworkSlug);
-        if ($artworkImageUrl !== '') {
-            $message .= "\n\nArtwork image: " . $artworkImageUrl;
-        }
 
         if ($senderName === '' || $senderEmail === '' || $message === '') {
             return $this->backToContact('contact_error=missing');
@@ -82,44 +77,6 @@ final class ContactController
         );
 
         return $this->backToContact('contact_sent=1');
-    }
-
-
-    /**
-     * Resolves an artwork reference server-side so visitors cannot inject an
-     * arbitrary link into contact notifications through a hidden form field.
-     */
-    private function artworkImageUrl(Request $request, TenantContext $tenant, string $slug): string
-    {
-        if ($this->pdo === null || $slug === '') {
-            return '';
-        }
-
-        $stmt = $this->pdo->prepare(
-            "SELECT m.uuid
-             FROM artworks a
-             INNER JOIN media_assets m ON m.id = a.primary_media_id AND m.tenant_id = a.tenant_id
-             WHERE a.tenant_id = :tenant_id
-               AND a.slug = :slug
-               AND a.status = 'published'
-             LIMIT 1"
-        );
-        $stmt->execute(['tenant_id' => $tenant->tenantId, 'slug' => $slug]);
-        $uuid = trim((string) ($stmt->fetchColumn() ?: ''));
-        if ($uuid === '') {
-            return '';
-        }
-
-        $forwardedProto = strtolower(trim(explode(',', (string) $request->server('HTTP_X_FORWARDED_PROTO', ''))[0]));
-        $scheme = in_array($forwardedProto, ['http', 'https'], true)
-            ? $forwardedProto
-            : ((string) $request->server('HTTPS', '') !== '' && (string) $request->server('HTTPS', '') !== 'off' ? 'https' : 'http');
-        $host = preg_replace('/[^a-zA-Z0-9.:-]/', '', (string) $request->server('HTTP_HOST', '')) ?: '';
-        if ($host === '') {
-            return '/media?uuid=' . rawurlencode($uuid);
-        }
-
-        return $scheme . '://' . $host . '/media?uuid=' . rawurlencode($uuid);
     }
 
     /**

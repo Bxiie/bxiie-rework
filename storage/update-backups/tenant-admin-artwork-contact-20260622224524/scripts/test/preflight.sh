@@ -208,10 +208,3 @@ run_if_exists scripts/test/phase9_migration_discipline_static.php
 run_shell_if_exists scripts/test/monitoring_service_units_static.sh
 
 php scripts/test/phase8_routing_static.php
-
-run_if_exists scripts/test/admin_attention_watermark_operations_static.php
-
-# End of file.
-php scripts/test/tenant_admin_artwork_contact_defaults_static.php
-
-# End of file.

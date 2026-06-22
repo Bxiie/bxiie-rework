@@ -506,8 +506,4 @@ Too few arguments to function App\Http\Controllers\Platform\HelpController::inde
 
 # later
 
-#
-2026-06-22
-- Repaired the platform navigation regression test to inspect the shared PlatformChrome navigation source instead of stale inline MarketingController markup.
-
-# End of file.
+## End of file.

@@ -2651,6 +2651,3 @@ body.tenant-admin-page {
 }
 
 /* End of file. */
-/* Tenant dashboard actions intentionally match Portfolio Sections action cards. */
-.tenant-admin-action-button{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:.35rem!important;padding:1rem 1.1rem!important;border-radius:14px!important;text-decoration:none!important;min-height:104px!important}.tenant-admin-action-button strong{font-size:1rem!important}.tenant-admin-action-button span{font-size:.9rem!important;font-weight:500!important;line-height:1.35!important;opacity:.85!important}
-/* End of file. */
