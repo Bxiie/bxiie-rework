@@ -7,3 +7,7 @@
 ## Component state transitions
 
 `operations_monitor_state.last_component_states_json` stores the most recent running/stopped state for monitored services and worker heartbeats. The monitor compares the new report with this state and emits a `component_start` notification for transitions into healthy running state. State is updated only after delivery is permitted; `--no-email` preserves a pending transition for the next normal timer run.
+
+## Deployment component-start email
+
+After a successful production health check, `scripts/deploy/deploy_production.sh` invokes the monitor with an explicit list of the components it restarted. This avoids missing short restart windows between five-minute monitor polls. Email delivery failure makes the deploy fail at the `Component start notification` stage.

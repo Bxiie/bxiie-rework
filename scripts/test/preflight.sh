@@ -206,3 +206,5 @@ run_if_exists scripts/test/phase9_migration_discipline_static.php
 run_shell_if_exists scripts/test/monitoring_service_units_static.sh
 
 php scripts/test/phase8_routing_static.php
+
+php scripts/test/deploy_component_start_notification_static.php

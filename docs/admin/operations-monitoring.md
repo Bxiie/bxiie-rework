@@ -99,3 +99,7 @@ The last 90 days of reports are stored in `operations_monitor_runs`. Notificatio
 The operations monitor stores the last observed state of each monitored application component. It sends an immediate email when a component transitions from stopped, stale, or unavailable to healthy running state. Monitored components include MariaDB, PHP-FPM, Caddy, background workers, and email workers.
 
 The notification subject begins with `[ArtsFolio COMPONENT STARTED]` and the email names every component that started. The initial monitor run establishes a baseline and does not announce every already-running component. A `--no-email` run does not consume a pending component-start event.
+
+## Deployment component-start email
+
+After a successful production health check, `scripts/deploy/deploy_production.sh` invokes the monitor with an explicit list of the components it restarted. This avoids missing short restart windows between five-minute monitor polls. Email delivery failure makes the deploy fail at the `Component start notification` stage.

@@ -1816,3 +1816,13 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 ## Phase 9 operations console and restart alerts
 - Added normalized monitor metrics, admin dashboard, shareable authenticated run/metric URLs, trend lines, user-friendly HTML health email, and boot-ID restart notifications.
+
+### Phase 9 application component start notifications (2026-06-22)
+- Added migration `0046_operations_monitor_component_state.sql`.
+- Monitor now tracks service and worker component state across runs.
+- Sends `[ArtsFolio COMPONENT STARTED]` email when a monitored component transitions into healthy running state.
+- Initial observations establish a baseline without generating a start storm.
+- `--no-email` runs preserve pending component-start notifications.
+- Migration integrity now distinguishes expected tables from expected columns.
+
+- Phase 9 deploy component-start notification hotfix: successful production deploys explicitly invoke the operations monitor after the health check with the restarted PHP-FPM, Caddy, email-worker, and background-worker components. This closes the polling blind spot where a quick restart occurs entirely between five-minute monitor runs.

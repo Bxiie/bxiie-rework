@@ -121,6 +121,11 @@ fi
 section "Health check"
 ARTSFOLIO_ENV_FILE="$ENV_FILE" ./scripts/deploy/healthcheck.sh
 
+section "Component start notification"
+ARTSFOLIO_ENV_FILE="$ENV_FILE" php scripts/ops/monitor_artsfolio.php \
+  --component-started="PHP-FPM,Caddy,email worker instances,background worker instances" \
+  --notification-only
+
 DEPLOY_STAGE="complete"
 
 # End of file.

@@ -53,7 +53,7 @@ function artsfolioCurrentBootId(): string
     return '';
 }
 
-$options = getopt('', ['json', 'no-email', 'force-report', 'trouble-only']);
+$options = getopt('', ['json', 'no-email', 'force-report', 'trouble-only', 'component-started:', 'notification-only']);
 $lockPath = getenv('ARTSFOLIO_MONITOR_LOCK_FILE') ?: '/tmp/artsfolio-monitor.lock';
 $lock = fopen($lockPath, 'c');
 if ($lock === false || !flock($lock, LOCK_EX | LOCK_NB)) {
@@ -95,6 +95,22 @@ if ($componentBaselineExists) {
             $startedComponents[] = artsfolioFriendlyComponentName($componentName);
         }
     }
+}
+$explicitStartedComponents = [];
+if (isset($options['component-started'])) {
+    $rawExplicitComponents = is_array($options['component-started'])
+        ? implode(',', array_map('strval', $options['component-started']))
+        : (string) $options['component-started'];
+    foreach (explode(',', $rawExplicitComponents) as $componentName) {
+        $componentName = trim($componentName);
+        if ($componentName !== '') {
+            $explicitStartedComponents[] = $componentName;
+        }
+    }
+    $explicitStartedComponents = array_values(array_unique($explicitStartedComponents));
+}
+if ($explicitStartedComponents !== []) {
+    $startedComponents = $explicitStartedComponents;
 }
 $componentStartDetected = $startedComponents !== [];
 $currentComponentStatesJson = json_encode($currentComponentStates, JSON_THROW_ON_ERROR);
@@ -187,6 +203,10 @@ if (!isset($options['no-email'])) {
 $bootIdForState = (isset($options['no-email']) && $restartDetected) ? $previousBootId : ($currentBootId !== '' ? $currentBootId : $previousBootId);
 $componentStatesForState = (isset($options['no-email']) && $componentStartDetected) ? $previousComponentStatesRaw : $currentComponentStatesJson;
 $repository->updateState($report, $lastAlertAt, $morningDate, $eveningDate, $bootIdForState, $componentStatesForState);
+
+if (isset($options['notification-only'])) {
+    exit(0);
+}
 
 exit($currentStatus === HealthMetric::CRIT ? 2 : ($currentStatus === HealthMetric::WARN ? 1 : 0));
 
