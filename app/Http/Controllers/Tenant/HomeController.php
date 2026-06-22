@@ -113,8 +113,9 @@ HTML;
 
         $allHref = '/portfolio?' . http_build_query(['per_page' => $pageSize]);
         $body = "<h1>Portfolio</h1>\n";
+        $body .= '<section data-artwork-pager-root tabindex="-1">';
         $body .= "<nav style=\"display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 1rem;\">\n";
-        $body .= '    <a href="' . $this->escape($allHref) . '" style="padding:.5rem .75rem;border:1px solid #222;text-decoration:none;">All</a>' . "\n";
+        $body .= '    <a data-artwork-page-link href="' . $this->escape($allHref) . '" style="padding:.5rem .75rem;border:1px solid #222;text-decoration:none;">All</a>' . "\n";
 
         foreach ($sections as $section) {
             $sectionQuery = http_build_query([
@@ -122,14 +123,14 @@ HTML;
                 'per_page' => $pageSize,
             ]);
             $name = $this->escape((string) $section['name']);
-            $body .= '    <a href="/portfolio?' . $this->escape($sectionQuery) . '" style="padding:.5rem .75rem;border:1px solid #222;text-decoration:none;">' . $name . '</a>' . "\n";
+            $body .= '    <a data-artwork-page-link href="/portfolio?' . $this->escape($sectionQuery) . '" style="padding:.5rem .75rem;border:1px solid #222;text-decoration:none;">' . $name . '</a>' . "\n";
         }
 
         $body .= "</nav>\n";
         $sectionControl = $sectionSlug !== ''
             ? '<input type="hidden" name="section" value="' . $this->escape($sectionSlug) . '">'
             : '';
-        $body .= '<form method="get" action="/portfolio" style="display:flex;gap:.5rem;align-items:end;flex-wrap:wrap;margin:0 0 1.5rem;">'
+        $body .= '<form data-artwork-page-form method="get" action="/portfolio" style="display:flex;gap:.5rem;align-items:end;flex-wrap:wrap;margin:0 0 1.5rem;">'
             . $sectionControl
             . '<label>Artworks per page<br><select name="per_page">' . $pageSizeOptions . '</select></label>'
             . '<button type="submit">Apply</button></form>';
@@ -169,24 +170,43 @@ HTML;
 
         $pageCount = (int) $result['page_count'];
         if ($pageCount > 1) {
-            $body .= '<nav aria-label="Portfolio pages" style="display:flex;gap:.5rem;flex-wrap:wrap;margin:2rem 0;">';
+            $currentPage = (int) $result['page'];
+            $body .= '<nav aria-label="Portfolio pages" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:2rem 0;">';
+            $body .= $this->pageStepLink('/portfolio', $sectionSlug, $pageSize, $currentPage - 1, '‹ Previous', $currentPage <= 1);
             for ($pageNumber = 1; $pageNumber <= $pageCount; $pageNumber++) {
                 $query = ['page' => $pageNumber, 'per_page' => $pageSize];
                 if ($sectionSlug !== '') {
                     $query['section'] = $sectionSlug;
                 }
                 $href = '/portfolio?' . http_build_query($query);
-                $current = $pageNumber === (int) $result['page'] ? ' aria-current="page" style="font-weight:bold;text-decoration:underline;"' : '';
-                $body .= '<a href="' . $this->escape($href) . '"' . $current . '>' . $pageNumber . '</a>';
+                $current = $pageNumber === $currentPage ? ' aria-current="page" style="font-weight:bold;text-decoration:underline;"' : '';
+                $body .= '<a data-artwork-page-link href="' . $this->escape($href) . '"' . $current . '>' . $pageNumber . '</a>';
             }
+            $body .= $this->pageStepLink('/portfolio', $sectionSlug, $pageSize, $currentPage + 1, 'Next ›', $currentPage >= $pageCount);
             $body .= '</nav>';
         }
+
+        $body .= '</section><script src="/assets/artwork-pagination.js?v=20260622" defer></script>';
 
         return Response::html($this->layout(
             tenant: $tenant,
             title: "{$this->escape($tenant->name)} | Portfolio",
             body: $body,
         ));
+    }
+
+    private function pageStepLink(string $path, string $sectionSlug, int $pageSize, int $page, string $label, bool $disabled): string
+    {
+        if ($disabled) {
+            return '<span aria-disabled="true" style="opacity:.45;padding:.25rem .45rem;border:1px solid #bbb;">' . $this->escape($label) . '</span>';
+        }
+
+        $query = ['page' => max(1, $page), 'per_page' => $pageSize];
+        if ($sectionSlug !== '') {
+            $query['section'] = $sectionSlug;
+        }
+
+        return '<a data-artwork-page-link class="page-step" href="' . $this->escape($path . '?' . http_build_query($query)) . '" style="padding:.25rem .45rem;border:1px solid currentColor;text-decoration:none;">' . $this->escape($label) . '</a>';
     }
 
     public function artwork(Request $request, TenantContext $tenant, string $slug): Response

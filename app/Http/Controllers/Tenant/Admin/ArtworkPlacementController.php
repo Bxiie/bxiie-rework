@@ -89,12 +89,15 @@ final class ArtworkPlacementController
 <h1>Artwork Placement Matrix</h1>
 <p>Choose 10–100 artworks per page. Saving changes updates only the artworks shown on the current page and preserves assignments on every other page.</p>
 {$notice}
-<form method="get" action="/admin/artworks/placement" style="display:flex;gap:.75rem;align-items:end;flex-wrap:wrap;"><label>Search artworks<br><input type="search" name="q" value="{$this->e($q)}"></label><label>Artworks per page<br><select name="per_page">{$pageSizeOptions}</select></label><button type="submit">Apply</button><a href="/admin/artworks/placement">Clear</a></form>
+<section data-artwork-pager-root tabindex="-1">
+<form data-artwork-page-form method="get" action="/admin/artworks/placement" style="display:flex;gap:.75rem;align-items:end;flex-wrap:wrap;"><label>Search artworks<br><input type="search" name="q" value="{$this->e($q)}"></label><label>Artworks per page<br><select name="per_page">{$pageSizeOptions}</select></label><button type="submit">Apply</button><a href="/admin/artworks/placement">Clear</a></form>
 <p><strong>{$summary}</strong></p>{$pager}
 <form method="post" action="/admin/artworks/placement"><input type="hidden" name="return_to" value="{$this->e($returnTo)}">
 <div style="overflow-x:auto;"><table class="placement-matrix" border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;"><thead><tr><th>Thumbnail</th><th>Artwork</th><th>Home page</th>{$sectionHeaders}</tr></thead><tbody>{$rows}</tbody></table></div>
 <p><button type="submit">Save placements for this page</button></p></form>{$pager}
+</section>
 </main>
+<script src="/assets/artwork-pagination.js?v=20260622" defer></script>
 HTML;
         return Response::html(AdminLayout::render('Artwork Placement', $body));
     }
@@ -352,13 +355,25 @@ HTML;
         if ($pageCount <= 1) {
             return '';
         }
-        $html = '<nav aria-label="Pages" style="display:flex;gap:.4rem;flex-wrap:wrap;margin:1rem 0;">';
+        $html = '<nav aria-label="Pages" style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin:1rem 0;">';
+        $html .= $this->pageStepLink($path, $query, $page - 1, '‹ Previous', $page <= 1);
         for ($n = 1; $n <= $pageCount; $n++) {
             $href = $path . '?' . http_build_query(array_merge($query, ['page' => $n]));
             $current = $n === $page ? ' aria-current="page" style="font-weight:bold;text-decoration:underline;"' : '';
-            $html .= '<a href="' . $this->e($href) . '"' . $current . '>' . $n . '</a>';
+            $html .= '<a data-artwork-page-link href="' . $this->e($href) . '"' . $current . '>' . $n . '</a>';
         }
+        $html .= $this->pageStepLink($path, $query, $page + 1, 'Next ›', $page >= $pageCount);
         return $html . '</nav>';
+    }
+
+    private function pageStepLink(string $path, array $query, int $page, string $label, bool $disabled): string
+    {
+        if ($disabled) {
+            return '<span aria-disabled="true" style="opacity:.45;padding:.25rem .45rem;border:1px solid #bbb;">' . $this->e($label) . '</span>';
+        }
+
+        $href = $path . '?' . http_build_query(array_merge($query, ['page' => max(1, $page)]));
+        return '<a data-artwork-page-link class="page-step" href="' . $this->e($href) . '" style="padding:.25rem .45rem;border:1px solid currentColor;text-decoration:none;">' . $this->e($label) . '</a>';
     }
 
 

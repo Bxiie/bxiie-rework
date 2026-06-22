@@ -189,12 +189,14 @@ HTML;
 
         $pager = '';
         if ($pageCount > 1) {
-            $pager = '<nav aria-label="Artwork pages" style="display:flex;gap:.4rem;flex-wrap:wrap;margin:1rem 0;">';
+            $pager = '<nav aria-label="Artwork pages" style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin:1rem 0;">';
+            $pager .= $this->pageStepLink('/admin/artworks', $baseQuery, $page - 1, '‹ Previous', $page <= 1);
             for ($n = 1; $n <= $pageCount; $n++) {
                 $href = '/admin/artworks?' . http_build_query(array_merge($baseQuery, ['page' => $n]));
                 $current = $n === $page ? ' aria-current="page" style="font-weight:bold;text-decoration:underline;"' : '';
-                $pager .= '<a href="' . $e($href) . '"' . $current . '>' . $n . '</a>';
+                $pager .= '<a data-artwork-page-link href="' . $e($href) . '"' . $current . '>' . $n . '</a>';
             }
+            $pager .= $this->pageStepLink('/admin/artworks', $baseQuery, $page + 1, 'Next ›', $page >= $pageCount);
             $pager .= '</nav>';
         }
 
@@ -210,8 +212,9 @@ HTML;
         $body = <<<HTML
 <main>
 <div id="artwork-action-notice">{$notice}</div>
+<section data-artwork-pager-root tabindex="-1">
 <p><a href="/admin/artwork/upload">Upload artwork</a> · <a href="/admin/artworks/placement">Artwork placement matrix</a> · <a href="/admin/portfolio-sections/order">Section artwork order</a></p>
-<form method="get" action="/admin/artworks" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin:1rem 0;">
+<form data-artwork-page-form method="get" action="/admin/artworks" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin:1rem 0;">
 <label>Search<br><input type="search" name="q" value="{$e($q)}"></label>
 <label>Status<br><select name="status"><option value="">All</option><option value="draft"{$option($statusFilter,'draft')}>Draft</option><option value="published"{$option($statusFilter,'published')}>Published</option></select></label>
 <label>Sale<br><select name="sale_status"><option value="">All</option><option value="nfs"{$option($saleFilter,'nfs')}>Not for sale</option><option value="for_sale"{$option($saleFilter,'for_sale')}>For sale</option><option value="sold"{$option($saleFilter,'sold')}>Sold</option></select></label>
@@ -224,10 +227,23 @@ HTML;
 <p><strong>{$summary}</strong></p>{$pager}
 <div style="overflow-x:auto;"><table border="1" cellpadding="8" cellspacing="0"><thead><tr><th>Image</th><th>Title</th><th>Date/year</th><th>Medium</th><th>Status</th><th>Sale</th><th>Price</th><th>Notes</th><th>Directory thumbnail</th><th>Actions</th></tr></thead><tbody>{$items}</tbody></table></div>
 {$pager}
+</section>
 </main>
 <script src="/assets/admin/artworks.js"></script>
+<script src="/assets/artwork-pagination.js?v=20260622" defer></script>
 HTML;
         return Response::html(AdminLayout::render('Artworks', $body));
+    }
+
+    private function pageStepLink(string $path, array $query, int $page, string $label, bool $disabled): string
+    {
+        $escapedLabel = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
+        if ($disabled) {
+            return '<span aria-disabled="true" style="opacity:.45;padding:.25rem .45rem;border:1px solid #bbb;">' . $escapedLabel . '</span>';
+        }
+
+        $href = $path . '?' . http_build_query(array_merge($query, ['page' => max(1, $page)]));
+        return '<a data-artwork-page-link class="page-step" href="' . htmlspecialchars($href, ENT_QUOTES, 'UTF-8') . '" style="padding:.25rem .45rem;border:1px solid currentColor;text-decoration:none;">' . $escapedLabel . '</a>';
     }
 
     public function edit(Request $request, TenantContext $tenant, ?array $currentUser): Response

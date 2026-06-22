@@ -497,6 +497,14 @@ Phase 5 artwork page-size controls
 
 # End of file.
 
-2026-06-22 Phase 5 deployment hotfix
-- Stop deploy and health checks from restarting masked legacy singleton worker services.
-- Discover, restart, and validate templated worker instances instead.
+Phase 5 artwork paging controls
+- Add decrement/Previous and increment/Next buttons to public portfolio, tenant artwork list, and artwork placement pagination.
+- Preserve filters, section selection, sorting, search, and artworks-per-page values through step navigation.
+- Disable unavailable step controls at the first and last page.
+- Add focused regression coverage and preflight wiring.
+
+2026-06-22 Phase 5 AJAX artwork paging
+- Replace only artwork regions during portfolio, artwork-list, and placement pagination.
+- Preserve bookmarkable URLs and browser Back/Forward behavior.
+- Use clear `‹ Previous` and `Next ›` controls.
+- Keep ordinary links/forms as a no-JavaScript and error fallback.

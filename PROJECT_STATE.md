@@ -1750,9 +1750,9 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 <!-- End of file. -->
 
+### 2026-06-22: AJAX artwork paging follow-up
 
-### 2026-06-22: templated worker deployment hotfix
-
-- Production deploy and health-check scripts now restart and validate loaded templated background and email worker instances.
-- Retired singleton worker units are no longer required, preventing masked legacy units from failing deployment.
-- Added `scripts/test/deploy_worker_instances_static.sh` and wired it into preflight.
+- Public portfolio, tenant artwork administration, and artwork placement paging now replace only the artwork region.
+- Added shared `public/assets/artwork-pagination.js` with progressive enhancement, URL history, Back/Forward support, automatic page-size submission, request cancellation, and full-navigation fallback.
+- Pager labels are now `‹ Previous` and `Next ›`.
+- Added `scripts/test/artwork_ajax_pagination_static.php` and preflight coverage.
