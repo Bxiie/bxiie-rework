@@ -10,6 +10,7 @@ use App\Http\Response;
 use App\Http\View\AdminLayout;
 use App\Http\View\ErrorPage;
 use App\Platform\Tenancy\TenantContext;
+use App\Support\Pagination\Pagination;
 use PDO;
 
 /**
@@ -29,10 +30,19 @@ final class ArtworkPlacementController
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
+        $q = trim((string) ($_GET['q'] ?? ''));
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $pageSize = Pagination::allowedLimitFromQuery(
+            $_GET['per_page'] ?? null,
+            50,
+            Pagination::standardPageSizes(),
+        );
+        $result = $this->artworksPage($tenant, $q, $page, $pageSize);
         $sections = $this->sections($tenant);
-        $artworks = $this->artworks($tenant);
-        $assignments = $this->sectionAssignments($tenant);
-        $homeAssignments = $this->homeAssignments($tenant);
+        $artworks = $result['items'];
+        $visibleIds = array_map('intval', array_column($artworks, 'id'));
+        $assignments = $this->sectionAssignmentsForArtworks($tenant, $visibleIds);
+        $homeAssignments = $this->homeAssignmentsForArtworks($tenant, $visibleIds);
 
         $sectionHeaders = '';
         foreach ($sections as $section) {
@@ -47,57 +57,45 @@ final class ArtworkPlacementController
             $thumb = $this->thumbnailHtml($artwork, $title, 112, 84);
             $homeChecked = isset($homeAssignments[$id]) ? ' checked' : '';
             $cells = '<td class="placement-check"><label><input type="checkbox" name="home_artwork_ids[]" value="' . $id . '"' . $homeChecked . '> Home</label></td>';
-
             foreach ($sections as $section) {
                 $sectionId = (int) $section['id'];
                 $sectionName = $this->e((string) $section['name']);
                 $checked = isset($assignments[$id][$sectionId]) ? ' checked' : '';
                 $cells .= '<td class="placement-check"><label><input type="checkbox" name="sections[' . $id . '][]" value="' . $sectionId . '"' . $checked . '> ' . $sectionName . '</label></td>';
             }
-
-            $rows .= <<<HTML
-<tr>
-    <td class="placement-thumb">{$thumb}</td>
-    <td><strong>{$title}</strong><br><small>ID {$id} · {$status}</small></td>
-    {$cells}
-</tr>
-HTML;
+            $rows .= '<tr><td>' . $thumb . '</td><td><strong>' . $title . '</strong><br><small>ID ' . $id . ' · ' . $status . '</small><input type="hidden" name="visible_artwork_ids[]" value="' . $id . '"></td>' . $cells . '</tr>';
         }
-
         if ($rows === '') {
-            $colspan = 3 + count($sections);
-            $rows = '<tr><td colspan="' . $colspan . '">No artworks found.</td></tr>';
+            $rows = '<tr><td colspan="' . (3 + count($sections)) . '">No artworks found.</td></tr>';
         }
 
-        $notice = ($_GET['notice'] ?? '') === 'saved'
-            ? '<p class="notice" style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Artwork placements saved.</p>'
-            : '';
-
+        $base = array_filter([
+            'q' => $q,
+            'per_page' => $pageSize,
+        ], static fn ($v): bool => $v !== '');
+        $pageSizeOptions = '';
+        foreach (Pagination::standardPageSizes() as $sizeOption) {
+            $selected = $sizeOption === $pageSize ? ' selected' : '';
+            $label = $sizeOption === 50 ? '50 (default)' : (string) $sizeOption;
+            $pageSizeOptions .= '<option value="' . $sizeOption . '"' . $selected . '>' . $label . '</option>';
+        }
+        $pager = $this->pager('/admin/artworks/placement', $base, (int) $result['page'], (int) $result['page_count']);
+        $notice = ($_GET['notice'] ?? '') === 'saved' ? '<p class="notice">Artwork placements saved for this page.</p>' : '';
+        $summary = (int) $result['total'] === 0 ? 'No artworks' : 'Showing ' . (((int) $result['page'] - 1) * $pageSize + 1) . '–' . min((int) $result['page'] * $pageSize, (int) $result['total']) . ' of ' . (int) $result['total'];
+        $returnTo = '/admin/artworks/placement?' . http_build_query(array_merge($base, ['page' => (int) $result['page']]));
         $body = <<<HTML
 <main class="admin-main" style="max-width:1280px;margin:2rem auto;padding:0 1rem;">
-    <p><a href="/admin/artworks">&larr; Artworks</a> · <a href="/admin/portfolio-sections">Portfolio sections</a> · <a href="/admin/portfolio-sections/order">Order section artwork</a></p>
-    <h1>Artwork Placement Matrix</h1>
-    <p>Use this alternate artworks page to move artworks into or out of the home page and portfolio sections. The left column shows the current primary thumbnail for each artwork.</p>
-    {$notice}
-    <form method="post" action="/admin/artworks/placement">
-        <div style="overflow-x:auto;">
-            <table class="placement-matrix" border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;">
-                <thead>
-                    <tr>
-                        <th scope="col">Thumbnail</th>
-                        <th scope="col">Artwork</th>
-                        <th scope="col">Home page</th>
-                        {$sectionHeaders}
-                    </tr>
-                </thead>
-                <tbody>{$rows}</tbody>
-            </table>
-        </div>
-        <p><button type="submit">Save placements</button></p>
-    </form>
+<p><a href="/admin/artworks">&larr; Artworks</a> · <a href="/admin/portfolio-sections">Portfolio sections</a> · <a href="/admin/portfolio-sections/order">Order section artwork</a></p>
+<h1>Artwork Placement Matrix</h1>
+<p>Choose 10–100 artworks per page. Saving changes updates only the artworks shown on the current page and preserves assignments on every other page.</p>
+{$notice}
+<form method="get" action="/admin/artworks/placement" style="display:flex;gap:.75rem;align-items:end;flex-wrap:wrap;"><label>Search artworks<br><input type="search" name="q" value="{$this->e($q)}"></label><label>Artworks per page<br><select name="per_page">{$pageSizeOptions}</select></label><button type="submit">Apply</button><a href="/admin/artworks/placement">Clear</a></form>
+<p><strong>{$summary}</strong></p>{$pager}
+<form method="post" action="/admin/artworks/placement"><input type="hidden" name="return_to" value="{$this->e($returnTo)}">
+<div style="overflow-x:auto;"><table class="placement-matrix" border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;"><thead><tr><th>Thumbnail</th><th>Artwork</th><th>Home page</th>{$sectionHeaders}</tr></thead><tbody>{$rows}</tbody></table></div>
+<p><button type="submit">Save placements for this page</button></p></form>{$pager}
 </main>
 HTML;
-
         return Response::html(AdminLayout::render('Artwork Placement', $body));
     }
 
@@ -107,63 +105,54 @@ HTML;
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
-        $artworkIds = array_map('intval', array_column($this->artworks($tenant), 'id'));
-        $validArtwork = array_fill_keys($artworkIds, true);
+        $visibleIds = array_values(array_unique(array_filter(array_map('intval', is_array($_POST['visible_artwork_ids'] ?? null) ? $_POST['visible_artwork_ids'] : []), static fn (int $id): bool => $id > 0)));
+        $validArtwork = array_fill_keys($this->validArtworkIds($tenant, $visibleIds), true);
         $validSections = array_fill_keys(array_map('intval', array_column($this->sections($tenant), 'id')), true);
 
         $this->pdo->beginTransaction();
         try {
-            $deleteSections = $this->pdo->prepare(
-                'DELETE asa
-                 FROM artwork_section_assignments asa
-                 JOIN artworks a ON a.id = asa.artwork_id
-                 WHERE a.tenant_id = :tenant_id'
-            );
-            $deleteSections->execute(['tenant_id' => $tenant->tenantId]);
+            if ($validArtwork) {
+                $placeholders = implode(',', array_fill(0, count($validArtwork), '?'));
+                $ids = array_keys($validArtwork);
+                $deleteSections = $this->pdo->prepare("DELETE asa FROM artwork_section_assignments asa JOIN artworks a ON a.id = asa.artwork_id WHERE a.tenant_id = ? AND a.id IN ({$placeholders})");
+                $deleteSections->execute(array_merge([$tenant->tenantId], $ids));
+                $deleteHome = $this->pdo->prepare("DELETE FROM homepage_artwork_assignments WHERE tenant_id = ? AND artwork_id IN ({$placeholders})");
+                $deleteHome->execute(array_merge([$tenant->tenantId], $ids));
 
-            $insertSection = $this->pdo->prepare(
-                'INSERT INTO artwork_section_assignments (artwork_id, section_id, sort_order, created_at)
-                 VALUES (:artwork_id, :section_id, 0, CURRENT_TIMESTAMP)
-                 ON DUPLICATE KEY UPDATE sort_order = VALUES(sort_order)'
-            );
-
-            $postedSections = is_array($_POST['sections'] ?? null) ? $_POST['sections'] : [];
-            foreach ($postedSections as $artworkId => $sectionIds) {
-                $artworkId = (int) $artworkId;
-                if (!isset($validArtwork[$artworkId]) || !is_array($sectionIds)) {
-                    continue;
+                $insertSection = $this->pdo->prepare('INSERT INTO artwork_section_assignments (artwork_id, section_id, sort_order, created_at) VALUES (:artwork_id, :section_id, 0, CURRENT_TIMESTAMP)');
+                foreach ((array) ($_POST['sections'] ?? []) as $artworkId => $sectionIds) {
+                    $artworkId = (int) $artworkId;
+                    if (!isset($validArtwork[$artworkId]) || !is_array($sectionIds)) {
+                        continue;
+                    }
+                    foreach (array_unique(array_map('intval', $sectionIds)) as $sectionId) {
+                        if (isset($validSections[$sectionId])) {
+                            $insertSection->execute(['artwork_id' => $artworkId, 'section_id' => $sectionId]);
+                        }
+                    }
                 }
 
-                foreach (array_unique(array_map('intval', $sectionIds)) as $sectionId) {
-                    if (isset($validSections[$sectionId])) {
-                        $insertSection->execute(['artwork_id' => $artworkId, 'section_id' => $sectionId]);
+                $insertHome = $this->pdo->prepare('INSERT INTO homepage_artwork_assignments (tenant_id, artwork_id, sort_order, created_at, updated_at) VALUES (:tenant_id, :artwork_id, :sort_order, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)');
+                $sort = 0;
+                foreach (array_unique(array_map('intval', (array) ($_POST['home_artwork_ids'] ?? []))) as $artworkId) {
+                    if (isset($validArtwork[$artworkId])) {
+                        $insertHome->execute(['tenant_id' => $tenant->tenantId, 'artwork_id' => $artworkId, 'sort_order' => $sort]);
+                        $sort += 10;
                     }
                 }
             }
-
-            $this->pdo->prepare('DELETE FROM homepage_artwork_assignments WHERE tenant_id = :tenant_id')
-                ->execute(['tenant_id' => $tenant->tenantId]);
-
-            $insertHome = $this->pdo->prepare(
-                'INSERT INTO homepage_artwork_assignments (tenant_id, artwork_id, sort_order, created_at, updated_at)
-                 VALUES (:tenant_id, :artwork_id, :sort_order, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)'
-            );
-            $homeIds = is_array($_POST['home_artwork_ids'] ?? null) ? $_POST['home_artwork_ids'] : [];
-            $order = 0;
-            foreach (array_unique(array_map('intval', $homeIds)) as $artworkId) {
-                if (isset($validArtwork[$artworkId])) {
-                    $insertHome->execute(['tenant_id' => $tenant->tenantId, 'artwork_id' => $artworkId, 'sort_order' => $order]);
-                    $order += 10;
-                }
-            }
-
             $this->pdo->commit();
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
         }
 
-        return new Response('', 303, ['Location' => '/admin/artworks/placement?notice=saved']);
+        $returnTo = (string) ($_POST['return_to'] ?? '/admin/artworks/placement');
+        if (!str_starts_with($returnTo, '/admin/artworks/placement')) {
+            $returnTo = '/admin/artworks/placement';
+        }
+        $separator = str_contains($returnTo, '?') ? '&' : '?';
+        return new Response('', 303, ['Location' => $returnTo . $separator . 'notice=saved']);
     }
 
     public function order(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -298,45 +287,80 @@ HTML;
         return $stmt->fetchAll();
     }
 
-    private function artworks(TenantContext $tenant): array
+    private function artworksPage(TenantContext $tenant, string $q, int $page, int $pageSize): array
     {
-        $stmt = $this->pdo->prepare(
-            "SELECT a.id, a.title, a.status, m.uuid AS media_uuid
-             FROM artworks a
-             LEFT JOIN media_assets m ON m.id = a.primary_media_id
-             WHERE a.tenant_id = :tenant_id AND a.status <> 'archived'
-             ORDER BY a.title ASC, a.id ASC"
-        );
-        $stmt->execute(['tenant_id' => $tenant->tenantId]);
-
-        return $stmt->fetchAll();
+        $where = "a.tenant_id = :tenant_id AND a.status <> 'archived'";
+        $params = ['tenant_id' => $tenant->tenantId];
+        if ($q !== '') {
+            $where .= ' AND (a.title LIKE :q OR a.medium LIKE :q)';
+            $params['q'] = '%' . $q . '%';
+        }
+        $count = $this->pdo->prepare("SELECT COUNT(*) FROM artworks a WHERE {$where}");
+        $count->execute($params);
+        $total = (int) $count->fetchColumn();
+        $pageCount = max(1, (int) ceil($total / $pageSize));
+        $page = min(max(1, $page), $pageCount);
+        $stmt = $this->pdo->prepare("SELECT a.id, a.title, a.status, m.uuid AS media_uuid FROM artworks a LEFT JOIN media_assets m ON m.id = a.primary_media_id WHERE {$where} ORDER BY a.title ASC, a.id ASC LIMIT :limit_count OFFSET :offset_count");
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stmt->bindValue('limit_count', $pageSize, PDO::PARAM_INT);
+        $stmt->bindValue('offset_count', ($page - 1) * $pageSize, PDO::PARAM_INT);
+        $stmt->execute();
+        return ['items' => $stmt->fetchAll(), 'total' => $total, 'page' => $page, 'page_count' => $pageCount];
     }
 
-    private function sectionAssignments(TenantContext $tenant): array
+    private function validArtworkIds(TenantContext $tenant, array $ids): array
     {
-        $stmt = $this->pdo->prepare(
-            'SELECT asa.artwork_id, asa.section_id
-             FROM artwork_section_assignments asa
-             JOIN artworks a ON a.id = asa.artwork_id
-             JOIN portfolio_sections ps ON ps.id = asa.section_id
-             WHERE a.tenant_id = :tenant_id AND ps.tenant_id = :tenant_id'
-        );
-        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+        if (!$ids) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $this->pdo->prepare("SELECT id FROM artworks WHERE tenant_id = ? AND status <> 'archived' AND id IN ({$placeholders})");
+        $stmt->execute(array_merge([$tenant->tenantId], $ids));
+        return array_map('intval', array_column($stmt->fetchAll(), 'id'));
+    }
+
+    private function sectionAssignmentsForArtworks(TenantContext $tenant, array $ids): array
+    {
+        if (!$ids) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $this->pdo->prepare("SELECT asa.artwork_id, asa.section_id FROM artwork_section_assignments asa JOIN artworks a ON a.id = asa.artwork_id JOIN portfolio_sections ps ON ps.id = asa.section_id WHERE a.tenant_id = ? AND ps.tenant_id = ? AND a.id IN ({$placeholders})");
+        $stmt->execute(array_merge([$tenant->tenantId, $tenant->tenantId], $ids));
         $map = [];
         foreach ($stmt->fetchAll() as $row) {
             $map[(int) $row['artwork_id']][(int) $row['section_id']] = true;
         }
-
         return $map;
     }
 
-    private function homeAssignments(TenantContext $tenant): array
+    private function homeAssignmentsForArtworks(TenantContext $tenant, array $ids): array
     {
-        $stmt = $this->pdo->prepare('SELECT artwork_id FROM homepage_artwork_assignments WHERE tenant_id = :tenant_id');
-        $stmt->execute(['tenant_id' => $tenant->tenantId]);
-
+        if (!$ids) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $this->pdo->prepare("SELECT artwork_id FROM homepage_artwork_assignments WHERE tenant_id = ? AND artwork_id IN ({$placeholders})");
+        $stmt->execute(array_merge([$tenant->tenantId], $ids));
         return array_fill_keys(array_map('intval', array_column($stmt->fetchAll(), 'artwork_id')), true);
     }
+
+    private function pager(string $path, array $query, int $page, int $pageCount): string
+    {
+        if ($pageCount <= 1) {
+            return '';
+        }
+        $html = '<nav aria-label="Pages" style="display:flex;gap:.4rem;flex-wrap:wrap;margin:1rem 0;">';
+        for ($n = 1; $n <= $pageCount; $n++) {
+            $href = $path . '?' . http_build_query(array_merge($query, ['page' => $n]));
+            $current = $n === $page ? ' aria-current="page" style="font-weight:bold;text-decoration:underline;"' : '';
+            $html .= '<a href="' . $this->e($href) . '"' . $current . '>' . $n . '</a>';
+        }
+        return $html . '</nav>';
+    }
+
 
     private function homeOrderItems(TenantContext $tenant): array
     {

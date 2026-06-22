@@ -92,6 +92,70 @@ final class ArtworkReadRepository
         return $stmt->fetchAll();
     }
 
+
+    /**
+     * Returns one public portfolio page and the total count using the same filters.
+     */
+    public function publishedPage(
+        TenantContext $tenant,
+        int $page,
+        int $pageSize,
+        string $order = 'date_desc',
+        ?string $sectionSlug = null,
+    ): array {
+        $page = max(1, $page);
+        $pageSize = max(1, min(96, $pageSize));
+        $offset = ($page - 1) * $pageSize;
+        $sectionSlug = $sectionSlug !== null ? trim($sectionSlug) : null;
+
+        $joins = '';
+        $where = "a.tenant_id = :tenant_id AND a.status = 'published' AND " . $this->portfolioTypeExistsSql('a');
+        $params = ['tenant_id' => $tenant->tenantId];
+        $manualDefault = 'a.sort_order ASC, a.id DESC';
+
+        if ($sectionSlug !== null && $sectionSlug !== '') {
+            $joins = ' JOIN artwork_section_assignments asa ON asa.artwork_id = a.id
+'
+                . ' JOIN portfolio_sections ps ON ps.id = asa.section_id';
+            $where .= " AND ps.tenant_id = a.tenant_id AND ps.slug = :section_slug AND ps.status = 'active'";
+            $params['section_slug'] = $sectionSlug;
+            $manualDefault = 'asa.sort_order ASC, a.sort_order ASC, a.id DESC';
+        }
+
+        $count = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM artworks a{$joins} WHERE {$where}"
+        );
+        $count->execute($params);
+        $total = (int) $count->fetchColumn();
+
+        $stmt = $this->pdo->prepare(
+            "SELECT a.id, a.uuid, a.title, a.slug, a.medium, a.dimensions, a.year_created, a.status,
+                    a.sale_status, a.price,
+                    COALESCE(a.is_one_off, 1) AS is_one_off,
+                    COALESCE(a.inventory_quantity, 1) AS inventory_quantity,
+                    m.uuid AS media_uuid, m.alt_text AS media_alt_text
+             FROM artworks a{$joins}
+             LEFT JOIN media_assets m ON m.id = a.primary_media_id
+             WHERE {$where}
+             ORDER BY " . $this->orderSql($order, $manualDefault) . "
+             LIMIT :limit_count OFFSET :offset_count"
+        );
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value, $key === 'tenant_id' ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stmt->bindValue('limit_count', $pageSize, PDO::PARAM_INT);
+        $stmt->bindValue('offset_count', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return [
+            'items' => $stmt->fetchAll(),
+            'total' => $total,
+            'page' => $page,
+            'page_size' => $pageSize,
+            'page_count' => max(1, (int) ceil($total / $pageSize)),
+        ];
+    }
+
     public function activeSections(TenantContext $tenant): array
     {
         $stmt = $this->pdo->prepare(

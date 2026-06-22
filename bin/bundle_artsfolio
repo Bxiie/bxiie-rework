@@ -20,6 +20,7 @@ cd "${TCDEV_ROOT}"
 
 tar \
   --exclude-vcs \
+  --exclude='._*' \
   --exclude 'artsfolio/storage/uploads' \
   --exclude 'artsfolio/bundle' \
   --exclude 'artsfolio/.patch-backups' \

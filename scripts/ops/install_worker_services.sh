@@ -18,6 +18,7 @@ systemctl daemon-reload
 
 # Stop and disable the legacy singleton before enabling templated instances.
 systemctl disable --now artsfolio-background-worker.service 2>/dev/null || true
+systemctl disable --now artsfolio-email-worker.service 2>/dev/null || true
 
 for ((i=1; i<=BACKGROUND_INSTANCES; i++)); do
   systemctl enable --now "artsfolio-background-worker@${i}.service"

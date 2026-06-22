@@ -1,0 +1,39 @@
+## Hardening phases
+
+Phase 1
+- Media thumbnails + serving
+- Biggest likely public traffic bottleneck
+
+Phase 2
+- Tenant settings bulk load/cache
+- Removes many tiny DB reads from every page
+
+Phase 3
+- Analytics async + rollups
+- Prevents page views from becoming write-amplification sludge
+
+Phase 4
+- Worker/email scaling
+- Required for lifecycle emails, DNS jobs, background work
+
+Phase 5
+- Catalog/admin pagination
+- Makes large tenants usable
+
+Phase 6
+- Directory projection
+- Makes public directory scale and become searchable
+
+Phase 7
+- Sales inventory safety
+- Required before serious commerce
+
+Phase 8
+- Route/bootstrap cleanup
+- Reduces future fragility
+
+Phase 9
+- Migration discipline + docs
+- Keeps the machine operable
+
+# End of file.

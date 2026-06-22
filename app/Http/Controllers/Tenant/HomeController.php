@@ -8,6 +8,7 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
 use App\Services\FirstPartyCaptcha;
+use App\Support\Pagination\Pagination;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Artwork\ArtworkReadRepository;
 use App\Tenant\Settings\TenantSettingsRepository;
@@ -86,23 +87,52 @@ HTML;
     {
         $this->track($request, $tenant, 'portfolio_view');
         $sectionSlug = trim((string) ($_GET['section'] ?? ''));
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $pageSize = Pagination::allowedLimitFromQuery(
+            $_GET['per_page'] ?? null,
+            24,
+            [10, 20, 24, 30, 40, 50, 60, 70, 80, 90, 100],
+        );
         $sections = $this->artworks->activeSections($tenant);
         $displayOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
-        $items = $sectionSlug !== ''
-            ? $this->artworks->publishedForSection($tenant, $sectionSlug, 240, $displayOrder)
-            : $this->artworks->publishedOrdered($tenant, 240, $displayOrder);
+        $result = $this->artworks->publishedPage(
+            $tenant,
+            $page,
+            $pageSize,
+            $displayOrder,
+            $sectionSlug !== '' ? $sectionSlug : null,
+        );
+        $items = $result['items'];
 
+        $pageSizeOptions = '';
+        foreach ([10, 20, 24, 30, 40, 50, 60, 70, 80, 90, 100] as $sizeOption) {
+            $selected = $sizeOption === $pageSize ? ' selected' : '';
+            $label = $sizeOption === 24 ? '24 (default)' : (string) $sizeOption;
+            $pageSizeOptions .= '<option value="' . $sizeOption . '"' . $selected . '>' . $label . '</option>';
+        }
+
+        $allHref = '/portfolio?' . http_build_query(['per_page' => $pageSize]);
         $body = "<h1>Portfolio</h1>\n";
-        $body .= "<nav style=\"display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 2rem;\">\n";
-        $body .= "    <a href=\"/portfolio\" style=\"padding:.5rem .75rem;border:1px solid #222;text-decoration:none;\">All</a>\n";
+        $body .= "<nav style=\"display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 1rem;\">\n";
+        $body .= '    <a href="' . $this->escape($allHref) . '" style="padding:.5rem .75rem;border:1px solid #222;text-decoration:none;">All</a>' . "\n";
 
         foreach ($sections as $section) {
-            $slug = rawurlencode((string) $section['slug']);
+            $sectionQuery = http_build_query([
+                'section' => (string) $section['slug'],
+                'per_page' => $pageSize,
+            ]);
             $name = $this->escape((string) $section['name']);
-            $body .= "    <a href=\"/portfolio?section={$slug}\" style=\"padding:.5rem .75rem;border:1px solid #222;text-decoration:none;\">{$name}</a>\n";
+            $body .= '    <a href="/portfolio?' . $this->escape($sectionQuery) . '" style="padding:.5rem .75rem;border:1px solid #222;text-decoration:none;">' . $name . '</a>' . "\n";
         }
 
         $body .= "</nav>\n";
+        $sectionControl = $sectionSlug !== ''
+            ? '<input type="hidden" name="section" value="' . $this->escape($sectionSlug) . '">'
+            : '';
+        $body .= '<form method="get" action="/portfolio" style="display:flex;gap:.5rem;align-items:end;flex-wrap:wrap;margin:0 0 1.5rem;">'
+            . $sectionControl
+            . '<label>Artworks per page<br><select name="per_page">' . $pageSizeOptions . '</select></label>'
+            . '<button type="submit">Apply</button></form>';
 
         if (!$items) {
             $body .= "<p>No published artwork yet.</p>\n";
@@ -135,6 +165,21 @@ HTML;
             }
 
             $body .= "</div>\n";
+        }
+
+        $pageCount = (int) $result['page_count'];
+        if ($pageCount > 1) {
+            $body .= '<nav aria-label="Portfolio pages" style="display:flex;gap:.5rem;flex-wrap:wrap;margin:2rem 0;">';
+            for ($pageNumber = 1; $pageNumber <= $pageCount; $pageNumber++) {
+                $query = ['page' => $pageNumber, 'per_page' => $pageSize];
+                if ($sectionSlug !== '') {
+                    $query['section'] = $sectionSlug;
+                }
+                $href = '/portfolio?' . http_build_query($query);
+                $current = $pageNumber === (int) $result['page'] ? ' aria-current="page" style="font-weight:bold;text-decoration:underline;"' : '';
+                $body .= '<a href="' . $this->escape($href) . '"' . $current . '>' . $pageNumber . '</a>';
+            }
+            $body .= '</nav>';
         }
 
         return Response::html($this->layout(

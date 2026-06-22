@@ -32,6 +32,27 @@ final class Pagination
         return max(0, ($page - 1) * $limit);
     }
 
+    /**
+     * Returns a page size only when it is one of the explicitly supported values.
+     */
+    public static function allowedLimitFromQuery(mixed $value, int $default, array $allowed): int
+    {
+        $limit = (int) ($value ?? $default);
+        $normalized = array_values(array_unique(array_map('intval', $allowed)));
+
+        return in_array($limit, $normalized, true) ? $limit : $default;
+    }
+
+    /**
+     * Standard selectable page sizes for artwork aggregation pages.
+     *
+     * @return list<int>
+     */
+    public static function standardPageSizes(): array
+    {
+        return range(10, 100, 10);
+    }
+
     public static function nextPageUrl(string $path, array $query, int $page): string
     {
         $query['page'] = $page + 1;

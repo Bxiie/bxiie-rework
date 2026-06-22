@@ -11,6 +11,7 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
 use App\Platform\Audit\AuditLogRepository;
+use App\Support\Pagination\Pagination;
 use PDO;
 use App\Http\View\AdminLayout;
 
@@ -31,76 +32,102 @@ final class ArtworksController
 
         $q = trim((string) ($_GET['q'] ?? ''));
         $sort = (string) ($_GET['sort'] ?? 'created_desc');
+        $statusFilter = (string) ($_GET['status'] ?? '');
+        $saleFilter = (string) ($_GET['sale_status'] ?? '');
+        $imageFilter = (string) ($_GET['image'] ?? '');
+        $sectionFilter = max(0, (int) ($_GET['section_id'] ?? 0));
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $pageSize = Pagination::allowedLimitFromQuery(
+            $_GET['per_page'] ?? null,
+            50,
+            Pagination::standardPageSizes(),
+        );
+        $offset = ($page - 1) * $pageSize;
 
         $orderBy = match ($sort) {
-            'name' => 'a.title ASC, a.id DESC',
-            'medium' => 'a.medium ASC, a.title ASC',
-            'date' => 'a.year_created DESC, a.title ASC',
-            'status' => 'a.status ASC, a.title ASC',
+            'name' => 'a.title ASC, a.id ASC',
+            'medium' => 'a.medium ASC, a.title ASC, a.id ASC',
+            'date' => 'a.year_created DESC, a.title ASC, a.id ASC',
+            'status' => 'a.status ASC, a.title ASC, a.id ASC',
             default => 'a.id DESC',
         };
 
         $where = "a.tenant_id = :tenant_id AND a.status <> 'archived'";
         $params = ['tenant_id' => $tenant->tenantId];
-
         if ($q !== '') {
-            $where .= " AND (a.title LIKE :q OR a.medium LIKE :q)";
+            $where .= ' AND (a.title LIKE :q OR a.medium LIKE :q OR a.description LIKE :q)';
             $params['q'] = '%' . $q . '%';
+        }
+        if (in_array($statusFilter, ['draft', 'published'], true)) {
+            $where .= ' AND a.status = :status_filter';
+            $params['status_filter'] = $statusFilter;
+        }
+        if (in_array($saleFilter, ['nfs', 'for_sale', 'sold'], true)) {
+            $where .= ' AND a.sale_status = :sale_filter';
+            $params['sale_filter'] = $saleFilter;
+        }
+        if ($imageFilter === 'missing') {
+            $where .= ' AND a.primary_media_id IS NULL';
+        } elseif ($imageFilter === 'present') {
+            $where .= ' AND a.primary_media_id IS NOT NULL';
+        }
+        if ($sectionFilter > 0) {
+            $where .= ' AND EXISTS (SELECT 1 FROM artwork_section_assignments af WHERE af.artwork_id = a.id AND af.section_id = :section_filter)';
+            $params['section_filter'] = $sectionFilter;
+        }
+
+        $countStmt = $this->pdo->prepare("SELECT COUNT(*) FROM artworks a WHERE {$where}");
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetchColumn();
+        $pageCount = max(1, (int) ceil($total / $pageSize));
+        if ($page > $pageCount) {
+            $page = $pageCount;
+            $offset = ($page - 1) * $pageSize;
         }
 
         $stmt = $this->pdo->prepare(
-            "SELECT
-                a.id,
-                a.title,
-                a.slug,
-                a.description,
-                a.medium,
-                a.year_created,
-                a.status,
-                a.sale_status,
-                a.price,
-                COALESCE(a.is_one_off, 1) AS is_one_off,
-                COALESCE(a.inventory_quantity, 1) AS inventory_quantity,
-                (SELECT ts.setting_value
-                 FROM tenant_settings ts
-                 WHERE ts.tenant_id = a.tenant_id
-                   AND ts.setting_key = 'platform_directory_thumbnail_artwork_id'
-                 LIMIT 1) AS directory_thumbnail_artwork_id,
-                a.created_at,
-                (SELECT GROUP_CONCAT(atype.code ORDER BY atype.code SEPARATOR ',')
-                 FROM artwork_type_assignments ata
-                 JOIN artwork_types atype ON atype.id = ata.type_id
-                 WHERE ata.artwork_id = a.id) AS artwork_type_codes,
-                m.id AS media_id,
-                m.uuid AS media_uuid,
-                m.storage_path,
-                m.mime_type,
-                m.width,
-                m.height
+            "SELECT a.id, a.title, a.slug, a.description, a.medium, a.year_created, a.status,
+                    a.sale_status, a.price, COALESCE(a.is_one_off, 1) AS is_one_off,
+                    COALESCE(a.inventory_quantity, 1) AS inventory_quantity,
+                    (SELECT ts.setting_value FROM tenant_settings ts
+                     WHERE ts.tenant_id = a.tenant_id AND ts.setting_key = 'platform_directory_thumbnail_artwork_id'
+                     LIMIT 1) AS directory_thumbnail_artwork_id,
+                    a.created_at,
+                    (SELECT GROUP_CONCAT(atype.code ORDER BY atype.code SEPARATOR ',')
+                     FROM artwork_type_assignments ata
+                     JOIN artwork_types atype ON atype.id = ata.type_id
+                     WHERE ata.artwork_id = a.id) AS artwork_type_codes,
+                    m.id AS media_id, m.uuid AS media_uuid, m.storage_path, m.mime_type, m.width, m.height
              FROM artworks a
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
              WHERE {$where}
              ORDER BY {$orderBy}
-             LIMIT 240"
+             LIMIT :limit_count OFFSET :offset_count"
         );
-
-        $stmt->execute($params);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stmt->bindValue('limit_count', $pageSize, PDO::PARAM_INT);
+        $stmt->bindValue('offset_count', $offset, PDO::PARAM_INT);
+        $stmt->execute();
         $rows = $stmt->fetchAll();
 
-        $returnTo = '/admin/artworks';
-        $queryString = http_build_query(array_filter([
+        $sectionsStmt = $this->pdo->prepare("SELECT id, name FROM portfolio_sections WHERE tenant_id = :tenant_id AND status <> 'archived' ORDER BY sort_order, name");
+        $sectionsStmt->execute(['tenant_id' => $tenant->tenantId]);
+        $sections = $sectionsStmt->fetchAll();
+
+        $baseQuery = array_filter([
             'q' => $q,
             'sort' => $sort,
-        ], static fn ($value): bool => $value !== ''));
-
-        if ($queryString !== '') {
-            $returnTo .= '?' . $queryString;
-        }
-
+            'status' => $statusFilter,
+            'sale_status' => $saleFilter,
+            'image' => $imageFilter,
+            'section_id' => $sectionFilter > 0 ? $sectionFilter : '',
+            'per_page' => $pageSize,
+        ], static fn ($value): bool => $value !== '');
+        $returnTo = '/admin/artworks?' . http_build_query(array_merge($baseQuery, ['page' => $page]));
         $returnToValue = htmlspecialchars($returnTo, ENT_QUOTES, 'UTF-8');
         $items = '';
-        $queryValue = htmlspecialchars($q, ENT_QUOTES, 'UTF-8');
-        $sortOption = fn (string $value): string => $sort === $value ? ' selected' : '';
 
         foreach ($rows as $row) {
             $title = htmlspecialchars((string) $row['title'], ENT_QUOTES, 'UTF-8');
@@ -118,7 +145,6 @@ final class ArtworksController
             $directoryChecked = $isDirectoryThumbnail ? ' checked' : '';
             $directoryDisabled = '';
             $directoryHelp = $isDirectoryThumbnail ? 'Current directory thumbnail' : 'Use as directory thumbnail';
-
             if ((string) $row['status'] !== 'published') {
                 $directoryDisabled = ' disabled';
                 $directoryHelp = 'Publish first';
@@ -126,111 +152,81 @@ final class ArtworksController
                 $directoryDisabled = ' disabled';
                 $directoryHelp = 'Primary image required';
             }
-
             $directoryHelp = htmlspecialchars($directoryHelp, ENT_QUOTES, 'UTF-8');
-
             if (!empty($row['storage_path'])) {
-                $src = '/admin/media?uuid=' . rawurlencode((string) $row['media_uuid']);
-                $src = htmlspecialchars($src, ENT_QUOTES, 'UTF-8');
+                $src = htmlspecialchars('/admin/media?uuid=' . rawurlencode((string) $row['media_uuid']) . '&variant=thumb', ENT_QUOTES, 'UTF-8');
                 $image = "<img src=\"{$src}\" alt=\"{$title}\" style=\"max-width:180px;max-height:140px;object-fit:contain;border:1px solid #ddd;background:#fff;\">";
             }
-
             $items .= <<<HTML
 <tr id="artwork-{$row['id']}">
-    <td>{$image}</td>
-    <td>
-        <strong>{$title}</strong><br>
-        <small>ID {$row['id']} · {$created}</small>
-    </td>
-    <td>{$year}</td>
-    <td>{$medium}</td>
-    <td class="js-artwork-status">{$status}<br>{$typeBadges}</td>
-    <td>{$saleStatus}</td>
-    <td>{$price}</td>
-    <td>{$notes}</td>
-    <td>
-        <form method="post" action="/admin/artworks/directory-thumbnail" class="directory-thumbnail-form">
-            <input type="hidden" name="id" value="{$artworkId}">
-            <input type="hidden" name="return_to" value="{$returnToValue}">
-            <label class="directory-thumbnail-toggle">
-                <input type="checkbox" name="directory_thumbnail" value="1"{$directoryChecked}{$directoryDisabled} onchange="this.form.submit()">
-                <span>Directory thumbnail</span>
-            </label>
-            <small>{$directoryHelp}</small>
-            <noscript><button type="submit">Save</button></noscript>
-        </form>
-    </td>
-    <td>
-        <a href="/admin/artworks/edit?id={$row['id']}">Edit</a>
-        {$this->statusActionButton($row, $returnToValue)}
-        <form method="post" action="/admin/artworks/delete" class="js-artwork-action" style="display:inline" onsubmit="return confirm('Archive this artwork? It will disappear from normal review and public pages, but the file will not be deleted yet.');">
-            <input type="hidden" name="id" value="{$row['id']}">
-            <input type="hidden" name="return_to" value="{$returnToValue}">
-            <button type="submit">Archive</button>
-        </form>
-    </td>
+    <td>{$image}</td><td><strong>{$title}</strong><br><small>ID {$row['id']} · {$created}</small></td>
+    <td>{$year}</td><td>{$medium}</td><td class="js-artwork-status">{$status}<br>{$typeBadges}</td>
+    <td>{$saleStatus}</td><td>{$price}</td><td>{$notes}</td>
+    <td><form method="post" action="/admin/artworks/directory-thumbnail"><input type="hidden" name="id" value="{$artworkId}"><input type="hidden" name="return_to" value="{$returnToValue}"><label><input type="checkbox" name="directory_thumbnail" value="1"{$directoryChecked}{$directoryDisabled} onchange="this.form.submit()"> Directory thumbnail</label><br><small>{$directoryHelp}</small></form></td>
+    <td><a href="/admin/artworks/edit?id={$row['id']}">Edit</a> {$this->statusActionButton($row, $returnToValue)} <form method="post" action="/admin/artworks/delete" class="js-artwork-action" style="display:inline" onsubmit="return confirm('Archive this artwork?');"><input type="hidden" name="id" value="{$row['id']}"><input type="hidden" name="return_to" value="{$returnToValue}"><button type="submit">Archive</button></form></td>
 </tr>
 HTML;
         }
-
         if ($items === '') {
-            $items = '<tr><td colspan="10">No artwork uploaded yet.</td></tr>';
+            $items = '<tr><td colspan="10">No artwork matches these filters.</td></tr>';
+        }
+
+        $e = static fn (string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        $option = static fn (string $current, string $value): string => $current === $value ? ' selected' : '';
+        $pageSizeOptions = '';
+        foreach (Pagination::standardPageSizes() as $sizeOption) {
+            $selected = $sizeOption === $pageSize ? ' selected' : '';
+            $label = $sizeOption === 50 ? '50 (default)' : (string) $sizeOption;
+            $pageSizeOptions .= '<option value="' . $sizeOption . '"' . $selected . '>' . $label . '</option>';
+        }
+
+        $sectionOptions = '<option value="">All sections</option>';
+        foreach ($sections as $section) {
+            $sid = (int) $section['id'];
+            $selected = $sectionFilter === $sid ? ' selected' : '';
+            $sectionOptions .= '<option value="' . $sid . '"' . $selected . '>' . $e((string) $section['name']) . '</option>';
+        }
+
+        $pager = '';
+        if ($pageCount > 1) {
+            $pager = '<nav aria-label="Artwork pages" style="display:flex;gap:.4rem;flex-wrap:wrap;margin:1rem 0;">';
+            for ($n = 1; $n <= $pageCount; $n++) {
+                $href = '/admin/artworks?' . http_build_query(array_merge($baseQuery, ['page' => $n]));
+                $current = $n === $page ? ' aria-current="page" style="font-weight:bold;text-decoration:underline;"' : '';
+                $pager .= '<a href="' . $e($href) . '"' . $current . '>' . $n . '</a>';
+            }
+            $pager .= '</nav>';
         }
 
         $notice = match ((string) ($_GET['notice'] ?? '')) {
-            'status-updated' => '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Artwork status updated.</p>',
-            'artwork-archived' => '<p style="padding:.75rem;background:#fff4df;border:1px solid #d9b36a;">Artwork archived.</p>',
-            'artwork-saved' => '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Artwork saved.</p>',
-            'directory-thumbnail-updated' => '<p style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Directory thumbnail updated.</p>',
+            'status-updated' => '<p class="notice">Artwork status updated.</p>',
+            'artwork-archived' => '<p class="notice">Artwork archived.</p>',
+            'artwork-saved' => '<p class="notice">Artwork saved.</p>',
+            'directory-thumbnail-updated' => '<p class="notice">Directory thumbnail updated.</p>',
             default => '',
         };
 
+        $summary = $total === 0 ? 'No artworks' : 'Showing ' . ($offset + 1) . '–' . min($offset + $pageSize, $total) . ' of ' . $total;
         $body = <<<HTML
 <main>
-    <div id="artwork-action-notice">{$notice}</div>
-    <p><a href="/admin/artwork/upload">Upload artwork</a> · <a href="/admin/artworks/placement">Artwork placement matrix</a> · <a href="/admin/portfolio-sections/order">Section artwork order</a></p>
-
-    <form method="get" action="/admin/artworks" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin:1rem 0;">
-        <label>Filter by name or medium<br>
-            <input type="search" name="q" value="{$queryValue}">
-        </label>
-        <label>Sort<br>
-            <select name="sort">
-                <option value="created_desc"{$sortOption('created_desc')}>Newest uploaded</option>
-                <option value="name"{$sortOption('name')}>Name</option>
-                <option value="medium"{$sortOption('medium')}>Medium</option>
-                <option value="date"{$sortOption('date')}>Date/year</option>
-                <option value="status"{$sortOption('status')}>Status</option>
-            </select>
-        </label>
-        <button type="submit">Apply</button>
-        <a href="/admin/artworks">Clear</a>
-    </form>
-
-    <table border="1" cellpadding="8" cellspacing="0">
-        <thead>
-            <tr>
-                <th>Image</th>
-                <th>Title</th>
-                <th>Date/year</th>
-                <th>Medium</th>
-                <th>Status</th>
-                <th>Sale</th>
-                <th>Price</th>
-                <th>Notes</th>
-                <th>Directory thumbnail</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {$items}
-        </tbody>
-    </table>
+<div id="artwork-action-notice">{$notice}</div>
+<p><a href="/admin/artwork/upload">Upload artwork</a> · <a href="/admin/artworks/placement">Artwork placement matrix</a> · <a href="/admin/portfolio-sections/order">Section artwork order</a></p>
+<form method="get" action="/admin/artworks" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin:1rem 0;">
+<label>Search<br><input type="search" name="q" value="{$e($q)}"></label>
+<label>Status<br><select name="status"><option value="">All</option><option value="draft"{$option($statusFilter,'draft')}>Draft</option><option value="published"{$option($statusFilter,'published')}>Published</option></select></label>
+<label>Sale<br><select name="sale_status"><option value="">All</option><option value="nfs"{$option($saleFilter,'nfs')}>Not for sale</option><option value="for_sale"{$option($saleFilter,'for_sale')}>For sale</option><option value="sold"{$option($saleFilter,'sold')}>Sold</option></select></label>
+<label>Image<br><select name="image"><option value="">All</option><option value="present"{$option($imageFilter,'present')}>Has image</option><option value="missing"{$option($imageFilter,'missing')}>Missing image</option></select></label>
+<label>Section<br><select name="section_id">{$sectionOptions}</select></label>
+<label>Sort<br><select name="sort"><option value="created_desc"{$option($sort,'created_desc')}>Newest</option><option value="name"{$option($sort,'name')}>Name</option><option value="medium"{$option($sort,'medium')}>Medium</option><option value="date"{$option($sort,'date')}>Date/year</option><option value="status"{$option($sort,'status')}>Status</option></select></label>
+<label>Artworks per page<br><select name="per_page">{$pageSizeOptions}</select></label>
+<button type="submit">Apply</button><a href="/admin/artworks">Clear</a>
+</form>
+<p><strong>{$summary}</strong></p>{$pager}
+<div style="overflow-x:auto;"><table border="1" cellpadding="8" cellspacing="0"><thead><tr><th>Image</th><th>Title</th><th>Date/year</th><th>Medium</th><th>Status</th><th>Sale</th><th>Price</th><th>Notes</th><th>Directory thumbnail</th><th>Actions</th></tr></thead><tbody>{$items}</tbody></table></div>
+{$pager}
 </main>
-
 <script src="/assets/admin/artworks.js"></script>
 HTML;
-
         return Response::html(AdminLayout::render('Artworks', $body));
     }
 

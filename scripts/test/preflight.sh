@@ -186,6 +186,8 @@ run_if_exists scripts/test/scale_fixture_static.php
 run_if_exists scripts/test/media_variants_static.php
 run_if_exists scripts/test/platform_scale_tenants_static.php
 run_if_exists scripts/test/tenant_settings_snapshot_static.php
+run_if_exists scripts/test/phase5_artwork_catalog_static.php
+run_if_exists scripts/test/artwork_page_size_controls_static.php
 
 php scripts/test/phase3_analytics_static.php
 php scripts/test/phase3_rollup_bucketing_static.php

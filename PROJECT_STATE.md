@@ -1732,15 +1732,20 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Production MariaDB should use disk-backed `/var/lib/mysql-tmp` for `tmpdir` instead of the approximately 1 GB RAM-backed `/tmp` mount. Apply this with `sudo ./scripts/ops/configure_mariadb_tmpdir.sh`. The application-level bucket change remains required even with the larger temporary directory.
 - Regression coverage lives in `scripts/test/phase3_rollup_bucketing_static.php` and is included in preflight.
 
-<!-- End of file. -->
+## 2026-06-22 - Artwork aggregation page-size controls
 
+- Public portfolio, Tenant Admin Artworks, and Artwork Placement Matrix now accept a validated `per_page` query parameter.
+- Admin page-size options are 10 through 100 in steps of 10, defaulting to 50.
+- The public portfolio retains the Phase 5 default of 24 and offers 10, 20, 24, then 30 through 100.
+- Section/filter/page links and post-action return URLs preserve the selected page size.
+- Unsupported page sizes fall back to the route default rather than permitting unbounded queries.
+- Regression coverage lives in `scripts/test/artwork_page_size_controls_static.php`.
 
-## Phase 4 worker scaling (2026-06-22)
-- Background and email queues use `FOR UPDATE SKIP LOCKED` with guarded status updates for concurrent claims.
-- Templated systemd units support multiple `background-%i` and `email-%i` workers.
-- `scripts/ops/install_worker_services.sh` installs two instances of each by default and disables the legacy singleton.
-- Stale `running` jobs and `sending` emails are requeued after 30 minutes by default.
-- Platform Jobs displays queue totals, oldest queued age, and fresh worker count.
-- Migration `0040_worker_scaling_indexes.sql` supports stale-recovery queries.
+## Phase 5 artwork catalog scaling (2026-06-22)
+- Public portfolio pagination: 24 published artworks per page, with section-aware page links.
+- Tenant artwork admin pagination: 50 rows per page with search, status, sale, image, section, and sort filters.
+- Artwork placement matrix pagination: 50 rows per page; saves affect only visible artwork IDs and preserve other pages.
+- Migration 0041 adds artwork catalog and section-order indexes.
+- Worker installer now disables both legacy singleton worker services before enabling templated instances.
 
 <!-- End of file. -->
