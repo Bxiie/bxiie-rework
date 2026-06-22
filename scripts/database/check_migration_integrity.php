@@ -71,6 +71,10 @@ $expected = [
     '0043_sales_inventory_reservations.sql' => [
         'sales_inventory_reservations',
     ],
+    '0044_operations_monitoring_and_migration_checksums.sql' => [
+        'operations_monitor_runs',
+        'operations_monitor_state',
+    ],
 ];
 
 $appliedStmt = $pdo->query("SELECT migration FROM schema_migrations");
@@ -80,6 +84,56 @@ $applied = array_fill_keys(array_map(
 ), true);
 
 $problems = [];
+
+
+$migrationFiles = [];
+foreach (glob($root . '/database/migrations/*.sql') ?: [] as $file) {
+    $migrationFiles[basename($file)] = $file;
+}
+
+foreach (array_keys($applied) as $migration) {
+    if (!isset($migrationFiles[$migration])) {
+        $problems[] = [
+            'migration' => $migration,
+            'problem' => 'applied_migration_file_missing',
+        ];
+    }
+}
+
+foreach (array_keys($migrationFiles) as $migration) {
+    if (!isset($applied[$migration])) {
+        $problems[] = [
+            'migration' => $migration,
+            'problem' => 'migration_file_not_applied',
+        ];
+    }
+}
+
+$checksumColumnStmt = $pdo->query(
+    "SELECT COUNT(*) FROM information_schema.columns
+     WHERE table_schema = DATABASE()
+       AND table_name = 'schema_migrations'
+       AND column_name = 'checksum_sha256'"
+);
+$checksumColumnExists = (int) $checksumColumnStmt->fetchColumn() > 0;
+
+if ($checksumColumnExists) {
+    $checksumRows = $pdo->query('SELECT migration, checksum_sha256 FROM schema_migrations')->fetchAll();
+    foreach ($checksumRows as $row) {
+        $migration = (string) $row['migration'];
+        $recorded = (string) ($row['checksum_sha256'] ?? '');
+        if (!isset($migrationFiles[$migration])) {
+            continue;
+        }
+        $actual = hash_file('sha256', $migrationFiles[$migration]);
+        if ($recorded === '' || !hash_equals($actual, $recorded)) {
+            $problems[] = [
+                'migration' => $migration,
+                'problem' => $recorded === '' ? 'migration_checksum_missing' : 'migration_checksum_mismatch',
+            ];
+        }
+    }
+}
 
 foreach ($expected as $migration => $tables) {
     $isApplied = isset($applied[$migration]);

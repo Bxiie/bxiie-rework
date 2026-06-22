@@ -42,8 +42,10 @@ done
 echo "Shell syntax checks passed."
 
 echo
-echo "== Migration integrity =="
+echo "== Migration discipline and schema health =="
+php scripts/test/migration_numbering_static.php
 php scripts/database/check_migration_integrity.php
+php scripts/database/check_schema_health.php
 
 echo
 echo "== Core smoke tests =="
@@ -199,5 +201,8 @@ run_if_exists scripts/test/portfolio_section_actions_static.php
 run_if_exists scripts/test/phase6_directory_projection_static.php
 run_if_exists scripts/test/directory_search_sort_static.php
 run_if_exists scripts/test/phase7_sales_inventory_static.php
+run_if_exists scripts/test/phase9_monitoring_static.php
+run_if_exists scripts/test/phase9_migration_discipline_static.php
+run_shell_if_exists scripts/test/monitoring_service_units_static.sh
 
 php scripts/test/phase8_routing_static.php

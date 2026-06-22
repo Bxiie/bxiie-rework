@@ -18,29 +18,19 @@ require_active_service() {
   fi
 }
 
-require_active_service_instances() {
-  local template_name="$1"
-  local -a service_names=()
 
-  mapfile -t service_names < <(
-    systemctl list-units \
-      --type=service \
-      --all \
-      --plain \
-      --no-legend \
-      "${template_name}@*.service" \
-      | awk '{print $1}' \
-      | sort -u
-  )
+require_active_instances() {
+  local pattern="$1"
+  local label="$2"
+  mapfile -t units < <(systemctl list-units --type=service --all "$pattern" --no-legend 2>/dev/null | awk '{print $1}' | sort -u)
 
-  if [ "${#service_names[@]}" -eq 0 ]; then
-    echo "ERROR: no installed systemd instances found for ${template_name}@.service" >&2
+  if [ "${#units[@]}" -eq 0 ]; then
+    echo "ERROR: no ${label} worker instances found for ${pattern}" >&2
     exit 1
   fi
 
-  local service_name
-  for service_name in "${service_names[@]}"; do
-    require_active_service "$service_name"
+  for unit in "${units[@]}"; do
+    require_active_service "$unit"
   done
 }
 
@@ -59,8 +49,11 @@ echo "== Service checks =="
 require_active_service caddy
 require_active_service php8.4-fpm
 require_active_service mariadb
-require_active_service_instances artsfolio-email-worker
-require_active_service_instances artsfolio-background-worker
+require_active_instances "artsfolio-email-worker@*.service" "email"
+require_active_instances "artsfolio-background-worker@*.service" "background"
+if systemctl cat artsfolio-monitor.timer >/dev/null 2>&1; then
+  require_active_service artsfolio-monitor.timer
+fi
 
 echo "Service checks passed."
 

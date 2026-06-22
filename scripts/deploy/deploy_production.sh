@@ -61,29 +61,20 @@ restart_required_service() {
   sudo systemctl is-active --quiet "$service_name"
 }
 
-restart_required_service_instances() {
-  local template_name="$1"
-  local -a service_names=()
 
-  mapfile -t service_names < <(
-    systemctl list-units \
-      --type=service \
-      --all \
-      --plain \
-      --no-legend \
-      "${template_name}@*.service" \
-      | awk '{print $1}' \
-      | sort -u
-  )
+restart_worker_instances() {
+  local pattern="$1"
+  local label="$2"
+  mapfile -t units < <(systemctl list-units --type=service --all "$pattern" --no-legend 2>/dev/null | awk '{print $1}' | sort -u)
 
-  if [ "${#service_names[@]}" -eq 0 ]; then
-    echo "ERROR: no installed systemd instances found for ${template_name}@.service" >&2
+  if [ "${#units[@]}" -eq 0 ]; then
+    echo "ERROR: no ${label} worker instances are installed for pattern ${pattern}" >&2
     exit 1
   fi
 
-  local service_name
-  for service_name in "${service_names[@]}"; do
-    restart_required_service "$service_name"
+  for unit in "${units[@]}"; do
+    sudo systemctl restart "$unit"
+    sudo systemctl is-active --quiet "$unit"
   done
 }
 
@@ -121,8 +112,11 @@ ARTSFOLIO_ENV_FILE="$ENV_FILE" ./scripts/test/preflight.sh
 section "Restart services"
 restart_required_service php8.4-fpm
 restart_required_service caddy
-restart_required_service_instances artsfolio-email-worker
-restart_required_service_instances artsfolio-background-worker
+restart_worker_instances "artsfolio-email-worker@*.service" "email"
+restart_worker_instances "artsfolio-background-worker@*.service" "background"
+if systemctl cat artsfolio-monitor.timer >/dev/null 2>&1; then
+  sudo systemctl restart artsfolio-monitor.timer
+fi
 
 section "Health check"
 ARTSFOLIO_ENV_FILE="$ENV_FILE" ./scripts/deploy/healthcheck.sh

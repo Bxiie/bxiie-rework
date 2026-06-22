@@ -1,0 +1,24 @@
+[Unit]
+Description=ArtsFolio operations health monitor
+After=network-online.target mariadb.service php8.4-fpm.service caddy.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=artsfolio
+Group=artsfolio
+WorkingDirectory=/var/www/artsfolio
+EnvironmentFile=-/etc/artsfolio/artsfolio.env
+ExecStart=/usr/bin/php /var/www/artsfolio/scripts/ops/monitor_artsfolio.php
+SuccessExitStatus=1 2
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=6
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/tmp /var/www/artsfolio/storage
+
+[Install]
+WantedBy=multi-user.target

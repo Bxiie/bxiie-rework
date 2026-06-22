@@ -44,17 +44,35 @@ $pdo->exec("
     )
 ");
 
+$checksumColumnExists = (int) $pdo->query(
+    "SELECT COUNT(*) FROM information_schema.columns
+     WHERE table_schema = DATABASE()
+       AND table_name = 'schema_migrations'
+       AND column_name = 'checksum_sha256'"
+)->fetchColumn() > 0;
+
 $applied = [];
-$stmt = $pdo->query('SELECT migration FROM schema_migrations');
+$selectColumns = $checksumColumnExists ? 'migration, checksum_sha256' : 'migration';
+$stmt = $pdo->query('SELECT ' . $selectColumns . ' FROM schema_migrations');
 
 foreach ($stmt->fetchAll() as $row) {
-    $applied[$row['migration']] = true;
+    $applied[(string) $row['migration']] = $checksumColumnExists
+        ? (string) ($row['checksum_sha256'] ?? '')
+        : '';
 }
 
 foreach ($files as $file) {
     $name = basename($file);
 
-    if (isset($applied[$name])) {
+    if (array_key_exists($name, $applied)) {
+        if ($checksumColumnExists) {
+            $expectedChecksum = hash_file('sha256', $file);
+            $recordedChecksum = (string) $applied[$name];
+            if ($recordedChecksum !== '' && !hash_equals($expectedChecksum, $recordedChecksum)) {
+                fwrite(STDERR, "Migration checksum mismatch: {$name}\n");
+                exit(1);
+            }
+        }
         echo "Already applied: {$name}\n";
         continue;
     }
@@ -66,13 +84,44 @@ foreach ($files as $file) {
     try {
         $pdo->exec($sql);
 
-        $insert = $pdo->prepare('INSERT INTO schema_migrations (migration) VALUES (:migration)');
-        $insert->execute(['migration' => $name]);
+        $checksumColumnExists = (int) $pdo->query(
+            "SELECT COUNT(*) FROM information_schema.columns
+             WHERE table_schema = DATABASE()
+               AND table_name = 'schema_migrations'
+               AND column_name = 'checksum_sha256'"
+        )->fetchColumn() > 0;
+
+        if ($checksumColumnExists) {
+            $insert = $pdo->prepare('INSERT INTO schema_migrations (migration, checksum_sha256) VALUES (:migration, :checksum)');
+            $insert->execute(['migration' => $name, 'checksum' => hash_file('sha256', $file)]);
+        } else {
+            $insert = $pdo->prepare('INSERT INTO schema_migrations (migration) VALUES (:migration)');
+            $insert->execute(['migration' => $name]);
+        }
 
         echo "Applied: {$name}\n";
     } catch (Throwable $e) {
         fwrite(STDERR, "Failed migration {$name}: {$e->getMessage()}\n");
         exit(1);
+    }
+}
+
+$checksumColumnExists = (int) $pdo->query(
+    "SELECT COUNT(*) FROM information_schema.columns
+     WHERE table_schema = DATABASE()
+       AND table_name = 'schema_migrations'
+       AND column_name = 'checksum_sha256'"
+)->fetchColumn() > 0;
+
+if ($checksumColumnExists) {
+    $updateChecksum = $pdo->prepare(
+        "UPDATE schema_migrations SET checksum_sha256 = :checksum WHERE migration = :migration AND (checksum_sha256 IS NULL OR checksum_sha256 = '')"
+    );
+    foreach ($files as $file) {
+        $updateChecksum->execute([
+            'migration' => basename($file),
+            'checksum' => hash_file('sha256', $file),
+        ]);
     }
 }
 
