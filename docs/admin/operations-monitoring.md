@@ -93,3 +93,9 @@ The last 90 days of reports are stored in `operations_monitor_runs`. Notificatio
 - Recovery notices begin with `[ArtsFolio RECOVERY]`.
 - Email and console metric lists are ordered CRIT, WARN, OK, then INFO so urgent conditions appear first.
 - Dry-run delivery is identified explicitly and is never reported as a sent message.
+
+## Application component start notifications
+
+The operations monitor stores the last observed state of each monitored application component. It sends an immediate email when a component transitions from stopped, stale, or unavailable to healthy running state. Monitored components include MariaDB, PHP-FPM, Caddy, background workers, and email workers.
+
+The notification subject begins with `[ArtsFolio COMPONENT STARTED]` and the email names every component that started. The initial monitor run establishes a baseline and does not announce every already-running component. A `--no-email` run does not consume a pending component-start event.

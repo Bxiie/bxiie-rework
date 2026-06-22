@@ -17,7 +17,7 @@ $requirements = [
     'tenant_directory_profiles' => ['tenant_id', 'is_listed', 'sort_name'],
     'sales_inventory_reservations' => ['order_id', 'artwork_id', 'status', 'expires_at'],
     'operations_monitor_runs' => ['overall_status', 'report_json', 'created_at'],
-    'operations_monitor_state' => ['last_status', 'last_fingerprint', 'last_alert_at', 'last_boot_id'],
+    'operations_monitor_state' => ['last_status', 'last_fingerprint', 'last_alert_at', 'last_boot_id', 'last_component_states_json'],
     'operations_monitor_metrics' => ['run_id', 'metric_name', 'metric_status', 'actual_value', 'actual_numeric', 'created_at'],
 ];
 

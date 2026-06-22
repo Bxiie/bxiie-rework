@@ -11,6 +11,35 @@ use App\Support\Database;
 $root = dirname(__DIR__, 2);
 require $root . '/bootstrap/app.php';
 
+
+/** @return array<string,string> */
+function artsfolioComponentStates(App\Platform\Monitoring\HealthReport $report): array
+{
+    $states = [];
+    foreach ($report->metrics as $metric) {
+        if (str_starts_with($metric->name, 'service.')) {
+            $states[$metric->name] = $metric->status === App\Platform\Monitoring\HealthMetric::OK ? 'running' : 'stopped';
+            continue;
+        }
+        if (str_starts_with($metric->name, 'worker.') && str_ends_with($metric->name, '.heartbeat_age_seconds')) {
+            $states[$metric->name] = $metric->status === App\Platform\Monitoring\HealthMetric::OK ? 'running' : 'stopped';
+        }
+    }
+    ksort($states);
+    return $states;
+}
+
+function artsfolioFriendlyComponentName(string $metricName): string
+{
+    if (str_starts_with($metricName, 'service.')) {
+        return str_replace(['service.', '_service', '_'], ['', '', ' '], $metricName);
+    }
+    if (preg_match('/^worker\.([^.]*)\.heartbeat_age_seconds$/', $metricName, $matches) === 1) {
+        return str_replace('-', ' ', $matches[1]) . ' worker';
+    }
+    return $metricName;
+}
+
 function artsfolioCurrentBootId(): string
 {
     $linuxBootId = '/proc/sys/kernel/random/boot_id';
@@ -49,6 +78,26 @@ $state = $repository->state();
 $currentBootId = artsfolioCurrentBootId();
 $previousBootId = (string) ($state['last_boot_id'] ?? '');
 $restartDetected = $currentBootId !== '' && $previousBootId !== '' && !hash_equals($previousBootId, $currentBootId);
+$currentComponentStates = artsfolioComponentStates($report);
+$previousComponentStatesRaw = (string) ($state['last_component_states_json'] ?? '');
+$previousComponentStates = [];
+if ($previousComponentStatesRaw !== '') {
+    $decodedComponentStates = json_decode($previousComponentStatesRaw, true);
+    if (is_array($decodedComponentStates)) {
+        $previousComponentStates = array_map('strval', $decodedComponentStates);
+    }
+}
+$componentBaselineExists = $previousComponentStates !== [];
+$startedComponents = [];
+if ($componentBaselineExists) {
+    foreach ($currentComponentStates as $componentName => $componentStatus) {
+        if ($componentStatus === 'running' && ($previousComponentStates[$componentName] ?? 'unknown') !== 'running') {
+            $startedComponents[] = artsfolioFriendlyComponentName($componentName);
+        }
+    }
+}
+$componentStartDetected = $startedComponents !== [];
+$currentComponentStatesJson = json_encode($currentComponentStates, JSON_THROW_ON_ERROR);
 $timezone = new DateTimeZone(getenv('ARTSFOLIO_MONITOR_TIMEZONE') ?: 'America/New_York');
 $nowLocal = new DateTimeImmutable('now', $timezone);
 $today = $nowLocal->format('Y-m-d');
@@ -93,34 +142,51 @@ if (in_array($currentStatus, [HealthMetric::WARN, HealthMetric::CRIT], true)) {
     $notificationKind = 'recovery';
 }
 
-if (!isset($options['no-email']) && ($scheduledKind !== null || $shouldAlert || $restartDetected)) {
-    $kind = $restartDetected ? 'restart' : ($shouldAlert ? $notificationKind : 'scheduled');
-    try {
-        $notifier = new OperationsMonitorNotifier($pdo, $repository);
-        $delivery = $notifier->send($report, (string) $kind);
-        $recipientCount = count($delivery['results'] ?? []);
-        if (($delivery['dry_run'] ?? false) === true) {
-            echo 'Health email dry run generated for ' . $recipientCount . " platform administrator(s); no message was sent.\n";
-        } else {
-            echo 'Health email sent to ' . $recipientCount . " platform administrator(s).\n";
+if (!isset($options['no-email'])) {
+    $notifications = [];
+    if ($restartDetected) {
+        $notifications[] = ['kind' => 'restart', 'context' => []];
+    }
+    if ($componentStartDetected) {
+        $notifications[] = ['kind' => 'component_start', 'context' => ['started_components' => $startedComponents]];
+    }
+    if ($shouldAlert) {
+        $notifications[] = ['kind' => (string) $notificationKind, 'context' => []];
+    } elseif ($scheduledKind !== null) {
+        $notifications[] = ['kind' => 'scheduled', 'context' => []];
+    }
+
+    foreach ($notifications as $notification) {
+        try {
+            $notifier = new OperationsMonitorNotifier($pdo, $repository);
+            $delivery = $notifier->send($report, $notification['kind'], $notification['context']);
+            $recipientCount = count($delivery['results'] ?? []);
+            if (($delivery['dry_run'] ?? false) === true) {
+                echo 'Health email dry run generated for ' . $recipientCount . " platform administrator(s); no message was sent.\n";
+            } else {
+                echo 'Health email sent to ' . $recipientCount . " platform administrator(s).\n";
+            }
+        } catch (Throwable $e) {
+            fwrite(STDERR, 'Health email delivery failed: ' . $e->getMessage() . "\n");
+            $bootIdForState = $restartDetected ? $previousBootId : ($currentBootId !== '' ? $currentBootId : $previousBootId);
+            $componentStatesForState = $componentStartDetected ? $previousComponentStatesRaw : $currentComponentStatesJson;
+            $repository->updateState($report, $lastAlertAt, $morningDate, $eveningDate, $bootIdForState, $componentStatesForState);
+            exit(2);
         }
-        if ($shouldAlert) {
-            $lastAlertAt = gmdate('Y-m-d H:i:s');
-        }
-        if ($scheduledKind !== null) {
-            $morningDate = $nextMorningDate;
-            $eveningDate = $nextEveningDate;
-        }
-    } catch (Throwable $e) {
-        fwrite(STDERR, 'Health email delivery failed: ' . $e->getMessage() . "\n");
-        $bootIdForState = (isset($options['no-email']) && $restartDetected) ? $previousBootId : ($currentBootId !== '' ? $currentBootId : $previousBootId);
-        $repository->updateState($report, $lastAlertAt, $morningDate, $eveningDate, $bootIdForState);
-        exit(2);
+    }
+
+    if ($shouldAlert && $notifications !== []) {
+        $lastAlertAt = gmdate('Y-m-d H:i:s');
+    }
+    if ($scheduledKind !== null && $notifications !== []) {
+        $morningDate = $nextMorningDate;
+        $eveningDate = $nextEveningDate;
     }
 }
 
 $bootIdForState = (isset($options['no-email']) && $restartDetected) ? $previousBootId : ($currentBootId !== '' ? $currentBootId : $previousBootId);
-$repository->updateState($report, $lastAlertAt, $morningDate, $eveningDate, $bootIdForState);
+$componentStatesForState = (isset($options['no-email']) && $componentStartDetected) ? $previousComponentStatesRaw : $currentComponentStatesJson;
+$repository->updateState($report, $lastAlertAt, $morningDate, $eveningDate, $bootIdForState, $componentStatesForState);
 
 exit($currentStatus === HealthMetric::CRIT ? 2 : ($currentStatus === HealthMetric::WARN ? 1 : 0));
 

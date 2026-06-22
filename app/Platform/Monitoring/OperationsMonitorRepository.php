@@ -80,6 +80,7 @@ final class OperationsMonitorRepository
             'last_morning_report_date' => null,
             'last_evening_report_date' => null,
             'last_boot_id' => null,
+            'last_component_states_json' => null,
         ];
     }
 
@@ -89,6 +90,7 @@ final class OperationsMonitorRepository
         ?string $morningDate,
         ?string $eveningDate,
         ?string $bootId,
+        ?string $componentStatesJson,
     ): void {
         $stmt = $this->pdo->prepare(
             "INSERT INTO operations_monitor_state (
@@ -99,6 +101,7 @@ final class OperationsMonitorRepository
                 last_morning_report_date,
                 last_evening_report_date,
                 last_boot_id,
+                last_component_states_json,
                 updated_at
              ) VALUES (
                 1,
@@ -108,6 +111,7 @@ final class OperationsMonitorRepository
                 :last_morning_report_date,
                 :last_evening_report_date,
                 :last_boot_id,
+                :last_component_states_json,
                 UTC_TIMESTAMP()
              )
              ON DUPLICATE KEY UPDATE
@@ -117,6 +121,7 @@ final class OperationsMonitorRepository
                 last_morning_report_date = VALUES(last_morning_report_date),
                 last_evening_report_date = VALUES(last_evening_report_date),
                 last_boot_id = VALUES(last_boot_id),
+                last_component_states_json = VALUES(last_component_states_json),
                 updated_at = UTC_TIMESTAMP()"
         );
         $stmt->execute([
@@ -126,6 +131,7 @@ final class OperationsMonitorRepository
             'last_morning_report_date' => $morningDate,
             'last_evening_report_date' => $eveningDate,
             'last_boot_id' => $bootId,
+            'last_component_states_json' => $componentStatesJson,
         ]);
     }
 

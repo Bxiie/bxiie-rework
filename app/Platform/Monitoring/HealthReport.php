@@ -113,7 +113,7 @@ final class HealthReport
     }
 
 
-    public function toHtml(string $subject, string $kind, string $adminUrl): string
+    public function toHtml(string $subject, string $kind, string $adminUrl, array $context = []): string
     {
         $counts = $this->counts();
         $status = $this->overallStatus();
@@ -166,6 +166,15 @@ final class HealthReport
         $kindMessage = $kind === 'restart'
             ? '<p style="padding:12px 14px;background:#eaf2ff;border-left:5px solid #315ea8;border-radius:6px;"><strong>The ArtsFolio server restarted.</strong> This report was sent automatically after a new boot was detected.</p>'
             : '';
+        if ($kind === 'component_start') {
+            $started = array_values(array_filter(array_map('strval', $context['started_components'] ?? [])));
+            $items = '';
+            foreach ($started as $component) {
+                $items .= '<li style="margin:4px 0;">' . htmlspecialchars($component, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
+            }
+            $kindMessage = '<div style="padding:12px 14px;background:#eaf7ef;border-left:5px solid #1f6b45;border-radius:6px;"><strong>Application component started.</strong>'
+                . ($items !== '' ? '<ul style="margin:8px 0 0;padding-left:22px;">' . $items . '</ul>' : '') . '</div>';
+        }
 
         return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . $safeSubject . '</title></head>'
             . '<body style="margin:0;background:#f5f2ed;color:#252321;font-family:Arial,Helvetica,sans-serif;">'

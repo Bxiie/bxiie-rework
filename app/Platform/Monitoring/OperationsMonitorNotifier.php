@@ -22,7 +22,7 @@ final class OperationsMonitorNotifier
     ) {
     }
 
-    public function send(HealthReport $report, string $kind): array
+    public function send(HealthReport $report, string $kind, array $context = []): array
     {
         $recipients = $this->repository->platformAdminRecipients();
         if ($recipients === []) {
@@ -33,17 +33,23 @@ final class OperationsMonitorNotifier
             $kind === 'recovery' => '[ArtsFolio RECOVERY]',
             $kind === 'restart' && $report->overallStatus() === HealthMetric::CRIT => '[ArtsFolio CRITICAL] Server restarted',
             $kind === 'restart' => '[ArtsFolio RESTARTED]',
+            $kind === 'component_start' && $report->overallStatus() === HealthMetric::CRIT => '[ArtsFolio CRITICAL] Component started',
+            $kind === 'component_start' => '[ArtsFolio COMPONENT STARTED]',
             $report->overallStatus() === HealthMetric::CRIT => '[ArtsFolio CRITICAL]',
             $report->overallStatus() === HealthMetric::WARN => '[ArtsFolio WARNING]',
             $kind === 'alert' => '[ArtsFolio ALERT]',
             default => '[ArtsFolio Daily Health OK]',
         };
         $subject = $subjectPrefix . ' ' . $report->hostName . ' ' . gmdate('Y-m-d H:i T');
-        $bodyText = $report->toText(false);
+        $startedComponents = array_values(array_filter(array_map('strval', $context['started_components'] ?? [])));
+        $componentText = $startedComponents !== []
+            ? "Application components started:\n- " . implode("\n- ", $startedComponents) . "\n\n"
+            : '';
+        $bodyText = $componentText . $report->toText(false);
         $adminUrl = rtrim((string) (getenv('ARTSFOLIO_PUBLIC_URL') ?: 'https://artsfol.io'), '/') . '/platform/admin/operations';
         $bodies = [
             'body_text' => $bodyText . "\nOperations dashboard: {$adminUrl}\n",
-            'body_html' => $report->toHtml($subject, $kind, $adminUrl),
+            'body_html' => $report->toHtml($subject, $kind, $adminUrl, ['started_components' => $startedComponents]),
         ];
         $sender = EmailSenderFactory::fromPlatformSettings(new PlatformSettingsRepository($this->pdo));
         $results = [];
