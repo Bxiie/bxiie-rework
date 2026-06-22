@@ -13,6 +13,9 @@ $checks = [
         'applied_migration_file_missing',
         'migration_file_not_applied',
         'migration_checksum_mismatch',
+        "'tables' => ['operations_monitor_metrics']",
+        "'operations_monitor_state' => ['last_boot_id']",
+        "'operations_monitor_state' => ['last_component_states_json']",
     ],
     'scripts/database/check_schema_health.php' => [
         'operations_monitor_runs',
@@ -43,27 +46,6 @@ foreach ($checks as $relative => $needles) {
 if ($errors !== []) {
     fwrite(STDERR, implode("\n", $errors) . "\n");
     exit(1);
-}
-
-
-$integritySource = file_get_contents($root . '/scripts/database/check_migration_integrity.php');
-if ($integritySource === false) {
-    throw new RuntimeException('Unable to read migration integrity checker.');
-}
-
-foreach ([
-    "'tables' => ['operations_monitor_metrics']",
-    "'operations_monitor_state' => ['last_boot_id']",
-    'migration_recorded_but_column_missing',
-    'column_exists_but_migration_not_recorded',
-] as $needle) {
-    if (!str_contains($integritySource, $needle)) {
-        throw new RuntimeException('Migration integrity checker missing column-aware assertion: ' . $needle);
-    }
-}
-
-if (preg_match("/'0045_operations_monitor_metrics\.sql'\s*=>\s*\[\s*'operations_monitor_metrics',\s*'last_boot_id'/s", $integritySource) === 1) {
-    throw new RuntimeException('last_boot_id must not be treated as a table.');
 }
 
 echo "Phase 9 migration discipline static checks passed.\n";

@@ -15,70 +15,90 @@ $pdo = Database::connect($root);
 
 $expected = [
     '0001_platform_core.sql' => [
-        'schema_migrations',
-        'tenants',
-        'tenant_domains',
-        'tenant_settings',
-        'plans',
-        'users',
-        'audit_log',
+        'tables' => [
+            'schema_migrations',
+            'tenants',
+            'tenant_domains',
+            'tenant_settings',
+            'plans',
+            'users',
+            'audit_log',
+        ],
+        'columns' => [],
     ],
     '0002_content_media.sql' => [
-        'media_assets',
-        'artworks',
-        'portfolio_sections',
+        'tables' => ['media_assets', 'artworks', 'portfolio_sections'],
+        'columns' => [],
     ],
     '0003_background_jobs.sql' => [
-        'background_jobs',
+        'tables' => ['background_jobs'],
+        'columns' => [],
     ],
     '0004_domain_artifacts.sql' => [
-        'domain_artifacts',
+        'tables' => ['domain_artifacts'],
+        'columns' => [],
     ],
     '0005_identity_membership.sql' => [
-        'user_identities',
-        'tenant_memberships',
-        'roles',
-        'role_assignments',
-        'password_reset_tokens',
-        'email_verification_tokens',
+        'tables' => [
+            'user_identities',
+            'tenant_memberships',
+            'roles',
+            'role_assignments',
+            'password_reset_tokens',
+            'email_verification_tokens',
+        ],
+        'columns' => [],
     ],
     '0006_user_sessions.sql' => [
-        'user_sessions',
+        'tables' => ['user_sessions'],
+        'columns' => [],
     ],
     '0007_oauth_tokens.sql' => [
-        'oauth_clients',
-        'oauth_access_tokens',
-        'oauth_refresh_tokens',
+        'tables' => ['oauth_clients', 'oauth_access_tokens', 'oauth_refresh_tokens'],
+        'columns' => [],
     ],
     '0008_email_outbox.sql' => [
-        'email_outbox',
+        'tables' => ['email_outbox'],
+        'columns' => [],
     ],
     '0009_contact_signup_records.sql' => [
-        'contact_messages',
+        'tables' => ['contact_messages'],
+        'columns' => [],
     ],
     '0010_rate_limits.sql' => [
-        'rate_limits',
+        'tables' => ['rate_limits'],
+        'columns' => [],
     ],
     '0011_repair_email_signups.sql' => [
-        'email_signups',
+        'tables' => ['email_signups'],
+        'columns' => [],
     ],
     '0038_media_asset_variants.sql' => [
-        'media_asset_variants',
+        'tables' => ['media_asset_variants'],
+        'columns' => [],
     ],
     '0042_tenant_directory_profiles.sql' => [
-        'tenant_directory_profiles',
+        'tables' => ['tenant_directory_profiles'],
+        'columns' => [],
     ],
     '0043_sales_inventory_reservations.sql' => [
-        'sales_inventory_reservations',
+        'tables' => ['sales_inventory_reservations'],
+        'columns' => [],
     ],
     '0044_operations_monitoring_and_migration_checksums.sql' => [
-        'operations_monitor_runs',
-        'operations_monitor_state',
+        'tables' => ['operations_monitor_runs', 'operations_monitor_state'],
+        'columns' => [],
     ],
     '0045_operations_monitor_metrics.sql' => [
         'tables' => ['operations_monitor_metrics'],
         'columns' => [
             'operations_monitor_state' => ['last_boot_id'],
+        ],
+    ],
+    '0046_operations_monitor_component_state.sql' => [
+        'tables' => [],
+        'columns' => [
+            'operations_monitor_state' => ['last_component_states_json'],
         ],
     ],
 ];
@@ -141,19 +161,10 @@ if ($checksumColumnExists) {
     }
 }
 
-foreach ($expected as $migration => $requirements) {
+foreach ($expected as $migration => $artifacts) {
     $isApplied = isset($applied[$migration]);
 
-    // Historical entries are simple table lists. Newer entries may declare
-    // tables and columns separately so a column is never mistaken for a table.
-    $tables = array_is_list($requirements)
-        ? $requirements
-        : ($requirements['tables'] ?? []);
-    $columns = array_is_list($requirements)
-        ? []
-        : ($requirements['columns'] ?? []);
-
-    foreach ($tables as $table) {
+    foreach ($artifacts['tables'] as $table) {
         $existsStmt = $pdo->prepare("SHOW TABLES LIKE :table_name");
         $existsStmt->execute(['table_name' => $table]);
         $exists = (bool) $existsStmt->fetch();
@@ -174,21 +185,20 @@ foreach ($expected as $migration => $requirements) {
             ];
         }
     }
+}
 
-    foreach ($columns as $table => $columnNames) {
-        foreach ($columnNames as $column) {
-            $columnStmt = $pdo->prepare(
+foreach ($expected as $migration => $artifacts) {
+    $isApplied = isset($applied[$migration]);
+    foreach ($artifacts['columns'] as $table => $columns) {
+        foreach ($columns as $column) {
+            $existsStmt = $pdo->prepare(
                 "SELECT COUNT(*) FROM information_schema.columns
                  WHERE table_schema = DATABASE()
                    AND table_name = :table_name
                    AND column_name = :column_name"
             );
-            $columnStmt->execute([
-                'table_name' => $table,
-                'column_name' => $column,
-            ]);
-            $exists = (int) $columnStmt->fetchColumn() > 0;
-
+            $existsStmt->execute(['table_name' => $table, 'column_name' => $column]);
+            $exists = (int) $existsStmt->fetchColumn() > 0;
             if ($isApplied && !$exists) {
                 $problems[] = [
                     'migration' => $migration,
@@ -197,7 +207,6 @@ foreach ($expected as $migration => $requirements) {
                     'problem' => 'migration_recorded_but_column_missing',
                 ];
             }
-
             if (!$isApplied && $exists) {
                 $problems[] = [
                     'migration' => $migration,

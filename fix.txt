@@ -580,4 +580,13 @@ Phase 8 legal-route test hotfix: platform terms/privacy static checks now inspec
 
 Phase 9 operations console: HTML monitor email, normalized metric history, admin charts, shareable authenticated URLs, and restart notifications.
 
-2026-06-22 Phase 9 hotfix: make migration integrity checks column-aware; stop treating last_boot_id as a table.
+Phase 9 component-start notifications:
+- Persist monitored component state in operations_monitor_state.last_component_states_json.
+- Email platform administrators whenever a monitored service or worker transitions from stopped/stale to running.
+- Use [ArtsFolio COMPONENT STARTED] subject and name started components in HTML/text email.
+- Preserve pending component-start notifications during --no-email runs.
+- Correct migration integrity metadata to distinguish tables from columns.
+
+2026-06-22 Phase 9 migration metadata regression hotfix
+- Restore structured table/column assertions in check_migration_integrity.php.
+- Preserve 0045 and 0046 monitoring schema expectations.
