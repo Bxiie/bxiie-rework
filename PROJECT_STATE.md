@@ -1637,7 +1637,7 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Signup-page OAuth links include a trusted `return_to` path that preserves the signup passcode query string.
 - Regression coverage lives in `scripts/test/oauth_signup_email_lock_static.php` and is called from `scripts/test/preflight.sh`.
 
-<!-- End of file. -->
+
 - 2026-06-20: CSRF failures now render through the branded error page system via `Response::invalidCsrf()`. Controllers must not return raw `Invalid CSRF token` HTML; platform logout and tenant/admin POST security failures should show platform or tenant chrome. Static preflight coverage checks this behavior.
 
 
@@ -1715,14 +1715,21 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform-admin and CLI tenant count defaults remain 1000, but the previous 5000-tenant artificial cap has been removed. Operators can request any positive tenant count against disposable local/staging databases.
 - Platform-admin scale tenant summary now shows generated user counts and plan distribution. Static coverage in `scripts/test/platform_scale_tenants_static.php` checks the plan mix, generated users, cleanup user deletion, and uncapped tenant count behavior.
 
-# End of file.
-
-
 ## Phase 3 analytics hardening (2026-06-20)
 - Public analytics use `AnalyticsRecorder` and do not perform request-time external geolocation.
 - `0039_analytics_rollups.sql` adds hourly/daily rollups and analytics indexes.
 - `analytics.rollup` is a recurring five-minute background job.
 - Platform jobs list/detail show elapsed execution time.
 - Trusted localhost HTTP smoke probes suppress only expected missing-token audit entries.
+
+
+
+## 2026-06-22 - Bucketed analytics rollup recovery
+
+- `AnalyticsRollupService` now rebuilds one UTC hour and one UTC day per transaction rather than aggregating an entire multi-day range in one SQL statement.
+- Interrupted rollup runs are safe to rerun because each bucket is deleted and replaced independently.
+- `scripts/maintenance/rebuild_analytics_rollups.php` retains the positional day argument and adds `--days`, `--from`, and `--to` options for bounded recovery runs.
+- Production MariaDB should use disk-backed `/var/lib/mysql-tmp` for `tmpdir` instead of the approximately 1 GB RAM-backed `/tmp` mount. Apply this with `sudo ./scripts/ops/configure_mariadb_tmpdir.sh`. The application-level bucket change remains required even with the larger temporary directory.
+- Regression coverage lives in `scripts/test/phase3_rollup_bucketing_static.php` and is included in preflight.
 
 <!-- End of file. -->

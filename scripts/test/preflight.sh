@@ -186,4 +186,6 @@ run_if_exists scripts/test/platform_scale_tenants_static.php
 run_if_exists scripts/test/tenant_settings_snapshot_static.php
 
 php scripts/test/phase3_analytics_static.php
+php scripts/test/phase3_rollup_bucketing_static.php
+php scripts/test/mariadb_tmpdir_script_static.php
 php scripts/test/platform_jobs_execution_time_static.php
