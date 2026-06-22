@@ -9,6 +9,7 @@ use App\Http\View\ErrorPage;
 use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
+use App\Platform\Directory\TenantDirectoryProfileRepository;
 use App\Platform\Tenancy\TenantContext;
 use App\Platform\Audit\AuditLogRepository;
 use App\Support\Pagination\Pagination;
@@ -466,6 +467,7 @@ HTML;
             'id' => $id,
             'tenant_id' => $tenant->tenantId,
         ]);
+        (new TenantDirectoryProfileRepository($this->pdo))->syncTenant($tenant->tenantId);
 
         $returnTo = $this->safeReturnTo((string) ($_POST['return_to'] ?? '/admin/artworks'));
         $separator = str_contains($returnTo, '?') ? '&' : '?';
@@ -509,6 +511,7 @@ HTML;
             'id' => $id,
             'tenant_id' => $tenant->tenantId,
         ]);
+        (new TenantDirectoryProfileRepository($this->pdo))->syncTenant($tenant->tenantId);
 
         $returnTo = $this->safeReturnTo((string) ($_POST['return_to'] ?? '/admin/artworks'));
         $separator = str_contains($returnTo, '?') ? '&' : '?';
@@ -785,6 +788,10 @@ HTML;
             'setting_key' => $key,
             'setting_value' => $value,
         ]);
+
+        if ($key === 'platform_directory_thumbnail_artwork_id') {
+            (new TenantDirectoryProfileRepository($this->pdo))->syncTenant($tenant->tenantId);
+        }
     }
 
     private function findArtwork(TenantContext $tenant, int $id): ?array

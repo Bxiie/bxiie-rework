@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tenant\Settings;
 
+use App\Platform\Directory\TenantDirectoryProfileRepository;
 use App\Platform\Tenancy\TenantContext;
 use PDO;
 
@@ -57,6 +58,14 @@ final class TenantSettingsRepository
         // Keep an already-loaded request snapshot coherent after a save.
         if (isset($this->snapshots[$tenant->tenantId])) {
             $this->snapshots[$tenant->tenantId] = $this->snapshots[$tenant->tenantId]->with($key, $value);
+        }
+
+        if (in_array($key, [
+            'platform_directory_opt_in',
+            'platform_directory_summary',
+            'platform_directory_thumbnail_artwork_id',
+        ], true)) {
+            (new TenantDirectoryProfileRepository($this->pdo))->syncTenant($tenant->tenantId);
         }
     }
 

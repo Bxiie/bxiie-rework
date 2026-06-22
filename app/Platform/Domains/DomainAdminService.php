@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Platform\Domains;
 
+use App\Platform\Directory\TenantDirectoryProfileRepository;
 use PDO;
 
 /**
@@ -68,6 +69,7 @@ final class DomainAdminService
              VALUES (:tenant_id, :hostname, 'custom', 'pending_dns', 0)"
         );
         $stmt->execute(['tenant_id' => $tenantId, 'hostname' => $hostname]);
+        (new TenantDirectoryProfileRepository($this->pdo))->syncTenant($tenantId);
 
         return (int) $this->pdo->lastInsertId();
     }
@@ -77,8 +79,16 @@ final class DomainAdminService
      */
     public function deleteDomain(int $domainId): void
     {
+        $lookup = $this->pdo->prepare('SELECT tenant_id FROM tenant_domains WHERE id = :id');
+        $lookup->execute(['id' => $domainId]);
+        $tenantId = (int) ($lookup->fetchColumn() ?: 0);
+
         $stmt = $this->pdo->prepare('DELETE FROM tenant_domains WHERE id = :id');
         $stmt->execute(['id' => $domainId]);
+
+        if ($tenantId > 0) {
+            (new TenantDirectoryProfileRepository($this->pdo))->syncTenant($tenantId);
+        }
     }
 
     /**

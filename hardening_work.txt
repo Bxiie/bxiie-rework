@@ -24,6 +24,8 @@ Phase 6
 - Directory projection
 - Makes public directory scale and become searchable
 
+-----------------------------------
+
 Phase 7
 - Sales inventory safety
 - Required before serious commerce

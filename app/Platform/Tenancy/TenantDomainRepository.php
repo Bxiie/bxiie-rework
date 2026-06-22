@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Platform\Tenancy;
 
+use App\Platform\Directory\TenantDirectoryProfileRepository;
 use PDO;
 
 /**
@@ -52,11 +53,18 @@ final class TenantDomainRepository
             'is_primary' => $isPrimary ? 1 : 0,
         ]);
 
+        (new TenantDirectoryProfileRepository($this->pdo))->syncTenant($tenantId);
+
         return (int) $this->pdo->lastInsertId();
     }
 
     public function setStatus(string $hostname, string $status): void
     {
+        $hostname = $this->normalizeHostname($hostname);
+        $tenantIds = $this->pdo->prepare('SELECT DISTINCT tenant_id FROM tenant_domains WHERE hostname = :hostname');
+        $tenantIds->execute(['hostname' => $hostname]);
+        $affectedTenantIds = $tenantIds->fetchAll(PDO::FETCH_COLUMN) ?: [];
+
         $stmt = $this->pdo->prepare(
             "UPDATE tenant_domains
              SET status = :status,
@@ -65,9 +73,13 @@ final class TenantDomainRepository
         );
 
         $stmt->execute([
-            'hostname' => $this->normalizeHostname($hostname),
+            'hostname' => $hostname,
             'status' => $status,
         ]);
+
+        foreach ($affectedTenantIds as $tenantId) {
+            (new TenantDirectoryProfileRepository($this->pdo))->syncTenant((int) $tenantId);
+        }
     }
 
     public function setPrimary(int $tenantId, string $hostname): void
@@ -100,6 +112,7 @@ final class TenantDomainRepository
             ]);
 
             $this->pdo->commit();
+            (new TenantDirectoryProfileRepository($this->pdo))->syncTenant($tenantId);
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
             throw $e;
@@ -154,6 +167,7 @@ final class TenantDomainRepository
                AND id = :id{$extra}"
         );
         $stmt->execute(['tenant_id' => $tenantId, 'id' => $domainId]);
+        (new TenantDirectoryProfileRepository($this->pdo))->syncTenant($tenantId);
     }
 
     /**

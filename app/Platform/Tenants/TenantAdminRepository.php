@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Platform\Tenants;
 
+use App\Platform\Directory\TenantDirectoryProfileRepository;
 use PDO;
 
 /**
@@ -58,6 +59,7 @@ final class TenantAdminRepository
              WHERE id = :tenant_id"
         );
         $stmt->execute(['status' => $status, 'tenant_id' => $tenantId]);
+        (new TenantDirectoryProfileRepository($this->pdo))->syncTenant($tenantId);
     }
 
     /**
@@ -104,6 +106,7 @@ final class TenantAdminRepository
     {
         $stmt = $this->pdo->prepare("UPDATE tenants SET status = 'suspended', suspended_at = CURRENT_TIMESTAMP WHERE id = :tenant_id");
         $stmt->execute(['tenant_id' => $tenantId]);
+        (new TenantDirectoryProfileRepository($this->pdo))->syncTenant($tenantId);
     }
 
     /**

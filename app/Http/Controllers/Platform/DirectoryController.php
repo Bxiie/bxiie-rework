@@ -6,18 +6,15 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Request;
 use App\Http\Response;
+use App\Platform\Directory\TenantDirectoryProfileRepository;
 use PDO;
 use Throwable;
 
-/**
- * Public artist directory.
- *
- * The directory intentionally reads the same tenant_settings keys written by
- * the tenant admin directory screen. Keep this query in lock-step with
- * DiscoverySettingsController and scripts/debug/check_directory_thumbnail_contract.php.
- */
+/** Public artist directory backed by the denormalized directory projection. */
 final class DirectoryController
 {
+    private const PER_PAGE = 24;
+
     public function __construct(private readonly PDO $pdo)
     {
     }
@@ -35,85 +32,54 @@ HTML;
             return Response::html($this->layout('Artist Directory | ArtsFolio', $body));
         }
 
-        $cards = $this->cards();
-        $empty = $cards === '' ? '<article class="tenant-card empty"><h3>No artists are currently listed</h3><p>The directory is active, but no tenants have opted in yet. Tenant admins can enable discovery from tenant admin. Platform admins can manage the global directory switch from Platform Settings.</p><p><a class="button secondary" href="/help/directory">Read directory setup help</a></p></article>' : '';
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        [$cards, $total] = $this->cards($page);
+        $totalPages = max(1, (int) ceil($total / self::PER_PAGE));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+            [$cards, $total] = $this->cards($page);
+        }
+
+        $empty = $cards === ''
+            ? '<article class="tenant-card empty"><h3>No artists are currently listed</h3><p>The directory is active, but no tenants have opted in yet.</p><p><a class="button secondary" href="/help/directory">Read directory setup help</a></p></article>'
+            : '';
+        $pager = $this->pager($page, $totalPages, $total);
         $body = <<<HTML
 <section class="platform-page-heading">
     <p class="eyebrow">Artist directory</p>
     <h1>Discover ArtsFolio artists</h1>
     <p>Artists appear here after the platform directory is enabled and their tenant admin opts into discovery.</p>
 </section>
+{$pager}
 <div class="tenant-card-grid directory-grid" style="{\App\Http\View\PlatformChrome::directoryThumbnailStyle()}">{$cards}{$empty}</div>
+{$pager}
 HTML;
 
         return Response::html($this->layout('Artist Directory | ArtsFolio', $body));
     }
 
-    private function cards(): string
+    /** @return array{0:string,1:int} */
+    private function cards(int $page): array
     {
         try {
-            $settingsTable = $this->settingsTable();
-            if ($settingsTable === null) {
-                return '';
-            }
-
-            $sql = <<<SQL
-SELECT
-    t.id,
-    t.slug,
-    t.name AS display_name,
-    COALESCE(summary.setting_value, '') AS summary,
-    COALESCE(primary_domain.hostname, fallback_domain.hostname, CONCAT(t.slug, '.artsfol.io')) AS domain,
-    thumbnail_media.uuid AS thumbnail_uuid,
-    thumbnail_artwork.title AS thumbnail_title
-FROM tenants t
-INNER JOIN {$settingsTable} opt
-    ON opt.tenant_id = t.id
-   AND opt.setting_key = 'platform_directory_opt_in'
-   AND LOWER(TRIM(opt.setting_value)) IN ('1', 'true', 'yes', 'on')
-LEFT JOIN {$settingsTable} summary
-    ON summary.tenant_id = t.id
-   AND summary.setting_key = 'platform_directory_summary'
-LEFT JOIN {$settingsTable} selected_thumbnail
-    ON selected_thumbnail.tenant_id = t.id
-   AND selected_thumbnail.setting_key = 'platform_directory_thumbnail_artwork_id'
-LEFT JOIN artworks thumbnail_artwork
-    ON thumbnail_artwork.tenant_id = t.id
-   AND thumbnail_artwork.id = CAST(NULLIF(selected_thumbnail.setting_value, '') AS UNSIGNED)
-   AND thumbnail_artwork.status = 'published'
-LEFT JOIN media_assets thumbnail_media
-    ON thumbnail_media.id = thumbnail_artwork.primary_media_id
-   AND thumbnail_media.is_private = 0
-LEFT JOIN tenant_domains primary_domain
-    ON primary_domain.tenant_id = t.id
-   AND primary_domain.is_primary = TRUE
-   AND primary_domain.status = 'active'
-LEFT JOIN tenant_domains fallback_domain
-    ON fallback_domain.id = (
-        SELECT td.id
-        FROM tenant_domains td
-        WHERE td.tenant_id = t.id
-          AND td.status = 'active'
-        ORDER BY td.is_primary DESC, td.id ASC
-        LIMIT 1
-    )
-WHERE t.status = 'active'
-ORDER BY t.name ASC
-LIMIT 100
-SQL;
-            $rows = $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC) ?: [];
+            $repository = new TenantDirectoryProfileRepository($this->pdo);
+            $rows = $repository->page($page, self::PER_PAGE);
+            $total = $repository->listedCount();
         } catch (Throwable $e) {
-            error_log('ArtsFolio directory tenant query failed: ' . $e->getMessage());
-            $rows = [];
+            error_log('ArtsFolio directory projection query failed: ' . $e->getMessage());
+            return ['', 0];
         }
 
         $html = '';
         foreach ($rows as $row) {
-            $name = self::escape((string) ($row['display_name'] ?: $row['slug'] ?: 'Artist site'));
+            $name = self::escape((string) ($row['display_name'] ?: 'Artist site'));
             $summary = self::escape((string) ($row['summary'] ?: 'Artist portfolio on ArtsFolio.'));
-            $domain = (string) ($row['domain'] ?? '#');
+            $domain = (string) ($row['primary_hostname'] ?? '');
+            if ($domain === '') {
+                continue;
+            }
             $href = str_starts_with($domain, 'http') ? $domain : 'https://' . $domain;
-            $thumbnailUuid = (string) ($row['thumbnail_uuid'] ?? '');
+            $thumbnailUuid = (string) ($row['thumbnail_media_uuid'] ?? '');
             $thumbnail = '';
             if ($thumbnailUuid !== '') {
                 $src = self::escape($href . '/media?uuid=' . rawurlencode($thumbnailUuid) . '&variant=thumb');
@@ -124,7 +90,27 @@ SQL;
             $html .= '<a class="tenant-card directory-card" href="' . self::escape($href) . '">' . $thumbnail . '<h3>' . $name . '</h3><p>' . $summary . '</p><span>Visit site</span></a>';
         }
 
-        return $html;
+        return [$html, $total];
+    }
+
+    private function pager(int $page, int $totalPages, int $total): string
+    {
+        if ($total <= self::PER_PAGE) {
+            return $total > 0 ? '<p class="directory-count">' . $total . ' artists</p>' : '';
+        }
+
+        $previous = $page > 1
+            ? '<a class="button secondary" href="/directory?page=' . ($page - 1) . '">‹ Previous</a>'
+            : '<span class="button secondary" aria-disabled="true">‹ Previous</span>';
+        $next = $page < $totalPages
+            ? '<a class="button secondary" href="/directory?page=' . ($page + 1) . '">Next ›</a>'
+            : '<span class="button secondary" aria-disabled="true">Next ›</span>';
+
+        return '<nav class="directory-pager" aria-label="Artist directory pages" style="display:flex;gap:.75rem;align-items:center;justify-content:center;margin:1rem 0;">'
+            . $previous
+            . '<span>Page ' . $page . ' of ' . $totalPages . ' · ' . $total . ' artists</span>'
+            . $next
+            . '</nav>';
     }
 
     private function platformDirectoryEnabled(): bool
@@ -141,22 +127,6 @@ SQL;
         } catch (Throwable) {
             return true;
         }
-    }
-
-    private function settingsTable(): ?string
-    {
-        foreach (['tenant_settings', 'settings'] as $table) {
-            try {
-                $stmt = $this->pdo->query('SHOW TABLES LIKE ' . $this->pdo->quote($table));
-                if ($stmt && $stmt->fetchColumn()) {
-                    return $table;
-                }
-            } catch (Throwable) {
-                continue;
-            }
-        }
-
-        return null;
     }
 
     private function layout(string $title, string $body): string
