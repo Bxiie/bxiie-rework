@@ -564,3 +564,16 @@ Phase 8 legal-route test hotfix: platform terms/privacy static checks now inspec
 - Update the platform scale-tenant regression test to inspect app/Http/Routes/platform.php after route extraction.
 - Preserve controller, fixture-service, background-job repository, create/remove route, and legacy redirect assertions.
 - No runtime behavior change.
+
+2026-06-22 Phase 9 migration discipline and operations monitoring
+- Add migration checksums, modern numbering enforcement, and schema-health checks.
+- Add five-minute operational monitoring for server, database, application, workers, queues, network, HTTPS, and TLS.
+- Email platform owners/admins at 07:15 and 19:15 America/New_York, on trouble changes/reminders, and on recovery.
+- Add systemd monitor service/timer, installation script, documentation, and preflight coverage.
+- Keep deployment and health checks aligned with templated worker instances.
+
+2026-06-22 Phase 9 monitor reporting hotfix
+- Detect default routes on Linux and macOS.
+- Fix direct dry-run email payloads without outbox IDs and label dry-run output honestly.
+- Recover a real monitor run ID when PDO lastInsertId returns zero.
+- Put critical metrics first and mark critical email subjects explicitly.

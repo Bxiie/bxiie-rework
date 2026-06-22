@@ -15,7 +15,7 @@ final class DryRunEmailSender implements EmailSenderInterface
     {
         return json_encode([
             'dry_run' => true,
-            'id' => (int) $email['id'],
+            'id' => isset($email['id']) ? (int) $email['id'] : null,
             'to' => $email['recipient_email'],
             'subject' => $email['subject'],
             'template_key' => $email['template_key'],

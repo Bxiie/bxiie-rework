@@ -1805,3 +1805,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Updated `scripts/test/platform_scale_tenants_static.php` to inspect `app/Http/Routes/platform.php` after the Phase 8 route extraction.
 - The test no longer incorrectly requires scale-tenant controller wiring and routes to remain in `public/index.php`.
 - No runtime scale-fixture or routing behavior changed.
+
+## 2026-06-22 Phase 9 monitor reporting hotfix
+
+- Added macOS/Linux default-route detection to prevent false local CRIT results.
+- Dry-run email delivery no longer assumes an outbox ID or claims that mail was sent.
+- Monitor run IDs now use a database fallback and reject zero IDs.
+- Health email subjects explicitly identify CRITICAL and WARNING states.
+- Email metric order is CRIT first, then WARN, OK, and INFO.
