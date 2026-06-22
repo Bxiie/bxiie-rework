@@ -12,7 +12,7 @@ $files = [
     'app/Http/Controllers/Platform/Admin/ScaleTenantsController.php',
     'app/Platform/Jobs/Handlers/ScaleTenantFixtureJobHandler.php',
     'scripts/dev/seed_scale_dataset.php',
-    'public/index.php',
+    'app/Http/Routes/platform.php',
     'app/Http/View/AdminLayout.php',
     'docs/dev/scale-readiness.md',
     'docs/admin/operating-scale-readiness.md',
@@ -26,7 +26,7 @@ foreach ($files as $file) {
 
 $service = readFileOrEmpty($root . '/app/Platform/ScaleTesting/ScaleTenantFixtureService.php');
 $controller = readFileOrEmpty($root . '/app/Http/Controllers/Platform/Admin/ScaleTenantsController.php');
-$index = readFileOrEmpty($root . '/public/index.php');
+$platformRoutes = readFileOrEmpty($root . '/app/Http/Routes/platform.php');
 $layout = readFileOrEmpty($root . '/app/Http/View/AdminLayout.php');
 $script = readFileOrEmpty($root . '/scripts/dev/seed_scale_dataset.php');
 $worker = readFileOrEmpty($root . '/scripts/workers/run_once.php');
@@ -61,13 +61,13 @@ requireNotContains($controller, "\$this->boundedInt(\$_POST['tenants'] ?? 1000, 
 requireNotContains($service, "min(5000, \$tenantCount)", 'Scale service must not cap the number of scale tenants at 5000.');
 requireNotContains($controller, '$this->fixtures->seed($tenantCount', 'Controller must not run large seed work directly in the browser request.');
 
-requireContains($index, "ScaleTenantsController as PlatformAdminScaleTenantsController", 'Front controller must import scale tenant controller.');
-requireContains($index, "ScaleTenantFixtureService", 'Front controller must import/instantiate scale fixture service.');
-requireContains($index, "BackgroundJobRepository", 'Front controller must pass background job repository to scale tenant controller.');
-requireContains($index, "'/platform/admin/scale-tenants'", 'Front controller must route scale tenant admin page.');
-requireContains($index, "'/platform/admin/scale-tenants/create'", 'Front controller must route scale tenant creation.');
-requireContains($index, "'/platform/admin/scale-tenants/remove'", 'Front controller must route scale tenant removal.');
-requireContains($index, "'/admin/scale-tenants'", 'Legacy admin redirect for scale tenants must exist.');
+requireContains($platformRoutes, "ScaleTenantsController as PlatformAdminScaleTenantsController", 'Platform routes must import scale tenant controller.');
+requireContains($platformRoutes, "ScaleTenantFixtureService", 'Platform routes must import/instantiate scale fixture service.');
+requireContains($platformRoutes, "BackgroundJobRepository", 'Platform routes must pass background job repository to scale tenant controller.');
+requireContains($platformRoutes, "'/platform/admin/scale-tenants'", 'Platform routes must register scale tenant admin page.');
+requireContains($platformRoutes, "'/platform/admin/scale-tenants/create'", 'Platform routes must register scale tenant creation.');
+requireContains($platformRoutes, "'/platform/admin/scale-tenants/remove'", 'Platform routes must register scale tenant removal.');
+requireContains($platformRoutes, "'/admin/scale-tenants'", 'Legacy admin redirect for scale tenants must exist.');
 
 requireContains($layout, "'scale' => ['/platform/admin/scale-tenants', 'Scale Tenants']", 'Platform admin nav must include Scale Tenants.');
 requireContains($script, 'new ScaleTenantFixtureService($pdo, $root)', 'CLI seeder must use the same service as platform admin.');

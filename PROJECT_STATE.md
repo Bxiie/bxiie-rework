@@ -1771,11 +1771,37 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Added progressive AJAX replacement for the directory results region with normal GET fallback and Back/Forward support.
 - Added focused static regression coverage and preflight wiring.
 
-## 2026-06-22 - Phase 7 sales inventory reservations
 
-- Added `sales_inventory_reservations` with 35-minute checkout holds and indexed expiration/status lookups.
-- Checkout now locks artwork rows, accounts for all live reservations, and creates orders plus reservations atomically.
-- Stripe Checkout sessions expire after 30 minutes, leaving a five-minute processing margin before the ArtsFolio reservation expires.
-- Stripe webhook completion is idempotent and conditionally decrements inventory only from active reservations.
-- Failed session creation releases reservations immediately. A recurring background job and maintenance command expire abandoned holds.
-- Added migration integrity, focused static coverage, documentation, preflight wiring, and `fix.txt` notes.
+## Phase 8: route and bootstrap separation
+
+- Reduced `public/index.php` to a small front controller.
+- Added `App\Http\AppKernel` for request context, guards, service preparation, and dispatch.
+- Split tenant and platform route registration into dedicated route files.
+- Added route inventory snapshot tests and duplicate-route detection.
+- Moved tenant password-reset recipient validation into a dedicated class.
+
+## 2026-06-22 Phase 8 contact-route static test hotfix
+
+- Updated `scripts/test/platform_contact_management_static.php` to inspect `app/Http/Routes/platform.php` after the Phase 8 route extraction.
+- The test no longer incorrectly requires platform contact routes to remain in `public/index.php`.
+- No runtime route behavior changed.
+
+- 2026-06-22: Updated the platform terms/privacy static regression check for the Phase 8 route split so it reads `app/Http/Routes/platform.php` instead of assuming legal routes remain in `public/index.php`.
+
+## 2026-06-22 Phase 8 canonical OAuth/logout static test hotfix
+
+- Updated `scripts/test/canonical_oauth_logout_static.php` to inspect `app/Http/Routes/tenant.php` after the Phase 8 route extraction.
+- The test no longer incorrectly requires tenant OAuth redirect closures and GET logout registration to remain in `public/index.php`.
+- No runtime authentication or routing behavior changed.
+
+## 2026-06-22 Phase 8 directory-thumbnail static test hotfix
+
+- Updated `scripts/test/tenant_directory_thumbnail_artworks_static.php` to inspect `app/Http/Routes/tenant.php` after the Phase 8 route extraction.
+- The test no longer incorrectly requires the directory-thumbnail POST route to remain in `public/index.php`.
+- No runtime artwork or directory-thumbnail behavior changed.
+
+## 2026-06-22 Phase 8 scale-tenant static test hotfix
+
+- Updated `scripts/test/platform_scale_tenants_static.php` to inspect `app/Http/Routes/platform.php` after the Phase 8 route extraction.
+- The test no longer incorrectly requires scale-tenant controller wiring and routes to remain in `public/index.php`.
+- No runtime scale-fixture or routing behavior changed.

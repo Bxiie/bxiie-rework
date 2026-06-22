@@ -544,3 +544,23 @@ Phase 7 sales inventory safety
 - Make Stripe completion idempotent and require a live reservation before inventory decrement.
 - Release failed or expired checkout holds through worker and maintenance paths.
 - Add migration 0043, tests, docs, project-state notes, and preflight coverage.
+
+Phase 8 separates the HTTP front controller, tenant routes, platform routes, and tenant password-reset validation, with route inventory regression coverage.
+
+2026-06-22 Phase 8 hotfix: update platform contact-management static test for extracted platform routes.
+Phase 8 legal-route test hotfix: platform terms/privacy static checks now inspect app/Http/Routes/platform.php after route extraction.
+
+2026-06-22 Phase 8 canonical OAuth/logout static test hotfix
+- Update the canonical OAuth/logout regression test to inspect app/Http/Routes/tenant.php after route extraction.
+- Preserve existing OAuth trust, tenant redirect, and GET logout assertions.
+- No runtime behavior change.
+
+2026-06-22 Phase 8 directory-thumbnail static test hotfix
+- Update the tenant artwork directory-thumbnail regression test to inspect app/Http/Routes/tenant.php after route extraction.
+- Preserve the existing artwork-list, persistence, validation, and settings-page assertions.
+- No runtime behavior change.
+
+2026-06-22 Phase 8 scale-tenant static test hotfix
+- Update the platform scale-tenant regression test to inspect app/Http/Routes/platform.php after route extraction.
+- Preserve controller, fixture-service, background-job repository, create/remove route, and legacy redirect assertions.
+- No runtime behavior change.
