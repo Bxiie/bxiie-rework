@@ -577,3 +577,7 @@ Phase 8 legal-route test hotfix: platform terms/privacy static checks now inspec
 - Fix direct dry-run email payloads without outbox IDs and label dry-run output honestly.
 - Recover a real monitor run ID when PDO lastInsertId returns zero.
 - Put critical metrics first and mark critical email subjects explicitly.
+
+Phase 9 operations console: HTML monitor email, normalized metric history, admin charts, shareable authenticated URLs, and restart notifications.
+
+2026-06-22 Phase 9 hotfix: make migration integrity checks column-aware; stop treating last_boot_id as a table.

@@ -75,6 +75,12 @@ $expected = [
         'operations_monitor_runs',
         'operations_monitor_state',
     ],
+    '0045_operations_monitor_metrics.sql' => [
+        'tables' => ['operations_monitor_metrics'],
+        'columns' => [
+            'operations_monitor_state' => ['last_boot_id'],
+        ],
+    ],
 ];
 
 $appliedStmt = $pdo->query("SELECT migration FROM schema_migrations");
@@ -135,8 +141,17 @@ if ($checksumColumnExists) {
     }
 }
 
-foreach ($expected as $migration => $tables) {
+foreach ($expected as $migration => $requirements) {
     $isApplied = isset($applied[$migration]);
+
+    // Historical entries are simple table lists. Newer entries may declare
+    // tables and columns separately so a column is never mistaken for a table.
+    $tables = array_is_list($requirements)
+        ? $requirements
+        : ($requirements['tables'] ?? []);
+    $columns = array_is_list($requirements)
+        ? []
+        : ($requirements['columns'] ?? []);
 
     foreach ($tables as $table) {
         $existsStmt = $pdo->prepare("SHOW TABLES LIKE :table_name");
@@ -157,6 +172,40 @@ foreach ($expected as $migration => $tables) {
                 'table' => $table,
                 'problem' => 'table_exists_but_migration_not_recorded',
             ];
+        }
+    }
+
+    foreach ($columns as $table => $columnNames) {
+        foreach ($columnNames as $column) {
+            $columnStmt = $pdo->prepare(
+                "SELECT COUNT(*) FROM information_schema.columns
+                 WHERE table_schema = DATABASE()
+                   AND table_name = :table_name
+                   AND column_name = :column_name"
+            );
+            $columnStmt->execute([
+                'table_name' => $table,
+                'column_name' => $column,
+            ]);
+            $exists = (int) $columnStmt->fetchColumn() > 0;
+
+            if ($isApplied && !$exists) {
+                $problems[] = [
+                    'migration' => $migration,
+                    'table' => $table,
+                    'column' => $column,
+                    'problem' => 'migration_recorded_but_column_missing',
+                ];
+            }
+
+            if (!$isApplied && $exists) {
+                $problems[] = [
+                    'migration' => $migration,
+                    'table' => $table,
+                    'column' => $column,
+                    'problem' => 'column_exists_but_migration_not_recorded',
+                ];
+            }
         }
     }
 }

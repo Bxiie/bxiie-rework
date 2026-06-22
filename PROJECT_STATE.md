@@ -1813,3 +1813,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Monitor run IDs now use a database fallback and reject zero IDs.
 - Health email subjects explicitly identify CRITICAL and WARNING states.
 - Email metric order is CRIT first, then WARN, OK, and INFO.
+
+## Phase 9 operations console and restart alerts
+- Added normalized monitor metrics, admin dashboard, shareable authenticated run/metric URLs, trend lines, user-friendly HTML health email, and boot-ID restart notifications.
+
+- 2026-06-22: Fixed migration integrity expectations so migration 0045 validates `operations_monitor_metrics` as a table and `operations_monitor_state.last_boot_id` as a column rather than misreporting the column as a missing table.
