@@ -48,3 +48,6 @@ storage/imports/site_images.xlsx
 # Generated local repair/debug artifacts
 debug/
 *.bak
+
+# Local patch backups
+/storage/patch-backups/

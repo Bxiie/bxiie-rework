@@ -482,3 +482,17 @@ Phase 4 worker scaling
 - Add migration 0040, tests, and worker documentation.
 
 # End of file.
+Phase 5 artwork catalog scaling
+- Added public portfolio pagination.
+- Added paginated/filterable tenant artwork administration.
+- Made placement matrix saves page-local and safe for large catalogs.
+- Added migration 0041 artwork catalog indexes.
+- Fixed Phase 4 worker installer to disable the legacy singleton email worker.
+
+Phase 5 artwork page-size controls
+- Added Artworks per page dropdowns to public portfolio, tenant artwork administration, and placement matrix.
+- Added validated 10-through-100 choices; retained public default 24 and admin default 50.
+- Preserved page size through filters, section tabs, pagination links, and admin post-action return URLs.
+- Added focused regression coverage and preflight wiring.
+
+# End of file.
