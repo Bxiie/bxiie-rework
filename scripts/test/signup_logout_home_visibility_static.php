@@ -16,7 +16,7 @@ $checks = [
     'password auth exposes logout revocation' => [$root . '/app/Platform/Auth/Password/PasswordAuthService.php', 'public function logoutToken('],
     'home page returns assigned artwork only' => [$root . '/app/Tenant/Artwork/ArtworkReadRepository.php', 'return $stmt->fetchAll();'],
     'artworks page links placement matrix' => [$root . '/app/Http/Controllers/Tenant/Admin/ArtworksController.php', '/admin/artworks/placement'],
-    'platform forgot password route exists' => [$root . '/public/index.php', '$router->get(\'/password/forgot\''],
+    'platform forgot password route exists' => [$root . '/app/Http/Routes/platform.php', '$router->get(\'/password/forgot\''],
 ];
 
 foreach ($checks as $label => [$file, $needle]) {

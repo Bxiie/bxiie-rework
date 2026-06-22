@@ -7,7 +7,7 @@ declare(strict_types=1);
  */
 
 $root = dirname(__DIR__, 2);
-$index = is_file($root . '/public/index.php') ? $root . '/public/index.php' : $root . '/index.php';
+$index = $root . '/app/Http/Routes/platform.php';
 
 $files = [
     'front controller' => $index,

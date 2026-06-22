@@ -1,0 +1,32 @@
+ArtsFolio Phase 8 routing/bootstrap update
+
+Files included:
+PROJECT_STATE.md
+fix.txt
+public/index.php
+app/Http/AppKernel.php
+app/Http/Auth/TenantPasswordResetGuard.php
+app/Http/Routes/tenant.php
+app/Http/Routes/platform.php
+app/Http/Router.php
+docs/dev/http-routing.md
+docs/admin/http-routing.md
+scripts/test/route_inventory.php
+scripts/test/fixtures/route_inventory.json
+scripts/test/phase8_routing_static.php
+scripts/test/artwork_placement_password_reset_static.php
+scripts/test/tenant_login_context.php
+scripts/test/tenant_login_and_invite_static.php
+scripts/test/branded_error_pages_static.php
+scripts/test/password_reset_route_email_static.php
+scripts/test/admin_auth_content_static.php
+scripts/test/signup_logout_home_visibility_static.php
+scripts/test/auth_artwork_followup_static.php
+scripts/test/tenant_auth_security_static.php
+scripts/test/auth_domain_security_static.php
+scripts/test/domain_dns_and_tenant_reset_static.php
+scripts/test/signup_code_revocation_and_billing_static.php
+scripts/test/phase3_analytics_static.php
+scripts/test/preflight.sh
+
+No database migration is required.

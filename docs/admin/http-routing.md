@@ -1,40 +1,12 @@
-# HTTP Routing Administration
+# Routing operations
 
-## Current public surfaces
+Phase 8 separates platform and tenant route registration while preserving the existing URLs. Deployment and smoke tests should exercise both platform-host and tenant-host routes.
 
-```text
-artsfol.io              platform marketing surface
-app.artsfol.io          future platform and tenant admin surface
-{tenant}.artsfol.io     default tenant public surface
-custom domains          paid tenant public surface
+When a route intentionally changes, run:
+
+```bash
+php scripts/test/route_inventory.php > scripts/test/fixtures/route_inventory.json
+php scripts/test/phase8_routing_static.php
 ```
 
-## Current implemented route split
-
-If the request host resolves to a tenant, tenant public routes are used.
-
-If the request host does not resolve to a tenant, platform marketing routes are used.
-
-## Current platform routes
-
-```text
-GET /
-GET /pricing
-GET /signup
-GET /login
-```
-
-## Current tenant routes
-
-```text
-GET /
-GET /portfolio
-GET /about
-GET /contact
-```
-
-## Current safety note
-
-This routing layer does not write infrastructure files, alter Apache, run Certbot, or change DNS.
-
-<!-- End of file. -->
+Unexpected snapshot changes should be treated as a routing regression.

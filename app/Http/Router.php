@@ -31,6 +31,19 @@ final class Router
         ];
     }
 
+    /** @return list<array{method:string,path:string}> */
+    public function inventory(): array
+    {
+        $inventory = [];
+        foreach ($this->routes as $method => $routes) {
+            foreach ($routes as $route) {
+                $inventory[] = ['method' => $method, 'path' => $route['path']];
+            }
+        }
+
+        return $inventory;
+    }
+
     public function dispatch(Request $request): Response
     {
         $match = $this->match($request->method(), $request->path());

@@ -16,7 +16,7 @@ $checks = [
         ],
     ],
     'tenant reset routes are tenant scoped' => [
-        'file' => $root . '/public/index.php',
+        'file' => $root . '/app/Http/Routes/tenant.php',
         'must' => [
             'createResetTokenForTenantEmail($email, (int) ($tenant->tenantId ?? $tenant->id ?? 0))',
             'resetPasswordForTenant($token, $password, (int) ($tenant->tenantId ?? $tenant->id ?? 0))',

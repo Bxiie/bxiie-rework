@@ -13,9 +13,9 @@ $root = dirname(__DIR__, 2);
 require $root . '/bootstrap/app.php';
 
 $filesAndMarkers = [
-    'front controller exception handler' => [$root . '/public/index.php', 'ErrorPage::sendException($e)'],
+    'front controller exception handler' => [$root . '/app/Http/AppKernel.php', 'ErrorPage::sendException($e)'],
     'front controller fatal handler' => [$root . '/public/index.php', 'ErrorPage::sendFatal($error)'],
-    'front controller error route' => [$root . '/public/index.php', "/error/{code}"],
+    'front controller error route' => [$root . '/app/Http/Routes/tenant.php', "/error/{code}"],
     'router generic not found' => [$root . '/app/Http/Router.php', 'return Response::notFound();'],
     'response generic error helper' => [$root . '/app/Http/Response.php', 'public static function error(int $statusCode'],
     'apache error document fallback' => [$root . '/public/.htaccess', 'ErrorDocument 404 /error/404'],
@@ -36,7 +36,7 @@ $forbiddenLeakMarkers = [
     'Stack trace',
 ];
 
-foreach ([$root . '/app/Http/Router.php', $root . '/public/index.php', $root . '/app/Http/View/ErrorPage.php'] as $file) {
+foreach ([$root . '/app/Http/Router.php', $root . '/public/index.php', $root . '/app/Http/AppKernel.php', $root . '/app/Http/Routes/tenant.php', $root . '/app/Http/Routes/platform.php', $root . '/app/Http/View/ErrorPage.php'] as $file) {
     $source = (string) file_get_contents($file);
     foreach ($forbiddenLeakMarkers as $needle) {
         if (str_contains($source, $needle)) {

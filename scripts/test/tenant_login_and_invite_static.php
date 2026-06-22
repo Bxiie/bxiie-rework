@@ -32,7 +32,7 @@ $checks = [
         'Open tenant site in new tab',
         'publicUrlForTenant',
     ],
-    'public/index.php' => [
+    'app/Http/Routes/tenant.php' => [
         '->login($request, $tenant)',
         '/admin/users/invite',
         'new EmailOutboxRepository($pdo)',

@@ -15,9 +15,9 @@ $marketingCandidates = [
     $root . '/app/Http/Controllers/Platform/MarketingController.php',
     $root . '/Http/Controllers/Platform/MarketingController.php',
 ];
-$indexCandidates = [
-    $root . '/public/index.php',
-    $root . '/index.php',
+$routeCandidates = [
+    $root . '/app/Http/Routes/platform.php',
+    $root . '/Http/Routes/platform.php',
 ];
 
 $marketingPath = null;
@@ -28,23 +28,23 @@ foreach ($marketingCandidates as $candidate) {
     }
 }
 
-$indexPath = null;
-foreach ($indexCandidates as $candidate) {
+$routePath = null;
+foreach ($routeCandidates as $candidate) {
     if (is_file($candidate)) {
-        $indexPath = $candidate;
+        $routePath = $candidate;
         break;
     }
 }
 
-if ($marketingPath === null || $indexPath === null) {
-    fwrite(STDERR, "Could not locate MarketingController.php or index.php\n");
+if ($marketingPath === null || $routePath === null) {
+    fwrite(STDERR, "Could not locate MarketingController.php or platform route file\n");
     exit(1);
 }
 
 $marketing = file_get_contents($marketingPath);
-$index = file_get_contents($indexPath);
+$routes = file_get_contents($routePath);
 
-if ($marketing === false || $index === false) {
+if ($marketing === false || $routes === false) {
     fwrite(STDERR, "Could not read platform legal page files\n");
     exit(1);
 }
@@ -63,7 +63,7 @@ $checks = [
     'oauth privacy language' => 'OAuth identifiers',
 ];
 
-$haystack = $marketing . "\n" . $index;
+$haystack = $marketing . "\n" . $routes;
 foreach ($checks as $label => $needle) {
     if (!str_contains($haystack, $needle)) {
         fwrite(STDERR, "Missing platform legal static check: {$label}\n");

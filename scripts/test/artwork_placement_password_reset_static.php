@@ -8,11 +8,11 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
 $checks = [
-    'placement matrix route' => [$root . '/public/index.php', "/admin/artworks/placement"],
-    'section order route' => [$root . '/public/index.php', "/admin/portfolio-sections/order"],
-    'tenant reset guard helper' => [$root . '/public/index.php', 'tenantPasswordResetRecipientExists'],
-    'tenant reset membership scope' => [$root . '/public/index.php', 'tenant_memberships tm'],
-    'tenant reset legacy tenant user scope' => [$root . '/public/index.php', 'tenant_users tu'],
+    'placement matrix route' => [$root . '/app/Http/Routes/tenant.php', "/admin/artworks/placement"],
+    'section order route' => [$root . '/app/Http/Routes/tenant.php', "/admin/portfolio-sections/order"],
+    'tenant reset guard helper' => [$root . '/app/Http/Auth/TenantPasswordResetGuard.php', 'recipientExists'],
+    'tenant reset membership scope' => [$root . '/app/Http/Auth/TenantPasswordResetGuard.php', 'tenant_memberships tm'],
+    'tenant reset legacy tenant user scope' => [$root . '/app/Http/Auth/TenantPasswordResetGuard.php', 'tenant_users tu'],
     'placement controller thumbnail column' => [$root . '/app/Http/Controllers/Tenant/Admin/ArtworkPlacementController.php', 'Thumbnail'],
     'placement controller home page column' => [$root . '/app/Http/Controllers/Tenant/Admin/ArtworkPlacementController.php', 'Home page'],
     'drag ordering asset' => [$root . '/public/assets/admin/artwork-placement-order.js', 'dragover'],

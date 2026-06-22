@@ -43,7 +43,7 @@ $checks = [
         'forbidden' => [],
     ],
     'tenant password routes use tenant-scoped reset APIs' => [
-        'file' => $root . '/public/index.php',
+        'file' => $root . '/app/Http/Routes/tenant.php',
         'needles' => [
             'createResetTokenForTenantEmail($email, (int) ($tenant->tenantId ?? $tenant->id ?? 0))',
             'resetPasswordForTenant($token, $password, (int) ($tenant->tenantId ?? $tenant->id ?? 0))',

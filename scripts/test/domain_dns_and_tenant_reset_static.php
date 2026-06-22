@@ -28,7 +28,7 @@ $checks = [
         ],
     ],
     'tenant reset routes resolve tenant id defensively' => [
-        'file' => $root . '/public/index.php',
+        'file' => $root . '/app/Http/Routes/tenant.php',
         'must' => [
             $defensiveForgotCall,
             $defensiveResetCall,

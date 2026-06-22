@@ -34,7 +34,7 @@ $checks = [
     'app/Http/View/AdminLayout.php' => [
         "'contacts' => ['/platform/admin/contacts', 'Contacts']",
     ],
-    'public/index.php' => [
+    'app/Http/Routes/platform.php' => [
         '/platform/admin/contacts',
         '/platform/admin/contacts.csv',
         '/platform/admin/contact-messages',

@@ -11,7 +11,8 @@ $files = [
     'repository' => $root . '/app/Platform/Signup/SignupCodeRepository.php',
     'signupCodesController' => $root . '/app/Http/Controllers/Platform/Admin/SignupCodesController.php',
     'billingController' => $root . '/app/Http/Controllers/Tenant/Admin/BillingController.php',
-    'routes' => $root . '/public/index.php',
+    'platformRoutes' => $root . '/app/Http/Routes/platform.php',
+    'tenantRoutes' => $root . '/app/Http/Routes/tenant.php',
 ];
 
 foreach ($files as $name => $path) {
@@ -29,12 +30,12 @@ $checks = [
     'repository limits tenant billing redemption to free codes' => str_contains($files['repository'], 'Only free access signup codes can be applied from tenant billing.'),
     'platform admin controller has revoke action' => str_contains($files['signupCodesController'], 'public function revoke(Request $request'),
     'platform admin page posts revoke route' => str_contains($files['signupCodesController'], '/platform/admin/signup-codes/revoke'),
-    'platform revoke route is mounted' => str_contains($files['routes'], "/platform/admin/signup-codes/revoke"),
+    'platform revoke route is mounted' => str_contains($files['platformRoutes'], "/platform/admin/signup-codes/revoke"),
     'tenant billing controller has free access action' => str_contains($files['billingController'], 'public function applyFreeAccessCode'),
     'tenant billing form posts free access route' => str_contains($files['billingController'], '/admin/billing/free-access-code'),
     'tenant billing redemption writes complimentary_until' => str_contains($files['billingController'], 'complimentary_until'),
     'tenant billing redemption marks code redeemed' => str_contains($files['billingController'], 'markRedeemed((int) $signupCode'),
-    'tenant billing route is mounted' => str_contains($files['routes'], "/admin/billing/free-access-code"),
+    'tenant billing route is mounted' => str_contains($files['tenantRoutes'], "/admin/billing/free-access-code"),
 ];
 
 $failed = [];

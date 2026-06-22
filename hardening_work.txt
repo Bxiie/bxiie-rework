@@ -24,19 +24,19 @@ Phase 6
 - Directory projection
 - Makes public directory scale and become searchable
 
-
 Phase 7
 - Sales inventory safety
 - Required before serious commerce
-
------------------------------------
 
 Phase 8
 - Route/bootstrap cleanup
 - Reduces future fragility
 
+-----------------------------------
+
 Phase 9
 - Migration discipline + docs
 - Keeps the machine operable
+- Create a script that checks everything that should be monitored for effective and efficient operation of artsfol.io.  Server details such as memory, processors, and disk usage.  Database details, application details including numbers of each important entity.  Network details.  Should anticipate potential issuses and report them.  Process output should name each metric being checked and show the expected range and actiual output of the metric.  Should email the platform admins daily or on encountering a real or impending trouble state.  This script will run every minute or every five minutes.
 
 # End of file.

@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
 $controller = file_get_contents($root . '/app/Http/Controllers/Auth/LoginController.php') ?: '';
-$index = file_get_contents($root . '/public/index.php') ?: '';
+$index = file_get_contents($root . '/app/Http/Routes/tenant.php') ?: '';
 
 $checks = [
     'login accepts tenant context' => 'public function login(Request $request, ?TenantContext $tenant = null): Response',

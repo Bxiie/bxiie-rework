@@ -8,16 +8,16 @@ declare(strict_types=1);
 
 $oauthPath = __DIR__ . '/../../app/Http/Controllers/Auth/OAuthController.php';
 $authPagePath = __DIR__ . '/../../app/Http/View/AuthPage.php';
-$indexPath = __DIR__ . '/../../public/index.php';
+$tenantRoutesPath = __DIR__ . '/../../app/Http/Routes/tenant.php';
 
 $oauth = file_get_contents($oauthPath);
 $authPage = file_get_contents($authPagePath);
-$index = file_get_contents($indexPath);
+$tenantRoutes = file_get_contents($tenantRoutesPath);
 
 foreach ([
     $oauthPath => $oauth,
     $authPagePath => $authPage,
-    $indexPath => $index,
+    $tenantRoutesPath => $tenantRoutes,
 ] as $path => $contents) {
     if ($contents === false) {
         fwrite(STDERR, "Could not read {$path}\n");
@@ -32,11 +32,11 @@ $checks = [
     'OAuth requires HTTPS for absolute return_to URLs' => [$oauth, "\$scheme !== 'https'"],
     'Tenant login computes canonical platform OAuth links' => [$authPage, 'canonicalSocialAuthUrl'],
     'Tenant login targets platform OAuth host' => [$authPage, 'https://artsfol.io/auth/'],
-    'Tenant auth redirect closure exists' => [$index, '$tenantOauthRedirect'],
-    'Tenant Google auth route uses redirect closure' => [$index, "\$tenantOauthRedirect(\$request, 'google')"],
-    'Tenant Facebook auth route uses redirect closure' => [$index, "\$tenantOauthRedirect(\$request, 'facebook')"],
-    'Tenant auth redirect targets platform OAuth host' => [$index, 'https://artsfol.io/auth/'],
-    'GET logout route is registered' => [$index, "get('/logout'"],
+    'Tenant auth redirect closure exists' => [$tenantRoutes, '$tenantOauthRedirect'],
+    'Tenant Google auth route uses redirect closure' => [$tenantRoutes, "\$tenantOauthRedirect(\$request, 'google')"],
+    'Tenant Facebook auth route uses redirect closure' => [$tenantRoutes, "\$tenantOauthRedirect(\$request, 'facebook')"],
+    'Tenant auth redirect targets platform OAuth host' => [$tenantRoutes, 'https://artsfol.io/auth/'],
+    'GET logout route is registered' => [$tenantRoutes, "get('/logout'"],
 ];
 
 foreach ($checks as $label => [$contents, $needle]) {

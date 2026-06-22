@@ -47,7 +47,7 @@ af_assert_contains(
     '$this->passwordAuth->logoutSessionToken((string) $_COOKIE[self::COOKIE_NAME]);'
 );
 
-$index = af_read($root . '/public/index.php');
+$index = af_read($root . '/app/Http/Routes/platform.php');
 af_assert_contains(
     'platform password forgot route is registered',
     $index,
