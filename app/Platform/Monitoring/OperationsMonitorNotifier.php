@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Platform\Monitoring;
 
-use App\Platform\Email\BrandedEmail;
 use App\Platform\Email\DryRunEmailSender;
 use App\Platform\Email\EmailSenderFactory;
 use App\Platform\Settings\PlatformSettingsRepository;
@@ -32,6 +31,8 @@ final class OperationsMonitorNotifier
 
         $subjectPrefix = match (true) {
             $kind === 'recovery' => '[ArtsFolio RECOVERY]',
+            $kind === 'restart' && $report->overallStatus() === HealthMetric::CRIT => '[ArtsFolio CRITICAL] Server restarted',
+            $kind === 'restart' => '[ArtsFolio RESTARTED]',
             $report->overallStatus() === HealthMetric::CRIT => '[ArtsFolio CRITICAL]',
             $report->overallStatus() === HealthMetric::WARN => '[ArtsFolio WARNING]',
             $kind === 'alert' => '[ArtsFolio ALERT]',
@@ -39,7 +40,11 @@ final class OperationsMonitorNotifier
         };
         $subject = $subjectPrefix . ' ' . $report->hostName . ' ' . gmdate('Y-m-d H:i T');
         $bodyText = $report->toText(false);
-        $bodies = BrandedEmail::render($subject, $bodyText);
+        $adminUrl = rtrim((string) (getenv('ARTSFOLIO_PUBLIC_URL') ?: 'https://artsfol.io'), '/') . '/platform/admin/operations';
+        $bodies = [
+            'body_text' => $bodyText . "\nOperations dashboard: {$adminUrl}\n",
+            'body_html' => $report->toHtml($subject, $kind, $adminUrl),
+        ];
         $sender = EmailSenderFactory::fromPlatformSettings(new PlatformSettingsRepository($this->pdo));
         $results = [];
 

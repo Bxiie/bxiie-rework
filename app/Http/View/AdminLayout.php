@@ -246,6 +246,7 @@ HTML;
             'sales_analytics' => ['/platform/admin/sales/analytics', 'Sales Analytics'],
             'jobs' => ['/platform/admin/jobs', 'Jobs'],
             'workers' => ['/platform/admin/workers', 'Workers'],
+            'operations' => ['/platform/admin/operations', 'System Operations'],
             'contacts' => ['/platform/admin/contacts', 'Contacts'],
             'email' => ['/platform/admin/email-outbox', 'Email Outbox'],
             'stats' => ['/platform/admin/stats', 'Platform Stats'],

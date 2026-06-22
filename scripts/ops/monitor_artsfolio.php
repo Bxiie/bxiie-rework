@@ -11,6 +11,19 @@ use App\Support\Database;
 $root = dirname(__DIR__, 2);
 require $root . '/bootstrap/app.php';
 
+function artsfolioCurrentBootId(): string
+{
+    $linuxBootId = '/proc/sys/kernel/random/boot_id';
+    if (is_readable($linuxBootId)) {
+        return trim((string) file_get_contents($linuxBootId));
+    }
+    $bootTime = trim((string) shell_exec('sysctl -n kern.boottime 2>/dev/null'));
+    if ($bootTime !== '') {
+        return hash('sha256', $bootTime);
+    }
+    return '';
+}
+
 $options = getopt('', ['json', 'no-email', 'force-report', 'trouble-only']);
 $lockPath = getenv('ARTSFOLIO_MONITOR_LOCK_FILE') ?: '/tmp/artsfolio-monitor.lock';
 $lock = fopen($lockPath, 'c');
@@ -33,6 +46,9 @@ if (isset($options['json'])) {
 }
 
 $state = $repository->state();
+$currentBootId = artsfolioCurrentBootId();
+$previousBootId = (string) ($state['last_boot_id'] ?? '');
+$restartDetected = $currentBootId !== '' && $previousBootId !== '' && !hash_equals($previousBootId, $currentBootId);
 $timezone = new DateTimeZone(getenv('ARTSFOLIO_MONITOR_TIMEZONE') ?: 'America/New_York');
 $nowLocal = new DateTimeImmutable('now', $timezone);
 $today = $nowLocal->format('Y-m-d');
@@ -77,8 +93,8 @@ if (in_array($currentStatus, [HealthMetric::WARN, HealthMetric::CRIT], true)) {
     $notificationKind = 'recovery';
 }
 
-if (!isset($options['no-email']) && ($scheduledKind !== null || $shouldAlert)) {
-    $kind = $shouldAlert ? $notificationKind : 'scheduled';
+if (!isset($options['no-email']) && ($scheduledKind !== null || $shouldAlert || $restartDetected)) {
+    $kind = $restartDetected ? 'restart' : ($shouldAlert ? $notificationKind : 'scheduled');
     try {
         $notifier = new OperationsMonitorNotifier($pdo, $repository);
         $delivery = $notifier->send($report, (string) $kind);
@@ -97,12 +113,14 @@ if (!isset($options['no-email']) && ($scheduledKind !== null || $shouldAlert)) {
         }
     } catch (Throwable $e) {
         fwrite(STDERR, 'Health email delivery failed: ' . $e->getMessage() . "\n");
-        $repository->updateState($report, $lastAlertAt, $morningDate, $eveningDate);
+        $bootIdForState = (isset($options['no-email']) && $restartDetected) ? $previousBootId : ($currentBootId !== '' ? $currentBootId : $previousBootId);
+        $repository->updateState($report, $lastAlertAt, $morningDate, $eveningDate, $bootIdForState);
         exit(2);
     }
 }
 
-$repository->updateState($report, $lastAlertAt, $morningDate, $eveningDate);
+$bootIdForState = (isset($options['no-email']) && $restartDetected) ? $previousBootId : ($currentBootId !== '' ? $currentBootId : $previousBootId);
+$repository->updateState($report, $lastAlertAt, $morningDate, $eveningDate, $bootIdForState);
 
 exit($currentStatus === HealthMetric::CRIT ? 2 : ($currentStatus === HealthMetric::WARN ? 1 : 0));
 

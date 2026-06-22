@@ -21,6 +21,7 @@ use App\Http\Controllers\Platform\Admin\DomainsController as PlatformAdminDomain
 use App\Http\Controllers\Tenant\Admin\DomainsController as TenantAdminDomainsController;
 use App\Http\Controllers\Platform\Admin\JobsController as PlatformAdminJobsController;
 use App\Http\Controllers\Platform\Admin\WorkersController as PlatformAdminWorkersController;
+use App\Http\Controllers\Platform\Admin\OperationsController as PlatformAdminOperationsController;
 use App\Http\Controllers\Platform\Admin\AuditLogController as PlatformAdminAuditLogController;
 use App\Http\Controllers\Platform\Admin\TenantsController as PlatformAdminTenantsController;
 use App\Http\Controllers\Platform\Admin\ScaleTenantsController as PlatformAdminScaleTenantsController;
@@ -98,6 +99,7 @@ use App\Platform\Identity\UserIdentityRepository;
 use App\Platform\Identity\AdminUserRepository;
 use App\Platform\Identity\UserRepository;
 use App\Platform\Membership\MembershipRepository;
+use App\Platform\Monitoring\OperationsMonitorRepository;
 use App\Platform\Security\RateLimiter;
 use App\Platform\Settings\PlatformSettingsRepository;
 use App\Platform\Signup\SignupCodeRepository;
@@ -134,6 +136,7 @@ return static function (Router $router, array $context): void {
     $router->post('/admin/domains/action', fn (Request $request): Response => (new TenantAdminDomainsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), $pdo))->action($request, $tenant, $currentUser));
     $router->get('/admin/jobs', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/jobs']));
     $router->get('/admin/workers', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/workers']));
+    $router->get('/admin/operations', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/operations']));
     $router->get('/admin/email-outbox', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/email-outbox']));
     $router->get('/admin/audit-log', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/audit-log']));
     $router->get('/admin/audit-log.csv', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/audit-log.csv']));
@@ -238,6 +241,9 @@ return static function (Router $router, array $context): void {
     $router->get('/platform/admin/contact-messages', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/contacts']));
     $router->get('/platform/admin/domains', fn (Request $request): Response => (new PlatformAdminDomainsController(new RequirePlatformRole(new MembershipRepository($pdo)), new DomainAdminRepository($pdo), new DomainAdminService($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
     $router->get('/platform/admin/jobs', fn (Request $request): Response => (new PlatformAdminJobsController(new RequirePlatformRole(new MembershipRepository($pdo)), new JobAdminRepository($pdo), new JobAdminService($pdo, new JobAttemptRepository($pdo)), new CsrfTokenService(), new AuditLogRepository($pdo), new JobAttemptRepository($pdo)))->index($request, $currentUser));
+    $router->get('/platform/admin/operations', fn (Request $request): Response => (new PlatformAdminOperationsController(new RequirePlatformRole(new MembershipRepository($pdo)), new OperationsMonitorRepository($pdo)))->index($request, $currentUser));
+    $router->get('/platform/admin/operations/metrics', fn (Request $request): Response => (new PlatformAdminOperationsController(new RequirePlatformRole(new MembershipRepository($pdo)), new OperationsMonitorRepository($pdo)))->metric($request, $currentUser));
+    $router->get('/platform/admin/operations/runs/{id}', fn (Request $request, array $params): Response => (new PlatformAdminOperationsController(new RequirePlatformRole(new MembershipRepository($pdo)), new OperationsMonitorRepository($pdo)))->run($request, $currentUser, (int) ($params['id'] ?? 0)));
     $router->get('/platform/admin/workers', fn (Request $request): Response => (new PlatformAdminWorkersController(new RequirePlatformRole(new MembershipRepository($pdo)), new WorkerHeartbeatRepository($pdo)))->index($request, $currentUser));
     $router->get('/platform/admin/jobs/{id}', fn (Request $request, string $id): Response => (new PlatformAdminJobsController(new RequirePlatformRole(new MembershipRepository($pdo)), new JobAdminRepository($pdo), new JobAdminService($pdo, new JobAttemptRepository($pdo)), new CsrfTokenService(), new AuditLogRepository($pdo), new JobAttemptRepository($pdo)))->show($request, $currentUser, (int) $id));
     $router->post('/platform/admin/jobs/action', fn (Request $request): Response => (new PlatformAdminJobsController(new RequirePlatformRole(new MembershipRepository($pdo)), new JobAdminRepository($pdo), new JobAdminService($pdo, new JobAttemptRepository($pdo)), new CsrfTokenService(), new AuditLogRepository($pdo), new JobAttemptRepository($pdo)))->action($request, $currentUser));

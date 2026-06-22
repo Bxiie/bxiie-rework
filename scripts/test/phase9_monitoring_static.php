@@ -46,6 +46,10 @@ $checks = [
         'operations_monitor_runs',
         'operations_monitor_state',
     ],
+    'database/migrations/0045_operations_monitor_metrics.sql' => [
+        'operations_monitor_metrics',
+        'last_boot_id',
+    ],
 ];
 
 $errors = [];
@@ -69,3 +73,4 @@ if ($errors !== []) {
 }
 
 echo "Phase 9 monitoring static checks passed.\n";
+

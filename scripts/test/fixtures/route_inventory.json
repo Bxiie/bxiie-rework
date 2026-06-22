@@ -47,6 +47,11 @@
     {
         "scope": "platform",
         "method": "GET",
+        "path": "/admin/operations"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
         "path": "/admin/platform-settings"
     },
     {
@@ -238,6 +243,21 @@
         "scope": "platform",
         "method": "GET",
         "path": "/platform/admin/jobs/{id}"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
+        "path": "/platform/admin/operations"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
+        "path": "/platform/admin/operations/metrics"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
+        "path": "/platform/admin/operations/runs/{id}"
     },
     {
         "scope": "platform",
