@@ -592,3 +592,8 @@ Phase 9 component-start notifications:
 - Preserve 0045 and 0046 monitoring schema expectations.
 
 2026-06-22: Fixed background-job UTC/local-time mismatch that caused active jobs to be recovered and executed twice. Added execution locks, singleton recurring-job scheduling, queue monitor clock consistency, and the correct sales payment-status metric.
+
+Phase 9 analytics rollup freshness hotfix:
+- Measure freshness from successful analytics.rollup completion time.
+- Use MariaDB CURRENT_TIMESTAMP for the age calculation.
+- Stop treating hourly bucket_start as a job freshness timestamp.

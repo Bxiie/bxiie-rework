@@ -104,3 +104,8 @@ The notification subject begins with `[ArtsFolio COMPONENT STARTED]` and the ema
 ## Background-job clock and concurrency safety
 
 Background-job availability and stale detection use MariaDB `CURRENT_TIMESTAMP` consistently. Each claimed job holds a MariaDB advisory execution lock until completion or failure, and stale recovery skips rows whose execution lock is still held. Recurring analytics and inventory jobs use singleton scheduling so multiple worker instances cannot create parallel recurring chains.
+
+
+### Analytics rollup freshness
+
+`application.analytics_rollup.age_minutes` measures the database-local completion time of the latest successful `analytics.rollup` background job. It does not use the start label of the newest hourly bucket, because an hourly bucket can be fresh while its label is naturally up to 59 minutes old.

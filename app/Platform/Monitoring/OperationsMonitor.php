@@ -158,13 +158,13 @@ final class OperationsMonitor
             $this->safeCountMetric($name, $sql);
         }
 
-        $latestRollup = $this->safeScalar("SELECT MAX(bucket_start) FROM analytics_rollups_hourly");
-        if ($latestRollup === null || $latestRollup === '') {
-            $this->add('application.analytics_rollup.age_minutes', HealthMetric::WARN, '< 15 minutes WARN; >= 60 CRIT', 'no rollup rows');
+        $latestRollupCompletedAt = $this->safeScalar("SELECT MAX(completed_at) FROM background_jobs WHERE job_type = 'analytics.rollup' AND status = 'complete'");
+        if ($latestRollupCompletedAt === null || $latestRollupCompletedAt === '') {
+            $this->add('application.analytics_rollup.age_minutes', HealthMetric::WARN, '< 15 minutes WARN; >= 60 CRIT', 'no successful rollup job');
         } else {
-            $age = max(0, (int) ((time() - strtotime((string) $latestRollup . ' UTC')) / 60));
+            $age = (int) ($this->safeScalar("SELECT GREATEST(0, TIMESTAMPDIFF(MINUTE, MAX(completed_at), CURRENT_TIMESTAMP)) FROM background_jobs WHERE job_type = 'analytics.rollup' AND status = 'complete'") ?? 0);
             $status = $age >= 60 ? HealthMetric::CRIT : ($age >= 15 ? HealthMetric::WARN : HealthMetric::OK);
-            $this->add('application.analytics_rollup.age_minutes', $status, '< 15 minutes WARN; >= 60 CRIT', $age . ' minutes', (string) $latestRollup . ' UTC');
+            $this->add('application.analytics_rollup.age_minutes', $status, '< 15 minutes WARN; >= 60 CRIT', $age . ' minutes', (string) $latestRollupCompletedAt . ' database time');
         }
 
         $expiredReservations = (int) ($this->safeScalar("SELECT COUNT(*) FROM sales_inventory_reservations WHERE status = 'reserved' AND expires_at < UTC_TIMESTAMP()") ?? 0);

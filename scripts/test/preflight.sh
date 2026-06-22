@@ -203,6 +203,7 @@ run_if_exists scripts/test/directory_search_sort_static.php
 run_if_exists scripts/test/phase7_sales_inventory_static.php
 run_if_exists scripts/test/phase9_monitoring_static.php
 run_if_exists scripts/test/background_job_concurrency_static.php
+run_if_exists scripts/test/analytics_rollup_freshness_static.php
 run_if_exists scripts/test/phase9_migration_discipline_static.php
 run_shell_if_exists scripts/test/monitoring_service_units_static.sh
 
