@@ -65,6 +65,12 @@ $expected = [
     '0038_media_asset_variants.sql' => [
         'media_asset_variants',
     ],
+    '0042_tenant_directory_profiles.sql' => [
+        'tenant_directory_profiles',
+    ],
+    '0043_sales_inventory_reservations.sql' => [
+        'sales_inventory_reservations',
+    ],
 ];
 
 $appliedStmt = $pdo->query("SELECT migration FROM schema_migrations");

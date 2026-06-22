@@ -13,6 +13,8 @@ use RuntimeException;
  */
 final class SalesRepository
 {
+    private const RESERVATION_MINUTES = 35;
+
     public function __construct(private readonly PDO $pdo) {}
 
     public function cartForToken(TenantContext $tenant, string $token): array
@@ -32,7 +34,7 @@ final class SalesRepository
 
     public function artworkForPurchase(TenantContext $tenant, int $artworkId): ?array
     {
-        $stmt = $this->pdo->prepare('SELECT id, tenant_id, title, slug, media_uuid, sale_status, price, is_one_off, inventory_quantity FROM artworks WHERE tenant_id = :tenant_id AND id = :id AND status = "published" LIMIT 1');
+        $stmt = $this->pdo->prepare('SELECT a.id, a.tenant_id, a.title, a.slug, a.media_uuid, a.sale_status, a.price, a.is_one_off, a.inventory_quantity, GREATEST(0, a.inventory_quantity - COALESCE((SELECT SUM(r.quantity) FROM sales_inventory_reservations r WHERE r.artwork_id = a.id AND r.status = "reserved" AND r.expires_at > UTC_TIMESTAMP()), 0)) AS available_quantity FROM artworks a WHERE a.tenant_id = :tenant_id AND a.id = :id AND a.status = "published" LIMIT 1');
         $stmt->execute(['tenant_id' => $tenant->tenantId, 'id' => $artworkId]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -55,7 +57,7 @@ final class SalesRepository
             'cart_id' => (int) $cart['id'],
             'artwork_id' => (int) $artwork['id'],
             'quantity' => $quantity,
-            'max_quantity' => max(1, (int) ($artwork['inventory_quantity'] ?? 1)),
+            'max_quantity' => max(1, (int) ($artwork['available_quantity'] ?? $artwork['inventory_quantity'] ?? 1)),
             'unit_price_cents' => $unitPriceCents,
             'title' => (string) $artwork['title'],
             'media_uuid' => $artwork['media_uuid'] ?? null,
@@ -95,6 +97,64 @@ final class SalesRepository
 
         $this->pdo->beginTransaction();
         try {
+            $this->expireReservationsWithinTransaction();
+
+            $cartLock = $this->pdo->prepare(
+                'SELECT status FROM sales_carts WHERE id = :cart_id AND tenant_id = :tenant_id FOR UPDATE'
+            );
+            $cartLock->execute(['cart_id' => (int) $cart['id'], 'tenant_id' => $tenant->tenantId]);
+            $cartStatus = $cartLock->fetchColumn();
+            if ($cartStatus !== 'active') {
+                throw new RuntimeException('This cart is no longer available for checkout.');
+            }
+            $pending = $this->pdo->prepare(
+                'SELECT id FROM sales_orders
+                 WHERE cart_id = :cart_id AND payment_status = "checkout_pending"
+                 ORDER BY id DESC LIMIT 1'
+            );
+            $pending->execute(['cart_id' => (int) $cart['id']]);
+            if ($pending->fetchColumn()) {
+                throw new RuntimeException('Checkout is already in progress for this cart.');
+            }
+
+            $lockedArtworks = [];
+            foreach ($items as $item) {
+                $artworkId = (int) $item['artwork_id'];
+                $quantity = max(1, (int) $item['quantity']);
+                $lock = $this->pdo->prepare(
+                    'SELECT id, tenant_id, sale_status, is_one_off, inventory_quantity
+                     FROM artworks
+                     WHERE id = :artwork_id AND tenant_id = :tenant_id AND status = "published"
+                     FOR UPDATE'
+                );
+                $lock->execute(['artwork_id' => $artworkId, 'tenant_id' => $tenant->tenantId]);
+                $artwork = $lock->fetch(PDO::FETCH_ASSOC);
+                if (!$artwork || (string) $artwork['sale_status'] !== 'for_sale') {
+                    throw new RuntimeException('An artwork in this cart is no longer available.');
+                }
+                if ((int) ($artwork['is_one_off'] ?? 1) === 1) {
+                    $quantity = 1;
+                }
+
+                $reservedStmt = $this->pdo->prepare(
+                    'SELECT COALESCE(SUM(quantity), 0)
+                     FROM sales_inventory_reservations
+                     WHERE artwork_id = :artwork_id
+                       AND status = "reserved"
+                       AND expires_at > UTC_TIMESTAMP()'
+                );
+                $reservedStmt->execute(['artwork_id' => $artworkId]);
+                $reserved = (int) $reservedStmt->fetchColumn();
+                $available = max(0, (int) $artwork['inventory_quantity'] - $reserved);
+                if ($quantity > $available) {
+                    throw new RuntimeException(sprintf(
+                        '%s no longer has the requested quantity available.',
+                        (string) ($item['title_snapshot'] ?? 'This artwork')
+                    ));
+                }
+                $lockedArtworks[$artworkId] = $quantity;
+            }
+
             $sellerNetCents = $sellerNetCents > 0 ? $sellerNetCents : max(0, $subtotal - $commissionCents - $creditCardFeeCents);
             if ($this->columnExists('sales_orders', 'credit_card_fee_cents') && $this->columnExists('sales_orders', 'seller_net_cents')) {
                 $stmt = $this->pdo->prepare('INSERT INTO sales_orders (tenant_id, cart_id, order_number, workflow_status, payment_status, currency, subtotal_cents, commission_cents, credit_card_fee_cents, seller_net_cents, total_cents) VALUES (:tenant_id, :cart_id, :order_number, "ordered", "checkout_pending", "usd", :subtotal, :commission, :credit_card_fee, :seller_net, :total)');
@@ -106,15 +166,31 @@ final class SalesRepository
             $orderId = (int) $this->pdo->lastInsertId();
 
             $itemStmt = $this->pdo->prepare('INSERT INTO sales_order_items (order_id, artwork_id, title_snapshot, media_uuid_snapshot, quantity, unit_price_cents, line_total_cents) VALUES (:order_id, :artwork_id, :title, :media_uuid, :quantity, :unit_price, :line_total)');
+            $reservationStmt = $this->pdo->prepare(
+                'INSERT INTO sales_inventory_reservations
+                    (tenant_id, artwork_id, cart_id, order_id, quantity, status, expires_at)
+                 VALUES
+                    (:tenant_id, :artwork_id, :cart_id, :order_id, :quantity, "reserved", DATE_ADD(UTC_TIMESTAMP(), INTERVAL :minutes MINUTE))'
+            );
             foreach ($items as $item) {
+                $artworkId = (int) $item['artwork_id'];
+                $quantity = $lockedArtworks[$artworkId];
                 $itemStmt->execute([
                     'order_id' => $orderId,
-                    'artwork_id' => (int) $item['artwork_id'],
+                    'artwork_id' => $artworkId,
                     'title' => (string) $item['title_snapshot'],
                     'media_uuid' => $item['media_uuid_snapshot'] ?? null,
-                    'quantity' => (int) $item['quantity'],
+                    'quantity' => $quantity,
                     'unit_price' => (int) $item['unit_price_cents'],
-                    'line_total' => (int) $item['quantity'] * (int) $item['unit_price_cents'],
+                    'line_total' => $quantity * (int) $item['unit_price_cents'],
+                ]);
+                $reservationStmt->execute([
+                    'tenant_id' => $tenant->tenantId,
+                    'artwork_id' => $artworkId,
+                    'cart_id' => (int) $cart['id'],
+                    'order_id' => $orderId,
+                    'quantity' => $quantity,
+                    'minutes' => self::RESERVATION_MINUTES,
                 ]);
             }
             $this->pdo->commit();
@@ -186,29 +262,76 @@ final class SalesRepository
     }
 
     /**
-     * Marks a Stripe checkout order as paid and decrements artwork inventory.
+     * Marks a Stripe checkout order as paid and consumes its inventory reservations.
+     * Repeated Stripe webhooks are idempotent.
      */
     public function markPaidByStripeSession(string $sessionId, ?string $paymentIntentId, ?string $customerEmail, ?string $customerName, ?array $shippingAddress): void
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM sales_orders WHERE stripe_checkout_session_id = :session_id LIMIT 1');
-        $stmt->execute(['session_id' => $sessionId]);
-        $order = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$order) {
-            return;
-        }
-
-        $items = $this->orderItems((int) $order['id']);
         $this->pdo->beginTransaction();
         try {
+            $stmt = $this->pdo->prepare('SELECT * FROM sales_orders WHERE stripe_checkout_session_id = :session_id LIMIT 1 FOR UPDATE');
+            $stmt->execute(['session_id' => $sessionId]);
+            $order = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$order) {
+                $this->pdo->commit();
+                return;
+            }
+            if (in_array((string) $order['payment_status'], ['paid', 'complete', 'succeeded'], true)) {
+                $this->pdo->commit();
+                return;
+            }
+
+            $reservationStmt = $this->pdo->prepare(
+                'SELECT * FROM sales_inventory_reservations
+                 WHERE order_id = :order_id
+                 ORDER BY id
+                 FOR UPDATE'
+            );
+            $reservationStmt->execute(['order_id' => (int) $order['id']]);
+            $reservations = $reservationStmt->fetchAll(PDO::FETCH_ASSOC);
+            if ($reservations === []) {
+                throw new RuntimeException('Paid order has no inventory reservations. Manual review is required.');
+            }
+
+            foreach ($reservations as $reservation) {
+                if ((string) $reservation['status'] === 'completed') {
+                    continue;
+                }
+                if ((string) $reservation['status'] !== 'reserved') {
+                    throw new RuntimeException('Paid order reservation is no longer active. Manual review is required.');
+                }
+                $decrement = $this->pdo->prepare(
+                    'UPDATE artworks
+                     SET inventory_quantity = inventory_quantity - :quantity,
+                         sale_status = CASE
+                            WHEN is_one_off = 1 OR inventory_quantity - :quantity <= 0 THEN "sold"
+                            ELSE sale_status
+                         END,
+                         updated_at = CURRENT_TIMESTAMP
+                     WHERE id = :artwork_id
+                       AND tenant_id = :tenant_id
+                       AND sale_status = "for_sale"
+                       AND inventory_quantity >= :quantity'
+                );
+                $decrement->execute([
+                    'quantity' => (int) $reservation['quantity'],
+                    'artwork_id' => (int) $reservation['artwork_id'],
+                    'tenant_id' => (int) $reservation['tenant_id'],
+                ]);
+                if ($decrement->rowCount() !== 1) {
+                    throw new RuntimeException('Reserved artwork inventory could not be consumed. Manual review is required.');
+                }
+
+                $completeReservation = $this->pdo->prepare(
+                    'UPDATE sales_inventory_reservations
+                     SET status = "completed", completed_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP()
+                     WHERE id = :id AND status = "reserved"'
+                );
+                $completeReservation->execute(['id' => (int) $reservation['id']]);
+            }
+
             $update = $this->pdo->prepare('UPDATE sales_orders SET payment_status = "paid", stripe_payment_intent_id = :payment_intent, customer_email = :email, customer_name = :name, shipping_address_json = :shipping, updated_at = CURRENT_TIMESTAMP WHERE id = :id');
             $update->execute(['id' => (int) $order['id'], 'payment_intent' => $paymentIntentId, 'email' => $customerEmail, 'name' => $customerName, 'shipping' => $shippingAddress ? json_encode($shippingAddress, JSON_THROW_ON_ERROR) : null]);
-
-            foreach ($items as $item) {
-                if (!empty($item['artwork_id'])) {
-                    $decrement = $this->pdo->prepare('UPDATE artworks SET inventory_quantity = GREATEST(0, inventory_quantity - :quantity), sale_status = CASE WHEN is_one_off = 1 OR inventory_quantity <= :quantity THEN "sold" ELSE sale_status END, updated_at = CURRENT_TIMESTAMP WHERE id = :artwork_id');
-                    $decrement->execute(['quantity' => (int) $item['quantity'], 'artwork_id' => (int) $item['artwork_id']]);
-                }
-            }
             $this->pdo->commit();
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
@@ -216,6 +339,74 @@ final class SalesRepository
         }
     }
 
+    public function releaseReservationsForOrder(int $orderId, string $paymentStatus = 'checkout_failed'): int
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $release = $this->pdo->prepare(
+                'UPDATE sales_inventory_reservations
+                 SET status = "released", released_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP()
+                 WHERE order_id = :order_id AND status = "reserved"'
+            );
+            $release->execute(['order_id' => $orderId]);
+            $released = $release->rowCount();
+
+            $order = $this->pdo->prepare(
+                'UPDATE sales_orders
+                 SET payment_status = :payment_status, updated_at = UTC_TIMESTAMP()
+                 WHERE id = :order_id AND payment_status = "checkout_pending"'
+            );
+            $order->execute(['order_id' => $orderId, 'payment_status' => $paymentStatus]);
+            $this->pdo->commit();
+            return $released;
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public function releaseExpiredReservations(): int
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $orders = $this->pdo->prepare(
+                'UPDATE sales_orders o
+                 SET o.payment_status = "checkout_expired", o.updated_at = UTC_TIMESTAMP()
+                 WHERE o.payment_status = "checkout_pending"
+                   AND EXISTS (
+                       SELECT 1
+                       FROM sales_inventory_reservations r
+                       WHERE r.order_id = o.id
+                         AND r.status = "reserved"
+                         AND r.expires_at <= UTC_TIMESTAMP()
+                   )'
+            );
+            $orders->execute();
+
+            $expired = $this->pdo->prepare(
+                'UPDATE sales_inventory_reservations
+                 SET status = "expired", released_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP()
+                 WHERE status = "reserved" AND expires_at <= UTC_TIMESTAMP()'
+            );
+            $expired->execute();
+            $count = $expired->rowCount();
+            $this->pdo->commit();
+            return $count;
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    private function expireReservationsWithinTransaction(): void
+    {
+        $expired = $this->pdo->prepare(
+            'UPDATE sales_inventory_reservations
+             SET status = "expired", released_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP()
+             WHERE status = "reserved" AND expires_at <= UTC_TIMESTAMP()'
+        );
+        $expired->execute();
+    }
 
     /**
      * Returns tenant-scoped aggregate sales metrics for dashboards and analytics.

@@ -43,6 +43,12 @@ final class SalesController
         if (!$artwork || (string) ($artwork['sale_status'] ?? '') !== 'for_sale') {
             return Response::html('<h1>Artwork unavailable</h1><p>This artwork is not currently available for online purchase.</p>', 422);
         }
+        if ((int) ($artwork['is_one_off'] ?? 1) === 1) {
+            $quantity = 1;
+        }
+        if ($quantity > max(0, (int) ($artwork['available_quantity'] ?? $artwork['inventory_quantity'] ?? 0))) {
+            return Response::html('<h1>Quantity unavailable</h1><p>Another buyer may currently have this artwork reserved in checkout. Please try again shortly.</p>', 409);
+        }
 
         $priceCents = $this->priceCents((string) ($artwork['price'] ?? ''));
         if ($priceCents <= 0) {
@@ -121,13 +127,14 @@ final class SalesController
         $items = $this->sales->items($cart);
         $fees = $this->saleEconomics($tenant, $items);
         $commissionCents = (int) $fees['commission_cents'];
-        $order = $this->sales->createOrderFromCart($tenant, $cart, $items, $commissionCents, (int) $fees['credit_card_fee_cents'], (int) $fees['seller_net_cents']);
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'https';
         $host = $request->host();
         $successUrl = $scheme . '://' . $host . '/checkout/success?session_id={CHECKOUT_SESSION_ID}';
         $cancelUrl = $scheme . '://' . $host . '/cart?checkout=cancelled';
+        $order = null;
 
         try {
+            $order = $this->sales->createOrderFromCart($tenant, $cart, $items, $commissionCents, (int) $fees['credit_card_fee_cents'], (int) $fees['seller_net_cents']);
             $session = (new StripeCheckoutService())->createSession(
                 (string) $this->platformSettings->get('stripe_secret_key', ''),
                 $order,
@@ -141,6 +148,9 @@ final class SalesController
             $this->sales->markCartCheckedOut((int) $cart['id']);
             return new Response('', 303, ['Location' => (string) $session['url'], 'Set-Cookie' => $this->expireCartCookie()]);
         } catch (Throwable $e) {
+            if (is_array($order) && isset($order['id'])) {
+                $this->sales->releaseReservationsForOrder((int) $order['id']);
+            }
             return Response::html('<h1>Checkout could not be started</h1><p>' . $this->e($e->getMessage()) . '</p><p><a href="/cart">Return to cart</a></p>', 502);
         }
     }

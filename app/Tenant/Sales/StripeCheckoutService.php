@@ -21,6 +21,7 @@ final class StripeCheckoutService
             'mode' => 'payment',
             'success_url' => $successUrl,
             'cancel_url' => $cancelUrl,
+            'expires_at' => (string) (time() + 1800),
             'client_reference_id' => (string) $order['order_number'],
             'metadata[artsfolio_order_id]' => (string) $order['id'],
             'metadata[artsfolio_tenant_id]' => (string) $order['tenant_id'],

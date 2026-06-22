@@ -1770,3 +1770,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Preserved search/sort state through pagination and bookmarkable URLs.
 - Added progressive AJAX replacement for the directory results region with normal GET fallback and Back/Forward support.
 - Added focused static regression coverage and preflight wiring.
+
+## 2026-06-22 - Phase 7 sales inventory reservations
+
+- Added `sales_inventory_reservations` with 35-minute checkout holds and indexed expiration/status lookups.
+- Checkout now locks artwork rows, accounts for all live reservations, and creates orders plus reservations atomically.
+- Stripe Checkout sessions expire after 30 minutes, leaving a five-minute processing margin before the ArtsFolio reservation expires.
+- Stripe webhook completion is idempotent and conditionally decrements inventory only from active reservations.
+- Failed session creation releases reservations immediately. A recurring background job and maintenance command expire abandoned holds.
+- Added migration integrity, focused static coverage, documentation, preflight wiring, and `fix.txt` notes.

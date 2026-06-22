@@ -537,3 +537,10 @@ Phase 6 directory projection:
 - Add Name A–Z, Name Z–A, and Recently updated sorting.
 - Preserve filter state in pagination URLs and update directory results in place.
 - Add documentation, tests, preflight wiring, and project-state notes.
+
+Phase 7 sales inventory safety
+- Reserve artwork inventory atomically before creating Stripe Checkout.
+- Prevent concurrent buyers from overselling originals or limited quantities.
+- Make Stripe completion idempotent and require a live reservation before inventory decrement.
+- Release failed or expired checkout holds through worker and maintenance paths.
+- Add migration 0043, tests, docs, project-state notes, and preflight coverage.

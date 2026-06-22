@@ -16,6 +16,7 @@ use App\Platform\Domains\DnsVerifier;
 use App\Platform\Jobs\BackgroundJobRepository;
 use App\Platform\Jobs\Handlers\AnalyticsRollupJobHandler;
 use App\Platform\Jobs\Handlers\RenderVhostJobHandler;
+use App\Platform\Jobs\Handlers\ReleaseExpiredSalesReservationsJobHandler;
 use App\Platform\Jobs\Handlers\ScaleTenantFixtureJobHandler;
 use App\Platform\Jobs\Handlers\TenantSiteBootstrapJobHandler;
 use App\Platform\Jobs\Handlers\VerifyDnsJobHandler;
@@ -23,6 +24,7 @@ use App\Platform\Jobs\Handlers\WriteApprovedVhostJobHandler;
 use App\Platform\ScaleTesting\ScaleTenantFixtureService;
 use App\Platform\Tenancy\TenantDomainRepository;
 use App\Support\Database;
+use App\Tenant\Sales\SalesRepository;
 
 $root = dirname(__DIR__, 2);
 require_once $root . '/scripts/workers/heartbeat.php';
@@ -95,6 +97,14 @@ try {
             echo $handler->handle($job['payload']) . "\n";
             $jobs->markComplete((int) $job['id']);
             $jobs->enqueue('analytics.rollup', ['days' => (int) ($job['payload']['days'] ?? 3)], null, 300);
+            break;
+
+        case 'sales.inventory.release_expired':
+            $handler = new ReleaseExpiredSalesReservationsJobHandler(new SalesRepository($pdo));
+            echo $handler->handle($job['payload']) . "\n";
+            $jobs->markComplete((int) $job['id']);
+            $interval = max(60, (int) ($job['payload']['interval_seconds'] ?? 300));
+            $jobs->enqueue('sales.inventory.release_expired', ['interval_seconds' => $interval], null, $interval);
             break;
 
         case 'custom_domain.write_approved_vhost':
