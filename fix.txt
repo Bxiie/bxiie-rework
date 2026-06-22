@@ -5,7 +5,10 @@
 - Copyright on help section is not detokenized
 - logged in users can see unpubli8shed works where they would be shown.  logged in users should see 'unpublished' on artwok cards for unpublished works.
 - portfolio sections can exist but and associated buttons are not shown unless they have visible works in them.  This means that admins may be able to see more portfolio sections and artworks than non-logged in users.  This gives an ability to set up a section in advance of publication, to allow proper curation.
-
+- add workflow.  Split tenant admins into three levels; tenant, editor, user.  Users can add artworks from the card where the artwork is encapsulated to a central or editor-specific list, along with a note.  Editors can add artworks to lists and review and publish artworks from their queue or the central queue.  A reply to the note will end up in the user's messages page.
+- Add indicator to messages tab if there are new messages.
+- Add indicator to email signups tab if there are new email signups.
+- 
 
 ##
  
