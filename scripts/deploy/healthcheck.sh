@@ -18,6 +18,32 @@ require_active_service() {
   fi
 }
 
+require_active_service_instances() {
+  local template_name="$1"
+  local -a service_names=()
+
+  mapfile -t service_names < <(
+    systemctl list-units \
+      --type=service \
+      --all \
+      --plain \
+      --no-legend \
+      "${template_name}@*.service" \
+      | awk '{print $1}' \
+      | sort -u
+  )
+
+  if [ "${#service_names[@]}" -eq 0 ]; then
+    echo "ERROR: no installed systemd instances found for ${template_name}@.service" >&2
+    exit 1
+  fi
+
+  local service_name
+  for service_name in "${service_names[@]}"; do
+    require_active_service "$service_name"
+  done
+}
+
 echo "== HTTP checks =="
 
 curl -fsS https://artsfol.io/ > /dev/null
@@ -33,8 +59,8 @@ echo "== Service checks =="
 require_active_service caddy
 require_active_service php8.4-fpm
 require_active_service mariadb
-require_active_service artsfolio-email-worker.service
-require_active_service artsfolio-background-worker.service
+require_active_service_instances artsfolio-email-worker
+require_active_service_instances artsfolio-background-worker
 
 echo "Service checks passed."
 

@@ -14,3 +14,8 @@ systemctl status 'artsfolio-email-worker@*.service' --no-pager
 A stale job or email is automatically requeued after 30 minutes by default. Review `last_error` after recovery because the original process may have performed external work before it stopped.
 
 # End of file.
+
+
+## Deployment service handling
+
+Production deployment and health checks discover loaded `artsfolio-background-worker@*.service` and `artsfolio-email-worker@*.service` instances dynamically. The retired singleton service names are not restarted or required. At least one loaded instance of each worker template must exist.

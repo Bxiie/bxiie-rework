@@ -496,3 +496,7 @@ Phase 5 artwork page-size controls
 - Added focused regression coverage and preflight wiring.
 
 # End of file.
+
+2026-06-22 Phase 5 deployment hotfix
+- Stop deploy and health checks from restarting masked legacy singleton worker services.
+- Discover, restart, and validate templated worker instances instead.

@@ -33,3 +33,8 @@ journalctl -u 'artsfolio-email-worker@*.service' -n 100 --no-pager
 The platform Jobs page displays queue totals, oldest queued age, and fresh worker count.
 
 # End of file.
+
+
+## Deployment service handling
+
+Production deployment and health checks discover loaded `artsfolio-background-worker@*.service` and `artsfolio-email-worker@*.service` instances dynamically. The retired singleton service names are not restarted or required. At least one loaded instance of each worker template must exist.

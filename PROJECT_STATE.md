@@ -1749,3 +1749,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Worker installer now disables both legacy singleton worker services before enabling templated instances.
 
 <!-- End of file. -->
+
+
+### 2026-06-22: templated worker deployment hotfix
+
+- Production deploy and health-check scripts now restart and validate loaded templated background and email worker instances.
+- Retired singleton worker units are no longer required, preventing masked legacy units from failing deployment.
+- Added `scripts/test/deploy_worker_instances_static.sh` and wired it into preflight.
