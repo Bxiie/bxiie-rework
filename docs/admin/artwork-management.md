@@ -30,3 +30,11 @@ The artwork placement matrix supports two complementary client-side filters:
 - Select a portfolio-section or Home-page column heading to show only artworks currently assigned to that column on the visible page. Select the active heading again, or use **All artworks**, to clear the assignment filter.
 
 **All columns** clears the column-name text filter. Column and assignment filters remain active while paging with the in-place artwork pager, and do not change saved placement data.
+
+## Portfolio section actions
+
+The Portfolio Sections page presents its three primary workflows as prominent action cards above the section list:
+
+- **Add portfolio section** creates a new public artwork grouping.
+- **Order artwork in sections and home page** controls the display order inside each destination.
+- **Artwork placement matrix** assigns many artworks to sections in one view.

@@ -1756,3 +1756,9 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Made Home page and portfolio-section column headings selectable to show only artworks assigned to the chosen column on the current page.
 - Added All columns and All artworks reset controls, accessible state/status text, and reapplication after AJAX paging.
 - Added focused static regression coverage and preflight wiring.
+
+## 2026-06-22 - Portfolio section action prominence
+
+- Replaced the compact inline Portfolio Sections action links with three prominent responsive action cards.
+- Added short descriptions clarifying the difference between section creation, section/home ordering, and bulk placement.
+- Added focused static regression coverage and preflight wiring.

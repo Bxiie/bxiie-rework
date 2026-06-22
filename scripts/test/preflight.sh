@@ -195,3 +195,4 @@ php scripts/test/mariadb_tmpdir_script_static.php
 php scripts/test/platform_jobs_execution_time_static.php
 run_if_exists scripts/test/artwork_ajax_pagination_static.php
 run_if_exists scripts/test/artwork_placement_column_filters_static.php
+run_if_exists scripts/test/portfolio_section_actions_static.php

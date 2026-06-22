@@ -1,30 +1,16 @@
 ## Now
 
-## Functionality ##
-
-- implement billing
-- implemenmt stripe
 - Expand/rework help
 - Create videos?
-- logged in users should be able to see unpublished works where they would be shown.  logged in users should see 'unpublished' indication  on artwork cards for unpublished works.
+- Copyright on help section is not detokenized
+- logged in users can see unpubli8shed works where they would be shown.  logged in users should see 'unpublished' on artwok cards for unpublished works.
 - portfolio sections can exist but and associated buttons are not shown unless they have visible works in them.  This means that admins may be able to see more portfolio sections and artworks than non-logged in users.  This gives an ability to set up a section in advance of publication, to allow proper curation.
 - add workflow.  Split tenant admins into three levels; tenant, editor, user.  Users can add artworks from the card where the artwork is encapsulated to a central or editor-specific list, along with a note.  Editors can add artworks to lists and review and publish artworks from their queue or the central queue.  A reply to the note will end up in the user's messages page.
 - Add indicator to messages tab if there are new messages.
 - Add indicator to email signups tab if there are new email signups.
 - Add watermark to images if tenant admin opts in.  Give options for watermark format and appearance.
 - Rework shopping cart and experience
-- Add caching in data access routines for performance?
-- sort/filter jobs, email outbox, stats, audit log, tenants
-- sort/filter portfolio, section pages
-- when changing plans, require definite confirmation.  Warn that difference between this month's payment and the new plan, scaled by days left in the month, will be billed immediatly, unless changing from a free plan.
-- remove redundant 'Email List' dialog from tenant - contact.
-- rework platform contact form.
-
-
-
-## Bugs ##
 - tenant googlesignup received 6h and 1d email messages.  facebooktest received neither.
-- Copyright on help section is not detokenized
 
 
 ##
@@ -486,3 +472,50 @@ Too few arguments to function App\Http\Controllers\Platform\HelpController::inde
 # later
 
 ## End of file.
+
+
+Phase 4 worker scaling
+- Add concurrent-safe background and email claims using SKIP LOCKED.
+- Add stale job/email recovery.
+- Add templated systemd units and installation helper.
+- Add queue and worker health to Platform Admin Jobs.
+- Add migration 0040, tests, and worker documentation.
+
+# End of file.
+Phase 5 artwork catalog scaling
+- Added public portfolio pagination.
+- Added paginated/filterable tenant artwork administration.
+- Made placement matrix saves page-local and safe for large catalogs.
+- Added migration 0041 artwork catalog indexes.
+- Fixed Phase 4 worker installer to disable the legacy singleton email worker.
+
+Phase 5 artwork page-size controls
+- Added Artworks per page dropdowns to public portfolio, tenant artwork administration, and placement matrix.
+- Added validated 10-through-100 choices; retained public default 24 and admin default 50.
+- Preserved page size through filters, section tabs, pagination links, and admin post-action return URLs.
+- Added focused regression coverage and preflight wiring.
+
+# End of file.
+
+Phase 5 artwork paging controls
+- Add decrement/Previous and increment/Next buttons to public portfolio, tenant artwork list, and artwork placement pagination.
+- Preserve filters, section selection, sorting, search, and artworks-per-page values through step navigation.
+- Disable unavailable step controls at the first and last page.
+- Add focused regression coverage and preflight wiring.
+
+2026-06-22 Phase 5 AJAX artwork paging
+- Replace only artwork regions during portfolio, artwork-list, and placement pagination.
+- Preserve bookmarkable URLs and browser Back/Forward behavior.
+- Use clear `‹ Previous` and `Next ›` controls.
+- Keep ordinary links/forms as a no-JavaScript and error fallback.
+
+2026-06-22 Phase 5 placement matrix column filters
+- Add a text filter for visible placement columns by name.
+- Make Home page and section column names filter visible artwork rows by assignment.
+- Preserve column and assignment filters across in-place AJAX paging.
+- Add reset controls, documentation, tests, and preflight wiring.
+
+2026-06-22 Portfolio section action prominence
+- Replace the inline Portfolio Sections action links with obvious responsive action cards.
+- Clarify the purpose of section creation, ordering, and the placement matrix.
+- Add focused regression coverage and preflight wiring.

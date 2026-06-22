@@ -81,7 +81,20 @@ HTML;
     <h1>Portfolio Sections</h1>
     {$notice}
     <p>Use sections to group artwork and optionally show selected sections as public portfolio tabs.</p>
-    <p><a href="/admin/portfolio-sections/edit">Add portfolio section</a> · <a href="/admin/portfolio-sections/order">Order artwork in sections and home page</a> · <a href="/admin/artworks/placement">Artwork placement matrix</a></p>
+    <section aria-label="Portfolio section actions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1.25rem 0 1.5rem;">
+        <a class="admin-button" href="/admin/portfolio-sections/edit" style="display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;padding:1rem 1.1rem;border-radius:14px;text-decoration:none;">
+            <strong>Add portfolio section</strong>
+            <span style="font-size:.9rem;font-weight:500;opacity:.85;">Create a new public artwork grouping.</span>
+        </a>
+        <a class="admin-button" href="/admin/portfolio-sections/order" style="display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;padding:1rem 1.1rem;border-radius:14px;text-decoration:none;">
+            <strong>Order artwork in sections and home page</strong>
+            <span style="font-size:.9rem;font-weight:500;opacity:.85;">Set the display order within each section.</span>
+        </a>
+        <a class="admin-button" href="/admin/artworks/placement" style="display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;padding:1rem 1.1rem;border-radius:14px;text-decoration:none;">
+            <strong>Artwork placement matrix</strong>
+            <span style="font-size:.9rem;font-weight:500;opacity:.85;">Assign many artworks to sections at once.</span>
+        </a>
+    </section>
     <table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;">
         <thead>
             <tr>
