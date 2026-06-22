@@ -8,7 +8,10 @@
 - add workflow.  Split tenant admins into three levels; tenant, editor, user.  Users can add artworks from the card where the artwork is encapsulated to a central or editor-specific list, along with a note.  Editors can add artworks to lists and review and publish artworks from their queue or the central queue.  A reply to the note will end up in the user's messages page.
 - Add indicator to messages tab if there are new messages.
 - Add indicator to email signups tab if there are new email signups.
-- 
+- Add watermark to images if tenant admin opts in.  Give options for watermark format and appearance.
+- Rework shopping cart and experience
+- tenant googlesignup received 6h and 1d email messages.  facebooktest received neither.
+
 
 ##
  
@@ -469,3 +472,13 @@ Too few arguments to function App\Http\Controllers\Platform\HelpController::inde
 # later
 
 ## End of file.
+
+
+Phase 4 worker scaling
+- Add concurrent-safe background and email claims using SKIP LOCKED.
+- Add stale job/email recovery.
+- Add templated systemd units and installation helper.
+- Add queue and worker health to Platform Admin Jobs.
+- Add migration 0040, tests, and worker documentation.
+
+# End of file.

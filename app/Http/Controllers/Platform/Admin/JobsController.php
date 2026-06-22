@@ -146,6 +146,8 @@ final class JobsController
         $offset = Pagination::offset($page, $limit);
         $csrf = AdminLayout::escape($this->csrf?->getOrCreate() ?? '');
 
+        $health = $this->jobs->healthSummary();
+        $healthPanel = $this->renderHealthPanel($health);
         $rows = '';
 
         foreach ($this->jobs->latest(
@@ -207,6 +209,7 @@ HTML;
         return Response::html(AdminLayout::render(
             title: 'Background Jobs | Platform Admin',
             body: <<<HTML
+{$healthPanel}
 <form class="admin-form" method="get" action="/platform/admin/jobs">
     <p>
         <label>Status<br>
@@ -254,6 +257,39 @@ HTML,
                 '/admin/routes' => 'Routes',
             ],
         ));
+    }
+
+
+    /**
+     * Render background, email, and worker health without scanning detail rows.
+     */
+    private function renderHealthPanel(array $health): string
+    {
+        $value = static fn (string $key): int => max(0, (int) ($health[$key] ?? 0));
+        $age = function (string $key) use ($health): string {
+            $seconds = isset($health[$key]) ? (int) $health[$key] : 0;
+            return $seconds > 0 ? strip_tags($this->formatDurationFromSeconds($seconds)) : 'None';
+        };
+
+        $workerClass = $value('fresh_workers') > 0 ? 'admin-notice-success' : 'admin-notice-error';
+        return '<section class="admin-card"><h2>Queue health</h2>'
+            . '<p><strong>Background:</strong> ' . $value('queued_jobs') . ' queued, ' . $value('running_jobs') . ' running, ' . $value('failed_jobs') . ' failed; oldest queued: ' . AdminLayout::escape($age('oldest_queued_job_seconds')) . '.</p>'
+            . '<p><strong>Email:</strong> ' . $value('queued_emails') . ' queued, ' . $value('sending_emails') . ' sending, ' . $value('failed_emails') . ' failed; oldest queued: ' . AdminLayout::escape($age('oldest_queued_email_seconds')) . '.</p>'
+            . '<p class="admin-notice ' . $workerClass . '"><strong>Workers:</strong> ' . $value('fresh_workers') . ' fresh of ' . $value('known_workers') . ' known.</p>'
+            . '</section>';
+    }
+
+    private function formatDurationFromSeconds(int $seconds): string
+    {
+        if ($seconds < 60) {
+            return $seconds . 's';
+        }
+        $minutes = intdiv($seconds, 60);
+        if ($minutes < 60) {
+            return $minutes . 'm ' . ($seconds % 60) . 's';
+        }
+        $hours = intdiv($minutes, 60);
+        return $hours . 'h ' . ($minutes % 60) . 'm';
     }
 
     private function auditAction(Request $request, ?array $currentUser, string $action, string $entityId): void

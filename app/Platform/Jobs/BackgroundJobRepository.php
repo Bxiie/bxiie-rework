@@ -64,7 +64,7 @@ final class BackgroundJobRepository
                    AND available_at <= CURRENT_TIMESTAMP
                  ORDER BY available_at ASC, id ASC
                  LIMIT 1
-                 FOR UPDATE"
+                 FOR UPDATE SKIP LOCKED"
             );
 
             $job = $stmt->fetch();
@@ -80,10 +80,16 @@ final class BackgroundJobRepository
                      attempts = attempts + 1,
                      started_at = CURRENT_TIMESTAMP,
                      updated_at = CURRENT_TIMESTAMP
-                 WHERE id = :id"
+                 WHERE id = :id
+                   AND status = 'queued'"
             );
 
             $update->execute(['id' => $job['id']]);
+
+            if ($update->rowCount() !== 1) {
+                $this->pdo->rollBack();
+                return null;
+            }
 
             $this->pdo->commit();
 
@@ -96,6 +102,29 @@ final class BackgroundJobRepository
             $this->pdo->rollBack();
             throw $e;
         }
+    }
+
+    /**
+     * Requeue jobs abandoned by a terminated worker.
+     */
+    public function requeueRunningOlderThanMinutes(int $minutes): int
+    {
+        $minutes = max(1, $minutes);
+        $stmt = $this->pdo->prepare(
+            "UPDATE background_jobs
+             SET status = 'queued',
+                 started_at = NULL,
+                 last_error = CONCAT(
+                     COALESCE(NULLIF(last_error, ''), ''),
+                     CASE WHEN COALESCE(last_error, '') = '' THEN '' ELSE '\n' END,
+                     'Recovered stale running job at ', UTC_TIMESTAMP(), '.'
+                 ),
+                 updated_at = UTC_TIMESTAMP()
+             WHERE status = 'running'
+               AND updated_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL :minutes MINUTE)"
+        );
+        $stmt->execute(['minutes' => $minutes]);
+        return $stmt->rowCount();
     }
 
     public function markComplete(int $jobId): void

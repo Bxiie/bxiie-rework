@@ -16,6 +16,41 @@ final class JobAdminRepository
     ) {
     }
 
+
+    /**
+     * Return queue and worker-health totals for the platform jobs dashboard.
+     */
+    public function healthSummary(): array
+    {
+        $job = $this->pdo->query(
+            "SELECT
+                SUM(status = 'queued') AS queued_jobs,
+                SUM(status = 'running') AS running_jobs,
+                SUM(status = 'failed') AS failed_jobs,
+                TIMESTAMPDIFF(SECOND, MIN(CASE WHEN status = 'queued' THEN created_at END), UTC_TIMESTAMP()) AS oldest_queued_job_seconds
+             FROM background_jobs"
+        )->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        $email = $this->pdo->query(
+            "SELECT
+                SUM(status = 'queued') AS queued_emails,
+                SUM(status = 'sending') AS sending_emails,
+                SUM(status = 'failed') AS failed_emails,
+                TIMESTAMPDIFF(SECOND, MIN(CASE WHEN status = 'queued' THEN created_at END), UTC_TIMESTAMP()) AS oldest_queued_email_seconds
+             FROM email_outbox"
+        )->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        $workers = $this->pdo->query(
+            "SELECT
+                COUNT(*) AS known_workers,
+                SUM(last_seen_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 75 SECOND)) AS fresh_workers,
+                MAX(last_seen_at) AS freshest_worker_at
+             FROM worker_heartbeats"
+        )->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        return array_merge($job, $email, $workers);
+    }
+
     public function find(int $jobId): ?array
     {
         $stmt = $this->pdo->prepare(

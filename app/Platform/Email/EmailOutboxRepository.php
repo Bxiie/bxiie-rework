@@ -125,7 +125,7 @@ final class EmailOutboxRepository
                    AND available_at <= CURRENT_TIMESTAMP
                  ORDER BY available_at ASC, id ASC
                  LIMIT 1
-                 FOR UPDATE"
+                 FOR UPDATE SKIP LOCKED"
             );
 
             $email = $stmt->fetch();
@@ -140,10 +140,15 @@ final class EmailOutboxRepository
                  SET status = 'sending',
                      attempts = attempts + 1,
                      updated_at = CURRENT_TIMESTAMP
-                 WHERE id = :id"
+                 WHERE id = :id
+                   AND status = 'queued'"
             );
 
             $update->execute(['id' => $email['id']]);
+            if ($update->rowCount() !== 1) {
+                $this->pdo->rollBack();
+                return null;
+            }
             $this->pdo->commit();
 
             return $email;
@@ -203,9 +208,14 @@ final class EmailOutboxRepository
         $stmt = $this->pdo->prepare(
             "UPDATE email_outbox
              SET status = 'queued',
-                 updated_at = CURRENT_TIMESTAMP
+                 last_error = CONCAT(
+                     COALESCE(NULLIF(last_error, ''), ''),
+                     CASE WHEN COALESCE(last_error, '') = '' THEN '' ELSE '\n' END,
+                     'Recovered stale sending email at ', UTC_TIMESTAMP(), '.'
+                 ),
+                 updated_at = UTC_TIMESTAMP()
              WHERE status = 'sending'
-               AND updated_at < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL :minutes MINUTE)"
+               AND updated_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL :minutes MINUTE)"
         );
 
         $stmt->execute(['minutes' => $minutes]);

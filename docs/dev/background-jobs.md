@@ -1,23 +1,35 @@
-# Background Jobs
+# Background jobs and email workers
 
-ArtsFolio runs queued jobs through `scripts/workers/run_forever.php`, normally under `artsfolio-background-worker.service` on production.
+ArtsFolio uses MariaDB-backed queues for background jobs and outbound email. Phase 4 supports multiple worker instances safely.
 
-Supported tenant provisioning job types:
+## Claiming
 
-- `custom_domain.verify_dns`: verifies a hostname A record and updates tenant domain status.
-- `tenant.domain.verify`: compatibility alias for older queued signup rows. The worker maps payload `domain` to `hostname`.
-- `tenant.site.bootstrap`: finalizes tenant-site provisioning after signup by marking the tenant active and marking platform subdomains active.
-- `custom_domain.render_vhost`: renders a dry-run Apache vhost artifact for custom domain workflows.
-- `custom_domain.write_approved_vhost`: dry-run planning for approved vhost artifacts.
+Both queues claim with `SELECT ... FOR UPDATE SKIP LOCKED` inside a transaction, followed by a guarded status update. Separate workers therefore skip rows already locked by another worker.
 
-Production checks:
+## Stale recovery
+
+Before each claim, background workers requeue `running` jobs older than `ARTSFOLIO_BACKGROUND_STALE_MINUTES` and email workers requeue `sending` rows older than `ARTSFOLIO_EMAIL_STALE_MINUTES`. Defaults are 30 minutes. Recovery appends a diagnostic to `last_error`.
+
+## Services
+
+Install two instances of each worker with:
 
 ```bash
-systemctl status artsfolio-background-worker.service --no-pager
-journalctl -u artsfolio-background-worker.service -n 100 --no-pager
-ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env php /var/www/artsfolio/scripts/workers/run_once.php
+cd /var/www/artsfolio
+sudo ./scripts/ops/install_worker_services.sh
 ```
 
-If jobs fail with `No handler for job type`, the worker is running but the deployed code has queued a job type that is not registered in `scripts/workers/run_once.php`.
+Override counts with `ARTSFOLIO_BACKGROUND_WORKER_INSTANCES` and `ARTSFOLIO_EMAIL_WORKER_INSTANCES`. The installer disables the legacy singleton background unit before enabling templated instances.
 
-<!-- End of file. -->
+## Verification
+
+```bash
+systemctl status 'artsfolio-background-worker@*.service' --no-pager
+systemctl status 'artsfolio-email-worker@*.service' --no-pager
+journalctl -u 'artsfolio-background-worker@*.service' -n 100 --no-pager
+journalctl -u 'artsfolio-email-worker@*.service' -n 100 --no-pager
+```
+
+The platform Jobs page displays queue totals, oldest queued age, and fresh worker count.
+
+# End of file.

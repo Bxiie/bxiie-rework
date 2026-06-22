@@ -28,19 +28,27 @@ $root = dirname(__DIR__, 2);
 require_once $root . '/scripts/workers/heartbeat.php';
 
 require $root . '/bootstrap/app.php';
-artsfolio_worker_heartbeat('background-run-once', 'alive', ['entrypoint' => 'scripts/workers/run_once.php']);
+$workerName = trim((string) (getenv('ARTSFOLIO_WORKER_NAME') ?: 'background-run-once'));
+artsfolio_worker_heartbeat($workerName, 'alive', ['entrypoint' => 'scripts/workers/run_once.php']);
 
 $pdo = Database::connect($root);
 $jobs = new BackgroundJobRepository($pdo);
+$staleMinutes = max(1, (int) (getenv('ARTSFOLIO_BACKGROUND_STALE_MINUTES') ?: 30));
+$recovered = $jobs->requeueRunningOlderThanMinutes($staleMinutes);
+if ($recovered > 0) {
+    echo "Recovered {$recovered} stale background job(s).\n";
+}
 
 $job = $jobs->claimNext();
 
 if (!$job) {
+    artsfolio_worker_heartbeat($workerName, 'idle', ['entrypoint' => 'scripts/workers/run_once.php']);
     echo "No queued jobs available.\n";
     exit(0);
 }
 
 try {
+    artsfolio_worker_heartbeat($workerName, 'running', ['job_id' => (int) $job['id'], 'job_type' => (string) $job['job_type']]);
     switch ($job['job_type']) {
         case 'custom_domain.verify_dns':
         case 'tenant.domain.verify':
@@ -103,9 +111,11 @@ try {
             throw new \RuntimeException("No handler for job type: {$job['job_type']}");
     }
 
+    artsfolio_worker_heartbeat($workerName, 'alive', ['last_job_id' => (int) $job['id'], 'last_job_type' => (string) $job['job_type']]);
     echo "Completed job {$job['id']} of type {$job['job_type']}.\n";
 } catch (\Throwable $e) {
     $jobs->markFailed((int) $job['id'], $e->getMessage());
+    artsfolio_worker_heartbeat($workerName, 'failed', ['job_id' => (int) $job['id'], 'error' => $e->getMessage()]);
     fwrite(STDERR, "Failed job {$job['id']}: {$e->getMessage()}\n");
     exit(1);
 }

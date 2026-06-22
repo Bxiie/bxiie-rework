@@ -1,0 +1,21 @@
+[Unit]
+Description=ArtsFolio background job worker instance %i
+After=network.target mariadb.service
+Wants=mariadb.service
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/artsfolio
+Environment=ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env
+Environment=ARTSFOLIO_WORKER_NAME=background-%i
+Environment=ARTSFOLIO_BACKGROUND_STALE_MINUTES=30
+ExecStart=/usr/bin/php /var/www/artsfolio/scripts/workers/run_forever.php
+Restart=always
+RestartSec=5
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target
+
+# End of file.

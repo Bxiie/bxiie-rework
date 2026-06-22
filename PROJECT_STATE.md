@@ -1733,3 +1733,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Regression coverage lives in `scripts/test/phase3_rollup_bucketing_static.php` and is included in preflight.
 
 <!-- End of file. -->
+
+
+## Phase 4 worker scaling (2026-06-22)
+- Background and email queues use `FOR UPDATE SKIP LOCKED` with guarded status updates for concurrent claims.
+- Templated systemd units support multiple `background-%i` and `email-%i` workers.
+- `scripts/ops/install_worker_services.sh` installs two instances of each by default and disables the legacy singleton.
+- Stale `running` jobs and `sending` emails are requeued after 30 minutes by default.
+- Platform Jobs displays queue totals, oldest queued age, and fresh worker count.
+- Migration `0040_worker_scaling_indexes.sql` supports stale-recovery queries.
+
+<!-- End of file. -->
