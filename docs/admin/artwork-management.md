@@ -21,3 +21,12 @@ The artwork list and placement matrix include **− Previous** and **Next +** co
 ## In-place catalog paging
 
 The tenant artwork list and artwork placement matrix use progressively enhanced paging. Previous, next, page-number, filter, and page-size requests replace only the artwork region while keeping the surrounding admin page in place. The browser URL and history are updated, so bookmarks and Back/Forward navigation remain correct. Ordinary GET links and forms remain available as the fallback when JavaScript is unavailable.
+
+## Placement matrix column filters
+
+The artwork placement matrix supports two complementary client-side filters:
+
+- Type part of a portfolio-section name in **Visible columns** to hide nonmatching placement columns. Thumbnail and artwork identity columns remain visible.
+- Select a portfolio-section or Home-page column heading to show only artworks currently assigned to that column on the visible page. Select the active heading again, or use **All artworks**, to clear the assignment filter.
+
+**All columns** clears the column-name text filter. Column and assignment filters remain active while paging with the in-place artwork pager, and do not change saved placement data.

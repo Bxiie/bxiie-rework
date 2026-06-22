@@ -1750,9 +1750,9 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 <!-- End of file. -->
 
-### 2026-06-22: AJAX artwork paging follow-up
+## Phase 5 placement matrix column filters (2026-06-22)
 
-- Public portfolio, tenant artwork administration, and artwork placement paging now replace only the artwork region.
-- Added shared `public/assets/artwork-pagination.js` with progressive enhancement, URL history, Back/Forward support, automatic page-size submission, request cancellation, and full-navigation fallback.
-- Pager labels are now `‹ Previous` and `Next ›`.
-- Added `scripts/test/artwork_ajax_pagination_static.php` and preflight coverage.
+- Added a live text filter that narrows visible placement-matrix columns by portfolio-section name without requiring horizontal scrolling.
+- Made Home page and portfolio-section column headings selectable to show only artworks assigned to the chosen column on the current page.
+- Added All columns and All artworks reset controls, accessible state/status text, and reapplication after AJAX paging.
+- Added focused static regression coverage and preflight wiring.

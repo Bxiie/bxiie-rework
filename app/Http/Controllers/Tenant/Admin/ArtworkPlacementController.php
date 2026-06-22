@@ -46,7 +46,9 @@ final class ArtworkPlacementController
 
         $sectionHeaders = '';
         foreach ($sections as $section) {
-            $sectionHeaders .= '<th scope="col">' . $this->e((string) $section['name']) . '</th>';
+            $sectionId = (int) $section['id'];
+            $sectionName = $this->e((string) $section['name']);
+            $sectionHeaders .= '<th scope="col" data-placement-column data-placement-column-name="' . $sectionName . '"><button type="button" class="placement-column-filter" data-placement-assignment-filter="section-' . $sectionId . '" aria-pressed="false" title="Show only artworks assigned to ' . $sectionName . '">' . $sectionName . '</button></th>';
         }
 
         $rows = '';
@@ -56,12 +58,12 @@ final class ArtworkPlacementController
             $status = $this->e((string) $artwork['status']);
             $thumb = $this->thumbnailHtml($artwork, $title, 112, 84);
             $homeChecked = isset($homeAssignments[$id]) ? ' checked' : '';
-            $cells = '<td class="placement-check"><label><input type="checkbox" name="home_artwork_ids[]" value="' . $id . '"' . $homeChecked . '> Home</label></td>';
+            $cells = '<td class="placement-check" data-placement-column data-placement-column-name="Home page" data-placement-assignment="home"><label><input type="checkbox" name="home_artwork_ids[]" value="' . $id . '"' . $homeChecked . '> Home</label></td>';
             foreach ($sections as $section) {
                 $sectionId = (int) $section['id'];
                 $sectionName = $this->e((string) $section['name']);
                 $checked = isset($assignments[$id][$sectionId]) ? ' checked' : '';
-                $cells .= '<td class="placement-check"><label><input type="checkbox" name="sections[' . $id . '][]" value="' . $sectionId . '"' . $checked . '> ' . $sectionName . '</label></td>';
+                $cells .= '<td class="placement-check" data-placement-column data-placement-column-name="' . $sectionName . '" data-placement-assignment="section-' . $sectionId . '"><label><input type="checkbox" name="sections[' . $id . '][]" value="' . $sectionId . '"' . $checked . '> ' . $sectionName . '</label></td>';
             }
             $rows .= '<tr><td>' . $thumb . '</td><td><strong>' . $title . '</strong><br><small>ID ' . $id . ' · ' . $status . '</small><input type="hidden" name="visible_artwork_ids[]" value="' . $id . '"></td>' . $cells . '</tr>';
         }
@@ -91,9 +93,10 @@ final class ArtworkPlacementController
 {$notice}
 <section data-artwork-pager-root tabindex="-1">
 <form data-artwork-page-form method="get" action="/admin/artworks/placement" style="display:flex;gap:.75rem;align-items:end;flex-wrap:wrap;"><label>Search artworks<br><input type="search" name="q" value="{$this->e($q)}"></label><label>Artworks per page<br><select name="per_page">{$pageSizeOptions}</select></label><button type="submit">Apply</button><a href="/admin/artworks/placement">Clear</a></form>
+<div class="placement-column-tools" style="display:flex;gap:.75rem;align-items:end;flex-wrap:wrap;margin:1rem 0;"><label>Visible columns<br><input type="search" data-placement-column-search placeholder="Type a column name" autocomplete="off"></label><button type="button" data-placement-column-reset>All columns</button><button type="button" data-placement-assignment-reset hidden>All artworks</button><span data-placement-filter-status role="status" aria-live="polite"></span></div>
 <p><strong>{$summary}</strong></p>{$pager}
 <form method="post" action="/admin/artworks/placement"><input type="hidden" name="return_to" value="{$this->e($returnTo)}">
-<div style="overflow-x:auto;"><table class="placement-matrix" border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;"><thead><tr><th>Thumbnail</th><th>Artwork</th><th>Home page</th>{$sectionHeaders}</tr></thead><tbody>{$rows}</tbody></table></div>
+<div style="overflow-x:auto;"><table class="placement-matrix" data-placement-matrix border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;"><thead><tr><th>Thumbnail</th><th>Artwork</th><th data-placement-column data-placement-column-name="Home page"><button type="button" class="placement-column-filter" data-placement-assignment-filter="home" aria-pressed="false" title="Show only artworks assigned to Home page">Home page</button></th>{$sectionHeaders}</tr></thead><tbody>{$rows}</tbody></table></div>
 <p><button type="submit">Save placements for this page</button></p></form>{$pager}
 </section>
 </main>

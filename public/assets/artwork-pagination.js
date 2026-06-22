@@ -3,8 +3,66 @@
 
     const rootSelector = '[data-artwork-pager-root]';
     let requestController = null;
+    let placementColumnQuery = '';
+    let placementAssignmentFilter = '';
 
     const currentRoot = () => document.querySelector(rootSelector);
+
+    const normalize = (value) => String(value || '').trim().toLocaleLowerCase();
+
+    const applyPlacementFilters = () => {
+        const root = currentRoot();
+        const matrix = root?.querySelector('[data-placement-matrix]');
+        if (!matrix) {
+            return;
+        }
+
+        const query = normalize(placementColumnQuery);
+        const columns = Array.from(matrix.querySelectorAll('[data-placement-column]'));
+        columns.forEach((cell) => {
+            const columnName = normalize(cell.dataset.placementColumnName);
+            cell.hidden = query !== '' && !columnName.includes(query);
+        });
+
+        let visibleRows = 0;
+        matrix.querySelectorAll('tbody tr').forEach((row) => {
+            if (!placementAssignmentFilter) {
+                row.hidden = false;
+                visibleRows += 1;
+                return;
+            }
+            const cell = row.querySelector(`[data-placement-assignment="${CSS.escape(placementAssignmentFilter)}"]`);
+            const checkbox = cell?.querySelector('input[type="checkbox"]');
+            row.hidden = !checkbox?.checked;
+            if (!row.hidden) {
+                visibleRows += 1;
+            }
+        });
+
+        root.querySelectorAll('[data-placement-assignment-filter]').forEach((button) => {
+            button.setAttribute('aria-pressed', button.dataset.placementAssignmentFilter === placementAssignmentFilter ? 'true' : 'false');
+        });
+        const reset = root.querySelector('[data-placement-assignment-reset]');
+        if (reset) {
+            reset.hidden = placementAssignmentFilter === '';
+        }
+        const search = root.querySelector('[data-placement-column-search]');
+        if (search && search.value !== placementColumnQuery) {
+            search.value = placementColumnQuery;
+        }
+        const status = root.querySelector('[data-placement-filter-status]');
+        if (status) {
+            const parts = [];
+            if (query) {
+                parts.push(`Columns matching “${placementColumnQuery}”`);
+            }
+            if (placementAssignmentFilter) {
+                const active = root.querySelector(`[data-placement-assignment-filter="${CSS.escape(placementAssignmentFilter)}"]`);
+                parts.push(`${visibleRows} artworks assigned to ${active?.textContent?.trim() || 'selected column'}`);
+            }
+            status.textContent = parts.join(' · ');
+        }
+    };
 
     const loadArtworkPage = async (url, {push = true, focus = true} = {}) => {
         const root = currentRoot();
@@ -45,6 +103,7 @@
             if (push) {
                 window.history.pushState({artsfolioArtworkPage: true}, '', url);
             }
+            applyPlacementFilters();
             if (focus) {
                 replacement.scrollIntoView({block: 'start', behavior: 'smooth'});
                 replacement.focus({preventScroll: true});
@@ -98,9 +157,47 @@
         }
     });
 
+
+    document.addEventListener('input', (event) => {
+        const input = event.target.closest(`${rootSelector} [data-placement-column-search]`);
+        if (!input) {
+            return;
+        }
+        placementColumnQuery = input.value;
+        applyPlacementFilters();
+    });
+
+    document.addEventListener('click', (event) => {
+        const columnFilter = event.target.closest(`${rootSelector} [data-placement-assignment-filter]`);
+        if (columnFilter) {
+            event.preventDefault();
+            const next = columnFilter.dataset.placementAssignmentFilter || '';
+            placementAssignmentFilter = placementAssignmentFilter === next ? '' : next;
+            applyPlacementFilters();
+            return;
+        }
+
+        const columnReset = event.target.closest(`${rootSelector} [data-placement-column-reset]`);
+        if (columnReset) {
+            event.preventDefault();
+            placementColumnQuery = '';
+            applyPlacementFilters();
+            return;
+        }
+
+        const assignmentReset = event.target.closest(`${rootSelector} [data-placement-assignment-reset]`);
+        if (assignmentReset) {
+            event.preventDefault();
+            placementAssignmentFilter = '';
+            applyPlacementFilters();
+        }
+    });
+
     window.addEventListener('popstate', () => {
         if (currentRoot()) {
             loadArtworkPage(window.location.href, {push: false, focus: false});
         }
     });
+
+    applyPlacementFilters();
 })();
