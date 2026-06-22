@@ -519,3 +519,15 @@ Phase 5 artwork paging controls
 - Replace the inline Portfolio Sections action links with obvious responsive action cards.
 - Clarify the purpose of section creation, ordering, and the placement matrix.
 - Add focused regression coverage and preflight wiring.
+
+Phase 6 directory projection:
+- Add tenant_directory_profiles migration and backfill.
+- Synchronize directory profiles after relevant tenant settings, domains, tenant status, and artwork changes.
+- Paginate the public artist directory at 24 cards per page.
+- Add an idempotent directory projection rebuild command.
+
+2026-06-22 Phase 6 directory rebuild bootstrap hotfix
+- Fix undefined `$pdo` in `scripts/maintenance/rebuild_directory_profiles.php`.
+- Load `bootstrap/app.php` and connect through `App\Support\Database`.
+- Add regression coverage for the maintenance command bootstrap.
+
