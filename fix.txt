@@ -1,19 +1,59 @@
 ## Now
 
+## Functionality ##
+
+## curation workflow
+
+- add curation workflow.  Split tenant admins into three levels; tenant, editor, user.  Users can add artworks from the card where the artwork is encapsulated to a central or editor-specific list, along with a note.  Editors can add artworks to lists and review and publish artworks from their queue or the central queue.  A reply to the note will end up in the user's messages page.
+- logged in users should be able to see unpublished works where they would be shown.  logged in users should see 'unpublished' indication  on artwork cards for unpublished works.
+- portfolio sections can exist but and associated buttons are not shown unless they have visible works in them.  This means that admins may be able to see more portfolio sections and artworks than non-logged in users.  This gives an ability to set up a section in advance of publication, to allow proper curation.
+
+
+
+## backlog
+
+- implement billing
+- Rework shopping cart and experience
+- implement stripe
 - Expand/rework help
 - Create videos?
-- Copyright on help section is not detokenized
-- logged in users can see unpubli8shed works where they would be shown.  logged in users should see 'unpublished' on artwok cards for unpublished works.
-- portfolio sections can exist but and associated buttons are not shown unless they have visible works in them.  This means that admins may be able to see more portfolio sections and artworks than non-logged in users.  This gives an ability to set up a section in advance of publication, to allow proper curation.
-- add workflow.  Split tenant admins into three levels; tenant, editor, user.  Users can add artworks from the card where the artwork is encapsulated to a central or editor-specific list, along with a note.  Editors can add artworks to lists and review and publish artworks from their queue or the central queue.  A reply to the note will end up in the user's messages page.
+- Add caching in data access routines for performance?
+- IP flooding blocking
+
+## UI
 - Add indicator to messages tab if there are new messages.
 - Add indicator to email signups tab if there are new email signups.
 - Add watermark to images if tenant admin opts in.  Give options for watermark format and appearance.
-- Rework shopping cart and experience
+- remove redundant 'Email List' dialog from tenant - contact.
+- edit button on tenant - artworks should match the unpublish and archive buttons.
+- the top navigation on all platform pages should be the same; platform, help, artists, pricing, home, developers, contact
+- Add Google and Facebook branding to 'Continue with' buttons.
+- Make the logo bigger on login pages, and at the top left of the non-home platform pages.
+
+# sort
+- sort/filter jobs, email outbox, stats, audit log, tenants
+- sort/filter portfolio, section pages
+
+- system operations, indicate the duration of the trend lines.  Allow selection of different start and end times.
+- system operations, recent system checks; allow paging, filtering by date.
+
+## billing
+- when changing plans, require definite confirmation.  Warn that difference between this month's payment and the new plan, scaled by days left in the month, will be billed immediatly, unless changing from a free plan.
+- For a billing plan, the free plan should not show credit card rates as checkout is unavailable.
+
+## misc
+
+
+- Allow the admin to specify if new artworks are published or unpublished by default.
+- rework platform contact form.
+- in contact messages regarding an artwork, include a link to the image URL in the contact message body on send
+
+## Bugs ##
 - tenant googlesignup received 6h and 1d email messages.  facebooktest received neither.
+- Copyright on help section is not detokenized
 
 
-##
+## #########################
  
 - On tenant - admin - settings, allow selection of font and size for all text elements on home, portfolio, about, and contact pages.  Use a text/font picker for this.
 
@@ -472,128 +512,3 @@ Too few arguments to function App\Http\Controllers\Platform\HelpController::inde
 # later
 
 ## End of file.
-
-
-Phase 4 worker scaling
-- Add concurrent-safe background and email claims using SKIP LOCKED.
-- Add stale job/email recovery.
-- Add templated systemd units and installation helper.
-- Add queue and worker health to Platform Admin Jobs.
-- Add migration 0040, tests, and worker documentation.
-
-# End of file.
-Phase 5 artwork catalog scaling
-- Added public portfolio pagination.
-- Added paginated/filterable tenant artwork administration.
-- Made placement matrix saves page-local and safe for large catalogs.
-- Added migration 0041 artwork catalog indexes.
-- Fixed Phase 4 worker installer to disable the legacy singleton email worker.
-
-Phase 5 artwork page-size controls
-- Added Artworks per page dropdowns to public portfolio, tenant artwork administration, and placement matrix.
-- Added validated 10-through-100 choices; retained public default 24 and admin default 50.
-- Preserved page size through filters, section tabs, pagination links, and admin post-action return URLs.
-- Added focused regression coverage and preflight wiring.
-
-# End of file.
-
-Phase 5 artwork paging controls
-- Add decrement/Previous and increment/Next buttons to public portfolio, tenant artwork list, and artwork placement pagination.
-- Preserve filters, section selection, sorting, search, and artworks-per-page values through step navigation.
-- Disable unavailable step controls at the first and last page.
-- Add focused regression coverage and preflight wiring.
-
-2026-06-22 Phase 5 AJAX artwork paging
-- Replace only artwork regions during portfolio, artwork-list, and placement pagination.
-- Preserve bookmarkable URLs and browser Back/Forward behavior.
-- Use clear `‹ Previous` and `Next ›` controls.
-- Keep ordinary links/forms as a no-JavaScript and error fallback.
-
-2026-06-22 Phase 5 placement matrix column filters
-- Add a text filter for visible placement columns by name.
-- Make Home page and section column names filter visible artwork rows by assignment.
-- Preserve column and assignment filters across in-place AJAX paging.
-- Add reset controls, documentation, tests, and preflight wiring.
-
-2026-06-22 Portfolio section action prominence
-- Replace the inline Portfolio Sections action links with obvious responsive action cards.
-- Clarify the purpose of section creation, ordering, and the placement matrix.
-- Add focused regression coverage and preflight wiring.
-
-Phase 6 directory projection:
-- Add tenant_directory_profiles migration and backfill.
-- Synchronize directory profiles after relevant tenant settings, domains, tenant status, and artwork changes.
-- Paginate the public artist directory at 24 cards per page.
-- Add an idempotent directory projection rebuild command.
-
-2026-06-22 Phase 6 directory rebuild bootstrap hotfix
-- Fix undefined `$pdo` in `scripts/maintenance/rebuild_directory_profiles.php`.
-- Load `bootstrap/app.php` and connect through `App\Support\Database`.
-- Add regression coverage for the maintenance command bootstrap.
-
-
-2026-06-22 Phase 6 directory search and sorting
-- Add public artist search by projected name and summary.
-- Add Name A–Z, Name Z–A, and Recently updated sorting.
-- Preserve filter state in pagination URLs and update directory results in place.
-- Add documentation, tests, preflight wiring, and project-state notes.
-
-Phase 7 sales inventory safety
-- Reserve artwork inventory atomically before creating Stripe Checkout.
-- Prevent concurrent buyers from overselling originals or limited quantities.
-- Make Stripe completion idempotent and require a live reservation before inventory decrement.
-- Release failed or expired checkout holds through worker and maintenance paths.
-- Add migration 0043, tests, docs, project-state notes, and preflight coverage.
-
-Phase 8 separates the HTTP front controller, tenant routes, platform routes, and tenant password-reset validation, with route inventory regression coverage.
-
-2026-06-22 Phase 8 hotfix: update platform contact-management static test for extracted platform routes.
-Phase 8 legal-route test hotfix: platform terms/privacy static checks now inspect app/Http/Routes/platform.php after route extraction.
-
-2026-06-22 Phase 8 canonical OAuth/logout static test hotfix
-- Update the canonical OAuth/logout regression test to inspect app/Http/Routes/tenant.php after route extraction.
-- Preserve existing OAuth trust, tenant redirect, and GET logout assertions.
-- No runtime behavior change.
-
-2026-06-22 Phase 8 directory-thumbnail static test hotfix
-- Update the tenant artwork directory-thumbnail regression test to inspect app/Http/Routes/tenant.php after route extraction.
-- Preserve the existing artwork-list, persistence, validation, and settings-page assertions.
-- No runtime behavior change.
-
-2026-06-22 Phase 8 scale-tenant static test hotfix
-- Update the platform scale-tenant regression test to inspect app/Http/Routes/platform.php after route extraction.
-- Preserve controller, fixture-service, background-job repository, create/remove route, and legacy redirect assertions.
-- No runtime behavior change.
-
-2026-06-22 Phase 9 migration discipline and operations monitoring
-- Add migration checksums, modern numbering enforcement, and schema-health checks.
-- Add five-minute operational monitoring for server, database, application, workers, queues, network, HTTPS, and TLS.
-- Email platform owners/admins at 07:15 and 19:15 America/New_York, on trouble changes/reminders, and on recovery.
-- Add systemd monitor service/timer, installation script, documentation, and preflight coverage.
-- Keep deployment and health checks aligned with templated worker instances.
-
-2026-06-22 Phase 9 monitor reporting hotfix
-- Detect default routes on Linux and macOS.
-- Fix direct dry-run email payloads without outbox IDs and label dry-run output honestly.
-- Recover a real monitor run ID when PDO lastInsertId returns zero.
-- Put critical metrics first and mark critical email subjects explicitly.
-
-Phase 9 operations console: HTML monitor email, normalized metric history, admin charts, shareable authenticated URLs, and restart notifications.
-
-Phase 9 component-start notifications:
-- Persist monitored component state in operations_monitor_state.last_component_states_json.
-- Email platform administrators whenever a monitored service or worker transitions from stopped/stale to running.
-- Use [ArtsFolio COMPONENT STARTED] subject and name started components in HTML/text email.
-- Preserve pending component-start notifications during --no-email runs.
-- Correct migration integrity metadata to distinguish tables from columns.
-
-2026-06-22 Phase 9 migration metadata regression hotfix
-- Restore structured table/column assertions in check_migration_integrity.php.
-- Preserve 0045 and 0046 monitoring schema expectations.
-
-2026-06-22: Fixed background-job UTC/local-time mismatch that caused active jobs to be recovered and executed twice. Added execution locks, singleton recurring-job scheduling, queue monitor clock consistency, and the correct sales payment-status metric.
-
-Phase 9 analytics rollup freshness hotfix:
-- Measure freshness from successful analytics.rollup completion time.
-- Use MariaDB CURRENT_TIMESTAMP for the age calculation.
-- Stop treating hourly bucket_start as a job freshness timestamp.
