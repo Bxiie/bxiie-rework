@@ -591,7 +591,4 @@ Phase 9 component-start notifications:
 - Restore structured table/column assertions in check_migration_integrity.php.
 - Preserve 0045 and 0046 monitoring schema expectations.
 
-Phase 9 deploy component-start notification hotfix
-- Explicitly email platform administrators after a successful deploy restarts application components.
-- Avoid missing quick restart events between monitor polling intervals.
-- Fail deployment if the required component-start notification cannot be delivered.
+2026-06-22: Fixed background-job UTC/local-time mismatch that caused active jobs to be recovered and executed twice. Added execution locks, singleton recurring-job scheduling, queue monitor clock consistency, and the correct sales payment-status metric.

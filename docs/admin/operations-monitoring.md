@@ -100,6 +100,7 @@ The operations monitor stores the last observed state of each monitored applicat
 
 The notification subject begins with `[ArtsFolio COMPONENT STARTED]` and the email names every component that started. The initial monitor run establishes a baseline and does not announce every already-running component. A `--no-email` run does not consume a pending component-start event.
 
-## Deployment component-start email
 
-After a successful production health check, `scripts/deploy/deploy_production.sh` invokes the monitor with an explicit list of the components it restarted. This avoids missing short restart windows between five-minute monitor polls. Email delivery failure makes the deploy fail at the `Component start notification` stage.
+## Background-job clock and concurrency safety
+
+Background-job availability and stale detection use MariaDB `CURRENT_TIMESTAMP` consistently. Each claimed job holds a MariaDB advisory execution lock until completion or failure, and stale recovery skips rows whose execution lock is still held. Recurring analytics and inventory jobs use singleton scheduling so multiple worker instances cannot create parallel recurring chains.

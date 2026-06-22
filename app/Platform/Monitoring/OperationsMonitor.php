@@ -150,7 +150,7 @@ final class OperationsMonitor
             'application.email_signups.total' => "SELECT COUNT(*) FROM email_signups",
             'application.contact_messages.open' => "SELECT COUNT(*) FROM contact_messages WHERE status IN ('new','read')",
             'application.sales_orders.total' => "SELECT COUNT(*) FROM sales_orders",
-            'application.sales_orders.paid' => "SELECT COUNT(*) FROM sales_orders WHERE status IN ('paid','ordered','acknowledged','packed','shipped','completed')",
+            'application.sales_orders.paid' => "SELECT COUNT(*) FROM sales_orders WHERE payment_status IN ('paid','complete','completed','succeeded','payment_succeeded')",
             'application.analytics_events.total' => "SELECT COUNT(*) FROM analytics_events",
         ];
 
@@ -175,8 +175,8 @@ final class OperationsMonitor
     {
         $queuedJobs = (int) ($this->safeScalar("SELECT COUNT(*) FROM background_jobs WHERE status = 'queued'") ?? 0);
         $failedJobs = (int) ($this->safeScalar("SELECT COUNT(*) FROM background_jobs WHERE status = 'failed'") ?? 0);
-        $staleJobs = (int) ($this->safeScalar("SELECT COUNT(*) FROM background_jobs WHERE status = 'running' AND updated_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 MINUTE)") ?? 0);
-        $oldestJobAge = (int) ($this->safeScalar("SELECT COALESCE(TIMESTAMPDIFF(MINUTE, MIN(available_at), UTC_TIMESTAMP()), 0) FROM background_jobs WHERE status = 'queued' AND available_at <= UTC_TIMESTAMP()") ?? 0);
+        $staleJobs = (int) ($this->safeScalar("SELECT COUNT(*) FROM background_jobs WHERE status = 'running' AND COALESCE(started_at, updated_at) < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 30 MINUTE)") ?? 0);
+        $oldestJobAge = (int) ($this->safeScalar("SELECT COALESCE(TIMESTAMPDIFF(MINUTE, MIN(available_at), CURRENT_TIMESTAMP), 0) FROM background_jobs WHERE status = 'queued' AND available_at <= CURRENT_TIMESTAMP") ?? 0);
         $this->countThresholdMetric('queue.jobs.queued', $queuedJobs, 100, 1000);
         $this->countThresholdMetric('queue.jobs.failed', $failedJobs, 1, 10);
         $this->add('queue.jobs.stale_running', $staleJobs > 0 ? HealthMetric::CRIT : HealthMetric::OK, '0', (string) $staleJobs);

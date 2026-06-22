@@ -95,16 +95,16 @@ try {
         case 'analytics.rollup':
             $handler = new AnalyticsRollupJobHandler(new AnalyticsRollupService($pdo));
             echo $handler->handle($job['payload']) . "\n";
+            $jobs->enqueueSingleton('analytics.rollup', ['days' => (int) ($job['payload']['days'] ?? 3)], null, 300, (int) $job['id']);
             $jobs->markComplete((int) $job['id']);
-            $jobs->enqueue('analytics.rollup', ['days' => (int) ($job['payload']['days'] ?? 3)], null, 300);
             break;
 
         case 'sales.inventory.release_expired':
             $handler = new ReleaseExpiredSalesReservationsJobHandler(new SalesRepository($pdo));
             echo $handler->handle($job['payload']) . "\n";
-            $jobs->markComplete((int) $job['id']);
             $interval = max(60, (int) ($job['payload']['interval_seconds'] ?? 300));
-            $jobs->enqueue('sales.inventory.release_expired', ['interval_seconds' => $interval], null, $interval);
+            $jobs->enqueueSingleton('sales.inventory.release_expired', ['interval_seconds' => $interval], null, $interval, (int) $job['id']);
+            $jobs->markComplete((int) $job['id']);
             break;
 
         case 'custom_domain.write_approved_vhost':
@@ -123,10 +123,12 @@ try {
 
     artsfolio_worker_heartbeat($workerName, 'alive', ['last_job_id' => (int) $job['id'], 'last_job_type' => (string) $job['job_type']]);
     echo "Completed job {$job['id']} of type {$job['job_type']}.\n";
+    $jobs->releaseExecutionLock((int) $job['id']);
 } catch (\Throwable $e) {
     $jobs->markFailed((int) $job['id'], $e->getMessage());
     artsfolio_worker_heartbeat($workerName, 'failed', ['job_id' => (int) $job['id'], 'error' => $e->getMessage()]);
     fwrite(STDERR, "Failed job {$job['id']}: {$e->getMessage()}\n");
+    $jobs->releaseExecutionLock((int) $job['id']);
     exit(1);
 }
 
