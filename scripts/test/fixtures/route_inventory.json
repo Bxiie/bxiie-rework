@@ -242,6 +242,11 @@
     {
         "scope": "platform",
         "method": "GET",
+        "path": "/platform/admin/email-signups"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
         "path": "/platform/admin/jobs"
     },
     {

@@ -18,6 +18,7 @@ use App\Http\Controllers\Platform\Admin\SettingsController as PlatformAdminSetti
 use App\Http\Controllers\Platform\Admin\SignupCodesController as PlatformAdminSignupCodesController;
 use App\Http\Controllers\Platform\Admin\RoutesController as PlatformAdminRoutesController;
 use App\Http\Controllers\Platform\Admin\EmailOutboxController as PlatformAdminEmailOutboxController;
+use App\Http\Controllers\Platform\Admin\EmailSignupsController as PlatformAdminEmailSignupsController;
 use App\Http\Controllers\Platform\Admin\DomainsController as PlatformAdminDomainsController;
 use App\Http\Controllers\Tenant\Admin\DomainsController as TenantAdminDomainsController;
 use App\Http\Controllers\Platform\Admin\JobsController as PlatformAdminJobsController;
@@ -251,6 +252,7 @@ return static function (Router $router, array $context): void {
     $router->get('/platform/admin/jobs/{id}', fn (Request $request, string $id): Response => (new PlatformAdminJobsController(new RequirePlatformRole(new MembershipRepository($pdo)), new JobAdminRepository($pdo), new JobAdminService($pdo, new JobAttemptRepository($pdo)), new CsrfTokenService(), new AuditLogRepository($pdo), new JobAttemptRepository($pdo)))->show($request, $currentUser, (int) $id));
     $router->post('/platform/admin/jobs/action', fn (Request $request): Response => (new PlatformAdminJobsController(new RequirePlatformRole(new MembershipRepository($pdo)), new JobAdminRepository($pdo), new JobAdminService($pdo, new JobAttemptRepository($pdo)), new CsrfTokenService(), new AuditLogRepository($pdo), new JobAttemptRepository($pdo)))->action($request, $currentUser));
     $router->post('/platform/admin/domains/action', fn (Request $request): Response => (new PlatformAdminDomainsController(new RequirePlatformRole(new MembershipRepository($pdo)), new DomainAdminRepository($pdo), new DomainAdminService($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->action($request, $currentUser));
+    $router->get('/platform/admin/email-signups', fn (Request $request): Response => (new PlatformAdminEmailSignupsController(new RequirePlatformRole(new MembershipRepository($pdo)), $pdo))->index($request, $currentUser));
     $router->get('/platform/admin/email-outbox', fn (Request $request): Response => (new PlatformAdminEmailOutboxController(new RequirePlatformRole(new MembershipRepository($pdo)), new EmailOutboxRepository($pdo)))->index($request, $currentUser));
     $router->get('/platform/admin/audit-log', fn (Request $request): Response => (new PlatformAdminAuditLogController(new RequirePlatformRole(new MembershipRepository($pdo)), new AuditLogRepository($pdo)))->index($request, $currentUser));
     $router->get('/platform/admin/audit-log.csv', fn (Request $request): Response => (new PlatformAdminAuditLogController(new RequirePlatformRole(new MembershipRepository($pdo)), new AuditLogRepository($pdo)))->export($request, $currentUser));

@@ -22,11 +22,10 @@ final class PlatformChrome
     public static function topNavigation(string $active = ''): string
     {
         $items = [
-            'platform' => ['/', 'Platform'],
-            'help' => ['/help', 'Help'],
+            'home' => ['/', 'Home'],
             'artists' => ['/directory', 'Artists'],
             'pricing' => ['/pricing', 'Pricing'],
-            'home' => ['/', 'Home'],
+            'help' => ['/help', 'Help'],
             'developers' => ['/developer', 'Developers'],
             'contact' => ['/contact', 'Contact'],
         ];

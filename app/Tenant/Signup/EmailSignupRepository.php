@@ -232,6 +232,17 @@ final class EmailSignupRepository
         return (int) $stmt->fetchColumn();
     }
 
+    /** Records when a tenant administrator last opened the email-signup list. */
+    public function markAdminViewed(TenantContext $tenant): void
+    {
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO tenant_settings (tenant_id, setting_key, setting_value, created_at, updated_at)
+             VALUES (:tenant_id, 'email_signups_last_viewed_at', UTC_TIMESTAMP(), UTC_TIMESTAMP(), UTC_TIMESTAMP())
+             ON DUPLICATE KEY UPDATE setting_value = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP()"
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+    }
+
     /** @return array{0:string,1:array<string,int|string>} */
     private function searchClause(TenantContext $tenant, string $query): array
     {

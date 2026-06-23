@@ -227,6 +227,20 @@ HTML;
         };
     }
 
+
+    /** Returns platform-wide counts for navigation items needing attention. */
+    private static function platformAttentionCounts(): array
+    {
+        try {
+            $pdo = Database::connect(dirname(__DIR__, 3));
+            $messages = (int) $pdo->query("SELECT COUNT(*) FROM contact_messages WHERE tenant_id IS NULL AND status = 'new'")->fetchColumn();
+            $signups = (int) $pdo->query("SELECT COUNT(*) FROM email_signups WHERE created_at > COALESCE((SELECT setting_value FROM platform_settings WHERE setting_key = 'email_signups_last_viewed_at' LIMIT 1), '1970-01-01 00:00:00')")->fetchColumn();
+            return ['contacts' => $messages, 'email_signups' => $signups];
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
     private static function adminNav(string $active): string
     {
         $items = [
@@ -243,6 +257,7 @@ HTML;
             'workers' => ['/platform/admin/workers', 'Workers'],
             'operations' => ['/platform/admin/operations', 'System Operations'],
             'contacts' => ['/platform/admin/contacts', 'Contacts'],
+            'email_signups' => ['/platform/admin/email-signups', 'Email Signups'],
             'email' => ['/platform/admin/email-outbox', 'Email Outbox'],
             'stats' => ['/platform/admin/stats', 'Platform Stats'],
             'audit' => ['/platform/admin/audit-log', 'Platform Audit Log'],
@@ -250,10 +265,12 @@ HTML;
             'settings' => ['/platform/admin/platform-settings', 'Platform Settings'],
         ];
 
+        $badges = self::platformAttentionCounts();
         $html = '<nav>';
         foreach ($items as $key => [$href, $label]) {
             $class = $active === $key ? ' class="active"' : '';
-            $html .= '<a' . $class . ' href="' . self::escape($href) . '">' . self::escape($label) . '</a>';
+            $badge = isset($badges[$key]) && $badges[$key] > 0 ? '<span class="tenant-nav-badge" aria-label="' . $badges[$key] . ' new">' . ($badges[$key] > 99 ? '99+' : $badges[$key]) . '</span>' : '';
+            $html .= '<a' . $class . ' href="' . self::escape($href) . '">' . self::escape($label) . $badge . '</a>';
         }
         $html .= '</nav>';
 

@@ -13,6 +13,7 @@ Use these standing expectations for this project unless I explicitly override th
 - When changing something, say what changed, where, and why.
 - Include verification steps after changes, especially builds, service status, logs, health checks, and test commands.
 - Prefer copy-pasteable commands and complete snippets.
+- Unless stated otherwise, I will dowload files that you create to /Users/bxiie/Downloads.  Use this location when writing commands for me to execute.
 
 ## Code and file expectations
 - Write production-oriented code and scripts, not toy examples.

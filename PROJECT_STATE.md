@@ -1846,3 +1846,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - No schema migration, runtime configuration change, or service-specific restart is required beyond the normal application deployment/reload path.
 
 <!-- End of file. -->
+
+## 2026-06-23 admin attention, watermarks, and platform navigation
+
+- Platform and tenant admin navigation display count badges for new messages and email signups.
+- Platform Admin now includes a global Email Signups page at `/platform/admin/email-signups`.
+- Tenant watermarks are opt-in, configurable, rendered at response time, and do not alter stored originals.
+- Public platform pages use the shared ordered navigation: Home, Artists, Pricing, Help, Developers, Contact.

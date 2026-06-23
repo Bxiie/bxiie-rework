@@ -362,6 +362,7 @@ run_shell_if_exists scripts/test/monitoring_service_units_static.sh
 run_php scripts/test/phase8_routing_static.php
 
 run_if_exists scripts/test/admin_attention_watermark_operations_static.php
+run_if_exists scripts/test/admin_notifications_watermark_nav_static.php
 
 run_php scripts/test/oauth_button_branding_static.php
 

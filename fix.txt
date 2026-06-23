@@ -2,22 +2,16 @@
 
 ## Functionality ##
 
-- Allow the tenant admin to specify if new artworks are published or unpublished by default.
-- rework platform contact form.
-- in contact messages regarding an artwork, include a link to the image URL in the contact message body on send
-- tenant - artworks - 'Upload artwork · Artwork placement matrix · Section artwork order' should be buttons, handled like platform - protfolio sections.
+
 - Add indicator to messages tab if there are new messages.
 - Add indicator to email signups tab if there are new email signups.
 - Add watermark to images if tenant admin opts in.  Give options for watermark format and appearance.
-- remove redundant 'Email List' dialog from tenant - contact.
-- edit button on tenant - artworks should match the unpublish and archive buttons.
 - the top navigation on all platform pages should be the same; home, artists, pricing, help, developers, contact
 - Make the logo bigger on login pages, and at the top left of the non-home platform pages.
 - sort/filter jobs, email outbox, stats, audit log, tenants
 - sort/filter portfolio, section pages
 - system operations, indicate the duration of the trend lines.  Allow selection of different start and end times.
 - system operations, recent system checks; allow paging, filtering by date.
-- On tenant - admin - settings, allow selection of font and size for all text elements on home, portfolio, about, and contact pages.  Use a text/font picker for this.
 
 ## curation workflow
 
@@ -34,6 +28,7 @@
 
 ## Bugs ##
 - tenant googlesignup received 6h and 1d email messages.  facebooktest received neither.
+- admin shows in the tenant top nav sometimes when the user is not logged in.  Clicking on the admin tab takes you to the login page.
 
 ## backlog
 - implement billing
@@ -51,6 +46,13 @@
 ##
 
 
+- On tenant - admin - settings, allow selection of font and size for all text elements on home, portfolio, about, and contact pages.  Use a text/font picker for this.
+- remove redundant 'Email List' dialog from tenant - contact.
+- edit button on tenant - artworks should match the unpublish and archive buttons.
+- Allow the tenant admin to specify if new artworks are published or unpublished by default.
+- rework platform contact form.
+- in contact messages regarding an artwork, include a link to the image URL in the contact message body on send
+- tenant - artworks - 'Upload artwork · Artwork placement matrix · Section artwork order' should be buttons, handled like platform - protfolio sections.
 - Copyright on help section is not detokenized
 - Add Google and Facebook branding to 'Continue with' buttons.
 - https://bxiie.com/contact still has email list sighup in addition to footer signup.

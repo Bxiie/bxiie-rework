@@ -41,6 +41,7 @@ final class EmailSignupsController
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
+        $this->signups->markAdminViewed($tenant);
         $csrf = $this->escape($this->csrf?->getOrCreate() ?? '');
         $query = trim((string) ($_GET['q'] ?? ''));
         $sort = $this->safeSort((string) ($_GET['sort'] ?? 'created_at'));
@@ -439,12 +440,6 @@ HTML,
         return AdminLayout::escape($value);
     }
 
-    /** Records the newest point the administrator has viewed the signup list. */
-    private function markViewed(TenantContext $tenant): void
-    {
-        $stmt = $this->pdo->prepare("INSERT INTO tenant_settings (tenant_id, setting_key, setting_value, created_at, updated_at) VALUES (:tenant_id, 'email_signups_last_viewed_at', UTC_TIMESTAMP(), UTC_TIMESTAMP(), UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE setting_value = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP()");
-        $stmt->execute(['tenant_id' => $tenant->tenantId]);
-    }
 
 }
 
