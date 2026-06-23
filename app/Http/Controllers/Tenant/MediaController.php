@@ -69,20 +69,67 @@ final class MediaController
         }
 
         $mimeType = (string) ($variant['mime_type'] ?: $media['mime_type'] ?: 'application/octet-stream');
-        $etag = '"' . sha1((string) $media['uuid'] . ':' . $variant['variant_key'] . ':' . (string) filemtime($absolute)) . '"';
+        $watermark = new WatermarkService(
+            new TenantSettingsRepository($this->pdo)
+        );
 
-        $bytes = null;
-        if ($requirePublishedArtwork && $variantKey !== 'thumb') {
-            $bytes = (new WatermarkService(new TenantSettingsRepository($this->pdo)))->render($tenant, $absolute, $mimeType);
-        }
-        if ($bytes !== null) {
-            $etag = '"' . sha1($etag . ':watermark:' . $bytes) . '"';
+        // Thumbnails intentionally remain unwatermarked. Public medium, large,
+        // and original artwork responses use the tenant watermark setting.
+        $watermarkEnabled = $requirePublishedArtwork
+            && $variantKey !== 'thumb'
+            && $watermark->enabled($tenant);
+        $watermarkFingerprint = $watermarkEnabled
+            ? $watermark->fingerprint($tenant)
+            : 'disabled';
+
+        $etag = '"' . sha1(
+            (string) $media['uuid']
+            . ':' . $variant['variant_key']
+            . ':' . (string) filemtime($absolute)
+            . ':' . $watermarkFingerprint
+        ) . '"';
+
+        $bytes = $watermarkEnabled
+            ? $watermark->render($tenant, $absolute, $mimeType)
+            : null;
+
+        $watermarkStatus = 'disabled';
+
+        if ($watermarkEnabled) {
+            $watermarkStatus = $bytes !== null
+                ? 'rendered'
+                : 'unavailable';
+
+            if ($bytes === null) {
+                error_log(
+                    'ArtsFolio watermark unavailable for tenant '
+                    . $tenant->tenantId
+                    . '; verify PHP GD, FreeType, and image format support.'
+                );
+            }
+        } elseif (
+            $requirePublishedArtwork
+            && $variantKey === 'thumb'
+        ) {
+            $watermarkStatus = 'thumbnail-excluded';
         }
 
         header('Content-Type: ' . $mimeType);
-        header('Content-Length: ' . ($bytes !== null ? strlen($bytes) : filesize($absolute)));
-        header('Cache-Control: public, max-age=86400');
+        header(
+            'Content-Length: '
+            . ($bytes !== null ? strlen($bytes) : filesize($absolute))
+        );
+        header(
+            'Cache-Control: '
+            . (
+                $watermarkEnabled
+                    ? 'public, max-age=0, must-revalidate'
+                    : 'public, max-age=86400'
+            )
+        );
         header('ETag: ' . $etag);
+        // Unwatermarked media policy: Cache-Control: public, max-age=86400
+        header('X-ArtsFolio-Watermark: ' . $watermarkStatus);
 
         if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && trim((string) $_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
             http_response_code(304);

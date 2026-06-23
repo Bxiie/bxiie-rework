@@ -1756,6 +1756,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Migration 0041 adds artwork catalog and section-order indexes.
 - Worker installer now disables both legacy singleton worker services before enabling templated instances.
 
+- Public artwork watermarks are rendered dynamically on medium, large, and original variants only; thumbnails and admin media remain unwatermarked. Watermark settings participate in ETags, and enabled responses require cache revalidation.
+
 <!-- End of file. -->
 
 ## Phase 5 placement matrix column filters (2026-06-22)
