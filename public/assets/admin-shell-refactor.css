@@ -314,3 +314,51 @@ form[action*="plans"] input[name*="currency"] {
 .platform-header .logo-brand img, .platform-admin-logo img { width:auto; height:64px; max-width:220px; }
 
 /* End of file. */
+
+/*
+ * Keep the wide Email Outbox diagnostics grid inside the admin panel.
+ * The wrapper owns horizontal scrolling, while diagnostic text wraps.
+ */
+.email-outbox-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    box-sizing: border-box;
+}
+
+.email-outbox-table-wrap > .admin-table {
+    width: max-content;
+    min-width: 100%;
+}
+
+.email-outbox-table-wrap > .admin-table th,
+.email-outbox-table-wrap > .admin-table td {
+    max-width: 24rem;
+}
+
+.email-outbox-table-wrap > .admin-table td:nth-child(3),
+.email-outbox-table-wrap > .admin-table td:nth-child(4),
+.email-outbox-table-wrap > .admin-table td:nth-child(5) {
+    min-width: 12rem;
+}
+
+.email-outbox-table-wrap > .admin-table td:last-child {
+    min-width: 20rem;
+    max-width: 32rem;
+}
+
+.email-outbox-table-wrap .admin-error-details {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.email-outbox-table-wrap .admin-error-details pre {
+    margin: 0.5rem 0 0;
+    max-width: 100%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* End of file. */

@@ -64,6 +64,7 @@ final class EmailOutboxController
             title: 'Email Outbox | Platform Admin',
             body: <<<HTML
 <p class="admin-muted">Failed rows show the stored SMTP or transport error from <code>email_outbox.last_error</code>.</p>
+<div class="admin-table-wrap email-outbox-table-wrap">
 <table class="admin-table">
     <thead>
         <tr>
@@ -81,6 +82,7 @@ final class EmailOutboxController
         {$rows}
     </tbody>
 </table>
+</div>
 HTML,
             nav: [
                 '/admin' => 'Dashboard',

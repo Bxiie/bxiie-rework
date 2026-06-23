@@ -1766,6 +1766,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 - Tenant artwork editing displays the current primary image. Authentication and non-home platform logos use larger responsive sizing. The shared administrative table helper provides visible-row filtering and column sorting for platform jobs, email outbox, stats, audit log, tenants, portfolio sections, and section artwork order tables.
 
+- The platform Email Outbox table is contained by the standard horizontal-scroll wrapper; long diagnostic text wraps inside the diagnostic column instead of expanding beyond the panel.
+
 <!-- End of file. -->
 
 ## Phase 5 placement matrix column filters (2026-06-22)
