@@ -1768,6 +1768,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 - The platform Email Outbox table is contained by the standard horizontal-scroll wrapper; long diagnostic text wraps inside the diagnostic column instead of expanding beyond the panel.
 
+- Google and Facebook tenant signup use the same idempotent onboarding lifecycle queue. Missing tenant lifecycle messages can be repaired with `scripts/email/reconcile_tenant_lifecycle_emails.php`. Tenant public pages show Admin only to an active tenant owner or administrator and are emitted private/no-store with Vary: Cookie.
+
 <!-- End of file. -->
 
 ## Phase 5 placement matrix column filters (2026-06-22)

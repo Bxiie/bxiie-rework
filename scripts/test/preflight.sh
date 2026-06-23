@@ -379,6 +379,8 @@ php scripts/test/artwork_logo_list_tools_static.php
 
 php scripts/test/email_outbox_grid_containment_static.php
 
+php scripts/test/oauth_lifecycle_tenant_nav_static.php
+
 # End of file.
 run_php scripts/test/platform_user_status_auth_static.php
 run_php scripts/test/platform_operations_timezone_static.php

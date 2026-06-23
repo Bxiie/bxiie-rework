@@ -558,6 +558,10 @@ final class TenantSignupService
         ];
 
         foreach ($schedule as [$templateKey, $subject, $delaySeconds]) {
+            if ($this->lifecycleEmailExists($tenantId, $userId, $templateKey)) {
+                continue;
+            }
+
             $this->insertKnown('email_outbox', [
                 'tenant_id' => $tenantId,
                 'user_id' => $userId,
@@ -575,6 +579,32 @@ final class TenantSignupService
         }
     }
 
+
+    /**
+     * Returns true when a lifecycle message already exists for this tenant,
+     * user, and template in any delivery state.
+     */
+    private function lifecycleEmailExists(
+        int $tenantId,
+        int $userId,
+        string $templateKey,
+    ): bool {
+        $stmt = $this->pdo->prepare(
+            "SELECT 1
+               FROM email_outbox
+              WHERE tenant_id = :tenant_id
+                AND user_id = :user_id
+                AND template_key = :template_key
+              LIMIT 1"
+        );
+        $stmt->execute([
+            'tenant_id' => $tenantId,
+            'user_id' => $userId,
+            'template_key' => $templateKey,
+        ]);
+
+        return (bool) $stmt->fetchColumn();
+    }
 
     private function seedTenantCss(int $tenantId): void
     {

@@ -76,7 +76,7 @@ HTML;
 ";
         }
 
-        return Response::html($this->layout(
+        return $this->tenantPageResponse($this->layout(
             tenant: $tenant,
             title: $siteTitle,
             body: $body,
@@ -188,7 +188,7 @@ HTML;
 
         $body .= '</section><script src="/assets/artwork-pagination.js?v=20260622" defer></script>';
 
-        return Response::html($this->layout(
+        return $this->tenantPageResponse($this->layout(
             tenant: $tenant,
             title: "{$this->escape($tenant->name)} | Portfolio",
             body: $body,
@@ -242,7 +242,7 @@ HTML;
         $body .= $pricePanel;
         $body .= '<p><a class="button artwork-inquiry-link" href="' . $contactLink . '">Contact the artist about this artwork</a></p>' . "\n";
 
-        return Response::html($this->layout(
+        return $this->tenantPageResponse($this->layout(
             tenant: $tenant,
             title: "{$title} | {$this->escape($tenant->name)}",
             body: $body,
@@ -260,7 +260,7 @@ HTML;
             $body .= "<section class=\"events\"><h2>Exhibitions</h2>{$events}</section>\n";
         }
 
-        return Response::html($this->layout(
+        return $this->tenantPageResponse($this->layout(
             tenant: $tenant,
             title: "{$this->escape($tenant->name)} | About",
             body: $body
@@ -277,7 +277,7 @@ HTML;
         $artworkSubject = $this->contactArtworkSubject($tenant, $requestedArtworkSlug);
         $artworkSlug = $artworkSubject !== '' ? $this->escape($requestedArtworkSlug) : '';
 
-        return Response::html($this->layout(
+        return $this->tenantPageResponse($this->layout(
             tenant: $tenant,
             title: "{$this->escape($tenant->name)} | Contact",
             body: <<<HTML
@@ -515,14 +515,64 @@ HTML;
      * that route belongs to the canonical platform host. The tenant admin entry
      * point is always /admin on the current tenant hostname.
      */
-    private function tenantAdminLink(): string
+    /**
+     * Returns a tenant-admin link only for an active owner or administrator.
+     *
+     * Merely having a browser session is insufficient. The current user must
+     * hold an active membership and tenant-scoped owner/admin role for the
+     * tenant currently being rendered.
+     */
+    private function tenantAdminLink(TenantContext $tenant): string
     {
         $currentUser = $GLOBALS['artsfolio_current_user'] ?? null;
         if (!is_array($currentUser) || empty($currentUser['user_id'])) {
             return '';
         }
 
+        try {
+            $stmt = $this->pdo->prepare(
+                "SELECT 1
+                   FROM tenant_memberships tm
+                   JOIN role_assignments ra
+                     ON ra.tenant_id = tm.tenant_id
+                    AND ra.user_id = tm.user_id
+                   JOIN roles r
+                     ON r.id = ra.role_id
+                    AND r.scope = 'tenant'
+                  WHERE tm.tenant_id = :tenant_id
+                    AND tm.user_id = :user_id
+                    AND tm.status = 'active'
+                    AND r.slug IN ('owner', 'admin')
+                  LIMIT 1"
+            );
+            $stmt->execute([
+                'tenant_id' => $tenant->tenantId,
+                'user_id' => (int) $currentUser['user_id'],
+            ]);
+
+            if (!(bool) $stmt->fetchColumn()) {
+                return '';
+            }
+        } catch (\Throwable) {
+            return '';
+        }
+
         return '<a class="tenant-admin-top-link" href="/admin">Admin</a>';
+    }
+
+    /**
+     * Tenant public pages contain authentication-sensitive navigation.
+     *
+     * Prevent browser, proxy, and CDN reuse across signed-in and anonymous
+     * requests. Varying by Cookie also protects authenticated page variants.
+     */
+    private function tenantPageResponse(string $html): Response
+    {
+        return Response::html($html, 200, [
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'Pragma' => 'no-cache',
+            'Vary' => 'Cookie',
+        ]);
     }
 
     private function layout(TenantContext $tenant, string $title, string $body): string
@@ -550,7 +600,7 @@ HTML;
         $backgroundStyle = $this->backgroundCssVariables($tenant);
         $footerSignupForm = $this->footerSignupForm($tenant, $contactSlug);
         $socialLinks = $this->socialFooterLinks($tenant);
-        $platformAdminLink = $this->tenantAdminLink();
+        $platformAdminLink = $this->tenantAdminLink($tenant);
         $turnstileScript = FirstPartyCaptcha::isConfigured($this->turnstileSiteKey($tenant)) ? '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>' : '';
 
         return <<<HTML

@@ -1,9 +1,7 @@
-# Admin Link
+# Tenant Admin navigation
 
-On an artist site, the Admin link opens the admin area for that same artist site.
+The public tenant navigation shows **Admin** only to a signed-in user who has an active owner or administrator role for that specific tenant.
 
-## Uploading artwork from the sidebar
-
-Select **Upload Artwork** at the top of the tenant-admin sidebar to add a new artwork without first opening the Artworks list. The shortcut appears above the site name and signed-in account details.
+Public tenant HTML is marked private and non-cacheable so an Admin link rendered for one browser session cannot be reused for an anonymous visitor.
 
 <!-- End of file. -->
