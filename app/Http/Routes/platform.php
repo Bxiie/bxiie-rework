@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AdminApiController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Api\TenantMeController;
 use App\Http\Controllers\Auth\PasswordAuthController;
+use App\Http\Controllers\Auth\UserTimezoneController;
 use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Auth\TenantSessionBridgeController;
 use App\Http\Controllers\Platform\Admin\DashboardController as PlatformAdminDashboardController;
@@ -201,6 +202,8 @@ return static function (Router $router, array $context): void {
     $router->post('/contact', fn (Request $request): Response => $marketingController->contact($request));
     $router->get('/help/{topic}', fn (Request $request, array $params): Response => $helpController->topic($request, (string) $params['topic']));
 
+    $router->get('/account/timezone', fn (Request $request): Response => (new UserTimezoneController(new UserRepository($pdo), new CsrfTokenService()))->edit($request, $currentUser));
+    $router->post('/account/timezone', fn (Request $request): Response => (new UserTimezoneController(new UserRepository($pdo), new CsrfTokenService()))->update($request, $currentUser));
     $router->get('/help', fn (Request $request): Response => (new HelpController())->index($request, $currentUser));
     $router->get('/help/{article}', fn (Request $request, array $params): Response => (new HelpController())->topic($request, $params, $currentUser));
     $router->get('/developer', fn (Request $request): Response => (new HelpController())->developer($request, $currentUser));

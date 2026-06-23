@@ -50,6 +50,17 @@ final class UserRepository
 
         return $row ?: null;
     }
+
+    public function updateTimezone(int $userId, string $timezone): void
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE users SET timezone = :timezone, updated_at = CURRENT_TIMESTAMP WHERE id = :id'
+        );
+        $stmt->execute([
+            'timezone' => $timezone,
+            'id' => $userId,
+        ]);
+    }
 }
 
 // End of file.

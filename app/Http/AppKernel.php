@@ -163,6 +163,7 @@ final class AppKernel
     $sessionRepository = new SessionRepository($pdo);
     $sessionTokens = new SessionTokenService();
     $currentUser = (new CurrentUser($sessionRepository, $sessionTokens))->resolve($request);
+    \App\Support\Time\UserTimezoneContext::apply($pdo, $currentUser);
     $GLOBALS['artsfolio_current_user'] = $currentUser;
 
     $sessionBridgeController = new TenantSessionBridgeController(

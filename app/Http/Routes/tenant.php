@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AdminApiController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Api\TenantMeController;
 use App\Http\Controllers\Auth\PasswordAuthController;
+use App\Http\Controllers\Auth\UserTimezoneController;
 use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Auth\TenantSessionBridgeController;
 use App\Http\Controllers\Platform\Admin\DashboardController as PlatformAdminDashboardController;
@@ -138,6 +139,8 @@ return static function (Router $router, array $context): void {
                 exit;
             }
         }
+    $router->get('/account/timezone', fn (Request $request): Response => (new UserTimezoneController(new UserRepository($pdo), new CsrfTokenService()))->edit($request, $currentUser));
+    $router->post('/account/timezone', fn (Request $request): Response => (new UserTimezoneController(new UserRepository($pdo), new CsrfTokenService()))->update($request, $currentUser));
     $router->get('/help', fn (Request $request): Response => $helpController->index($request, $currentUser));
     $router->get('/help/{article}', fn (Request $request, array $params): Response => $helpController->article($request, (string) ($params['article'] ?? 'getting-started'), $currentUser));
     $router->get('/developer', fn (Request $request): Response => $helpController->developer($request, $currentUser));

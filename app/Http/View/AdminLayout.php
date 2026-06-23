@@ -90,7 +90,7 @@ final class AdminLayout
 </div>
 <footer class="site-footer platform-admin-footer">
     <span>{$platformCopyright}</span>
-    <nav><a href="/help">Help</a><a href="/help/developer">Developer reference</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav>
+    <nav><a href="/help">Help</a><a href="/account/timezone">Time zone</a><a href="/help/developer">Developer reference</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav>
 </footer>
 </body>
 </html>

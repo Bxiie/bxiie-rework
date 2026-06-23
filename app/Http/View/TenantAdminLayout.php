@@ -103,6 +103,7 @@ final class TenantAdminLayout
     <span>© {$year} {$copyrightName}</span>
     <nav>
         <a href="/help">Help</a>
+        <a href="/account/timezone">Time zone</a>
         <a href="/privacy">Privacy</a>
         <a href="https://artsfol.io/contact">Contact artsfol.io</a>
     </nav>

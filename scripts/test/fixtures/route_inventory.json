@@ -12,6 +12,11 @@
     {
         "scope": "platform",
         "method": "GET",
+        "path": "/account/timezone"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
         "path": "/admin"
     },
     {
@@ -347,6 +352,11 @@
     {
         "scope": "platform",
         "method": "POST",
+        "path": "/account/timezone"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
         "path": "/admin/domains/action"
     },
     {
@@ -528,6 +538,11 @@
         "scope": "tenant",
         "method": "GET",
         "path": "/about"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
+        "path": "/account/timezone"
     },
     {
         "scope": "tenant",
@@ -793,6 +808,11 @@
         "scope": "tenant",
         "method": "GET",
         "path": "/tenant.css"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/account/timezone"
     },
     {
         "scope": "tenant",

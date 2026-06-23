@@ -72,7 +72,8 @@ final class SessionRepository
                 s.*,
                 s.user_id AS user_id,
                 u.email,
-                u.display_name
+                u.display_name,
+                u.timezone
              FROM user_sessions s
              JOIN users u ON u.id = s.user_id
              WHERE s.session_hash = :session_hash
