@@ -55,4 +55,33 @@
     color: #166fe5;
 }
 
+/* OAuth provider branding. */
+.oauth-provider-mark {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 1.25rem;
+    justify-content: center;
+    margin-right: 0.55rem;
+    width: 1.25rem;
+}
+
+.oauth-provider-mark svg {
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.oauth-provider-label {
+    display: inline-block;
+}
+
+.auth-socials .button,
+.auth-provider-actions .button {
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+}
+
 /* End of file. */
+
