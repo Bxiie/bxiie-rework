@@ -190,7 +190,7 @@ HTML;
             $blocks .= <<<HTML
 <section style="margin:2rem 0;">
     <h2>{$sectionName}</h2>
-    <table class="sortable-artworks" border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;">
+    <table class="admin-table sortable-artworks" border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;">
         <thead><tr><th>Move</th><th>Thumbnail</th><th>Artwork</th><th>Order</th></tr></thead>
         <tbody>{$rows}</tbody>
     </table>

@@ -1764,6 +1764,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 - Media selected for tenant presentation surfaces (`background_media_uuid`, `menu_media_uuid`, `topbar_media_uuid`, or `artwork_card_media_uuid`) is excluded from watermark rendering at the media-controller layer.
 
+- Tenant artwork editing displays the current primary image. Authentication and non-home platform logos use larger responsive sizing. The shared administrative table helper provides visible-row filtering and column sorting for platform jobs, email outbox, stats, audit log, tenants, portfolio sections, and section artwork order tables.
+
 <!-- End of file. -->
 
 ## Phase 5 placement matrix column filters (2026-06-22)

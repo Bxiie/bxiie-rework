@@ -336,7 +336,7 @@ HTML;
     <title>{$title}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="ArtsFolio pricing for artist portfolio and sales platform plans.">
-    <link rel="stylesheet" href="/assets/platform.css">
+    <link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools">
     <link rel="stylesheet" href="/assets/platform-custom.css">
     <link rel="stylesheet" href="/assets/tenant-admin.css">
 </head>

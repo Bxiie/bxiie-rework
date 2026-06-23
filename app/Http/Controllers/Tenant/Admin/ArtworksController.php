@@ -283,6 +283,23 @@ HTML;
         $sections = $this->portfolioSections($tenant);
         $selectedSectionIds = $this->artworkSectionIds($tenant, $id);
         $selectedTypeCodes = $this->artworkTypeCodes($id);
+        $artworkPreview = '';
+        $primaryMediaUuid = trim((string) ($artwork['primary_media_uuid'] ?? ''));
+        if ($primaryMediaUuid !== '') {
+            $previewSrc = htmlspecialchars(
+                '/admin/media?uuid=' . rawurlencode($primaryMediaUuid) . '&variant=large',
+                ENT_QUOTES,
+                'UTF-8',
+            );
+            $artworkPreview = <<<HTML
+    <figure class="artwork-edit-preview">
+        <img src="{$previewSrc}" alt="{$title}">
+        <figcaption>Current primary artwork image</figcaption>
+    </figure>
+HTML;
+        } else {
+            $artworkPreview = '<p class="admin-muted">This artwork does not currently have a primary image.</p>';
+        }
         $portfolioChecked = in_array('portfolio_images', $selectedTypeCodes, true) ? ' checked' : '';
         $siteChecked = in_array('site_images', $selectedTypeCodes, true) ? ' checked' : '';
         $sectionOptions = '';
@@ -304,6 +321,7 @@ HTML;
 <main>
     <p><a href="/admin/artworks">&larr; Artworks</a></p>
     <h1>Edit artwork</h1>
+    {$artworkPreview}
     <form method="post" action="/admin/artworks/edit">
         <input type="hidden" name="id" value="{$id}">
         <p><label>Title<br><input type="text" name="title" value="{$title}" required></label></p>
@@ -814,10 +832,15 @@ HTML;
         }
 
         $stmt = $this->pdo->prepare(
-            "SELECT *
-             FROM artworks
-             WHERE id = :id
-               AND tenant_id = :tenant_id
+            "SELECT a.*,
+                    m.uuid AS primary_media_uuid,
+                    m.mime_type AS primary_media_mime_type,
+                    m.width AS primary_media_width,
+                    m.height AS primary_media_height
+             FROM artworks a
+             LEFT JOIN media_assets m ON m.id = a.primary_media_id
+             WHERE a.id = :id
+               AND a.tenant_id = :tenant_id
              LIMIT 1"
         );
 

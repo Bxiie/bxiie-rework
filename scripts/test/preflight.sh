@@ -375,6 +375,8 @@ php scripts/test/background_watermark_exclusion_static.php
 php scripts/test/nav_background_watermark_exclusion_static.php
 php scripts/test/presentation_media_watermark_exclusion_static.php
 
+php scripts/test/artwork_logo_list_tools_static.php
+
 # End of file.
 run_php scripts/test/platform_user_status_auth_static.php
 run_php scripts/test/platform_operations_timezone_static.php

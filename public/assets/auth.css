@@ -100,3 +100,13 @@
 /* End of file. */
 
 
+
+
+/* Larger ArtsFolio identity on authentication pages. */
+.auth-logo {
+    width: min(390px, 88vw);
+    max-height: 180px;
+    object-fit: contain;
+}
+
+/* End of file. */

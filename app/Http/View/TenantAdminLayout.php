@@ -66,7 +66,7 @@ final class TenantAdminLayout
     <script defer src="/assets/admin-color-fields.js?v=20260620-palette-contrast"></script>
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
     <script defer src="/assets/admin-typography-fields.js?v=20260620-typography-live"></script>
-    <script defer src="/assets/admin-table-tools.js?v=20260622-admin-table-tools"></script>
+    <script defer src="/assets/admin-table-tools.js?v=20260623-logo-list-tools"></script>
 </head>
 <body class="tenant-admin-page" style="--primary: {$primaryColor}; --accent: {$accentColor}; --bg: {$backgroundColor}; --tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText}; --menu-text-color: {$menuText}; --text-color: {$textColor}; {$backgroundStyle}{$surfaceStyle}">
 <header class="site-header tenant-admin-public-header">

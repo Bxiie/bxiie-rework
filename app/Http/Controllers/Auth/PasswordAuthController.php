@@ -83,7 +83,7 @@ final class PasswordAuthController
     <meta charset="utf-8">
     <title>My ArtsFolio account</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/assets/platform.css">
+    <link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools">
 </head>
 <body class="platform-page">
 <header class="platform-header"><a class="platform-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a><nav><a href="/admin">Platform admin</a><a href="/directory">Directory</a><a href="/help">Help</a></nav></header>

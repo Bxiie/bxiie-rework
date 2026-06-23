@@ -104,7 +104,7 @@ HTML;
     <meta charset="utf-8">
     <title>{$safeTitle}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/assets/platform.css">
+    <link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools">
     <link rel="stylesheet" href="/assets/platform-custom.css">
 </head>
 <body>

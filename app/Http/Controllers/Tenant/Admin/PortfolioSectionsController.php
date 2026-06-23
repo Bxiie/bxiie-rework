@@ -95,7 +95,7 @@ HTML;
             <span style="font-size:.9rem;font-weight:500;opacity:.85;">Assign many artworks to sections at once.</span>
         </a>
     </section>
-    <table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;">
+    <table class="admin-table" border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;">
         <thead>
             <tr>
                 <th>Order</th>
