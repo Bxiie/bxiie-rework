@@ -2658,7 +2658,7 @@ body.tenant-admin-page {
 .tenant-admin-action-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1.25rem 0 1.5rem}
 /* End of file. */
 
-/* Tenant admin sidebar primary action sits above tenant identity and navigation. */
+/* Tenant admin sidebar primary action follows the active tenant palette. */
 .tenant-admin-sidebar-upload {
   display: flex !important;
   align-items: center;
@@ -2666,21 +2666,37 @@ body.tenant-admin-page {
   gap: 0.55rem;
   margin: 0 0 1.1rem;
   padding: 0.85rem 1rem !important;
-  border: 1px solid rgba(255, 255, 255, 0.42);
+  border: 2px solid var(--accent, #c9a85f);
   border-radius: 999px !important;
-  background: var(--accent, #c9a85f) !important;
-  color: #111 !important;
+  background: var(--tenant-topbar-bg, var(--primary, #111827)) !important;
+  color: var(--tenant-topbar-text, #f8efe1) !important;
   font-weight: 900;
   text-align: center;
   text-decoration: none;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
 .tenant-admin-sidebar-upload:hover,
 .tenant-admin-sidebar-upload:focus-visible {
-  background: color-mix(in srgb, var(--accent, #c9a85f) 84%, #fff) !important;
-  color: #111 !important;
+  background: color-mix(
+    in srgb,
+    var(--tenant-topbar-bg, var(--primary, #111827)) 86%,
+    var(--accent, #c9a85f)
+  ) !important;
+  border-color: color-mix(in srgb, var(--accent, #c9a85f) 78%, #fff);
+  color: var(--tenant-topbar-text, #f8efe1) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
   transform: translateY(-1px);
+}
+
+.tenant-admin-sidebar-upload:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent, #c9a85f) 72%, #fff);
+  outline-offset: 3px;
 }
 
 .tenant-admin-sidebar-upload span {

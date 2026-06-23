@@ -35,7 +35,9 @@ if ($titlePosition === false || $buttonPosition > $titlePosition) {
 
 foreach ([
     '.tenant-admin-sidebar-upload',
-    'background: var(--accent, #c9a85f)',
+    'background: var(--tenant-topbar-bg, var(--primary, #111827))',
+    'color: var(--tenant-topbar-text, #f8efe1)',
+    'border: 2px solid var(--accent, #c9a85f)',
     'border-radius: 999px',
 ] as $needle) {
     if (!str_contains($css, $needle)) {
@@ -44,7 +46,7 @@ foreach ([
     }
 }
 
-if (!str_contains($layout, 'tenant-admin.css?v=20260623-sidebar-upload')) {
+if (!str_contains($layout, 'tenant-admin.css?v=20260623-sidebar-upload-palette')) {
     fwrite(STDERR, "Tenant-admin stylesheet cache key was not updated.\n");
     exit(1);
 }
