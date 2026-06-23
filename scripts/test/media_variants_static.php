@@ -28,8 +28,9 @@ $checks = [
         'private const ALLOWED_VARIANTS',
         '$variantKey = $this->requestedVariant();',
         '$this->findVariant((int) $media[\'id\'], $variantKey)',
-        'Cache-Control: public, max-age=31536000, immutable',
+        'Cache-Control: public, max-age=86400',
         'ETag:',
+        'WatermarkService',
     ],
     'scripts/maintenance/backfill_media_variants.php' => [
         'Backfills generated variants',

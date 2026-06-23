@@ -164,7 +164,7 @@ final class ArtworksController
     <td>{$year}</td><td>{$medium}</td><td class="js-artwork-status">{$status}<br>{$typeBadges}</td>
     <td>{$saleStatus}</td><td>{$price}</td><td>{$notes}</td>
     <td><form method="post" action="/admin/artworks/directory-thumbnail"><input type="hidden" name="id" value="{$artworkId}"><input type="hidden" name="return_to" value="{$returnToValue}"><label><input type="checkbox" name="directory_thumbnail" value="1"{$directoryChecked}{$directoryDisabled} onchange="this.form.submit()"> Directory thumbnail</label><br><small>{$directoryHelp}</small></form></td>
-    <td><a href="/admin/artworks/edit?id={$row['id']}">Edit</a> {$this->statusActionButton($row, $returnToValue)} <form method="post" action="/admin/artworks/delete" class="js-artwork-action" style="display:inline" onsubmit="return confirm('Archive this artwork?');"><input type="hidden" name="id" value="{$row['id']}"><input type="hidden" name="return_to" value="{$returnToValue}"><button type="submit">Archive</button></form></td>
+    <td><a class="admin-button" href="/admin/artworks/edit?id={$row['id']}">Edit</a> {$this->statusActionButton($row, $returnToValue)} <form method="post" action="/admin/artworks/delete" class="js-artwork-action" style="display:inline" onsubmit="return confirm('Archive this artwork?');"><input type="hidden" name="id" value="{$row['id']}"><input type="hidden" name="return_to" value="{$returnToValue}"><button type="submit">Archive</button></form></td>
 </tr>
 HTML;
         }

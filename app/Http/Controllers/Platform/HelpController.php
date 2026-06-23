@@ -216,6 +216,7 @@ HTML;
         $safeTitle = self::escape($title);
         $nav = $this->nav($active, $currentUser !== null);
         $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
+        $canonicalNav = \App\Http\View\PlatformChrome::topNavigation('help');
         $auth = $currentUser
             ? '<form class="plan-edit-form" method="post" action="/logout" class="inline-form"><button type="submit">Log out</button></form>'
             : '<a href="/login">Sign in</a>';
@@ -234,7 +235,7 @@ HTML;
 <body class="tenant-admin-page platform-help-page">
 <header class="platform-header platform-help-header">
     <a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>
-    <nav><a href="/">Home</a><a href="/pricing">Pricing</a><a href="/directory">Artists</a>{$platformAdminLink}{$auth}</nav>
+    {$canonicalNav}
 </header>
 <div class="tenant-admin-shell">
     <aside class="tenant-admin-sidebar" aria-label="Help navigation">

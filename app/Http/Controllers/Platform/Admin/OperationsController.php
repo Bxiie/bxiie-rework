@@ -26,7 +26,12 @@ final class OperationsController
             return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
         }
 
-        $runs = $this->operations->latestRuns(40);
+        $start = trim((string) ($_GET['start'] ?? date('Y-m-d', strtotime('-7 days'))));
+        $end = trim((string) ($_GET['end'] ?? date('Y-m-d')));
+        $status = strtoupper(trim((string) ($_GET['status'] ?? '')));
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 25;
+        $runs = $this->operations->searchRuns($start, $end, $status, $perPage, ($page - 1) * $perPage);
         $metrics = $this->operations->latestMetricRows();
         $runRows = '';
         foreach ($runs as $run) {
@@ -43,8 +48,8 @@ final class OperationsController
         $cards = '';
         foreach ($metrics as $metric) {
             $name = (string) $metric['metric_name'];
-            $history = $this->operations->metricHistory($name, 7, 160);
-            $url = '/platform/admin/operations/metrics?name=' . rawurlencode($name) . '&days=7';
+            $history = $this->operations->metricHistoryRange($name, $start, $end, 160);
+            $url = '/platform/admin/operations/metrics?name=' . rawurlencode($name) . '&start=' . rawurlencode($start) . '&end=' . rawurlencode($end);
             $cards .= '<article class="ops-metric-card"><div class="ops-metric-head"><a href="' . AdminLayout::escape($url) . '"><strong>' . AdminLayout::escape($this->friendlyName($name)) . '</strong></a>'
                 . $this->badge((string) $metric['metric_status']) . '</div>'
                 . '<div class="ops-metric-value">' . AdminLayout::escape((string) $metric['actual_value']) . '</div>'
@@ -58,8 +63,11 @@ final class OperationsController
 
         $body = $this->styles()
             . '<p class="admin-notice">Share this page URL with another platform administrator. They must sign in with an authorized platform account.</p>'
+            . '<form class="admin-form" method="get" action="/platform/admin/operations"><div class="admin-grid-2"><label>Trend/check start<input type="date" name="start" value="' . AdminLayout::escape($start) . '"></label><label>Trend/check end<input type="date" name="end" value="' . AdminLayout::escape($end) . '"></label><label>Check status<select name="status"><option value="">All</option><option value="OK"' . ($status==='OK'?' selected':'') . '>OK</option><option value="WARN"' . ($status==='WARN'?' selected':'') . '>WARN</option><option value="CRIT"' . ($status==='CRIT'?' selected':'') . '>CRIT</option></select></label></div><button type="submit">Apply range</button></form>'
+            . '<p class="admin-muted">Trend lines cover ' . AdminLayout::escape($start) . ' through ' . AdminLayout::escape($end) . ' (UTC).</p>'
             . '<div class="ops-summary-grid">' . $cards . '</div>'
-            . '<h2>Recent system checks</h2><table class="admin-table"><thead><tr><th>Run</th><th>Status</th><th>Time</th><th>Critical</th><th>Warnings</th><th>Duration</th></tr></thead><tbody>' . $runRows . '</tbody></table>';
+            . '<h2>Recent system checks</h2><table class="admin-table"><thead><tr><th>Run</th><th>Status</th><th>Time</th><th>Critical</th><th>Warnings</th><th>Duration</th></tr></thead><tbody>' . $runRows . '</tbody></table>'
+            . '<p><a class="admin-button" href="/platform/admin/operations?' . http_build_query(['start'=>$start,'end'=>$end,'status'=>$status,'page'=>max(1,$page-1)]) . '">Previous</a> <span class="admin-muted">Page ' . $page . '</span> <a class="admin-button" href="/platform/admin/operations?' . http_build_query(['start'=>$start,'end'=>$end,'status'=>$status,'page'=>$page+1]) . '">Next</a></p>';
 
         return Response::html(AdminLayout::render(title: 'System Operations', body: $body, active: 'operations'));
     }
@@ -76,7 +84,7 @@ final class OperationsController
         $rows = '';
         foreach ($run['metrics'] as $metric) {
             $name = (string) $metric['metric_name'];
-            $url = '/platform/admin/operations/metrics?name=' . rawurlencode($name) . '&days=7';
+            $url = '/platform/admin/operations/metrics?name=' . rawurlencode($name) . '&start=' . rawurlencode($start) . '&end=' . rawurlencode($end);
             $rows .= '<tr><td>' . $this->badge((string) $metric['metric_status']) . '</td><td><a href="' . AdminLayout::escape($url) . '">' . AdminLayout::escape($this->friendlyName($name)) . '</a><br><code>' . AdminLayout::escape($name) . '</code></td>'
                 . '<td>' . AdminLayout::escape((string) $metric['actual_value']) . '</td><td>' . AdminLayout::escape((string) $metric['expected_value']) . '</td><td>' . AdminLayout::escape((string) ($metric['detail_text'] ?? '')) . '</td></tr>';
         }
@@ -92,11 +100,12 @@ final class OperationsController
             return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
         }
         $name = trim((string) ($_GET['name'] ?? ''));
-        $days = max(1, min(90, (int) ($_GET['days'] ?? 7)));
+        $start = trim((string) ($_GET['start'] ?? date('Y-m-d', strtotime('-7 days'))));
+        $end = trim((string) ($_GET['end'] ?? date('Y-m-d')));
         if ($name === '') {
             return Response::html(AdminLayout::render('Metric missing', '<p>Select a metric from the operations dashboard.</p>', 'operations'), 422);
         }
-        $history = $this->operations->metricHistory($name, $days, 1500);
+        $history = $this->operations->metricHistoryRange($name, $start, $end, 1500);
         $rows = '';
         foreach (array_reverse($history) as $point) {
             $rows .= '<tr><td><a href="/platform/admin/operations/runs/' . (int) $point['run_id'] . '">#' . (int) $point['run_id'] . '</a></td><td>' . $this->badge((string) $point['metric_status']) . '</td><td>' . AdminLayout::escape((string) $point['actual_value']) . '</td><td>' . AdminLayout::escape((string) $point['created_at']) . '</td></tr>';
@@ -104,12 +113,9 @@ final class OperationsController
         if ($rows === '') {
             $rows = '<tr><td colspan="4">No history is available in this time window.</td></tr>';
         }
-        $options = '';
-        foreach ([1, 7, 14, 30, 90] as $option) {
-            $options .= '<option value="' . $option . '"' . ($days === $option ? ' selected' : '') . '>' . $option . ' day' . ($option === 1 ? '' : 's') . '</option>';
-        }
         $body = $this->styles() . '<p><a class="admin-button" href="/platform/admin/operations">Back to operations</a></p>'
-            . '<form method="get" action="/platform/admin/operations/metrics"><input type="hidden" name="name" value="' . AdminLayout::escape($name) . '"><label>History window <select name="days" onchange="this.form.submit()">' . $options . '</select></label></form>'
+            . '<form method="get" action="/platform/admin/operations/metrics"><input type="hidden" name="name" value="' . AdminLayout::escape($name) . '"><div class="admin-grid-2"><label>Start<input type="date" name="start" value="' . AdminLayout::escape($start) . '"></label><label>End<input type="date" name="end" value="' . AdminLayout::escape($end) . '"></label></div><button type="submit">Apply range</button></form>'
+            . '<p class="admin-muted">Trend duration: ' . AdminLayout::escape($start) . ' through ' . AdminLayout::escape($end) . ' (UTC).</p>'
             . '<p><code>' . AdminLayout::escape($name) . '</code></p><div class="ops-large-chart">' . $this->sparkline($history, 760, 210) . '</div>'
             . '<table class="admin-table"><thead><tr><th>Run</th><th>Status</th><th>Actual</th><th>Time</th></tr></thead><tbody>' . $rows . '</tbody></table>';
         return Response::html(AdminLayout::render(title: $this->friendlyName($name), body: $body, active: 'operations'));

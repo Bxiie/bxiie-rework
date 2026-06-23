@@ -51,3 +51,4 @@ debug/
 
 # Local patch backups
 /storage/patch-backups/
+/storage/update-backups/

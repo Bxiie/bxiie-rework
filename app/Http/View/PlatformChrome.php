@@ -17,9 +17,8 @@ use Throwable;
  */
 final class PlatformChrome
 {
-    /**
-     * Renders the canonical public platform navigation in the required order.
-     */
+
+    /** Renders the canonical public platform navigation in the required order. */
     public static function topNavigation(string $active = ''): string
     {
         $items = [
@@ -31,15 +30,14 @@ final class PlatformChrome
             'developers' => ['/developer', 'Developers'],
             'contact' => ['/contact', 'Contact'],
         ];
-
         $html = '<nav class="platform-canonical-nav">';
         foreach ($items as $key => [$href, $label]) {
             $class = $active === $key ? ' class="active"' : '';
             $html .= '<a' . $class . ' href="' . $href . '">' . $label . '</a>';
         }
-
         return $html . self::platformAdminLink() . '</nav>';
     }
+
     /**
      * Returns the configured platform copyright string with a safe default.
      */

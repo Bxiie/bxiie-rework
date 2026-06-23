@@ -79,8 +79,8 @@ final class SignupController
         <h1>Create an ArtsFolio site</h1>
         <p class="auth-copy">Create the tenant, public subdomain, first owner account, membership, provisioning jobs, and welcome email queue in one flow.</p>
         <div class="sso-row">
-            <a href="{$googleSignupUrl}">Continue with Google</a>
-            <a href="{$facebookSignupUrl}">Continue with Facebook</a>
+            <a href="{$googleSignupUrl}"><span class="oauth-brand oauth-google" aria-hidden="true">G</span> Continue with Google</a>
+            <a href="{$facebookSignupUrl}"><span class="oauth-brand oauth-facebook" aria-hidden="true">f</span> Continue with Facebook</a>
         </div>
         <div class="divider"><span>or continue below</span></div>
         <form method="post" action="/signup" class="auth-form">

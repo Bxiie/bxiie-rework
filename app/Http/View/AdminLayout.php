@@ -52,6 +52,7 @@ final class AdminLayout
         $csrf = self::escape(self::csrfToken());
         $identity = self::platformIdentity();
         $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
+        $canonicalNav = \App\Http\View\PlatformChrome::topNavigation('platform');
         $platformCopyright = \App\Http\View\PlatformChrome::copyrightLine();
         $workerWarning = self::workerHealthWarning();
 
@@ -69,20 +70,14 @@ final class AdminLayout
     <script defer src="/assets/admin-color-fields.js?v=20260620-palette-contrast"></script>
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
     <script defer src="/assets/admin-typography-fields.js?v=20260620-typography-live"></script>
+    <script defer src="/assets/admin-table-tools.js?v=20260622-admin-table-tools"></script>
 </head>
 <body class="platform-admin-page">
 <header class="platform-admin-topbar" aria-label="Platform admin header">
     <a class="platform-admin-logo" href="/platform/admin" aria-label="ArtsFolio platform admin"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>
     <div class="platform-admin-identity"><strong>Platform Admin</strong><span>Global ArtsFolio operations, not a tenant site</span><span>{$identity}</span></div>
-    <nav>
-        <a href="/">Platform home</a>
-        <a href="/pricing">Pricing</a>
-        <a href="/directory">Directory</a>
-        <a href="/help">Help</a>
-        <a href="/help/developer">Developer Reference</a>
-        {$platformAdminLink}
-        <form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{$csrf}"><button type="submit">Log out</button></form>
-    </nav>
+    {$canonicalNav}
+    <form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{$csrf}"><button type="submit">Log out</button></form>
 </header>
 <div class="platform-admin-shell">
     <aside class="platform-admin-sidebar" aria-label="Platform admin navigation">

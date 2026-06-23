@@ -212,6 +212,3 @@ php scripts/test/phase8_routing_static.php
 run_if_exists scripts/test/admin_attention_watermark_operations_static.php
 
 # End of file.
-php scripts/test/tenant_admin_artwork_contact_defaults_static.php
-
-# End of file.

@@ -12,6 +12,8 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
 use PDO;
+use App\Tenant\Media\WatermarkService;
+use App\Tenant\Settings\TenantSettingsRepository;
 
 final class MediaController
 {
@@ -69,9 +71,17 @@ final class MediaController
         $mimeType = (string) ($variant['mime_type'] ?: $media['mime_type'] ?: 'application/octet-stream');
         $etag = '"' . sha1((string) $media['uuid'] . ':' . $variant['variant_key'] . ':' . (string) filemtime($absolute)) . '"';
 
+        $bytes = null;
+        if ($requirePublishedArtwork && $variantKey !== 'thumb') {
+            $bytes = (new WatermarkService(new TenantSettingsRepository($this->pdo)))->render($tenant, $absolute, $mimeType);
+        }
+        if ($bytes !== null) {
+            $etag = '"' . sha1($etag . ':watermark:' . $bytes) . '"';
+        }
+
         header('Content-Type: ' . $mimeType);
-        header('Content-Length: ' . filesize($absolute));
-        header('Cache-Control: public, max-age=31536000, immutable');
+        header('Content-Length: ' . ($bytes !== null ? strlen($bytes) : filesize($absolute)));
+        header('Cache-Control: public, max-age=86400');
         header('ETag: ' . $etag);
 
         if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && trim((string) $_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
@@ -79,7 +89,7 @@ final class MediaController
             exit;
         }
 
-        readfile($absolute);
+        if ($bytes !== null) { echo $bytes; } else { readfile($absolute); }
         exit;
     }
 

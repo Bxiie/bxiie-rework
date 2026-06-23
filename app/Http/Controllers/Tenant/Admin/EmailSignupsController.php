@@ -438,6 +438,14 @@ HTML,
     {
         return AdminLayout::escape($value);
     }
+
+    /** Records the newest point the administrator has viewed the signup list. */
+    private function markViewed(TenantContext $tenant): void
+    {
+        $stmt = $this->pdo->prepare("INSERT INTO tenant_settings (tenant_id, setting_key, setting_value, created_at, updated_at) VALUES (:tenant_id, 'email_signups_last_viewed_at', UTC_TIMESTAMP(), UTC_TIMESTAMP(), UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE setting_value = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP()");
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+    }
+
 }
 
 // End of file.

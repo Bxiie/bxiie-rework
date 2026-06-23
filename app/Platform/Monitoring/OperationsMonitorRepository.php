@@ -135,6 +135,30 @@ final class OperationsMonitorRepository
         ]);
     }
 
+
+    /** Returns monitor runs for a date range with status filtering and paging. */
+    public function searchRuns(?string $start, ?string $end, ?string $status, int $limit, int $offset): array
+    {
+        $where = ['1=1']; $params = [];
+        if ($start) { $where[] = 'created_at >= :start_at'; $params['start_at'] = $start . ' 00:00:00'; }
+        if ($end) { $where[] = 'created_at < DATE_ADD(:end_at, INTERVAL 1 DAY)'; $params['end_at'] = $end . ' 00:00:00'; }
+        if ($status && in_array($status, ['OK','WARN','CRIT'], true)) { $where[] = 'overall_status = :status'; $params['status'] = $status; }
+        $limit = max(1,min(200,$limit)); $offset=max(0,$offset);
+        $stmt=$this->pdo->prepare('SELECT id, host_name, overall_status, metric_count, warning_count, critical_count, duration_ms, created_at FROM operations_monitor_runs WHERE '.implode(' AND ',$where).' ORDER BY id DESC LIMIT '.$limit.' OFFSET '.$offset);
+        $stmt->execute($params); return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /** Returns metric history between explicit UTC timestamps. */
+    public function metricHistoryRange(string $metricName, ?string $start, ?string $end, int $limit = 1500): array
+    {
+        $where=['metric_name = :metric_name']; $params=['metric_name'=>$metricName];
+        if ($start) { $where[]='created_at >= :start_at'; $params['start_at']=$start.' 00:00:00'; }
+        if ($end) { $where[]='created_at < DATE_ADD(:end_at, INTERVAL 1 DAY)'; $params['end_at']=$end.' 00:00:00'; }
+        $limit=max(2,min(5000,$limit));
+        $stmt=$this->pdo->prepare('SELECT run_id, metric_status, actual_value, actual_numeric, expected_value, detail_text, created_at FROM operations_monitor_metrics WHERE '.implode(' AND ',$where).' ORDER BY created_at ASC LIMIT '.$limit);
+        $stmt->execute($params); return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function latestRuns(int $limit = 50): array
     {
         $limit = max(1, min(200, $limit));

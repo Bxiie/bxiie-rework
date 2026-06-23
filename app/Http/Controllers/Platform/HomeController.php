@@ -94,6 +94,7 @@ HTML;
     {
         $safeTitle = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
         $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
+        $canonicalNav = \App\Http\View\PlatformChrome::topNavigation('home');
         $platformCopyright = \App\Http\View\PlatformChrome::copyrightLine();
 
         return <<<HTML
@@ -107,7 +108,7 @@ HTML;
     <link rel="stylesheet" href="/assets/platform-custom.css">
 </head>
 <body>
-<header class="platform-header"><a class="platform-brand logo-brand" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a><nav><a href="/pricing">Pricing</a><a href="/directory">Artists</a><a href="/help">Help</a>{$platformAdminLink}<a href="/login">Sign in</a></nav></header>
+<header class="platform-header"><a class="platform-brand logo-brand" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>{$canonicalNav}</header>
 <main>{$body}</main>
 <footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer>
 <script src="/assets/platform.js" defer></script></body>

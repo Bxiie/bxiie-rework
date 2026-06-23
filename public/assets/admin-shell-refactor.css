@@ -194,6 +194,16 @@
     }
 }
 
+
+.admin-table-tools { display:flex; flex-wrap:wrap; gap:.55rem; align-items:center; margin:.75rem 0; }
+.admin-table-tools input[type="search"] { min-width:min(28rem,100%); }
+.admin-sortable-column { cursor:pointer; user-select:none; }
+.admin-sortable-column::after { content:" ↕"; opacity:.45; }
+.admin-sortable-column[aria-sort="ascending"]::after { content:" ↑"; opacity:1; }
+.admin-sortable-column[aria-sort="descending"]::after { content:" ↓"; opacity:1; }
+.tenant-nav-badge { display:inline-flex; min-width:1.45rem; height:1.45rem; padding:0 .35rem; align-items:center; justify-content:center; margin-left:.4rem; border-radius:999px; background:#b42318; color:#fff; font-size:.75rem; font-weight:800; }
+.platform-header .logo-brand img, .platform-admin-logo img { width:auto; height:64px; max-width:220px; }
+
 /* End of file. */
 
 
@@ -292,5 +302,15 @@ form[action*="plans"] input[name*="currency"] {
     min-width: 18rem;
     font-variant-numeric: tabular-nums;
 }
+
+
+.admin-table-tools { display:flex; flex-wrap:wrap; gap:.55rem; align-items:center; margin:.75rem 0; }
+.admin-table-tools input[type="search"] { min-width:min(28rem,100%); }
+.admin-sortable-column { cursor:pointer; user-select:none; }
+.admin-sortable-column::after { content:" ↕"; opacity:.45; }
+.admin-sortable-column[aria-sort="ascending"]::after { content:" ↑"; opacity:1; }
+.admin-sortable-column[aria-sort="descending"]::after { content:" ↓"; opacity:1; }
+.tenant-nav-badge { display:inline-flex; min-width:1.45rem; height:1.45rem; padding:0 .35rem; align-items:center; justify-content:center; margin-left:.4rem; border-radius:999px; background:#b42318; color:#fff; font-size:.75rem; font-weight:800; }
+.platform-header .logo-brand img, .platform-admin-logo img { width:auto; height:64px; max-width:220px; }
 
 /* End of file. */

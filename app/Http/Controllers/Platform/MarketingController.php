@@ -170,17 +170,7 @@ HTML;
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $name = trim((string) ($_POST['name'] ?? ''));
             $email = trim((string) ($_POST['email'] ?? ''));
-            $topic = trim((string) ($_POST['topic'] ?? 'General question'));
-            $website = trim((string) ($_POST['website'] ?? ''));
             $message = trim((string) ($_POST['message'] ?? ''));
-            $allowedTopics = ['General question', 'Getting started', 'Billing', 'Custom domain', 'Partnership', 'Technical support'];
-            if (!in_array($topic, $allowedTopics, true)) {
-                $topic = 'General question';
-            }
-            if ($website !== '' && filter_var($website, FILTER_VALIDATE_URL) === false) {
-                $website = '';
-            }
-            $storedMessage = $website !== '' ? "Website: {$website}\n\n{$message}" : $message;
             $captcha = FirstPartyCaptcha::verify('platform_contact', 0, $_POST, $this->turnstileSecretKey(), $this->requestIp($request));
             if (!$captcha->passed) {
                 $notice = '<p class="error" role="alert">Please complete the human confirmation.</p>';
@@ -188,7 +178,7 @@ HTML;
                 $notice = '<p class="error" role="alert">Please enter a valid email address and message.</p>';
             } else {
                 try {
-                    $this->recordPlatformContact($request, $name, $email, $storedMessage, $topic);
+                    $this->recordPlatformContact($request, $name, $email, $message);
                     $notice = '<p class="notice" role="status">Thank you. Your message has been sent.</p>';
                 } catch (Throwable $exception) {
                     error_log('ArtsFolio platform contact notification queue failed: ' . $exception->getMessage());
@@ -206,35 +196,14 @@ HTML;
     <p>For platform questions, onboarding help, billing, custom domains, or partnership inquiries, contact the ArtsFolio team.</p>
 </section>
 {$notice}
-<section class="platform-contact-layout">
-    <aside class="platform-contact-intro">
-        <h2>What can we help with?</h2>
-        <p>Use this form for ArtsFolio platform support, account questions, billing, custom domains, or partnerships.</p>
-        <p><strong>Artist inquiries belong on the artist’s own contact page.</strong> ArtsFolio does not represent the artists listed in the directory.</p>
-        <p>For urgent account access problems, include the site subdomain or custom domain in your message.</p>
-    </aside>
-    <form class="plan-edit-form platform-form js-submit-form" method="post" action="/contact">
-        <div class="platform-contact-fields">
-            <label>Name <input name="name" autocomplete="name"></label>
-            <label>Email <input name="email" type="email" autocomplete="email" required></label>
-            <label>Topic
-                <select name="topic">
-                    <option>General question</option>
-                    <option>Getting started</option>
-                    <option>Billing</option>
-                    <option>Custom domain</option>
-                    <option>Partnership</option>
-                    <option>Technical support</option>
-                </select>
-            </label>
-            <label>Site or website URL <input name="website" type="url" inputmode="url" placeholder="https://example.com"></label>
-        </div>
-        <label>Message <textarea name="message" rows="9" required placeholder="Tell us what you are trying to do, what happened, and the site involved."></textarea></label>
-        {$captcha}
-        <button type="submit" data-loading-label="Sending…">Send message</button>
-        <p class="form-progress" aria-live="polite">Sending message…</p>
-    </form>
-</section>
+<form class="plan-edit-form" class="platform-form js-submit-form" method="post" action="/contact">
+    <label>Name <input name="name" autocomplete="name"></label>
+    <label>Email <input name="email" type="email" autocomplete="email" required></label>
+    <label>Message <textarea name="message" rows="8" required></textarea></label>
+    {$captcha}
+    <button type="submit" data-loading-label="Sending…">Send message</button>
+    <p class="form-progress" aria-live="polite">Sending message…</p>
+</form>
 HTML;
 
         return $this->page('Contact | ArtsFolio', $body, 'contact');
@@ -248,18 +217,18 @@ HTML;
      * contact_messages for admin workflow, while email_outbox is only the
      * notification transport.
      */
-    private function recordPlatformContact(Request $request, string $name, string $email, string $message, string $topic): int
+    private function recordPlatformContact(Request $request, string $name, string $email, string $message): int
     {
         $messageId = (new PlatformContactMessageRepository($this->pdo))->create(
             senderName: $name !== '' ? $name : 'Platform contact visitor',
             senderEmail: $email,
             message: $message,
-            subject: 'ArtsFolio platform contact: ' . $topic,
+            subject: 'ArtsFolio platform contact',
             ipAddress: $this->requestIp($request),
             userAgent: (string) $request->server('HTTP_USER_AGENT', ''),
         );
 
-        $this->queuePlatformContactNotification($messageId, $name, $email, $message, $topic);
+        $this->queuePlatformContactNotification($messageId, $name, $email, $message);
 
         return $messageId;
     }
@@ -267,17 +236,16 @@ HTML;
     /**
      * Queue public platform contact submissions into the normal email outbox.
      */
-    private function queuePlatformContactNotification(int $messageId, string $name, string $email, string $message, string $topic): int
+    private function queuePlatformContactNotification(int $messageId, string $name, string $email, string $message): int
     {
         $displayName = $name !== '' ? $name : 'Platform contact visitor';
-        $subject = 'New ArtsFolio ' . $topic . ' contact from ' . $displayName;
+        $subject = 'New ArtsFolio platform contact from ' . $displayName;
         $body = implode("\n", [
             'A public ArtsFolio platform contact form was submitted.',
             '',
             'Platform contact message ID: ' . $messageId,
             'Manage it: /platform/admin/contacts',
             '',
-            'Topic: ' . $topic,
             'From: ' . $displayName . ' <' . $email . '>',
             'Reply to the sender manually at: ' . $email,
             '',

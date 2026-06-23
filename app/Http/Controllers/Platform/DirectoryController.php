@@ -195,13 +195,14 @@ HTML;
     private function layout(string $title, string $body): string
     {
         $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
+        $canonicalNav = \App\Http\View\PlatformChrome::topNavigation('artists');
         $platformCopyright = \App\Http\View\PlatformChrome::copyrightLine();
 
         return <<<HTML
 <!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"><title>{$title}</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/platform.css"><link rel="stylesheet" href="/assets/platform-custom.css"><link rel="stylesheet" href="/assets/tenant-admin.css"><script src="/assets/directory-pagination.js" defer></script></head>
-<body><header class="platform-header"><a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a><nav><a href="/pricing">Pricing</a><a class="active" href="/directory">Artists</a><a href="/help">Help</a>{$platformAdminLink}<a href="/login">Sign in</a></nav></header><main>{$body}</main><footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer></body></html>
+<body><header class="platform-header"><a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>{$canonicalNav}</header><main>{$body}</main><footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer></body></html>
 HTML;
     }
 

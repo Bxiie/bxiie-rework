@@ -33,8 +33,8 @@ final class AuthPage
     <label class="auth-checkbox"><input type="checkbox" name="keep_me_logged_in" value="1"> Keep me logged in</label>
     
 <div class="sso-row">
-    <a class="button secondary" href="{$googleHref}">Continue with Google</a>
-    <a class="button secondary" href="{$facebookHref}">Continue with Facebook</a>
+    <a class="button secondary" href="{$googleHref}"><span class="oauth-brand oauth-google" aria-hidden="true">G</span> Continue with Google</a>
+    <a class="button secondary" href="{$facebookHref}"><span class="oauth-brand oauth-facebook" aria-hidden="true">f</span> Continue with Facebook</a>
 </div>
 
 <button type="submit">Sign in</button>

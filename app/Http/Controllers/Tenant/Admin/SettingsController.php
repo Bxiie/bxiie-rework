@@ -51,7 +51,6 @@ final class SettingsController
         $homeIntro = $this->setting($tenant, 'home_intro', 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.');
         $salesNotes = $this->setting($tenant, 'sales_notes', 'Sales are handled directly by the artist. Contact the studio for shipping, pickup, installation, and timing details.');
         $stripeConnectedAccountId = $this->setting($tenant, 'stripe_connected_account_id', '');
-        $newArtworkDefaultStatus = $this->setting($tenant, 'new_artwork_default_status', 'draft');
         $homeTab = $this->setting($tenant, 'home_tab', 'Home');
         $portfolioTab = $this->setting($tenant, 'portfolio_tab', 'Portfolio');
         $aboutTab = $this->setting($tenant, 'about_tab', 'About');
@@ -282,16 +281,6 @@ HTML;
             </label>
         </fieldset>
         <fieldset>
-            <legend>New artwork defaults</legend>
-            <label>New artwork publication status
-                <select name="new_artwork_default_status">
-                    <option value="draft"{$selected($newArtworkDefaultStatus, 'draft')}>Unpublished (draft)</option>
-                    <option value="published"{$selected($newArtworkDefaultStatus, 'published')}>Published</option>
-                </select>
-            </label>
-            <p class="admin-help">This applies to newly uploaded artwork only. Existing artwork is not changed.</p>
-        </fieldset>
-        <fieldset>
             <legend>Spam protection</legend>
             <p class="admin-help">Tenant public contact and email-list forms use the built-in ArtsFolio CAPTCHA. Cloudflare Turnstile is reserved for ArtsFolio platform-domain forms.</p>
         </fieldset>
@@ -397,9 +386,6 @@ HTML;
             }
             if (in_array($key, ['header_drop_shadow_enabled', 'menu_background_enabled'], true)) {
                 $value = $value === '0' ? '0' : '1';
-            }
-            if ($key === 'new_artwork_default_status') {
-                $value = in_array($value, ['draft', 'published'], true) ? $value : 'draft';
             }
             if (str_ends_with($key, '_slug')) {
                 $value = $this->safeSlug($value, str_replace('_slug', '', $key));
@@ -515,7 +501,7 @@ HTML;
                 'watermark_enabled', 'watermark_format', 'watermark_text', 'watermark_position', 'watermark_opacity', 'watermark_size', 'watermark_color',
             ],
             'miscellaneous' => [
-                'sales_notes', 'stripe_connected_account_id', 'new_artwork_default_status', 'artwork_display_order', 'exhibitions_heading', 'exhibitions_display_mode',
+                'sales_notes', 'stripe_connected_account_id', 'artwork_display_order', 'exhibitions_heading', 'exhibitions_display_mode',
             ],
             'custom-css' => [
                 'tenant_css',
