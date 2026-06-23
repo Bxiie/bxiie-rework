@@ -1762,6 +1762,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 - Tenant navigation/menu background image URLs are marked as background usage in public pages and tenant-admin previews, so they bypass watermark rendering.
 
+- Media selected for tenant presentation surfaces (`background_media_uuid`, `menu_media_uuid`, `topbar_media_uuid`, or `artwork_card_media_uuid`) is excluded from watermark rendering at the media-controller layer.
+
 <!-- End of file. -->
 
 ## Phase 5 placement matrix column filters (2026-06-22)

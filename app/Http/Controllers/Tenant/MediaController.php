@@ -85,6 +85,10 @@ final class MediaController
         // and original artwork responses use the tenant watermark setting.
         $watermarkEnabled = $requirePublishedArtwork
             && !$isBackgroundRequest
+            && !$this->isSelectedPresentationMedia(
+                $tenant,
+                $mediaUuid,
+            )
             && $variantKey !== 'thumb'
             && $watermark->enabled($tenant);
         $watermarkFingerprint = $watermarkEnabled
@@ -238,6 +242,40 @@ final class MediaController
             $stmt->execute(['tenant_id' => $tenant->tenantId]);
 
             return hash_equals((string) ($stmt->fetchColumn() ?: ''), $mediaUuid);
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * Returns true when media is assigned to a tenant presentation surface.
+     *
+     * Presentation media must remain visually clean and is excluded from
+     * watermark rendering regardless of which URL helper served it.
+     */
+    private function isSelectedPresentationMedia(
+        TenantContext $tenant,
+        string $mediaUuid,
+    ): bool {
+        try {
+            $stmt = $this->pdo->prepare(
+                "SELECT COUNT(*)
+                   FROM tenant_settings
+                  WHERE tenant_id = :tenant_id
+                    AND setting_key IN (
+                        'background_media_uuid',
+                        'menu_media_uuid',
+                        'topbar_media_uuid',
+                        'artwork_card_media_uuid'
+                    )
+                    AND setting_value = :media_uuid"
+            );
+            $stmt->execute([
+                'tenant_id' => $tenant->tenantId,
+                'media_uuid' => $mediaUuid,
+            ]);
+
+            return (int) $stmt->fetchColumn() > 0;
         } catch (\Throwable) {
             return false;
         }
