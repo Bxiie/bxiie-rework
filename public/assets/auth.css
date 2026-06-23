@@ -5,7 +5,6 @@
 .oauth-google { background:#fff; color:#4285f4; border:1px solid #dadce0; }
 .oauth-facebook { background:#1877f2; color:#fff; }
 
-
 /* Provider branding for OAuth login actions. */
 .oauth-button {
     align-items: center;
@@ -54,75 +53,6 @@
     border-color: #166fe5;
     color: #166fe5;
 }
-
-/* OAuth provider branding. */
-.oauth-provider-mark {
-    align-items: center;
-    display: inline-flex;
-    flex: 0 0 auto;
-    height: 1.25rem;
-    justify-content: center;
-    margin-right: 0.55rem;
-    width: 1.25rem;
-}
-
-.oauth-provider-mark svg {
-    display: block;
-    height: 100%;
-    width: 100%;
-}
-
-.oauth-provider-label {
-    display: inline-block;
-}
-
-.auth-socials .button,
-.auth-provider-actions .button {
-    align-items: center;
-    display: inline-flex;
-    justify-content: center;
-}
-
-/* Compact OAuth provider branding. */
-.auth-socials .button,
-.auth-provider-actions .button {
-    align-items: center !important;
-    display: inline-flex !important;
-    flex-direction: row !important;
-    gap: 0.55rem !important;
-    justify-content: center !important;
-    min-height: 3rem !important;
-    padding: 0.75rem 1rem !important;
-}
-
-.oauth-provider-mark {
-    display: inline-flex !important;
-    flex: 0 0 20px !important;
-    height: 20px !important;
-    margin: 0 !important;
-    max-height: 20px !important;
-    max-width: 20px !important;
-    min-height: 20px !important;
-    min-width: 20px !important;
-    width: 20px !important;
-}
-
-.oauth-provider-mark svg {
-    display: block !important;
-    flex: 0 0 20px !important;
-    height: 20px !important;
-    max-height: 20px !important;
-    max-width: 20px !important;
-    min-height: 20px !important;
-    min-width: 20px !important;
-    width: 20px !important;
-}
-
-.oauth-provider-label {
-    line-height: 1.2 !important;
-    white-space: nowrap;
-}
-
 /* Canonical compact OAuth provider icons. */
 .oauth-button {
     align-items: center !important;
@@ -163,6 +93,4 @@
 }
 
 /* End of file. */
-
-
 

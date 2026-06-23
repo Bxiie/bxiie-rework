@@ -27,6 +27,8 @@ foreach ([
     'oauth-provider-label',
     'Continue with Google',
     'Continue with Facebook',
+    'width="18" height="18"',
+    'style="display:block;width:18px;height:18px"',
 ] as $requiredText) {
     if (!str_contains($authContents, $requiredText)) {
         $failures[] = "AuthPage.php missing: {$requiredText}";
@@ -34,6 +36,7 @@ foreach ([
 }
 
 foreach ([
+    '/* Provider branding for OAuth login actions. */',
     '/* Canonical compact OAuth provider icons. */',
     '.oauth-provider-icon',
     '.oauth-provider-icon svg',
@@ -46,12 +49,16 @@ foreach ([
     }
 }
 
-if (str_contains($authContents, 'oauth-provider-mark-google')) {
-    $failures[] = 'AuthPage.php still contains duplicate Google provider markup.';
+if (str_contains($authContents, 'oauth-provider-mark-google')
+    || str_contains($authContents, 'oauth-provider-mark-facebook')
+) {
+    $failures[] = 'AuthPage.php still contains obsolete duplicate provider marks.';
 }
 
-if (str_contains($authContents, 'oauth-provider-mark-facebook')) {
-    $failures[] = 'AuthPage.php still contains duplicate Facebook provider markup.';
+if (str_contains($cssContents, '/* OAuth provider branding. */')
+    || str_contains($cssContents, '/* Compact OAuth provider branding. */')
+) {
+    $failures[] = 'auth.css still contains obsolete duplicate OAuth CSS blocks.';
 }
 
 if (substr_count($authContents, 'oauth-provider-icon-google') !== 1) {
@@ -60,6 +67,10 @@ if (substr_count($authContents, 'oauth-provider-icon-google') !== 1) {
 
 if (substr_count($authContents, 'oauth-provider-icon-facebook') !== 1) {
     $failures[] = 'Facebook OAuth button must contain exactly one provider icon.';
+}
+
+if (substr_count($authContents, 'width="18" height="18"') !== 2) {
+    $failures[] = 'Both OAuth SVGs must have intrinsic 18 by 18 dimensions.';
 }
 
 if ($failures !== []) {
