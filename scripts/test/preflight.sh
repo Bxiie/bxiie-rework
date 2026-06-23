@@ -128,6 +128,10 @@ echo "Preflight passed."
 
 php scripts/test/platform_help_copyright_static.php
 
+php scripts/test/smtp_reserved_recipient_guard_static.php
+
+php scripts/test/platform_operations_run_detail_static.php
+
 # End of file.
 
 
@@ -216,10 +220,18 @@ run_if_exists scripts/test/admin_attention_watermark_operations_static.php
 
 php scripts/test/platform_help_copyright_static.php
 
+php scripts/test/smtp_reserved_recipient_guard_static.php
+
+php scripts/test/platform_operations_run_detail_static.php
+
 # End of file.
 
 php scripts/test/oauth_button_branding_static.php
 
 php scripts/test/platform_help_copyright_static.php
+
+php scripts/test/smtp_reserved_recipient_guard_static.php
+
+php scripts/test/platform_operations_run_detail_static.php
 
 # End of file.

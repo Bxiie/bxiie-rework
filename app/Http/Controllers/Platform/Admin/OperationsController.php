@@ -81,6 +81,13 @@ final class OperationsController
         if ($run === null) {
             return Response::html(AdminLayout::render('System check not found', '<p>No saved system check exists with that ID.</p>', 'operations'), 404);
         }
+
+        $runTimestamp = strtotime((string) ($run['created_at'] ?? '')) ?: time();
+        $defaultEnd = date('Y-m-d', $runTimestamp);
+        $defaultStart = date('Y-m-d', strtotime('-7 days', $runTimestamp));
+        $start = trim((string) ($_GET['start'] ?? $defaultStart));
+        $end = trim((string) ($_GET['end'] ?? $defaultEnd));
+
         $rows = '';
         foreach ($run['metrics'] as $metric) {
             $name = (string) $metric['metric_name'];

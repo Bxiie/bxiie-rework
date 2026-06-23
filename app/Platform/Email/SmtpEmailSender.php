@@ -47,6 +47,17 @@ final class SmtpEmailSender implements EmailSenderInterface
 
     public function send(array $email): string
     {
+        $recipientEmail = strtolower(trim((string) ($email['recipient_email'] ?? '')));
+
+        if ($this->isReservedTestRecipient($recipientEmail)) {
+            return json_encode([
+                'smtp' => false,
+                'suppressed' => true,
+                'reason' => 'reserved_test_recipient',
+                'to' => $recipientEmail,
+            ], JSON_THROW_ON_ERROR);
+        }
+
         $socket = $this->connect();
 
         try {
@@ -84,6 +95,31 @@ final class SmtpEmailSender implements EmailSenderInterface
     public function buildMessageForTest(array $email): string
     {
         return $this->buildMessage($email);
+    }
+
+    /**
+     * Returns true for addresses that must never be sent through live SMTP.
+     *
+     * RFC 2606 reserves .test, .invalid, .example, and .localhost for
+     * documentation and testing. Suppression happens before socket creation.
+     */
+    private function isReservedTestRecipient(string $recipientEmail): bool
+    {
+        $atPosition = strrpos($recipientEmail, '@');
+
+        if ($atPosition === false) {
+            return false;
+        }
+
+        $domain = substr($recipientEmail, $atPosition + 1);
+
+        foreach (['.test', '.invalid', '.example', '.localhost'] as $suffix) {
+            if ($domain === ltrim($suffix, '.') || str_ends_with($domain, $suffix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function connect()
