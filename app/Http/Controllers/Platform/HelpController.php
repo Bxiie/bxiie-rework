@@ -217,6 +217,7 @@ HTML;
         $nav = $this->nav($active, $currentUser !== null);
         $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
         $canonicalNav = \App\Http\View\PlatformChrome::topNavigation('help');
+        $platformCopyright = \App\Http\View\PlatformChrome::copyrightLine();
         $auth = $currentUser
             ? '<form class="plan-edit-form" method="post" action="/logout" class="inline-form"><button type="submit">Log out</button></form>'
             : '<a href="/login">Sign in</a>';
@@ -246,7 +247,7 @@ HTML;
         <section class="tenant-admin-panel help-article"><h1>{$safeTitle}</h1>{$body}</section>
     </main>
 </div>
-<footer class="platform-footer"><span>{\App\Http\View\PlatformChrome::copyrightLine()}</span><nav><a href="/help">Help</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer>
+<footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer>
 </body>
 </html>
 HTML;

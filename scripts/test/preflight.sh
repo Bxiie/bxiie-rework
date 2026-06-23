@@ -126,6 +126,8 @@ echo "Core smoke tests passed."
 echo
 echo "Preflight passed."
 
+php scripts/test/platform_help_copyright_static.php
+
 # End of file.
 
 
@@ -212,8 +214,12 @@ php scripts/test/phase8_routing_static.php
 
 run_if_exists scripts/test/admin_attention_watermark_operations_static.php
 
+php scripts/test/platform_help_copyright_static.php
+
 # End of file.
 
 php scripts/test/oauth_button_branding_static.php
+
+php scripts/test/platform_help_copyright_static.php
 
 # End of file.

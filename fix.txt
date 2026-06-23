@@ -2,9 +2,10 @@
 
 ## Functionality ##
 
-- Allow the admin to specify if new artworks are published or unpublished by default.
+- Allow the tenant admin to specify if new artworks are published or unpublished by default.
 - rework platform contact form.
 - in contact messages regarding an artwork, include a link to the image URL in the contact message body on send
+- tenant - artworks - 'Upload artwork · Artwork placement matrix · Section artwork order' should be buttons, handled like platform - protfolio sections.
 - Add indicator to messages tab if there are new messages.
 - Add indicator to email signups tab if there are new email signups.
 - Add watermark to images if tenant admin opts in.  Give options for watermark format and appearance.
@@ -33,7 +34,6 @@
 
 ## Bugs ##
 - tenant googlesignup received 6h and 1d email messages.  facebooktest received neither.
-- Copyright on help section is not detokenized
 
 ## backlog
 - implement billing
@@ -51,6 +51,7 @@
 ##
 
 
+- Copyright on help section is not detokenized
 - Add Google and Facebook branding to 'Continue with' buttons.
 - https://bxiie.com/contact still has email list sighup in addition to footer signup.
 
