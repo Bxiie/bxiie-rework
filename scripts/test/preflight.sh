@@ -371,6 +371,7 @@ run_php scripts/test/user_timezone_preferences_static.php
 printf '[PASS] Preflight completed successfully.\n'
 
 php scripts/test/watermark_runtime_static.php
+php scripts/test/background_watermark_exclusion_static.php
 
 # End of file.
 run_php scripts/test/platform_user_status_auth_static.php

@@ -43,6 +43,9 @@ final class MediaController
     {
         $mediaUuid = strtolower(trim((string) ($_GET['uuid'] ?? '')));
         $variantKey = $this->requestedVariant();
+        $isBackgroundRequest = strtolower(
+            trim((string) ($_GET['usage'] ?? ''))
+        ) === 'background';
 
         if (!preg_match('/^[a-f0-9-]{36}$/', $mediaUuid)) {
             return Response::html('<h1>404</h1><p>Media not found.</p>', 404);
@@ -50,8 +53,13 @@ final class MediaController
 
         $media = $this->findMedia($tenant, $mediaUuid, $requirePublishedArtwork);
 
-        if (!$media && $allowSelectedBackground && $this->isSelectedBackground($tenant, $mediaUuid)) {
+        if (
+            !$media
+            && $allowSelectedBackground
+            && $this->isSelectedBackground($tenant, $mediaUuid)
+        ) {
             $media = $this->findMedia($tenant, $mediaUuid, false);
+            $isBackgroundRequest = true;
         }
 
         if (!$media) {
@@ -76,6 +84,7 @@ final class MediaController
         // Thumbnails intentionally remain unwatermarked. Public medium, large,
         // and original artwork responses use the tenant watermark setting.
         $watermarkEnabled = $requirePublishedArtwork
+            && !$isBackgroundRequest
             && $variantKey !== 'thumb'
             && $watermark->enabled($tenant);
         $watermarkFingerprint = $watermarkEnabled

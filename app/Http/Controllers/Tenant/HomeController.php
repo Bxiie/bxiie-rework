@@ -976,7 +976,7 @@ HTML;
         }
 
         $opacity = $this->safeOpacity((string) $this->settings->get($tenant, $opacitySetting, '1'));
-        $src = '/media?uuid=' . rawurlencode($uuid);
+        $src = '/media?uuid=' . rawurlencode($uuid) . '&usage=background';
         $safeAlt = $this->escape($alt);
 
         return '<figure class="site-content-image" style="--site-content-image-opacity:' . $opacity . '"><img src="' . $this->escape($src) . '" alt="' . $safeAlt . '" loading="lazy"></figure>';
@@ -1048,7 +1048,7 @@ HTML;
         $mode = (string) $this->settings->get($tenant, 'background_mode', 'single');
         $tileSize = $this->safeCssSize((string) $this->settings->get($tenant, 'background_tile_size', '360px'), '360px');
         $opacity = $this->safeOpacity((string) $this->settings->get($tenant, 'background_opacity', '0.12'));
-        $imageUrl = '/media?uuid=' . rawurlencode($uuid);
+        $imageUrl = '/media?uuid=' . rawurlencode($uuid) . '&usage=background';
         $repeat = $mode === 'tile' ? 'repeat' : 'no-repeat';
         $size = $mode === 'tile' ? $tileSize : 'cover';
 
@@ -1156,7 +1156,7 @@ HTML;
             ? $this->settings->get($tenant, 'background_tile_size', '360px')
             : 'cover';
         $opacity = $this->cssNumber($this->settings->get($tenant, 'background_opacity', '0.12'), '0.12');
-        $url = '/media?uuid=' . rawurlencode($mediaUuid);
+        $url = '/media?uuid=' . rawurlencode($mediaUuid) . '&usage=background';
 
         return '--background-image:url(' . $url . ');--background-repeat:' . $mode . ';--background-size:' . $this->cssToken($size, 'cover') . ';--background-opacity:' . $opacity . ';';
     }

@@ -1758,6 +1758,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 - Public artwork watermarks are rendered dynamically on medium, large, and original variants only; thumbnails and admin media remain unwatermarked. Watermark settings participate in ETags, and enabled responses require cache revalidation.
 
+- Watermark eligibility is request-context aware: published artwork medium, large, and original responses may be watermarked, while thumbnails, tenant background responses, and admin media remain unwatermarked.
+
 <!-- End of file. -->
 
 ## Phase 5 placement matrix column filters (2026-06-22)
