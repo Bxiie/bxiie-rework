@@ -213,3 +213,7 @@ php scripts/test/phase8_routing_static.php
 run_if_exists scripts/test/admin_attention_watermark_operations_static.php
 
 # End of file.
+
+php scripts/test/oauth_button_branding_static.php
+
+# End of file.

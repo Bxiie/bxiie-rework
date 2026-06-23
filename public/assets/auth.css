@@ -5,4 +5,54 @@
 .oauth-google { background:#fff; color:#4285f4; border:1px solid #dadce0; }
 .oauth-facebook { background:#1877f2; color:#fff; }
 
+
+/* Provider branding for OAuth login actions. */
+.oauth-button {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.65rem;
+    justify-content: center;
+}
+
+.oauth-provider-icon {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 1.125rem;
+    justify-content: center;
+    width: 1.125rem;
+}
+
+.oauth-provider-icon svg {
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.oauth-button-google {
+    background: #ffffff;
+    border-color: #dadce0;
+    color: #3c4043;
+}
+
+.oauth-button-google:hover,
+.oauth-button-google:focus-visible {
+    background: #f8f9fa;
+    border-color: #c7cacf;
+    color: #202124;
+}
+
+.oauth-button-facebook {
+    background: #ffffff;
+    border-color: #1877f2;
+    color: #1877f2;
+}
+
+.oauth-button-facebook:hover,
+.oauth-button-facebook:focus-visible {
+    background: #f2f7ff;
+    border-color: #166fe5;
+    color: #166fe5;
+}
+
 /* End of file. */

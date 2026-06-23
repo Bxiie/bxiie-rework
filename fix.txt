@@ -2,16 +2,40 @@
 
 ## Functionality ##
 
+- Allow the admin to specify if new artworks are published or unpublished by default.
+- rework platform contact form.
+- in contact messages regarding an artwork, include a link to the image URL in the contact message body on send
+- Add indicator to messages tab if there are new messages.
+- Add indicator to email signups tab if there are new email signups.
+- Add watermark to images if tenant admin opts in.  Give options for watermark format and appearance.
+- remove redundant 'Email List' dialog from tenant - contact.
+- edit button on tenant - artworks should match the unpublish and archive buttons.
+- the top navigation on all platform pages should be the same; home, artists, pricing, help, developers, contact
+- Make the logo bigger on login pages, and at the top left of the non-home platform pages.
+- sort/filter jobs, email outbox, stats, audit log, tenants
+- sort/filter portfolio, section pages
+- system operations, indicate the duration of the trend lines.  Allow selection of different start and end times.
+- system operations, recent system checks; allow paging, filtering by date.
+- On tenant - admin - settings, allow selection of font and size for all text elements on home, portfolio, about, and contact pages.  Use a text/font picker for this.
+
 ## curation workflow
 
 - add curation workflow.  Split tenant admins into three levels; tenant, editor, user.  Users can add artworks from the card where the artwork is encapsulated to a central or editor-specific list, along with a note.  Editors can add artworks to lists and review and publish artworks from their queue or the central queue.  A reply to the note will end up in the user's messages page.
-- logged in users should be able to see unpublished works where they would be shown.  logged in users should see 'unpublished' indication  on artwork cards for unpublished works.
-- portfolio sections can exist but and associated buttons are not shown unless they have visible works in them.  This means that admins may be able to see more portfolio sections and artworks than non-logged in users.  This gives an ability to set up a section in advance of publication, to allow proper curation.
+- logged in users should be able to see unpublished works where they would be shown in the tenant pages.  logged in users should see 'unpublished' indication  on artwork cards for unpublished works.
+- portfolio sections can exist but the sections and any associated buttons are not shown except to logged-in users unless they have visible works in them.  This means that admins may be able to see more portfolio sections and artworks than non-logged in users.  This gives an ability to set up a section in advance of publication, to allow proper curation.
 
+## billing
+- when changing plans, require definite confirmation.  Warn that difference between this month's payment and the new plan, scaled by days left in the month, will be billed immediatly, unless changing from a free plan.
+- For a billing plan, the free plan should not show credit card rates as checkout is unavailable.
+- Change 'I am a real person, not an automated form submission.' to 'I am a real person.'
 
+## misc
+
+## Bugs ##
+- tenant googlesignup received 6h and 1d email messages.  facebooktest received neither.
+- Copyright on help section is not detokenized
 
 ## backlog
-
 - implement billing
 - Rework shopping cart and experience
 - implement stripe
@@ -20,42 +44,14 @@
 - Add caching in data access routines for performance?
 - IP flooding blocking
 
-## UI
-- Add indicator to messages tab if there are new messages.
-- Add indicator to email signups tab if there are new email signups.
-- Add watermark to images if tenant admin opts in.  Give options for watermark format and appearance.
-- remove redundant 'Email List' dialog from tenant - contact.
-- edit button on tenant - artworks should match the unpublish and archive buttons.
-- the top navigation on all platform pages should be the same; platform, help, artists, pricing, home, developers, contact
-- Add Google and Facebook branding to 'Continue with' buttons.
-- Make the logo bigger on login pages, and at the top left of the non-home platform pages.
-
-# sort
-- sort/filter jobs, email outbox, stats, audit log, tenants
-- sort/filter portfolio, section pages
-
-- system operations, indicate the duration of the trend lines.  Allow selection of different start and end times.
-- system operations, recent system checks; allow paging, filtering by date.
-
-## billing
-- when changing plans, require definite confirmation.  Warn that difference between this month's payment and the new plan, scaled by days left in the month, will be billed immediatly, unless changing from a free plan.
-- For a billing plan, the free plan should not show credit card rates as checkout is unavailable.
-
-## misc
-
-
-- Allow the admin to specify if new artworks are published or unpublished by default.
-- rework platform contact form.
-- in contact messages regarding an artwork, include a link to the image URL in the contact message body on send
-
-## Bugs ##
-- tenant googlesignup received 6h and 1d email messages.  facebooktest received neither.
-- Copyright on help section is not detokenized
-
-
 ## #########################
  
-- On tenant - admin - settings, allow selection of font and size for all text elements on home, portfolio, about, and contact pages.  Use a text/font picker for this.
+
+##
+
+
+- Add Google and Facebook branding to 'Continue with' buttons.
+- https://bxiie.com/contact still has email list sighup in addition to footer signup.
 
 ##
 
@@ -512,14 +508,3 @@ Too few arguments to function App\Http\Controllers\Platform\HelpController::inde
 # later
 
 ## End of file.
-
-2026-06-22: Added tenant new-item indicators, opt-in public image watermark settings/runtime, canonical platform navigation, branded OAuth controls, larger logos, admin table sort/filter tools, and operations date-range/paging controls.
-# End of file.
-2026-06-22
-- Fixed platform home HTTP 500 caused by MarketingController calling a missing PlatformChrome::topNavigation() method.
-- Strengthened the navigation regression test to require the method declaration, not merely the method name.
-Tenant admin opacity inputs now use step=0.01 so values such as 0.72 pass browser validation.
-2026-06-22
-- Repaired the platform navigation regression test to inspect the shared PlatformChrome navigation source instead of stale inline MarketingController markup.
-
-# End of file.
