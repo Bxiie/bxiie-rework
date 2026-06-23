@@ -34,6 +34,10 @@ foreach ([
 
 foreach ([
     '/* OAuth provider branding. */',
+    '/* Compact OAuth provider branding. */',
+    'flex: 0 0 20px !important;',
+    'height: 20px !important;',
+    'width: 20px !important;',
     '.oauth-provider-mark',
     '.oauth-provider-mark svg',
     '.oauth-provider-label',

@@ -83,5 +83,46 @@
     justify-content: center;
 }
 
+/* Compact OAuth provider branding. */
+.auth-socials .button,
+.auth-provider-actions .button {
+    align-items: center !important;
+    display: inline-flex !important;
+    flex-direction: row !important;
+    gap: 0.55rem !important;
+    justify-content: center !important;
+    min-height: 3rem !important;
+    padding: 0.75rem 1rem !important;
+}
+
+.oauth-provider-mark {
+    display: inline-flex !important;
+    flex: 0 0 20px !important;
+    height: 20px !important;
+    margin: 0 !important;
+    max-height: 20px !important;
+    max-width: 20px !important;
+    min-height: 20px !important;
+    min-width: 20px !important;
+    width: 20px !important;
+}
+
+.oauth-provider-mark svg {
+    display: block !important;
+    flex: 0 0 20px !important;
+    height: 20px !important;
+    max-height: 20px !important;
+    max-width: 20px !important;
+    min-height: 20px !important;
+    min-width: 20px !important;
+    width: 20px !important;
+}
+
+.oauth-provider-label {
+    line-height: 1.2 !important;
+    white-space: nowrap;
+}
+
 /* End of file. */
+
 
