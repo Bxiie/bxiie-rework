@@ -804,7 +804,7 @@ HTML;
         $vars .= '--artwork-card-bg-overlay:' . $this->cssColorWithOpacity($cardColor, $cardOpacity) . ';';
         $vars .= '--artwork-card-bg-opacity:' . $cardOpacity . ';';
         $vars .= '--artwork-card-bg-size:' . $this->safeCssSize((string) $this->settings->get($tenant, 'artwork_card_background_size', 'cover'), 'cover') . ';';
-        $vars .= $menuEnabled ? $this->mediaBackgroundVar($tenant, 'menu_media_uuid', '--menu-bg-image') : '--menu-bg-image:none;';
+        $vars .= $menuEnabled ? $this->mediaBackgroundVar($tenant, 'menu_media_uuid', '--menu-bg-image', true) : '--menu-bg-image:none;';
         $vars .= $this->mediaBackgroundVar($tenant, 'topbar_media_uuid', '--topbar-bg-image');
         $vars .= $this->mediaBackgroundVar($tenant, 'artwork_card_media_uuid', '--artwork-card-bg-image');
 
@@ -892,14 +892,16 @@ HTML;
     /**
      * Adds a CSS variable for a tenant-selected Site Image when the UUID remains valid.
      */
-    private function mediaBackgroundVar(TenantContext $tenant, string $settingKey, string $cssVar): string
+    private function mediaBackgroundVar(TenantContext $tenant, string $settingKey, string $cssVar, bool $backgroundUsage = false): string
     {
         $uuid = strtolower(trim((string) $this->settings->get($tenant, $settingKey, '')));
         if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid) || !$this->isPublicTenantImage($tenant, $uuid)) {
             return '';
         }
 
-        return $cssVar . ":url('/media?uuid=" . rawurlencode($uuid) . "');";
+        $usage = $backgroundUsage ? '&usage=background' : '';
+
+        return $cssVar . ":url('/media?uuid=" . rawurlencode($uuid) . $usage . "');";
     }
 
     /**

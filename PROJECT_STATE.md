@@ -1760,6 +1760,8 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 - Watermark eligibility is request-context aware: published artwork medium, large, and original responses may be watermarked, while thumbnails, tenant background responses, and admin media remain unwatermarked.
 
+- Tenant navigation/menu background image URLs are marked as background usage in public pages and tenant-admin previews, so they bypass watermark rendering.
+
 <!-- End of file. -->
 
 ## Phase 5 placement matrix column filters (2026-06-22)

@@ -169,7 +169,7 @@ HTML;
         $vars .= '--artwork-card-bg-overlay:' . self::cssColorWithOpacity($cardColor, $cardOpacity) . ';';
         $vars .= '--artwork-card-bg-opacity:' . $cardOpacity . ';';
         $vars .= '--artwork-card-bg-size:' . self::safeCssSize((string) $settings->get($tenant, 'artwork_card_background_size', 'cover')) . ';';
-        $vars .= $menuEnabled ? self::mediaVar((string) $settings->get($tenant, 'menu_media_uuid', ''), '--menu-bg-image') : '--menu-bg-image:none;';
+        $vars .= $menuEnabled ? self::mediaVar((string) $settings->get($tenant, 'menu_media_uuid', ''), '--menu-bg-image', true) : '--menu-bg-image:none;';
         $vars .= self::mediaVar((string) $settings->get($tenant, 'topbar_media_uuid', ''), '--topbar-bg-image');
         $vars .= self::mediaVar((string) $settings->get($tenant, 'artwork_card_media_uuid', ''), '--artwork-card-bg-image');
 
@@ -199,14 +199,16 @@ HTML;
             . '--site-bg-opacity:' . $opacity . ';';
     }
 
-    private static function mediaVar(string $uuid, string $cssVar): string
+    private static function mediaVar(string $uuid, string $cssVar, bool $backgroundUsage = false): string
     {
         $uuid = strtolower(trim($uuid));
         if ($uuid === '' || !preg_match('/^[a-f0-9-]{36}$/', $uuid)) {
             return '';
         }
 
-        return $cssVar . ":url('/media?uuid=" . rawurlencode($uuid) . "');";
+        $usage = $backgroundUsage ? '&usage=background' : '';
+
+        return $cssVar . ":url('/media?uuid=" . rawurlencode($uuid) . $usage . "');";
     }
 
     /**

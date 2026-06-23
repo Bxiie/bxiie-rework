@@ -3,15 +3,15 @@
 ## Functionality ##
 
 
-- Add indicator to messages tab if there are new messages.
-- Add indicator to email signups tab if there are new email signups.
+- On platform and tenant admin, add indicator to messages tab if there are new messages.
+- On platform and tenant admin, add indicator to email signups tab if there are new email signups.
 - Add watermark to images if tenant admin opts in.  Give options for watermark format and appearance.
 - the top navigation on all platform pages should be the same; home, artists, pricing, help, developers, contact
+
+- show the artwork on the edit artwork page
 - Make the logo bigger on login pages, and at the top left of the non-home platform pages.
 - sort/filter jobs, email outbox, stats, audit log, tenants
 - sort/filter portfolio, section pages
-- system operations, indicate the duration of the trend lines.  Allow selection of different start and end times.
-- system operations, recent system checks; allow paging, filtering by date.
 
 ## curation workflow
 
@@ -46,6 +46,8 @@
 ##
 
 
+- system operations, indicate the duration of the trend lines.  Allow selection of different start and end times.
+- system operations, recent system checks; allow paging, filtering by date.
 - On tenant - admin - settings, allow selection of font and size for all text elements on home, portfolio, about, and contact pages.  Use a text/font picker for this.
 - remove redundant 'Email List' dialog from tenant - contact.
 - edit button on tenant - artworks should match the unpublish and archive buttons.
