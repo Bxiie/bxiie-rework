@@ -62,7 +62,7 @@ final class TenantAdminLayout
     <title>{$browserTitle}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/assets/site.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260620-palette-buttons">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260623-sidebar-upload">
     <script defer src="/assets/admin-color-fields.js?v=20260620-palette-contrast"></script>
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
     <script defer src="/assets/admin-typography-fields.js?v=20260620-typography-live"></script>
@@ -83,6 +83,10 @@ final class TenantAdminLayout
 
 <div class="tenant-admin-shell">
     <aside class="tenant-admin-sidebar" aria-label="Tenant admin navigation">
+        <a class="tenant-admin-sidebar-upload" href="/admin/artwork/upload">
+            <span aria-hidden="true">＋</span>
+            <strong>Upload Artwork</strong>
+        </a>
         <div class="tenant-admin-sidebar-title">
             <strong>{$siteTitle}</strong>
             <span>Tenant Admin · {$artistName}</span><span>{$identity}</span>

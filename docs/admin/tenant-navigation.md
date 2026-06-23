@@ -4,4 +4,8 @@ Tenant public pages use stable public navigation: Home, Portfolio, About, Contac
 
 Platform admin remains available only from the canonical platform host at `/platform/admin`.
 
-# End of file.
+## Sidebar artwork shortcut
+
+The tenant-admin sidebar begins with an **Upload Artwork** button. It opens `/admin/artwork/upload` and remains above the tenant name, administrator identity, and regular navigation links on desktop and mobile layouts.
+
+<!-- End of file. -->

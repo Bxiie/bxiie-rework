@@ -1839,4 +1839,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Admin tables have current-page sort/filter enhancement.
 - Operations trends and system checks accept UTC date ranges; checks support status filtering and paging.
 
+## 2026-06-23 tenant-admin sidebar upload shortcut
+
+- The canonical `TenantAdminLayout` renders a prominent `/admin/artwork/upload` action at the top of the left sidebar.
+- The action appears before tenant identity and signed-in details and uses the tenant accent color.
+- No schema migration, runtime configuration change, or service-specific restart is required beyond the normal application deployment/reload path.
+
 <!-- End of file. -->

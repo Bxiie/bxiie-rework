@@ -2657,3 +2657,35 @@ body.tenant-admin-page {
 /* Shared responsive action-card grid for tenant admin workbenches. */
 .tenant-admin-action-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1.25rem 0 1.5rem}
 /* End of file. */
+
+/* Tenant admin sidebar primary action sits above tenant identity and navigation. */
+.tenant-admin-sidebar-upload {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  margin: 0 0 1.1rem;
+  padding: 0.85rem 1rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 999px !important;
+  background: var(--accent, #c9a85f) !important;
+  color: #111 !important;
+  font-weight: 900;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+}
+
+.tenant-admin-sidebar-upload:hover,
+.tenant-admin-sidebar-upload:focus-visible {
+  background: color-mix(in srgb, var(--accent, #c9a85f) 84%, #fff) !important;
+  color: #111 !important;
+  transform: translateY(-1px);
+}
+
+.tenant-admin-sidebar-upload span {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+/* End of file. */
