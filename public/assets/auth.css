@@ -123,6 +123,46 @@
     white-space: nowrap;
 }
 
+/* Canonical compact OAuth provider icons. */
+.oauth-button {
+    align-items: center !important;
+    display: inline-flex !important;
+    flex-direction: row !important;
+    gap: 0.55rem !important;
+    justify-content: center !important;
+    min-height: 3rem !important;
+    padding: 0.75rem 1rem !important;
+}
+
+.oauth-provider-icon {
+    align-items: center !important;
+    display: inline-flex !important;
+    flex: 0 0 18px !important;
+    height: 18px !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    max-height: 18px !important;
+    max-width: 18px !important;
+    min-height: 18px !important;
+    min-width: 18px !important;
+    width: 18px !important;
+}
+
+.oauth-provider-icon svg {
+    display: block !important;
+    height: 18px !important;
+    max-height: 18px !important;
+    max-width: 18px !important;
+    width: 18px !important;
+}
+
+.oauth-provider-label {
+    display: inline-block !important;
+    line-height: 1.2 !important;
+    white-space: nowrap;
+}
+
 /* End of file. */
+
 
 

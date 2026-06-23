@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * Regression checks for Google and Facebook OAuth button branding.
+ * Regression checks for compact Google and Facebook OAuth branding.
  */
 
 $projectRoot = dirname(__DIR__, 2);
@@ -20,12 +20,13 @@ if ($authContents === false || $cssContents === false) {
 $failures = [];
 
 foreach ([
-    'oauth-provider-mark-google',
-    'oauth-provider-mark-facebook',
+    'oauth-button-google',
+    'oauth-button-facebook',
+    'oauth-provider-icon-google',
+    'oauth-provider-icon-facebook',
     'oauth-provider-label',
     'Continue with Google',
     'Continue with Facebook',
-    'viewBox="0 0 24 24"',
 ] as $requiredText) {
     if (!str_contains($authContents, $requiredText)) {
         $failures[] = "AuthPage.php missing: {$requiredText}";
@@ -33,24 +34,41 @@ foreach ([
 }
 
 foreach ([
-    '/* OAuth provider branding. */',
-    '/* Compact OAuth provider branding. */',
-    'flex: 0 0 20px !important;',
-    'height: 20px !important;',
-    'width: 20px !important;',
-    '.oauth-provider-mark',
-    '.oauth-provider-mark svg',
-    '.oauth-provider-label',
+    '/* Canonical compact OAuth provider icons. */',
+    '.oauth-provider-icon',
+    '.oauth-provider-icon svg',
+    'flex: 0 0 18px !important;',
+    'height: 18px !important;',
+    'width: 18px !important;',
 ] as $requiredText) {
     if (!str_contains($cssContents, $requiredText)) {
         $failures[] = "auth.css missing: {$requiredText}";
     }
 }
 
+if (str_contains($authContents, 'oauth-provider-mark-google')) {
+    $failures[] = 'AuthPage.php still contains duplicate Google provider markup.';
+}
+
+if (str_contains($authContents, 'oauth-provider-mark-facebook')) {
+    $failures[] = 'AuthPage.php still contains duplicate Facebook provider markup.';
+}
+
+if (substr_count($authContents, 'oauth-provider-icon-google') !== 1) {
+    $failures[] = 'Google OAuth button must contain exactly one provider icon.';
+}
+
+if (substr_count($authContents, 'oauth-provider-icon-facebook') !== 1) {
+    $failures[] = 'Facebook OAuth button must contain exactly one provider icon.';
+}
+
 if ($failures !== []) {
-    fwrite(STDERR, "OAuth button branding static check failed:\n - "
+    fwrite(
+        STDERR,
+        "OAuth button branding static check failed:\n - "
         . implode("\n - ", $failures)
-        . "\n");
+        . "\n"
+    );
     exit(1);
 }
 
