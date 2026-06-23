@@ -43,6 +43,8 @@ foreach ([
     'flex: 0 0 18px !important;',
     'height: 18px !important;',
     'width: 18px !important;',
+    '/* OAuth icon-to-label spacing. */',
+    'margin-right: 0.6rem !important;',
 ] as $requiredText) {
     if (!str_contains($cssContents, $requiredText)) {
         $failures[] = "auth.css missing: {$requiredText}";

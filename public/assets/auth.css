@@ -92,5 +92,11 @@
     white-space: nowrap;
 }
 
+/* OAuth icon-to-label spacing. */
+.oauth-button .oauth-provider-icon {
+    margin-right: 0.6rem !important;
+}
+
 /* End of file. */
+
 
