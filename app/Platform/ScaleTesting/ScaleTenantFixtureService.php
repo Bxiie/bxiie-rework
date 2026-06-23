@@ -379,7 +379,6 @@ final class ScaleTenantFixtureService
         if ($this->columnExists('users', 'status')) {
             $columns[] = 'status';
             $values[] = "'active'";
-            $updates[] = "status = 'active'";
         }
 
         $stmt = $this->pdo->prepare(

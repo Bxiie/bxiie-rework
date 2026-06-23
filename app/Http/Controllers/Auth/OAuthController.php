@@ -285,13 +285,20 @@ final class OAuthController
         try {
             $identity = $this->identities->findByProviderSubject($provider, $profile['subject']);
             if ($identity) {
+                $userId = (int) $identity['user_id'];
+                $this->assertUserIsActive($userId);
                 $this->touchIdentity((int) $identity['id'], $profile['email'], $profile['name'], $profile['metadata'], (bool) $profile['email_verified']);
                 $this->pdo->commit();
-                return (int) $identity['user_id'];
+                return $userId;
             }
 
             $user = $this->users->findByEmail($profile['email']);
             $userId = $user ? (int) $user['id'] : $this->users->create($profile['email'], $profile['name'], null);
+
+            if ($user) {
+                $this->assertUserIsActive($userId);
+            }
+
             $this->identities->addOauthIdentity(
                 userId: $userId,
                 provider: $provider,
@@ -310,6 +317,17 @@ final class OAuthController
         }
     }
 
+    /**
+     * Prevents suspended or deleted users from obtaining a new OAuth session.
+     */
+    private function assertUserIsActive(int $userId): void
+    {
+        $user = $this->users->findById($userId);
+
+        if (!$user || (string) ($user['status'] ?? 'active') !== 'active') {
+            throw new RuntimeException('This account is not active.');
+        }
+    }
     private function touchIdentity(int $identityId, string $email, string $displayName, array $metadata, bool $verified): void
     {
         $stmt = $this->pdo->prepare(

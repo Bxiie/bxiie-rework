@@ -13,9 +13,11 @@ declare(strict_types=1);
 $root = dirname(__DIR__, 2);
 $repositoryPath = $root . '/app/Platform/Identity/AdminUserRepository.php';
 $controllerPath = $root . '/app/Http/Controllers/Platform/Admin/UsersController.php';
+$scaleFixturePath = $root . '/app/Platform/ScaleTesting/ScaleTenantFixtureService.php';
 
 $repository = file_get_contents($repositoryPath) ?: '';
 $controller = file_get_contents($controllerPath) ?: '';
+$scaleFixture = file_get_contents($scaleFixturePath) ?: '';
 
 $checks = [
     'Platform users read real status' => [$repository, "COALESCE(u.status, 'active') AS user_status"],
@@ -29,6 +31,7 @@ $checks = [
     'Invalid lifecycle request is branded' => [$controller, 'return Response::error(422, \'Invalid user lifecycle request\''],
     'Self lifecycle action is disabled in UI' => [$controller, 'Current user lifecycle actions are disabled.'],
     'Actions header matches single actions cell' => [$controller, '<th>Actions</th>'],
+    'Scale fixtures preserve existing user status' => [$scaleFixture, '$updates[] = "status = \'active\'";', false],
 ];
 
 

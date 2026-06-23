@@ -57,7 +57,11 @@ final class PasswordAuthService
     ): array {
         $user = $this->users->findByEmail($email);
 
-        if (!$user || empty($user['password_hash'])) {
+        if (
+            !$user
+            || empty($user['password_hash'])
+            || (string) ($user['status'] ?? 'active') !== 'active'
+        ) {
             throw new \RuntimeException('Invalid email or password.');
         }
 
