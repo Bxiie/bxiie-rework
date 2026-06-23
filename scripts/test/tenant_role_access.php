@@ -14,6 +14,8 @@ use App\Support\Database;
 
 $root = dirname(__DIR__, 2);
 require $root . '/bootstrap/app.php';
+require_once __DIR__ . '/TestEnvironment.php';
+TestEnvironment::skipIfProduction(basename(__FILE__));
 
 $pdo = Database::connect($root);
 

@@ -9,6 +9,10 @@ declare(strict_types=1);
 $root = dirname(__DIR__, 2);
 
 $scripts = [
+    'scripts/test/tenant_role_access.php',
+    'scripts/test/tenant_admin_role.php',
+    'scripts/test/platform_admin_role.php',
+    'scripts/test/password_auth.php',
     'scripts/test/email_signup_consent.php',
     'scripts/test/tenant_audit_log_list.php',
     'scripts/test/contact_message_status.php',
