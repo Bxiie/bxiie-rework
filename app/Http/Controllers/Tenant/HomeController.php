@@ -272,7 +272,6 @@ HTML;
         $this->track($request, $tenant, 'contact_view');
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
         $captcha = FirstPartyCaptcha::render('contact', (int) $tenant->tenantId, $this->turnstileSiteKey($tenant));
-        $signupCaptcha = FirstPartyCaptcha::render('signup', (int) $tenant->tenantId, $this->turnstileSiteKey($tenant));
         $siteTitle = $this->escape($this->settings->get($tenant, 'site_title', $tenant->name));
         $requestedArtworkSlug = trim((string) ($_GET['artwork'] ?? ''));
         $artworkSubject = $this->contactArtworkSubject($tenant, $requestedArtworkSlug);
@@ -316,24 +315,6 @@ HTML;
     </p>
     {$captcha}
     <button type="submit">Send message</button>
-</form>
-<form method="post" action="/signup" data-af-async-form data-af-result="signup-form-result" data-af-busy-label="Joining..." data-af-busy-message="Adding you to the list..." data-af-form-purpose="signup" data-af-success-message="Thank you. You have been added to the email list.">
-    <h2>Email list</h2>
-    <p>Get occasional updates from {$siteTitle}.</p>
-    <div id="signup-form-result" data-af-form-result class="af-form-result" hidden></div>
-    <input type="hidden" name="csrf_token" value="{$csrf}">
-    <p>
-        <label>Name<br>
-            <input type="text" name="name" autocomplete="name">
-        </label>
-    </p>
-    <p>
-        <label>Email<br>
-            <input type="email" name="email" autocomplete="email" required>
-        </label>
-    </p>
-    {$signupCaptcha}
-    <button type="submit">Join email list</button>
 </form>
 </section>
 HTML
