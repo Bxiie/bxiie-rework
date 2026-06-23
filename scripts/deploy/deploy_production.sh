@@ -107,7 +107,7 @@ section "Migration integrity"
 ARTSFOLIO_ENV_FILE="$ENV_FILE" php scripts/database/check_migration_integrity.php
 
 section "Preflight"
-ARTSFOLIO_ENV_FILE="$ENV_FILE" ./scripts/test/preflight.sh
+ARTSFOLIO_ENV_FILE="$ENV_FILE" bash ./scripts/test/preflight.sh
 
 section "Restart services"
 restart_required_service php8.4-fpm
