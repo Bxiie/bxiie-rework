@@ -13,6 +13,10 @@ $required = [
     'ARTSFOLIO_PLATFORM_CONTACT_EMAIL',
     'info@artsfol.io',
     'new EmailOutboxRepository($this->pdo)',
+    'name="topic"',
+    'platformContactTopicLabel',
+    'platform-contact-layout',
+    'class="platform-form js-submit-form"',
 ];
 
 foreach ($required as $needle) {
@@ -24,6 +28,11 @@ foreach ($required as $needle) {
 
 if (preg_match('/templateKey:\s*["\']platform\.contact_notification["\']/', $controller) !== 1) {
     fwrite(STDERR, "Platform contact email queue call does not use the expected template key.\n");
+    exit(1);
+}
+
+if (str_contains($controller, 'class="plan-edit-form" class=')) {
+    fwrite(STDERR, "Platform contact form still contains duplicate class attributes.\n");
     exit(1);
 }
 

@@ -188,6 +188,7 @@ run_if_exists scripts/test/contact_signup_records.php
 run_if_exists scripts/test/contact_email_notification_static.php
 
 run_if_exists scripts/test/platform_contact_management_static.php
+run_if_exists scripts/test/platform_contact_email_static.php
 
 run_if_exists scripts/test/turnstile_captcha_static.php
 
@@ -339,6 +340,7 @@ run_if_exists scripts/test/artwork_ajax_pagination_static.php
 run_if_exists scripts/test/artwork_placement_column_filters_static.php
 
 run_if_exists scripts/test/portfolio_section_actions_static.php
+run_if_exists scripts/test/tenant_admin_artwork_contact_defaults_static.php
 
 run_if_exists scripts/test/phase6_directory_projection_static.php
 

@@ -167,10 +167,12 @@ HTML;
     public function contact(Request $request): Response
     {
         $notice = '';
+        $name = trim((string) ($_POST['name'] ?? ''));
+        $email = trim((string) ($_POST['email'] ?? ''));
+        $topic = $this->platformContactTopic((string) ($_POST['topic'] ?? 'general'));
+        $message = trim((string) ($_POST['message'] ?? ''));
+
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
-            $name = trim((string) ($_POST['name'] ?? ''));
-            $email = trim((string) ($_POST['email'] ?? ''));
-            $message = trim((string) ($_POST['message'] ?? ''));
             $captcha = FirstPartyCaptcha::verify('platform_contact', 0, $_POST, $this->turnstileSecretKey(), $this->requestIp($request));
             if (!$captcha->passed) {
                 $notice = '<p class="error" role="alert">Please complete the human confirmation.</p>';
@@ -178,8 +180,12 @@ HTML;
                 $notice = '<p class="error" role="alert">Please enter a valid email address and message.</p>';
             } else {
                 try {
-                    $this->recordPlatformContact($request, $name, $email, $message);
+                    $this->recordPlatformContact($request, $name, $email, $topic, $message);
                     $notice = '<p class="notice" role="status">Thank you. Your message has been sent.</p>';
+                    $name = '';
+                    $email = '';
+                    $topic = 'general';
+                    $message = '';
                 } catch (Throwable $exception) {
                     error_log('ArtsFolio platform contact notification queue failed: ' . $exception->getMessage());
                     $notice = '<p class="error" role="alert">Your message could not be queued. Please email info@artsfol.io directly.</p>';
@@ -188,22 +194,48 @@ HTML;
         }
 
         $captcha = FirstPartyCaptcha::render('platform_contact', 0, $this->turnstileSiteKey());
+        $escape = static fn (string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        $selected = static fn (string $actual, string $expected): string => $actual === $expected ? ' selected' : '';
+        $nameValue = $escape($name);
+        $emailValue = $escape($email);
+        $messageValue = $escape($message);
 
         $body = <<<HTML
 <section class="platform-page-heading">
     <p class="eyebrow">Contact</p>
     <h1>Talk to ArtsFolio</h1>
-    <p>For platform questions, onboarding help, billing, custom domains, or partnership inquiries, contact the ArtsFolio team.</p>
+    <p>Questions about your portfolio, billing, domains, partnerships, or a stubborn technical gremlin all land here.</p>
 </section>
 {$notice}
-<form class="plan-edit-form" class="platform-form js-submit-form" method="post" action="/contact">
-    <label>Name <input name="name" autocomplete="name"></label>
-    <label>Email <input name="email" type="email" autocomplete="email" required></label>
-    <label>Message <textarea name="message" rows="8" required></textarea></label>
-    {$captcha}
-    <button type="submit" data-loading-label="Sending…">Send message</button>
-    <p class="form-progress" aria-live="polite">Sending message…</p>
-</form>
+<section class="platform-contact-layout" aria-label="Contact ArtsFolio">
+    <aside class="platform-contact-intro">
+        <p class="eyebrow">What happens next</p>
+        <h2>Send the useful details</h2>
+        <p>Choose a topic and include the tenant name or site address when your question concerns an existing ArtsFolio site.</p>
+        <p><strong>Direct email:</strong><br><a href="mailto:info@artsfol.io">info@artsfol.io</a></p>
+        <p class="muted">Do not send passwords, payment-card numbers, API keys, or other secrets through this form.</p>
+    </aside>
+    <form class="platform-form js-submit-form" method="post" action="/contact">
+        <div class="platform-contact-fields">
+            <label>Name <input name="name" autocomplete="name" value="{$nameValue}"></label>
+            <label>Email <input name="email" type="email" autocomplete="email" value="{$emailValue}" required></label>
+        </div>
+        <label>Topic
+            <select name="topic" required>
+                <option value="general"{$selected($topic, 'general')}>General question</option>
+                <option value="onboarding"{$selected($topic, 'onboarding')}>Getting started / onboarding</option>
+                <option value="technical"{$selected($topic, 'technical')}>Technical problem</option>
+                <option value="billing"{$selected($topic, 'billing')}>Billing or plan</option>
+                <option value="domain"{$selected($topic, 'domain')}>Custom domain</option>
+                <option value="partnership"{$selected($topic, 'partnership')}>Partnership or press</option>
+            </select>
+        </label>
+        <label>Message <textarea name="message" rows="9" required>{$messageValue}</textarea></label>
+        {$captcha}
+        <button type="submit" data-loading-label="Sending…">Send message</button>
+        <p class="form-progress" aria-live="polite">Sending message…</p>
+    </form>
+</section>
 HTML;
 
         return $this->page('Contact | ArtsFolio', $body, 'contact');
@@ -217,18 +249,18 @@ HTML;
      * contact_messages for admin workflow, while email_outbox is only the
      * notification transport.
      */
-    private function recordPlatformContact(Request $request, string $name, string $email, string $message): int
+    private function recordPlatformContact(Request $request, string $name, string $email, string $topic, string $message): int
     {
         $messageId = (new PlatformContactMessageRepository($this->pdo))->create(
             senderName: $name !== '' ? $name : 'Platform contact visitor',
             senderEmail: $email,
             message: $message,
-            subject: 'ArtsFolio platform contact',
+            subject: 'ArtsFolio platform contact: ' . $this->platformContactTopicLabel($topic),
             ipAddress: $this->requestIp($request),
             userAgent: (string) $request->server('HTTP_USER_AGENT', ''),
         );
 
-        $this->queuePlatformContactNotification($messageId, $name, $email, $message);
+        $this->queuePlatformContactNotification($messageId, $name, $email, $topic, $message);
 
         return $messageId;
     }
@@ -236,10 +268,11 @@ HTML;
     /**
      * Queue public platform contact submissions into the normal email outbox.
      */
-    private function queuePlatformContactNotification(int $messageId, string $name, string $email, string $message): int
+    private function queuePlatformContactNotification(int $messageId, string $name, string $email, string $topic, string $message): int
     {
         $displayName = $name !== '' ? $name : 'Platform contact visitor';
-        $subject = 'New ArtsFolio platform contact from ' . $displayName;
+        $topicLabel = $this->platformContactTopicLabel($topic);
+        $subject = 'New ArtsFolio ' . $topicLabel . ' contact from ' . $displayName;
         $body = implode("\n", [
             'A public ArtsFolio platform contact form was submitted.',
             '',
@@ -247,6 +280,7 @@ HTML;
             'Manage it: /platform/admin/contacts',
             '',
             'From: ' . $displayName . ' <' . $email . '>',
+            'Topic: ' . $topicLabel,
             'Reply to the sender manually at: ' . $email,
             '',
             'Message:',
@@ -260,6 +294,32 @@ HTML;
             bodyText: $body,
             templateKey: 'platform.contact_notification',
         );
+    }
+
+    /**
+     * Normalize public topic input to the supported contact workflow values.
+     */
+    private function platformContactTopic(string $topic): string
+    {
+        $topic = strtolower(trim($topic));
+        $allowed = ['general', 'onboarding', 'technical', 'billing', 'domain', 'partnership'];
+
+        return in_array($topic, $allowed, true) ? $topic : 'general';
+    }
+
+    /**
+     * Return the human-readable topic stored and mailed with the submission.
+     */
+    private function platformContactTopicLabel(string $topic): string
+    {
+        return match ($this->platformContactTopic($topic)) {
+            'onboarding' => 'onboarding',
+            'technical' => 'technical support',
+            'billing' => 'billing',
+            'domain' => 'custom domain',
+            'partnership' => 'partnership or press',
+            default => 'general',
+        };
     }
 
     /**

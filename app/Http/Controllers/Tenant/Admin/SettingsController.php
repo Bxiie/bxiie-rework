@@ -140,6 +140,10 @@ final class SettingsController
         $backgroundPicker = $this->siteImagePicker($tenant, 'background_media_uuid', $backgroundMediaUuid, true);
         $tenantCss = $this->setting($tenant, 'tenant_css', '');
         $artworkDisplayOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
+        $newArtworkDefaultStatus = (string) $this->settings->get($tenant, 'new_artwork_default_status', 'draft');
+        if (!in_array($newArtworkDefaultStatus, ['draft', 'published'], true)) {
+            $newArtworkDefaultStatus = 'draft';
+        }
         $directoryContent = $this->directorySettingsContent($tenant);
         $paletteButtons = $this->paletteButtons();
         $typographyPresetButtons = $this->typographyPresetButtons();
@@ -269,6 +273,16 @@ HTML;
             <p class="admin-help">Required for direct Stripe Connect payouts. Leave blank only during platform testing.</p>
         </fieldset>
         <fieldset>
+            <legend>New artwork defaults</legend>
+            <label>New artwork status
+                <select name="new_artwork_default_status">
+                    <option value="draft"{$selected($newArtworkDefaultStatus, 'draft')}>Unpublished draft</option>
+                    <option value="published"{$selected($newArtworkDefaultStatus, 'published')}>Published immediately</option>
+                </select>
+            </label>
+            <p class="admin-help">This setting affects newly uploaded artwork only. Existing artwork keeps its current status.</p>
+        </fieldset>
+        <fieldset>
             <legend>Artwork display</legend>
             <label>Default artwork order
                 <select name="artwork_display_order">
@@ -369,6 +383,9 @@ HTML;
             $value = trim((string) ($_POST[$key] ?? ''));
             if (in_array($key, ['platform_directory_opt_in', 'watermark_enabled'], true)) {
                 $value = isset($_POST[$key]) ? '1' : '0';
+            }
+            if ($key === 'new_artwork_default_status') {
+                $value = in_array($value, ['draft', 'published'], true) ? $value : 'draft';
             }
             if ($key === 'platform_directory_summary') {
                 $value = mb_substr($value, 0, 500);
@@ -501,7 +518,7 @@ HTML;
                 'watermark_enabled', 'watermark_format', 'watermark_text', 'watermark_position', 'watermark_opacity', 'watermark_size', 'watermark_color',
             ],
             'miscellaneous' => [
-                'sales_notes', 'stripe_connected_account_id', 'artwork_display_order', 'exhibitions_heading', 'exhibitions_display_mode',
+                'sales_notes', 'stripe_connected_account_id', 'new_artwork_default_status', 'artwork_display_order', 'exhibitions_heading', 'exhibitions_display_mode',
             ],
             'custom-css' => [
                 'tenant_css',

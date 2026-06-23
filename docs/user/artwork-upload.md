@@ -26,4 +26,8 @@ image
 
 New artwork starts as a draft so it can be reviewed before publishing.
 
+## Default publication status
+
+A tenant administrator can choose whether future uploads begin as unpublished drafts or publish immediately under **Settings → Miscellaneous → New artwork defaults**. The choice does not change existing artwork.
+
 <!-- End of file. -->

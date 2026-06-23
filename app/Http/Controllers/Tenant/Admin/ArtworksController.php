@@ -214,7 +214,20 @@ HTML;
 <main>
 <div id="artwork-action-notice">{$notice}</div>
 <section data-artwork-pager-root tabindex="-1">
-<p><a href="/admin/artwork/upload">Upload artwork</a> · <a href="/admin/artworks/placement">Artwork placement matrix</a> · <a href="/admin/portfolio-sections/order">Section artwork order</a></p>
+<section aria-label="Artwork actions" class="tenant-admin-action-grid">
+    <a class="admin-button tenant-admin-action-button" href="/admin/artwork/upload">
+        <strong>Upload artwork</strong>
+        <span>Add a new image, catalog details, publication state, and sales information.</span>
+    </a>
+    <a class="admin-button tenant-admin-action-button" href="/admin/artworks/placement">
+        <strong>Artwork placement matrix</strong>
+        <span>Assign many artworks to the home page and portfolio sections at once.</span>
+    </a>
+    <a class="admin-button tenant-admin-action-button" href="/admin/portfolio-sections/order">
+        <strong>Section artwork order</strong>
+        <span>Set the display order within each portfolio section and on the home page.</span>
+    </a>
+</section>
 <form data-artwork-page-form method="get" action="/admin/artworks" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin:1rem 0;">
 <label>Search<br><input type="search" name="q" value="{$e($q)}"></label>
 <label>Status<br><select name="status"><option value="">All</option><option value="draft"{$option($statusFilter,'draft')}>Draft</option><option value="published"{$option($statusFilter,'published')}>Published</option></select></label>

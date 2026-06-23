@@ -1,4 +1,12 @@
 
+
+## 2026-06-23 America/New_York
+
+- Tenant Miscellaneous settings now persist `new_artwork_default_status` (`draft` or `published`) for future artwork uploads.
+- Artwork contact messages resolve and append the tenant-owned public image URL server-side.
+- Tenant Artworks workflow links use the Portfolio Sections action-card treatment.
+- The public platform contact form now captures a normalized topic and includes it in stored and emailed contact context.
+- No schema migration or service restart is required beyond the normal application deployment/reload path.
 ## 2026-05-15
 
 - Added tenant resolver and request-scoped tenant context.
