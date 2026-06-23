@@ -18,7 +18,7 @@ if ($controllerContents === false) {
 $failures = [];
 
 foreach ([
-    "\$runTimestamp = strtotime((string) (\$run['created_at'] ?? '')) ?: time();",
+    "\$runTimestamp = \$this->utcTimestamp((string) (\$run['created_at'] ?? '')) ?: time();",
     "\$defaultEnd = date('Y-m-d', \$runTimestamp);",
     "\$defaultStart = date('Y-m-d', strtotime('-7 days', \$runTimestamp));",
     "\$start = trim((string) (\$_GET['start'] ?? \$defaultStart));",
@@ -30,6 +30,10 @@ foreach ([
     }
 }
 
+
+if (!str_contains($controllerContents, 'private function utcTimestamp(string $raw): ?int')) {
+    $failures[] = 'OperationsController.php must define utcTimestamp() for UTC-safe run-detail ranges.';
+}
 $runMethodPosition = strpos($controllerContents, 'public function run(');
 $startDefinitionPosition = strpos($controllerContents, "\$start = trim(", $runMethodPosition ?: 0);
 $metricLinkPosition = strpos($controllerContents, "rawurlencode(\$start)", $runMethodPosition ?: 0);

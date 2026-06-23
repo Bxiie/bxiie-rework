@@ -368,3 +368,4 @@ printf '[PASS] Preflight completed successfully.\n'
 
 # End of file.
 run_php scripts/test/platform_user_status_auth_static.php
+run_php scripts/test/platform_operations_timezone_static.php

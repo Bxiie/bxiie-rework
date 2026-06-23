@@ -37,7 +37,7 @@ final class OperationsController
         foreach ($runs as $run) {
             $runRows .= '<tr><td><a href="/platform/admin/operations/runs/' . (int) $run['id'] . '">#' . (int) $run['id'] . '</a></td>'
                 . '<td>' . $this->badge((string) $run['overall_status']) . '</td>'
-                . '<td>' . AdminLayout::escape((string) $run['created_at']) . '</td>'
+                . '<td>' . AdminLayout::escape($this->displayUtcTime((string) $run['created_at'])) . '</td>'
                 . '<td>' . (int) $run['critical_count'] . '</td><td>' . (int) $run['warning_count'] . '</td>'
                 . '<td>' . number_format(((int) $run['duration_ms']) / 1000, 2) . 's</td></tr>';
         }
@@ -55,7 +55,7 @@ final class OperationsController
                 . '<div class="ops-metric-value">' . AdminLayout::escape((string) $metric['actual_value']) . '</div>'
                 . '<div class="ops-metric-expected">Expected: ' . AdminLayout::escape((string) $metric['expected_value']) . '</div>'
                 . $this->sparkline($history)
-                . '<div class="ops-metric-time">Updated ' . AdminLayout::escape((string) $metric['created_at']) . '</div></article>';
+                . '<div class="ops-metric-time">Updated ' . AdminLayout::escape($this->displayUtcTime((string) $metric['created_at'])) . '</div></article>';
         }
         if ($cards === '') {
             $cards = '<p>No saved metric rows yet. Run the monitor after applying migration 0045.</p>';
@@ -64,7 +64,7 @@ final class OperationsController
         $body = $this->styles()
             . '<p class="admin-notice">Share this page URL with another platform administrator. They must sign in with an authorized platform account.</p>'
             . '<form class="admin-form" method="get" action="/platform/admin/operations"><div class="admin-grid-2"><label>Trend/check start<input type="date" name="start" value="' . AdminLayout::escape($start) . '"></label><label>Trend/check end<input type="date" name="end" value="' . AdminLayout::escape($end) . '"></label><label>Check status<select name="status"><option value="">All</option><option value="OK"' . ($status==='OK'?' selected':'') . '>OK</option><option value="WARN"' . ($status==='WARN'?' selected':'') . '>WARN</option><option value="CRIT"' . ($status==='CRIT'?' selected':'') . '>CRIT</option></select></label></div><button type="submit">Apply range</button></form>'
-            . '<p class="admin-muted">Trend lines cover ' . AdminLayout::escape($start) . ' through ' . AdminLayout::escape($end) . ' (UTC).</p>'
+            . '<p class="admin-muted">Trend lines cover ' . AdminLayout::escape($start) . ' through ' . AdminLayout::escape($end) . ' (' . AdminLayout::escape($this->displayTimezone()) . ').</p>'
             . '<div class="ops-summary-grid">' . $cards . '</div>'
             . '<h2>Recent system checks</h2><table class="admin-table"><thead><tr><th>Run</th><th>Status</th><th>Time</th><th>Critical</th><th>Warnings</th><th>Duration</th></tr></thead><tbody>' . $runRows . '</tbody></table>'
             . '<p><a class="admin-button" href="/platform/admin/operations?' . http_build_query(['start'=>$start,'end'=>$end,'status'=>$status,'page'=>max(1,$page-1)]) . '">Previous</a> <span class="admin-muted">Page ' . $page . '</span> <a class="admin-button" href="/platform/admin/operations?' . http_build_query(['start'=>$start,'end'=>$end,'status'=>$status,'page'=>$page+1]) . '">Next</a></p>';
@@ -82,7 +82,7 @@ final class OperationsController
             return Response::html(AdminLayout::render('System check not found', '<p>No saved system check exists with that ID.</p>', 'operations'), 404);
         }
 
-        $runTimestamp = strtotime((string) ($run['created_at'] ?? '')) ?: time();
+        $runTimestamp = $this->utcTimestamp((string) ($run['created_at'] ?? '')) ?: time();
         $defaultEnd = date('Y-m-d', $runTimestamp);
         $defaultStart = date('Y-m-d', strtotime('-7 days', $runTimestamp));
         $start = trim((string) ($_GET['start'] ?? $defaultStart));
@@ -96,7 +96,7 @@ final class OperationsController
                 . '<td>' . AdminLayout::escape((string) $metric['actual_value']) . '</td><td>' . AdminLayout::escape((string) $metric['expected_value']) . '</td><td>' . AdminLayout::escape((string) ($metric['detail_text'] ?? '')) . '</td></tr>';
         }
         $body = $this->styles() . '<p><a class="admin-button" href="/platform/admin/operations">Back to operations</a></p>'
-            . '<dl><dt>Status</dt><dd>' . $this->badge((string) $run['overall_status']) . '</dd><dt>Host</dt><dd>' . AdminLayout::escape((string) $run['host_name']) . '</dd><dt>Checked</dt><dd>' . AdminLayout::escape((string) $run['created_at']) . '</dd></dl>'
+            . '<dl><dt>Status</dt><dd>' . $this->badge((string) $run['overall_status']) . '</dd><dt>Host</dt><dd>' . AdminLayout::escape((string) $run['host_name']) . '</dd><dt>Checked</dt><dd>' . AdminLayout::escape($this->displayUtcTime((string) $run['created_at'])) . '</dd></dl>'
             . '<table class="admin-table"><thead><tr><th>Status</th><th>Check</th><th>Actual</th><th>Expected</th><th>Details</th></tr></thead><tbody>' . $rows . '</tbody></table>';
         return Response::html(AdminLayout::render(title: 'System Check #' . $runId, body: $body, active: 'operations'));
     }
@@ -115,19 +115,60 @@ final class OperationsController
         $history = $this->operations->metricHistoryRange($name, $start, $end, 1500);
         $rows = '';
         foreach (array_reverse($history) as $point) {
-            $rows .= '<tr><td><a href="/platform/admin/operations/runs/' . (int) $point['run_id'] . '">#' . (int) $point['run_id'] . '</a></td><td>' . $this->badge((string) $point['metric_status']) . '</td><td>' . AdminLayout::escape((string) $point['actual_value']) . '</td><td>' . AdminLayout::escape((string) $point['created_at']) . '</td></tr>';
+            $rows .= '<tr><td><a href="/platform/admin/operations/runs/' . (int) $point['run_id'] . '">#' . (int) $point['run_id'] . '</a></td><td>' . $this->badge((string) $point['metric_status']) . '</td><td>' . AdminLayout::escape((string) $point['actual_value']) . '</td><td>' . AdminLayout::escape($this->displayUtcTime((string) $point['created_at'])) . '</td></tr>';
         }
         if ($rows === '') {
             $rows = '<tr><td colspan="4">No history is available in this time window.</td></tr>';
         }
         $body = $this->styles() . '<p><a class="admin-button" href="/platform/admin/operations">Back to operations</a></p>'
             . '<form method="get" action="/platform/admin/operations/metrics"><input type="hidden" name="name" value="' . AdminLayout::escape($name) . '"><div class="admin-grid-2"><label>Start<input type="date" name="start" value="' . AdminLayout::escape($start) . '"></label><label>End<input type="date" name="end" value="' . AdminLayout::escape($end) . '"></label></div><button type="submit">Apply range</button></form>'
-            . '<p class="admin-muted">Trend duration: ' . AdminLayout::escape($start) . ' through ' . AdminLayout::escape($end) . ' (UTC).</p>'
+            . '<p class="admin-muted">Trend duration: ' . AdminLayout::escape($start) . ' through ' . AdminLayout::escape($end) . ' (' . AdminLayout::escape($this->displayTimezone()) . ').</p>'
             . '<p><code>' . AdminLayout::escape($name) . '</code></p><div class="ops-large-chart">' . $this->sparkline($history, 760, 210) . '</div>'
             . '<table class="admin-table"><thead><tr><th>Run</th><th>Status</th><th>Actual</th><th>Time</th></tr></thead><tbody>' . $rows . '</tbody></table>';
         return Response::html(AdminLayout::render(title: $this->friendlyName($name), body: $body, active: 'operations'));
     }
 
+    /**
+     * Parses an operations timestamp as UTC and renders it in the active
+     * administrator time zone.
+     */
+    private function displayUtcTime(string $raw): string
+    {
+        $timestamp = $this->utcTimestamp($raw);
+
+        if ($timestamp === null) {
+            return trim($raw);
+        }
+
+        return date('M j, Y g:i:s A T', $timestamp);
+    }
+
+    private function utcTimestamp(string $raw): ?int
+    {
+        $raw = trim($raw);
+
+        if ($raw === '') {
+            return null;
+        }
+
+        $utc = new \DateTimeZone('UTC');
+        $value = \DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $raw, $utc);
+
+        if (!$value instanceof \DateTimeImmutable) {
+            try {
+                $value = new \DateTimeImmutable($raw, $utc);
+            } catch (\Throwable) {
+                return null;
+            }
+        }
+
+        return $value->getTimestamp();
+    }
+
+    private function displayTimezone(): string
+    {
+        return (string) ($GLOBALS['artsfolio_user_timezone'] ?? date_default_timezone_get());
+    }
     private function allowed(?array $currentUser): bool
     {
         return $this->roles->allows($currentUser, [Roles::PLATFORM_OWNER, Roles::PLATFORM_ADMIN, Roles::PLATFORM_SUPPORT]);
