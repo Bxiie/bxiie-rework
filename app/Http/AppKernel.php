@@ -236,6 +236,16 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
         $aboutSlug = $tenantSettings->get($tenant, 'about_slug', 'about');
         $contactSlug = $tenantSettings->get($tenant, 'contact_slug', 'contact');
 
+        // Build curation before the public tenant controller so artwork-card
+        // workflow controls receive the live controller rather than an
+        // undefined/null variable.
+        $curationController = new \App\Http\Controllers\Tenant\CurationController(
+            new CurationRepository($pdo),
+            new MembershipRepository($pdo),
+            $csrf,
+            $tenantSettings,
+        );
+
         $tenantController = new TenantHomeController(
             new TenantSettingsRepository($pdo),
             new ArtworkReadRepository($pdo),
@@ -243,13 +253,6 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
             $csrf,
             $curationController,
             $currentUser,
-        );
-
-        $curationController = new \App\Http\Controllers\Tenant\CurationController(
-            new CurationRepository($pdo),
-            new MembershipRepository($pdo),
-            $csrf,
-            $tenantSettings,
         );
 
         $contactController = new ContactController(

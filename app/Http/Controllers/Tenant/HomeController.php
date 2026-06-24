@@ -536,7 +536,7 @@ HTML;
      */
     private function tenantAdminLink(TenantContext $tenant): string
     {
-        $currentUser = $GLOBALS['artsfolio_current_user'] ?? null;
+        $currentUser = $this->currentUser;
         if (!is_array($currentUser) || empty($currentUser['user_id'])) {
             return '';
         }
@@ -554,7 +554,7 @@ HTML;
                   WHERE tm.tenant_id = :tenant_id
                     AND tm.user_id = :user_id
                     AND tm.status = 'active'
-                    AND r.slug IN ('owner', 'admin')
+                    AND (r.slug IN ('owner', 'admin') OR r.slug IN ('tenant_owner', 'tenant_admin'))
                   LIMIT 1"
             );
             $stmt->execute([

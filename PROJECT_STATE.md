@@ -1874,3 +1874,17 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Editors are limited to `/admin/curation`; tenant admins retain full administration.
 
 <!-- End of file. -->
+
+## 2026-06-23 logo, tenant navigation, and pricing repair
+
+- Platform-admin logo rendering preserves the source image aspect ratio through
+  explicit intrinsic sizing and `object-fit: contain`.
+- Tenant public pages show the Admin entry point for active administrators using
+  either canonical `tenant_owner` / `tenant_admin` roles or legacy
+  `owner` / `admin` aliases.
+- Tenant public-page controllers receive the initialized curation controller;
+  construction order must not pass an undefined curation dependency.
+- Pricing cards and the comparison table disclose curation workflow availability
+  from `plans.curation_workflow_included`; Free explicitly shows it as unavailable.
+
+<!-- End of file. -->

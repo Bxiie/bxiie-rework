@@ -2705,3 +2705,24 @@ body.tenant-admin-page {
 }
 
 /* End of file. */
+
+/* Platform logo intrinsic-ratio repair. */
+.platform-admin-topbar > .platform-admin-logo {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    width: auto;
+    max-width: min(220px, 34vw);
+}
+
+.platform-admin-topbar > .platform-admin-logo img {
+    display: block;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: 54px !important;
+    object-fit: contain;
+    aspect-ratio: auto;
+}
+
+/* End of file. */

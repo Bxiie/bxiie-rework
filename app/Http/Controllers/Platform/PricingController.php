@@ -203,11 +203,14 @@ HTML;
             $emails = $this->limitLabel($plan['allowed_email_addresses'] ?? null, 'email addresses');
             $customDomain = ((int) $plan['custom_domain_included']) === 1 ? 'Admin users: Custom domain included' : 'ArtsFolio subdomain included';
             $sales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Online checkout available' : 'Online checkout not included';
+            $workflow = ((int) ($plan['curation_workflow_included'] ?? 0)) === 1
+                ? 'Curation workflow included'
+                : 'Curation workflow not included';
             $fees = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? '<li>Sales fee disclosure: ArtsFolio commission plus ' . $this->cardFeesLabel($plan) . ' credit card charges</li>' : '';
             $freeNotice = $slug === 'free' ? '<li>Includes ArtsFolio notification/link on free tenant pages</li>' : '';
             $cta = $slug === 'pro' || $slug === 'collective' ? '<a class="button secondary" href="/contact">Contact ArtsFolio</a>' : '<a class="button ' . ($slug === 'studio' ? 'primary' : 'secondary') . '" href="/signup">Choose ' . $name . '</a>';
             $html .= <<<HTML
-<article class="pricing-card{$featured}"><p class="eyebrow">{$eyebrow}</p><h2>{$name}</h2><p class="price">{$price}</p><p>{$description}</p><ul><li>{$customDomain}</li><li>{$artworks}</li><li>{$emails}</li><li>{$sales}</li>{$fees}<li>Contact form and email list tools</li>{$freeNotice}</ul>{$cta}</article>
+<article class="pricing-card{$featured}"><p class="eyebrow">{$eyebrow}</p><h2>{$name}</h2><p class="price">{$price}</p><p>{$description}</p><ul><li>{$customDomain}</li><li>{$artworks}</li><li>{$emails}</li><li>{$sales}</li><li>{$workflow}</li>{$fees}<li>Contact form and email list tools</li>{$freeNotice}</ul>{$cta}</article>
 HTML;
         }
         return $html;
@@ -236,7 +239,7 @@ HTML;
             $domains .= '<td>' . (((int) $plan['custom_domain_included']) === 1 ? 'Included' : 'Not included') . '</td>';
             $notice .= '<td>' . (((string) $plan['slug']) === 'free' ? 'Included' : 'Not shown') . '</td>';
             $sales .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Included' : 'Not included') . '</td>';
-            $workflow .= '<td>' . (((string) $plan['slug']) === 'free' ? 'Not included' : 'Included') . '</td>';
+            $workflow .= '<td>' . (((int) ($plan['curation_workflow_included'] ?? 0)) === 1 ? 'Included' : 'Not included') . '</td>';
             $cardFees .= '<td>' . $this->cardFeesLabel($plan) . '</td>';
         }
         return '<table class="admin-table"><thead><tr><th>Feature</th>' . $heads . '</tr></thead><tbody>' . $price . '</tr>' . $artworks . '</tr>' . $emails . '</tr>' . $domains . '</tr>' . $notice . '</tr>' . $sales . '</tr>' . $workflow . '</tr>' . $cardFees . '</tr></tbody></table>';
@@ -262,7 +265,7 @@ HTML;
 
     private function fallbackCards(): string
     {
-        return '<article class="pricing-card"><p class="eyebrow">Starter</p><h2>Free</h2><p class="price">$0</p><p>For evaluation, students, and artists publishing a compact first portfolio.</p><ul><li>ArtsFolio subdomain</li><li>Core portfolio pages</li><li>Basic contact form</li><li>Includes ArtsFolio notification/link on free tenant pages</li></ul><a class="button secondary" href="/signup">Start Free</a></article>';
+        return '<article class="pricing-card"><p class="eyebrow">Starter</p><h2>Free</h2><p class="price">$0</p><p>For evaluation, students, and artists publishing a compact first portfolio.</p><ul><li>ArtsFolio subdomain</li><li>Core portfolio pages</li><li>Basic contact form</li><li>Curation workflow not included</li><li>Includes ArtsFolio notification/link on free tenant pages</li></ul><a class="button secondary" href="/signup">Start Free</a></article>';
     }
 
     private function priceLabel(int $cents): string
