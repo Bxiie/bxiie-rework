@@ -161,7 +161,10 @@ HTML;
         }
 
         $role = (string) ($_POST['role'] ?? 'user');
-        $userId = $this->users->inviteTenantUser($tenant->tenantId, $email, $role, $displayName !== '' ? $displayName : null);
+        $displayNameOrNull = $displayName !== '' ? $displayName : null;
+        $userId = $role === 'admin'
+            ? $this->users->inviteTenantAdmin($tenant->tenantId, $email, $displayNameOrNull)
+            : $this->users->inviteTenantUser($tenant->tenantId, $email, $role, $displayNameOrNull);
         $this->queueInviteEmail($tenant, $email, $displayName !== '' ? $displayName : null);
         $this->auditLog?->record('tenant.user.invited', $tenant->tenantId, (int) ($currentUser['user_id'] ?? 0), 'user', (string) $userId, ['email' => $email, 'role' => $role], $request->server('REMOTE_ADDR'));
         FlashMessages::success('Tenant user invite queued.');

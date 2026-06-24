@@ -607,6 +607,11 @@
     {
         "scope": "tenant",
         "method": "GET",
+        "path": "/admin/curation"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
         "path": "/admin/directory"
     },
     {
@@ -787,6 +792,11 @@
     {
         "scope": "tenant",
         "method": "GET",
+        "path": "/messages"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
         "path": "/password/forgot"
     },
     {
@@ -873,6 +883,11 @@
         "scope": "tenant",
         "method": "POST",
         "path": "/admin/content"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/curation/review"
     },
     {
         "scope": "tenant",
@@ -978,6 +993,11 @@
         "scope": "tenant",
         "method": "POST",
         "path": "/contact"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/curation/add"
     },
     {
         "scope": "tenant",

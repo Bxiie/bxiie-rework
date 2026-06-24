@@ -162,6 +162,18 @@ final class AdminUserRepository
     /**
      * Creates or reuses a user, attaches them to a tenant, assigns tenant admin,
      * and leaves membership in invited status until the user accepts.
+     *
+     * This compatibility entry point is retained for existing controllers,
+     * integrations, and regression checks that predate editor and user roles.
+     */
+    public function inviteTenantAdmin(int $tenantId, string $email, ?string $displayName = null): int
+    {
+        return $this->inviteTenantUser($tenantId, $email, 'admin', $displayName);
+    }
+
+    /**
+     * Creates or reuses a user, attaches them to a tenant, assigns the requested
+     * tenant role, and leaves membership invited until the user accepts.
      */
     public function inviteTenantUser(int $tenantId, string $email, string $roleSlug, ?string $displayName = null): int
     {
