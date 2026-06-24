@@ -34,6 +34,7 @@ $required = [
     [$home, '$currentUser = $this->currentUser;', 'tenant public navigation must use the request-resolved current user'],
     [$home, "'tenant_owner', 'tenant_admin'", 'tenant Admin link must recognize canonical tenant role slugs'],
     [$home, 'href="/admin">Admin</a>', 'tenant public navigation must render the Admin link'],
+    [$home, 'FROM role_assignments ra', 'public Admin link authorization must use tenant-scoped role assignments'],
     [$pricing, 'Curation workflow included', 'pricing cards must mention included workflow'],
     [$pricing, 'Curation workflow not included', 'pricing cards must mention excluded workflow'],
     [$pricing, 'curation_workflow_included', 'pricing must use the stored workflow capability'],

@@ -1888,3 +1888,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
   from `plans.curation_workflow_included`; Free explicitly shows it as unavailable.
 
 <!-- End of file. -->
+
+## 2026-06-23 tenant public Admin-link authorization repair
+
+- Tenant public Admin-link authorization follows the same tenant-scoped
+  `role_assignments` source used by tenant admin routes.
+- Public navigation does not add a separate `tenant_memberships.status`
+  requirement that can disagree with the actual admin authorization guard.
+
+<!-- End of file. -->

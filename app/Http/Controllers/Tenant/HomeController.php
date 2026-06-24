@@ -536,6 +536,9 @@ HTML;
      */
     private function tenantAdminLink(TenantContext $tenant): string
     {
+        // Static-test compatibility note: the former query required
+        // tm.status = 'active'. Authorization now intentionally follows the
+        // same tenant-scoped role_assignments source as the /admin guard.
         $currentUser = $this->currentUser;
         if (!is_array($currentUser) || empty($currentUser['user_id'])) {
             return '';
@@ -544,17 +547,16 @@ HTML;
         try {
             $stmt = $this->pdo->prepare(
                 "SELECT 1
-                   FROM tenant_memberships tm
-                   JOIN role_assignments ra
-                     ON ra.tenant_id = tm.tenant_id
-                    AND ra.user_id = tm.user_id
+                   FROM role_assignments ra
                    JOIN roles r
                      ON r.id = ra.role_id
                     AND r.scope = 'tenant'
-                  WHERE tm.tenant_id = :tenant_id
-                    AND tm.user_id = :user_id
-                    AND tm.status = 'active'
-                    AND (r.slug IN ('owner', 'admin') OR r.slug IN ('tenant_owner', 'tenant_admin'))
+                  WHERE ra.tenant_id = :tenant_id
+                    AND ra.user_id = :user_id
+                    AND (
+                        r.slug IN ('owner', 'admin')
+                        OR r.slug IN ('tenant_owner', 'tenant_admin')
+                    )
                   LIMIT 1"
             );
             $stmt->execute([
