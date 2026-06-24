@@ -1867,3 +1867,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform Admin now includes a global Email Signups page at `/platform/admin/email-signups`.
 - Tenant watermarks are opt-in, configurable, rendered at response time, and do not alter stored originals.
 - Public platform pages use the shared ordered navigation: Home, Artists, Pricing, Help, Developers, Contact.
+
+## Curation workflow (2026-06-23)
+- Migration 0048 adds tenant editor/user roles, central/editor queues, replies in user messages, and paid-plan capability.
+- Logged-in tenant members preview unpublished works and empty pre-publication sections; public visitors see published content only.
+- Editors are limited to `/admin/curation`; tenant admins retain full administration.
+
+<!-- End of file. -->

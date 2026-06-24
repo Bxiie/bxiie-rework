@@ -14,7 +14,7 @@ final class ArtworkReadRepository
 {
     public function __construct(private readonly PDO $pdo) {}
 
-    public function findPublishedBySlug(TenantContext $tenant, string $slug): ?array
+    public function findPublishedBySlug(TenantContext $tenant, string $slug, bool $includeUnpublished = false): ?array
     {
         $stmt = $this->pdo->prepare(
             "SELECT a.id, a.uuid, a.title, a.slug, a.description, a.medium, a.dimensions, a.year_created, a.status,
@@ -26,17 +26,17 @@ final class ArtworkReadRepository
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
              WHERE a.tenant_id = :tenant_id
                AND a.slug = :slug
-               AND a.status = 'published'
+               AND (a.status = 'published' OR :include_unpublished = 1)
                AND " . $this->portfolioTypeExistsSql('a') . "
              LIMIT 1"
         );
-        $stmt->execute(['tenant_id' => $tenant->tenantId, 'slug' => $slug]);
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'slug' => $slug, 'include_unpublished' => $includeUnpublished ? 1 : 0]);
         $row = $stmt->fetch();
 
         return $row ?: null;
     }
 
-    public function latestPublished(TenantContext $tenant, int $limit = 12): array
+    public function latestPublished(TenantContext $tenant, int $limit = 12, bool $includeUnpublished = false): array
     {
         if ($this->tableExists('homepage_artwork_assignments')) {
             $stmt = $this->pdo->prepare(
@@ -50,12 +50,13 @@ final class ArtworkReadRepository
                  LEFT JOIN media_assets m ON m.id = a.primary_media_id
                  WHERE h.tenant_id = :tenant_id
                    AND a.tenant_id = :tenant_id
-                   AND a.status = 'published'
+                   AND (a.status = 'published' OR :include_unpublished = 1)
                    AND " . $this->portfolioTypeExistsSql('a') . "
                  ORDER BY h.sort_order ASC, a.sort_order ASC, a.id DESC
                  LIMIT :limit_count"
             );
             $stmt->bindValue('tenant_id', $tenant->tenantId, PDO::PARAM_INT);
+            $stmt->bindValue('include_unpublished', $includeUnpublished ? 1 : 0, PDO::PARAM_INT);
             $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetchAll();
@@ -63,13 +64,13 @@ final class ArtworkReadRepository
 
         // Older databases may not have the home assignment table yet. In that
         // compatibility case only, preserve the legacy latest-published fallback.
-        return $this->publishedOrdered($tenant, $limit, 'manual');
+        return $this->publishedOrdered($tenant, $limit, 'manual', $includeUnpublished);
     }
 
     /**
      * Returns published artwork using the tenant-selected display ordering.
      */
-    public function publishedOrdered(TenantContext $tenant, int $limit = 240, string $order = 'date_desc'): array
+    public function publishedOrdered(TenantContext $tenant, int $limit = 240, string $order = 'date_desc', bool $includeUnpublished = false): array
     {
         $stmt = $this->pdo->prepare(
             "SELECT a.id, a.uuid, a.title, a.slug, a.medium, a.dimensions, a.year_created, a.status,
@@ -80,12 +81,13 @@ final class ArtworkReadRepository
              FROM artworks a
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
              WHERE a.tenant_id = :tenant_id
-               AND a.status = 'published'
+               AND (a.status = 'published' OR :include_unpublished = 1)
                AND " . $this->portfolioTypeExistsSql('a') . "
              ORDER BY " . $this->orderSql($order) . "
              LIMIT :limit_count"
         );
         $stmt->bindValue('tenant_id', $tenant->tenantId, PDO::PARAM_INT);
+        $stmt->bindValue('include_unpublished', $includeUnpublished ? 1 : 0, PDO::PARAM_INT);
         $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -102,6 +104,7 @@ final class ArtworkReadRepository
         int $pageSize,
         string $order = 'date_desc',
         ?string $sectionSlug = null,
+        bool $includeUnpublished = false,
     ): array {
         $page = max(1, $page);
         $pageSize = max(1, min(96, $pageSize));
@@ -109,8 +112,8 @@ final class ArtworkReadRepository
         $sectionSlug = $sectionSlug !== null ? trim($sectionSlug) : null;
 
         $joins = '';
-        $where = "a.tenant_id = :tenant_id AND a.status = 'published' AND " . $this->portfolioTypeExistsSql('a');
-        $params = ['tenant_id' => $tenant->tenantId];
+        $where = "a.tenant_id = :tenant_id AND (a.status = 'published' OR :include_unpublished = 1) AND " . $this->portfolioTypeExistsSql('a');
+        $params = ['tenant_id' => $tenant->tenantId, 'include_unpublished' => $includeUnpublished ? 1 : 0];
         $manualDefault = 'a.sort_order ASC, a.id DESC';
 
         if ($sectionSlug !== null && $sectionSlug !== '') {
@@ -141,7 +144,7 @@ final class ArtworkReadRepository
              LIMIT :limit_count OFFSET :offset_count"
         );
         foreach ($params as $key => $value) {
-            $stmt->bindValue($key, $value, $key === 'tenant_id' ? PDO::PARAM_INT : PDO::PARAM_STR);
+            $stmt->bindValue($key, $value, in_array($key, ['tenant_id', 'include_unpublished'], true) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
         $stmt->bindValue('limit_count', $pageSize, PDO::PARAM_INT);
         $stmt->bindValue('offset_count', $offset, PDO::PARAM_INT);
@@ -156,7 +159,7 @@ final class ArtworkReadRepository
         ];
     }
 
-    public function activeSections(TenantContext $tenant): array
+    public function activeSections(TenantContext $tenant, bool $includeUnpublished = false): array
     {
         $stmt = $this->pdo->prepare(
             "SELECT id, name, slug
@@ -164,9 +167,10 @@ final class ArtworkReadRepository
              WHERE tenant_id = :tenant_id
                AND status = 'active'
                AND show_as_tab = 1
+               AND (:include_unpublished = 1 OR EXISTS (SELECT 1 FROM artwork_section_assignments asa JOIN artworks a ON a.id=asa.artwork_id WHERE asa.section_id=portfolio_sections.id AND a.status='published'))
              ORDER BY sort_order ASC, name ASC"
         );
-        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'include_unpublished' => $includeUnpublished ? 1 : 0]);
 
         return $stmt->fetchAll();
     }

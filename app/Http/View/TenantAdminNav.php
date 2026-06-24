@@ -22,6 +22,7 @@ final class TenantAdminNav
             'settings' => ['/admin/settings', 'Settings'],
             'content' => ['/admin/content', 'Content'],
             'artworks' => ['/admin/artworks', 'Artworks'],
+            'curation' => ['/admin/curation', 'Curation'],
             'sections' => ['/admin/portfolio-sections', 'Portfolio Sections'],
             'events' => ['/admin/events', 'Events'],
             'messages' => ['/admin/contact-messages', 'Messages'],

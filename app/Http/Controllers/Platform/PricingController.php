@@ -201,7 +201,7 @@ HTML;
             $description = AdminLayout::escape((string) ($plan['description'] ?: 'ArtsFolio artist portfolio plan.'));
             $artworks = $this->limitLabel($plan['allowed_artworks'] ?? null, 'artworks');
             $emails = $this->limitLabel($plan['allowed_email_addresses'] ?? null, 'email addresses');
-            $customDomain = ((int) $plan['custom_domain_included, admin_user_limit']) === 1 ? 'Admin users: Custom domain included' : 'ArtsFolio subdomain included';
+            $customDomain = ((int) $plan['custom_domain_included']) === 1 ? 'Admin users: Custom domain included' : 'ArtsFolio subdomain included';
             $sales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Online checkout available' : 'Online checkout not included';
             $fees = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? '<li>Sales fee disclosure: ArtsFolio commission plus ' . $this->cardFeesLabel($plan) . ' credit card charges</li>' : '';
             $freeNotice = $slug === 'free' ? '<li>Includes ArtsFolio notification/link on free tenant pages</li>' : '';
@@ -226,6 +226,7 @@ HTML;
         $domains = '<tr><td>Custom domain</td>';
         $notice = '<tr><td>ArtsFolio notification/link</td>';
         $sales = '<tr><td>Online checkout</td>';
+        $workflow = '<tr><td>Curation workflow</td>';
         $cardFees = '<tr><td>Credit card charges</td>';
         foreach ($plans as $plan) {
             $heads .= '<th>' . AdminLayout::escape((string) $plan['name']) . '</th>';
@@ -235,9 +236,10 @@ HTML;
             $domains .= '<td>' . (((int) $plan['custom_domain_included']) === 1 ? 'Included' : 'Not included') . '</td>';
             $notice .= '<td>' . (((string) $plan['slug']) === 'free' ? 'Included' : 'Not shown') . '</td>';
             $sales .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Included' : 'Not included') . '</td>';
+            $workflow .= '<td>' . (((string) $plan['slug']) === 'free' ? 'Not included' : 'Included') . '</td>';
             $cardFees .= '<td>' . $this->cardFeesLabel($plan) . '</td>';
         }
-        return '<table class="admin-table"><thead><tr><th>Feature</th>' . $heads . '</tr></thead><tbody>' . $price . '</tr>' . $artworks . '</tr>' . $emails . '</tr>' . $domains . '</tr>' . $notice . '</tr>' . $sales . '</tr>' . $cardFees . '</tr></tbody></table>';
+        return '<table class="admin-table"><thead><tr><th>Feature</th>' . $heads . '</tr></thead><tbody>' . $price . '</tr>' . $artworks . '</tr>' . $emails . '</tr>' . $domains . '</tr>' . $notice . '</tr>' . $sales . '</tr>' . $workflow . '</tr>' . $cardFees . '</tr></tbody></table>';
     }
 
     private function plans(): array
@@ -252,6 +254,7 @@ HTML;
             . ($columns['allowed_email_addresses'] ? ', allowed_email_addresses' : ', NULL AS allowed_email_addresses')
             . ($columns['display_order'] ? ', display_order' : ', 100 AS display_order')
             . ($columns['allow_sales'] ? ', allow_sales' : ', 0 AS allow_sales')
+            . ($columns['curation_workflow_included'] ? ', curation_workflow_included' : " , CASE WHEN slug = 'free' THEN 0 ELSE 1 END AS curation_workflow_included")
             . ($columns['credit_card_fee_basis_points'] ? ', credit_card_fee_basis_points' : ', 290 AS credit_card_fee_basis_points')
             . ($columns['credit_card_fixed_fee_cents'] ? ', credit_card_fixed_fee_cents' : ', 30 AS credit_card_fixed_fee_cents');
         return $this->pdo->query("SELECT {$select} FROM plans WHERE is_active = 1 ORDER BY display_order ASC, monthly_price_cents ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);

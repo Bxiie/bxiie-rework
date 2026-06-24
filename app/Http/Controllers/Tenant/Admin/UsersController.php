@@ -104,11 +104,12 @@ HTML;
 {$notice}
 <p class="admin-muted">Tenant admins can see tenant users, rotate local passwords, and invite additional tenant admins. Tenant owners can promote admins to owner and delete tenant user access.</p>
 <section class="admin-panel">
-    <h2>Invite tenant admin</h2>
+    <h2>Invite tenant user</h2>
     <form method="post" action="/admin/users/invite" class="admin-form">
         <input type="hidden" name="csrf_token" value="{$csrf}">
         <label>Email<br><input type="email" name="email" required autocomplete="email"></label>
         <label>Name<br><input type="text" name="display_name" autocomplete="name"></label>
+        <label>Access level<br><select name="role"><option value="user">User</option><option value="editor">Editor</option><option value="admin">Tenant admin</option></select></label>
         <button type="submit">Send invite</button>
     </form>
 </section>
@@ -159,10 +160,11 @@ HTML;
             return Response::html('<h1>Invalid invite email address</h1>', 422);
         }
 
-        $userId = $this->users->inviteTenantAdmin($tenant->tenantId, $email, $displayName !== '' ? $displayName : null);
+        $role = (string) ($_POST['role'] ?? 'user');
+        $userId = $this->users->inviteTenantUser($tenant->tenantId, $email, $role, $displayName !== '' ? $displayName : null);
         $this->queueInviteEmail($tenant, $email, $displayName !== '' ? $displayName : null);
-        $this->auditLog?->record('tenant.user.invited_admin', $tenant->tenantId, (int) ($currentUser['user_id'] ?? 0), 'user', (string) $userId, ['email' => $email], $request->server('REMOTE_ADDR'));
-        FlashMessages::success('Tenant admin invite queued.');
+        $this->auditLog?->record('tenant.user.invited', $tenant->tenantId, (int) ($currentUser['user_id'] ?? 0), 'user', (string) $userId, ['email' => $email, 'role' => $role], $request->server('REMOTE_ADDR'));
+        FlashMessages::success('Tenant user invite queued.');
 
         return new Response('', 303, ['Location' => '/admin/users?notice=invite-queued']);
     }
@@ -256,9 +258,9 @@ HTML;
         $siteName = $this->settings->get($tenant, 'site_title', $tenant->name);
         $loginUrl = 'https://' . ($_SERVER['HTTP_HOST'] ?? '') . '/login';
         $nameLine = $displayName ? "Hello {$displayName}," : 'Hello,';
-        $bodyText = "{$nameLine}\n\nYou have been invited as a tenant admin for {$siteName}.\n\nOpen {$loginUrl} to sign in. If you do not have a local password yet, use the password reset flow to set one.\n\nArtsFolio";
+        $bodyText = "{$nameLine}\n\nYou have been invited to {$siteName}.\n\nOpen {$loginUrl} to sign in. If you do not have a local password yet, use the password reset flow to set one.\n\nArtsFolio";
         $bodyHtml = '<p>' . htmlspecialchars($nameLine, ENT_QUOTES, 'UTF-8') . '</p>'
-            . '<p>You have been invited as a tenant admin for ' . htmlspecialchars($siteName, ENT_QUOTES, 'UTF-8') . '.</p>'
+            . '<p>You have been invited to ' . htmlspecialchars($siteName, ENT_QUOTES, 'UTF-8') . '.</p>'
             . '<p><a href="' . htmlspecialchars($loginUrl, ENT_QUOTES, 'UTF-8') . '">Open tenant login</a></p>'
             . '<p>If you do not have a local password yet, use the password reset flow to set one.</p>';
 
@@ -283,7 +285,7 @@ HTML;
     {
         $message = match ($notice) {
             'password-updated' => 'Tenant user password updated.',
-            'invite-queued' => 'Tenant admin invite queued.',
+            'invite-queued' => 'Tenant user invite queued.',
             'invite-resent' => 'Tenant admin invite resent.',
             'owner-promoted' => 'Tenant user promoted to owner.',
             'user-deleted' => 'Tenant user deleted.',

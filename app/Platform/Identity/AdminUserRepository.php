@@ -143,6 +143,9 @@ final class AdminUserRepository
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('A valid invite email address is required.');
         }
+        if (!in_array($roleSlug, ['admin', 'editor', 'user'], true)) {
+            throw new \InvalidArgumentException('Invalid tenant role.');
+        }
 
         $this->pdo->beginTransaction();
         try {
@@ -160,7 +163,7 @@ final class AdminUserRepository
      * Creates or reuses a user, attaches them to a tenant, assigns tenant admin,
      * and leaves membership in invited status until the user accepts.
      */
-    public function inviteTenantAdmin(int $tenantId, string $email, ?string $displayName = null): int
+    public function inviteTenantUser(int $tenantId, string $email, string $roleSlug, ?string $displayName = null): int
     {
         $email = strtolower(trim($email));
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -171,7 +174,7 @@ final class AdminUserRepository
         try {
             $userId = $this->findOrCreateUser($email, $displayName);
             $this->attachTenantMembership($tenantId, $userId, 'invited');
-            $this->assignTenantRole($tenantId, $userId, 'admin');
+            $this->assignTenantRole($tenantId, $userId, $roleSlug);
             $this->pdo->commit();
             return $userId;
         } catch (\Throwable $e) {

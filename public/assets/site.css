@@ -1769,3 +1769,7 @@ body article.pricing-card.featured h3 {
 }
 
 /* End of file. */
+
+/* Curation workflow and unpublished preview. */
+.artwork-unpublished{display:inline-block;margin:.4rem 0;padding:.2rem .45rem;border:1px solid currentColor;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}.curation-card-form{display:grid;gap:.4rem;margin-top:.75rem}.curation-card-form textarea,.curation-card-form select{width:100%}.artwork-card-wrap{padding:0}.artwork-card-wrap>.artwork-card{display:block}.artwork-card-wrap>.curation-card-form{padding:0 1rem 1rem}
+/* End of file. */

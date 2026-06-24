@@ -119,6 +119,7 @@ use App\Tenant\Contact\ContactMessageRepository;
 use App\Tenant\Settings\TenantSettingsRepository;
 use App\Tenant\Sales\SalesRepository;
 use App\Tenant\Artwork\ArtworkUploadService;
+use App\Tenant\Curation\CurationRepository;
 use App\Http\Auth\TenantPasswordResetGuard;
 
 /** Coordinates request context, service setup, guards, and route registrars. */
@@ -240,6 +241,15 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
             new ArtworkReadRepository($pdo),
             $pdo,
             $csrf,
+            $curationController,
+            $currentUser,
+        );
+
+        $curationController = new \App\Http\Controllers\Tenant\CurationController(
+            new CurationRepository($pdo),
+            new MembershipRepository($pdo),
+            $csrf,
+            $tenantSettings,
         );
 
         $contactController = new ContactController(

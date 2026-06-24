@@ -25,6 +25,8 @@ final class HomeController
         private readonly ArtworkReadRepository $artworks,
         private readonly PDO $pdo,
         private readonly ?CsrfTokenService $csrf = null,
+        private readonly ?CurationController $curation = null,
+        private readonly ?array $currentUser = null,
     ) {
     }
 
@@ -39,7 +41,8 @@ final class HomeController
             'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.'
         );
 
-        $items = $this->artworks->latestPublished($tenant, 12);
+        $includeUnpublished = $this->currentUser !== null;
+        $items = $this->artworks->latestPublished($tenant, 12, $includeUnpublished);
 
         $body = <<<HTML
 <section class="hero">
@@ -63,12 +66,15 @@ HTML;
                     $image = "<img src=\"{$src}\" alt=\"{$alt}\" loading=\"lazy\">";
                 }
 
+                $unpublished = (string)($item['status'] ?? '') !== 'published' ? '<strong class="artwork-unpublished">Unpublished</strong>' : '';
+                $curationForm = $this->curation?->form($tenant->tenantId, (int)$item['id'], '/', $this->currentUser) ?? '';
                 $body .= <<<HTML
-<a class="card artwork-card" href="/artwork/{$slug}">
+<div class="card artwork-card-wrap"><a class="card artwork-card" href="/artwork/{$slug}">
     {$image}
     <span>{$title}</span>
     <small>{$meta}</small>
-</a>
+    {$unpublished}
+</a>{$curationForm}</div>
 
 HTML;
             }
@@ -93,7 +99,8 @@ HTML;
             24,
             [10, 20, 24, 30, 40, 50, 60, 70, 80, 90, 100],
         );
-        $sections = $this->artworks->activeSections($tenant);
+        $includeUnpublished = $this->currentUser !== null;
+        $sections = $this->artworks->activeSections($tenant, $includeUnpublished);
         $displayOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
         $result = $this->artworks->publishedPage(
             $tenant,
@@ -101,6 +108,7 @@ HTML;
             $pageSize,
             $displayOrder,
             $sectionSlug !== '' ? $sectionSlug : null,
+            $includeUnpublished,
         );
         $items = $result['items'];
 
@@ -154,6 +162,8 @@ HTML;
                     $image = "<img src=\"{$src}\" alt=\"{$alt}\" loading=\"lazy\" style=\"width:100%;height:240px;object-fit:contain;background:#fff;\">";
                 }
 
+                $unpublished = (string)($item['status'] ?? '') !== 'published' ? '<strong class="artwork-unpublished">Unpublished</strong>' : '';
+                $curationForm = $this->curation?->form($tenant->tenantId, (int)$item['id'], '/portfolio', $this->currentUser) ?? '';
                 $body .= <<<HTML
 <article style="border:1px solid #ddd;padding:1rem;background:#fffaf5;">
     <a href="/artwork/{$slug}">{$image}</a>
@@ -161,6 +171,8 @@ HTML;
     <p style="margin:.2rem 0;color:#666;">{$year}</p>
     <p style="margin:.2rem 0;color:#666;">{$medium}</p>
     {$priceLine}
+    {$unpublished}
+    {$curationForm}
 </article>
 HTML;
             }
@@ -211,7 +223,7 @@ HTML;
 
     public function artwork(Request $request, TenantContext $tenant, string $slug): Response
     {
-        $artwork = $this->artworks->findPublishedBySlug($tenant, $slug);
+        $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->currentUser !== null);
 
         if (!$artwork) {
             return Response::notFound("Artwork not found: {$slug}");

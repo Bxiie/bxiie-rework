@@ -17,6 +17,8 @@ storage/uploads/*
 storage/cache/*
 storage/private/*
 storage/patch_backups/*
+.update-backups
+.update-backups/*
 
 .patch-backups/*
 bundle/*

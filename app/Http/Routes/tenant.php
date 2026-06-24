@@ -134,7 +134,10 @@ return static function (Router $router, array $context): void {
                 (new Response('', 303, ['Location' => '/login?notice=admin-login-required']))->send();
                 exit;
             }
-            if (!$tenantRoleGuard->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            $adminRoles = str_starts_with($request->path(), '/admin/curation')
+                ? ['tenant_owner', 'tenant_admin', 'owner', 'admin', 'editor']
+                : ['tenant_owner', 'tenant_admin', 'owner', 'admin'];
+            if (!$tenantRoleGuard->allows($currentUser, $tenant, $adminRoles)) {
                 Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403)->send();
                 exit;
             }
@@ -148,6 +151,8 @@ return static function (Router $router, array $context): void {
         $router->get('/tenant.css', fn (Request $request): Response => (new TenantCssController($tenantSettings))->show($request, $tenant));
         $router->get('/', fn (Request $request): Response => $tenantController->home($request, $tenant));
         $router->get('/portfolio', fn (Request $request): Response => $tenantController->portfolio($request, $tenant));
+        $router->post('/curation/add', fn (Request $request): Response => $curationController->add($request, $tenant, $currentUser));
+        $router->get('/messages', fn (Request $request): Response => $curationController->messages($request, $tenant, $currentUser));
         $router->get('/artwork/{slug}', fn (Request $request, array $params): Response => $tenantController->artwork($request, $tenant, (string) $params['slug']));
         $router->get('/about', fn (Request $request): Response => $tenantController->about($request, $tenant));
         $router->get('/caddy/ask', fn (Request $request): Response => (new CaddyAskController($pdo))->ask($request));
@@ -177,6 +182,8 @@ return static function (Router $router, array $context): void {
     $router->get('/help/developer', fn (Request $request): Response => (new HelpController())->developer($request, $currentUser));
 
         $router->post('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings))->logout($request));
+        $router->get('/admin/curation', fn (Request $request): Response => $curationController->queue($request, $tenant, $currentUser));
+        $router->post('/admin/curation/review', fn (Request $request): Response => $curationController->review($request, $tenant, $currentUser));
         $router->get('/admin/media', fn (Request $request): Response => (new TenantMediaController($pdo, new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->admin($request, $tenant, $currentUser));
         $router->get('/admin/portfolio-sections', fn (Request $request): Response => (new TenantAdminPortfolioSectionsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->index($request, $tenant, $currentUser));
         $router->get('/admin/portfolio-sections/edit', fn (Request $request): Response => (new TenantAdminPortfolioSectionsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->edit($request, $tenant, $currentUser));
