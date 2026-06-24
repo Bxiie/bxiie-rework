@@ -29,6 +29,12 @@ final class PlatformChrome
             'developers' => ['/developer', 'Developers'],
             'contact' => ['/contact', 'Contact'],
         ];
+
+        $currentUser = $GLOBALS['artsfolio_current_user'] ?? null;
+        if (!is_array($currentUser) || empty($currentUser['user_id'])) {
+            unset($items['developers']);
+        }
+
         $html = '<nav class="platform-canonical-nav">';
         foreach ($items as $key => [$href, $label]) {
             $class = $active === $key ? ' class="active"' : '';
