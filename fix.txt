@@ -1,15 +1,5 @@
 ## Now
 
-## Functionality ##
-
-
-
-
-## curation workflow
-
-- add curation workflow.  Split tenant admins into three levels; tenant, editor, user.  Users can add artworks from the card where the artwork is encapsulated to a central or editor-specific list, along with a note.  Editors can add artworks to lists and review and publish artworks from their queue or the central queue.  A reply to the note will end up in the user's messages page.
-- logged in users should be able to see unpublished works where they would be shown in the tenant pages.  logged in users should see 'unpublished' indication  on artwork cards for unpublished works.
-- portfolio sections can exist but the sections and any associated buttons are not shown except to logged-in users unless they have visible works in them.  This means that admins may be able to see more portfolio sections and artworks than non-logged in users.  This gives an ability to set up a section in advance of publication, to allow proper curation.
 
 ## billing
 - when changing plans, require definite confirmation.  Warn that difference between this month's payment and the new plan, scaled by days left in the month, will be billed immediatly, unless changing from a free plan.
@@ -19,8 +9,6 @@
 ## misc
 
 ## Bugs ##
-- tenant googlesignup received 6h and 1d email messages.  facebooktest received neither.
-- admin shows in the tenant top nav sometimes when the user is not logged in.  Clicking on the admin tab takes you to the login page.
 
 ## backlog
 - implement billing
@@ -31,12 +19,23 @@
 - Add caching in data access routines for performance?
 - IP flooding blocking
 - SQL injection
+- Overall security review
 
 ## #########################
  
+## curation workflow
+
+- add curation workflow.  Split tenant admins into three levels; tenant, editor, user.  Users can add artworks from the card where the artwork is encapsulated to a central or editor-specific list, along with a note.  Editors can add artworks to lists and review and publish artworks from their queue or the central queue.  A reply to the note will end up in the user's messages page.
+- logged in users should be able to see unpublished works where they would be shown in the tenant pages.  logged in users should see 'unpublished' indication  on artwork cards for unpublished works.
+- portfolio sections can exist but the sections and any associated buttons are not shown except to logged-in users unless they have visible works in them.  This means that admins may be able to see more portfolio sections and artworks than non-logged in users.  This gives an ability to set up a section in advance of publication, to allow proper curation.
+- add workflow to plan comparison.  Not available for free plans.
 
 ##
 
+- tenant googlesignup received 6h and 1d email messages.  facebooktest received neither.
+- admin shows in the tenant top nav sometimes when the user is not logged in.  Clicking on the admin tab takes you to the login page.
+
+##
 
 - show the artwork on the edit artwork page
 - Make the logo bigger on login pages, and at the top left of the non-home platform pages.
