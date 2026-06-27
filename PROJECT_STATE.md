@@ -1908,3 +1908,19 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Pricing uses `-` instead of `0.00% + $0.00` or `Not included` for unavailable checkout features.
 
 <!-- End of file. -->
+
+## 2026-06-27 subscription billing hardening
+
+- Subscription billing hardening adds migration `0050_subscription_billing_hardening.sql`.
+- Stripe webhook handling now records `invoice.payment_failed`,
+  `customer.subscription.updated`, and `customer.subscription.deleted`.
+- Failed payments set billing status to `past_due` and record
+  `billing_action_required_at`.
+- Subscription updates synchronize Stripe status, recurrence date, and
+  cancellation-at-period-end state.
+- `scripts/billing/apply_pending_subscription_changes.php` applies local
+  scheduled downgrades/cancellations after the recorded recurrence date.
+- Stripe remains the payment source of truth; the local applicator controls
+  ArtsFolio feature access at the end of the billing period.
+
+<!-- End of file. -->

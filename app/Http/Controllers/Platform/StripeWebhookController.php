@@ -58,6 +58,27 @@ final class StripeWebhookController
             }
         }
 
+        if (($event['type'] ?? '') === 'invoice.payment_failed') {
+            $invoice = $event['data']['object'] ?? [];
+            if (is_array($invoice)) {
+                $this->markBillingInvoicePaymentFailed($invoice);
+            }
+        }
+
+        if (($event['type'] ?? '') === 'customer.subscription.updated') {
+            $subscription = $event['data']['object'] ?? [];
+            if (is_array($subscription)) {
+                $this->syncBillingSubscriptionUpdated($subscription);
+            }
+        }
+
+        if (($event['type'] ?? '') === 'customer.subscription.deleted') {
+            $subscription = $event['data']['object'] ?? [];
+            if (is_array($subscription)) {
+                $this->markBillingSubscriptionDeleted($subscription);
+            }
+        }
+
         return Response::json(['ok' => true]);
     }
 
