@@ -54,7 +54,7 @@ final class EmailOutboxRepository
                 :body_text,
                 :body_html,
                 :template_key,
-                DATE_ADD(CURRENT_TIMESTAMP, INTERVAL :available_after SECOND)
+                DATE_ADD(UTC_TIMESTAMP(), INTERVAL :available_after SECOND)
             )"
         );
 
@@ -75,15 +75,13 @@ final class EmailOutboxRepository
 
 
     /**
-     * Ensures every queued email carries ArtsFolio identity, including older
-     * hard-coded invite and notification senders that do not use template files.
-     */
-    /**
      * Produces plain-text and branded HTML bodies for outbox rows.
      *
      * The SMTP worker sends multipart/alternative when body_html is populated.
+     * Existing explicit HTML bodies are accepted for signature compatibility,
+     * but the central ArtsFolio shell remains the canonical branding source.
      */
-    private function brandBodies(string $subject, string $bodyText): array
+    private function brandBodies(string $subject, string $bodyText, ?string $bodyHtml = null): array
     {
         return BrandedEmail::render($subject, $bodyText);
     }
@@ -122,7 +120,7 @@ final class EmailOutboxRepository
                 "SELECT *
                  FROM email_outbox
                  WHERE status = 'queued'
-                   AND available_at <= CURRENT_TIMESTAMP
+                   AND available_at <= UTC_TIMESTAMP()
                  ORDER BY available_at ASC, id ASC
                  LIMIT 1
                  FOR UPDATE SKIP LOCKED"
@@ -139,7 +137,7 @@ final class EmailOutboxRepository
                 "UPDATE email_outbox
                  SET status = 'sending',
                      attempts = attempts + 1,
-                     updated_at = CURRENT_TIMESTAMP
+                     updated_at = UTC_TIMESTAMP()
                  WHERE id = :id
                    AND status = 'queued'"
             );
@@ -178,8 +176,8 @@ final class EmailOutboxRepository
         $stmt = $this->pdo->prepare(
             "UPDATE email_outbox
              SET status = 'sent',
-                 sent_at = CURRENT_TIMESTAMP,
-                 updated_at = CURRENT_TIMESTAMP
+                 sent_at = UTC_TIMESTAMP(),
+                 updated_at = UTC_TIMESTAMP()
              WHERE id = :id"
         );
 
@@ -191,9 +189,9 @@ final class EmailOutboxRepository
         $stmt = $this->pdo->prepare(
             "UPDATE email_outbox
              SET status = 'failed',
-                 failed_at = CURRENT_TIMESTAMP,
+                 failed_at = UTC_TIMESTAMP(),
                  last_error = :last_error,
-                 updated_at = CURRENT_TIMESTAMP
+                 updated_at = UTC_TIMESTAMP()
              WHERE id = :id"
         );
 

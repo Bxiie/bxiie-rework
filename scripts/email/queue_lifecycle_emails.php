@@ -154,7 +154,7 @@ try {
             continue;
         }
 
-        $availableAt = date('Y-m-d H:i:s', time() + (int) $message['delay_seconds']);
+        $availableAt = gmdate('Y-m-d H:i:s', time() + (int) $message['delay_seconds']);
 
         if (!$dryRun) {
             $stmt = $pdo->prepare(
@@ -182,7 +182,7 @@ try {
                     :template_key,
                     'queued',
                     :available_at,
-                    CURRENT_TIMESTAMP,
+                    UTC_TIMESTAMP(),
                     CURRENT_TIMESTAMP
                 )"
             );

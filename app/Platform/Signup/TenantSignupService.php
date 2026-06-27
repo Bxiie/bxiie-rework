@@ -524,7 +524,7 @@ final class TenantSignupService
                 'body_html' => "<p>ArtsFolio {$templateKey} for tenant <strong>" . htmlspecialchars($slug, ENT_QUOTES, 'UTF-8') . "</strong>.</p>",
                 'template_key' => $templateKey,
                 'status' => 'queued',
-                'available_at' => date('Y-m-d H:i:s', time() + $delaySeconds),
+                'available_at' => gmdate('Y-m-d H:i:s', time() + $delaySeconds),
                 'created_at' => $this->now(),
                 'updated_at' => $this->now(),
             ]);
@@ -703,7 +703,7 @@ final class TenantSignupService
 
     private function now(): string
     {
-        return date('Y-m-d H:i:s');
+        return gmdate('Y-m-d H:i:s');
     }
 }
 

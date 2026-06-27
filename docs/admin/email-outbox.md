@@ -27,3 +27,9 @@ template/lifecycle/welcome.md
 ```
 
 <!-- End of file. -->
+
+## Queued-but-not-sent timestamps
+
+Outbox timestamps are stored and monitored in UTC. If Platform Admin → Email Outbox shows queued rows and the monitor reports `queue.email.oldest_ready_age_minutes`, first check that `artsfolio-email-worker@1.service` and `artsfolio-email-worker@2.service` are active. Then run `ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env php scripts/workers/email_run_once.php` from `/var/www/artsfolio` to force a single claim/send cycle and print the transport result.
+
+# End of file.

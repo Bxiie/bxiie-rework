@@ -60,3 +60,9 @@ add tenant sender policy
 ```
 
 <!-- End of file. -->
+
+## UTC scheduling contract
+
+`email_outbox.available_at`, `sent_at`, `failed_at`, and `updated_at` are evaluated as UTC timestamps. Queue writers must use `gmdate('Y-m-d H:i:s', ...)` or database `UTC_TIMESTAMP()` instead of local-time `date()` or `CURRENT_TIMESTAMP`. The operations monitor and the email worker both compare ready rows against `UTC_TIMESTAMP()` so a queued email cannot be reported as stale before the worker considers it claimable.
+
+# End of file.

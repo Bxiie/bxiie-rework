@@ -1964,3 +1964,9 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
   checkout incidents.
 
 <!-- End of file. -->
+
+## Email outbox UTC scheduling
+- Email outbox readiness is now evaluated on a single UTC clock: queue writers use `gmdate()` or `UTC_TIMESTAMP()`, and `EmailOutboxRepository::claimNext()` compares `available_at` to `UTC_TIMESTAMP()`.
+- This prevents `queue.email.oldest_ready_age_minutes` from going critical because the operations monitor sees rows as UTC-ready before the email worker, using local `CURRENT_TIMESTAMP`, would claim them.
+- Email worker units remain `artsfolio-email-worker@1.service` and `artsfolio-email-worker@2.service`; manual one-shot verification is `ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env php scripts/workers/email_run_once.php` from `/var/www/artsfolio`.
+

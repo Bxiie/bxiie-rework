@@ -110,7 +110,7 @@ $insertStmt = $pdo->prepare(
         :template_key,
         'queued',
         :available_at,
-        CURRENT_TIMESTAMP,
+        UTC_TIMESTAMP(),
         CURRENT_TIMESTAMP
     )"
 );
