@@ -1997,3 +1997,15 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Billing notification delivery depends on the existing email worker.
 
 <!-- End of file. -->
+
+## 2026-06-27 Platform Admin billing configuration validation
+
+- Platform Admin includes `/platform/admin/billing-configuration`.
+- `BillingConfigurationController` is read-only and masks Stripe secrets.
+- The page validates Stripe publishable/secret key presence and test/live mode
+  consistency, webhook secret format, optional Billing Portal configuration ID
+  format, paid-plan `stripe_monthly_price_id` readiness, free-plan Price-ID
+  drift, and `stripe_webhook_events` readiness.
+- Platform admin navigation includes `Billing Config`.
+
+<!-- End of file. -->

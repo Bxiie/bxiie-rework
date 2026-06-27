@@ -59,3 +59,13 @@ The dashboard should be reviewed after billing migrations, Stripe webhook config
 Templates live under `template/email/billing`. Webhook handlers and scheduled billing scripts call the notification service after successful local billing state changes. Stripe webhook idempotency prevents duplicate event delivery from queuing duplicate webhook-driven billing emails.
 
 <!-- End of file. -->
+
+## Platform Admin billing configuration validation
+
+`app/Http/Controllers/Platform/Admin/BillingConfigurationController.php` powers `/platform/admin/billing-configuration`.
+
+The page is read-only. It validates Stripe key presence and format, live/test consistency, webhook secret format, optional Billing Portal configuration ID format, plan Price-ID readiness, and webhook event-log readiness. It masks secrets and checks `information_schema` before querying optional plan columns.
+
+Use it before live billing cutover and after any Stripe plan or webhook changes.
+
+<!-- End of file. -->

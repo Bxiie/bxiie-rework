@@ -252,6 +252,7 @@ HTML;
             'domains' => ['/platform/admin/domains', 'Domains'],
             'pricing' => ['/platform/admin/pricing', 'Plans & Billing'],
             'billing_health' => ['/platform/admin/billing-health', 'Billing Health'],
+            'billing_configuration' => ['/platform/admin/billing-configuration', 'Billing Config'],
             'sales' => ['/platform/admin/sales', 'Sales'],
             'sales_analytics' => ['/platform/admin/sales/analytics', 'Sales Analytics'],
             'jobs' => ['/platform/admin/jobs', 'Jobs'],

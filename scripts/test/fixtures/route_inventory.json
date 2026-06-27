@@ -217,6 +217,11 @@
     {
         "scope": "platform",
         "method": "GET",
+        "path": "/platform/admin/billing-configuration"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
         "path": "/platform/admin/billing-health"
     },
     {
