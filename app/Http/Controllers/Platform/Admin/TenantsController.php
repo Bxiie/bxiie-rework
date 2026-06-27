@@ -88,6 +88,7 @@ HTML,
         $tenantLink = $tenantUrl !== null
             ? '<p><a class="button secondary" target="_blank" rel="noopener" href="' . $this->escape($tenantUrl) . '">Open tenant site in new tab</a></p>'
             : '<p class="admin-muted">No active tenant subdomain is currently available.</p>';
+        $billingDetails = $this->tenantBillingDetails($tenantId);
         $noticeCode = (string) ($_GET['notice'] ?? '');
         $noticeText = match ($noticeCode) {
             'complementary-updated' => 'Tenant billing override updated.',
@@ -142,6 +143,7 @@ HTML;
         <div><button type="submit">Save billing override</button></div>
     </form>
 </section>
+{$billingDetails}
 <table class="admin-table">
     <thead><tr><th>ID</th><th>User</th><th>Membership</th><th>Roles</th><th>Last log on</th><th>Password</th></tr></thead>
     <tbody>{$rows}</tbody>
@@ -168,6 +170,34 @@ HTML,
         $this->auditLog?->record('platform.tenant.complementary_updated', null, (int) ($currentUser['user_id'] ?? 0), 'tenant', (string) $tenantId, ['complementary' => $enabled], $request->server('REMOTE_ADDR'));
         FlashMessages::success('Tenant billing override updated.');
         return new Response('', 303, ['Location' => '/platform/admin/tenants/' . $tenantId . '?notice=complementary-updated']);
+    }
+
+
+    private function tenantBillingDetails(int $tenantId): string
+    {
+        try {
+            $stmt = $this->pdo()->prepare('SELECT tpa.*, p.name AS plan_name, p.slug AS plan_slug, p.monthly_price_cents FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id WHERE tpa.tenant_id = :tenant_id ORDER BY tpa.id DESC LIMIT 1');
+            $stmt->execute(['tenant_id' => $tenantId]);
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\Throwable) { $row = false; }
+        if (!$row) { return '<section class="admin-panel"><h2>Billing details</h2><p class="admin-muted">No billing assignment found.</p></section>'; }
+        $plan = $this->escape((string) ($row['plan_name'] ?? $row['plan_slug'] ?? 'Unknown plan'));
+        $status = $this->escape((string) ($row['billing_status'] ?? $row['status'] ?? 'manual'));
+        $recurs = $this->escape((string) ($row['current_period_ends_at'] ?? 'Not set'));
+        $subscription = $this->escape((string) ($row['stripe_subscription_id'] ?? '')) ?: 'Not connected';
+        $latest = isset($row['latest_charge_cents']) ? '$' . number_format(((int) $row['latest_charge_cents']) / 100, 2) : '$0.00';
+        $pending = trim((string) ($row['pending_change_type'] ?? '')) !== '' ? $this->escape((string) $row['pending_change_type']) . ' to ' . $this->escape((string) ($row['pending_plan_slug'] ?? 'selected plan')) . ' on ' . $this->escape((string) ($row['pending_effective_at'] ?? 'not set')) : 'None';
+        return <<<HTML
+<section class="admin-panel">
+    <h2>Billing details</h2>
+    <p><strong>Plan:</strong> {$plan}</p>
+    <p><strong>Billing status:</strong> {$status}</p>
+    <p><strong>Recurring billing date:</strong> {$recurs}</p>
+    <p><strong>Stripe subscription:</strong> {$subscription}</p>
+    <p><strong>Latest charge:</strong> {$latest}</p>
+    <p><strong>Pending change:</strong> {$pending}</p>
+</section>
+HTML;
     }
 
     private function complementaryChecked(int $tenantId): string

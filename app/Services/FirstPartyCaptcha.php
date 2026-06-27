@@ -96,7 +96,7 @@ HTML;
     </label>
     <label class="af-captcha-confirm">
         <input type="checkbox" name="af_captcha_confirm" value="1" required>
-        I am a real person, not an automated form submission.
+        I am a real person.
     </label>
 </div>
 HTML;

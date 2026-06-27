@@ -55,6 +55,9 @@ final class BillingController
         $planName = $this->e((string) $plan['name']);
         $price = $this->money((int) ($plan['monthly_price_cents'] ?? 0));
         $summary = $this->e((string) ($plan['description'] ?? 'ArtsFolio artist portfolio plan.'));
+        $billing = $this->billingDetails($tenant);
+        $billingPanel = $this->billingDetailsPanel($billing);
+        $planChangeHelp = $this->planChangeHelp($plan, $billing);
 
         $body = <<<HTML
 <section class="admin-billing-summary">
@@ -73,10 +76,13 @@ final class BillingController
     <form class="plan-edit-form" method="post" action="/admin/billing/plan" class="admin-form">
       <input type="hidden" name="csrf_token" value="{$csrf}">
       <label>Plan<select name="plan_slug">{$planOptions}</select></label>
-      <button type="submit">Update plan</button>
+      <p class="admin-notice admin-notice-warning">{$planChangeHelp}</p>
+      <label class="admin-checkbox-card"><input type="checkbox" name="understand_billing" value="1" required><span><strong>I understand the billing effect of this plan change.</strong><small>Paid upgrades and paid signup require card details and immediate billing. Downgrades and cancellations keep current-plan access until the billing recurrence date.</small></span></label>
+      <label>Type CHANGE PLAN to confirm<input type="text" name="billing_confirmation" pattern="CHANGE PLAN" autocomplete="off" required></label>
+      <button type="submit">Confirm plan change</button>
     </form>
-    <p class="admin-muted">Upgrade and downgrade changes are recorded immediately. External billing collection remains a platform operations task until subscription billing is connected.</p>
   </div>
+  {$billingPanel}
   <div class="admin-panel">
     <p class="admin-muted">Apply free access code</p>
     <form method="post" action="/admin/billing/free-access-code" class="admin-form">
@@ -110,15 +116,37 @@ HTML;
         if (!$this->validCsrf((string) ($_POST['csrf_token'] ?? ''))) {
             return Response::invalidCsrf();
         }
+        if (!isset($_POST['understand_billing']) || strtoupper(trim((string) ($_POST['billing_confirmation'] ?? ''))) !== 'CHANGE PLAN') {
+            return Response::html('<h1>Confirmation required</h1><p>Type CHANGE PLAN and confirm that you understand the billing effect before changing plans.</p>', 422);
+        }
         $slug = strtolower(trim((string) ($_POST['plan_slug'] ?? '')));
-        $plan = $this->planBySlug($slug);
-        if (!$plan) {
+        $targetPlan = $this->planBySlug($slug);
+        if (!$targetPlan) {
             return Response::html('<h1>Invalid plan</h1>', 422);
         }
-        $this->assignPlan($tenant, (int) $plan['id']);
-        $this->setSetting($tenant, 'billing_plan', (string) $plan['slug']);
-        FlashMessages::success('Billing plan updated.');
-        return new Response('', 303, ['Location' => '/admin/billing?notice=plan-updated']);
+        $currentPlan = $this->currentPlan($tenant) ?? $this->fallbackPlan();
+        if ((string) ($currentPlan['slug'] ?? '') === (string) ($targetPlan['slug'] ?? '')) {
+            FlashMessages::success('No billing plan change was needed.');
+            return new Response('', 303, ['Location' => '/admin/billing?notice=plan-unchanged']);
+        }
+        $currentPrice = max(0, (int) ($currentPlan['monthly_price_cents'] ?? 0));
+        $targetPrice = max(0, (int) ($targetPlan['monthly_price_cents'] ?? 0));
+        $billing = $this->billingDetails($tenant);
+        $recurrence = $this->recurrenceDate($billing);
+        if ($targetPrice === 0 || ($currentPrice > 0 && $targetPrice < $currentPrice)) {
+            $this->schedulePlanChange($tenant, $targetPlan, $targetPrice === 0 ? 'cancel' : 'downgrade', $recurrence);
+            FlashMessages::success('Plan change scheduled. You keep current-plan features until ' . $this->dateLabel($recurrence) . '.');
+            return new Response('', 303, ['Location' => '/admin/billing?notice=plan-scheduled']);
+        }
+        $prorationCents = $currentPrice > 0 ? $this->prorationCents($currentPrice, $targetPrice, $recurrence) : 0;
+        $this->recordPendingPaidPlanChange($tenant, $targetPlan, $currentPrice === 0 ? 'paid_start' : 'upgrade', $prorationCents);
+        try {
+            $session = $this->createBillingCheckoutSession($request, $tenant, $targetPlan, $currentUser, $prorationCents);
+            $this->recordStripeCheckoutSession($tenant, (int) $targetPlan['id'], (string) $session['id'], $prorationCents);
+            return new Response('', 303, ['Location' => (string) $session['url']]);
+        } catch (Throwable $e) {
+            return Response::html('<h1>Could not start billing checkout</h1><p>' . $this->e($e->getMessage()) . '</p>', 422);
+        }
     }
 
     public function applyFreeAccessCode(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -153,6 +181,106 @@ HTML;
 
         FlashMessages::success('Free access code applied.');
         return new Response('', 303, ['Location' => '/admin/billing?notice=free-access-applied']);
+    }
+
+
+    /** @return array<string,mixed> */
+    private function billingDetails(TenantContext $tenant): array
+    {
+        if (!$this->tableExists('tenant_plan_assignments')) {
+            return [];
+        }
+        $stmt = $this->pdo->prepare('SELECT tpa.*, p.name AS plan_name, p.slug AS plan_slug, p.monthly_price_cents AS plan_monthly_price_cents FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id WHERE tpa.tenant_id = :tenant_id ORDER BY tpa.id DESC LIMIT 1');
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    private function billingDetailsPanel(array $billing): string
+    {
+        if ($billing === []) {
+            return '<div class="admin-panel"><p class="admin-muted">Billing details</p><p>No subscription billing record exists yet.</p></div>';
+        }
+        $status = $this->e((string) ($billing['billing_status'] ?? $billing['status'] ?? 'manual'));
+        $recurs = $this->e($this->dateLabel($this->recurrenceDate($billing)));
+        $subscription = $this->e((string) ($billing['stripe_subscription_id'] ?? '')) ?: 'Not connected';
+        $payment = trim((string) ($billing['stripe_payment_method_brand'] ?? '') . ' ' . (string) ($billing['stripe_payment_method_last4'] ?? ''));
+        $payment = $payment !== '' ? $this->e($payment) : 'No saved card details yet';
+        $pending = trim((string) ($billing['pending_change_type'] ?? '')) !== '' ? '<p><strong>Pending change:</strong> ' . $this->e((string) $billing['pending_change_type']) . ' to ' . $this->e((string) ($billing['pending_plan_slug'] ?? 'selected plan')) . ' on ' . $this->e($this->dateLabel((string) ($billing['pending_effective_at'] ?? ''))) . '.</p>' : '<p><strong>Pending change:</strong> None</p>';
+        return <<<HTML
+  <div class="admin-panel">
+    <p class="admin-muted">Billing details</p>
+    <p><strong>Billing status:</strong> {$status}</p>
+    <p><strong>Recurring billing date:</strong> {$recurs}</p>
+    <p><strong>Stripe subscription:</strong> {$subscription}</p>
+    <p><strong>Payment method:</strong> {$payment}</p>
+    {$pending}
+  </div>
+HTML;
+    }
+
+    private function planChangeHelp(array $currentPlan, array $billing): string
+    {
+        $recurs = $this->dateLabel($this->recurrenceDate($billing));
+        return 'Paid plans require card details. A paid upgrade starts Stripe Checkout and bills the prorated difference for the days remaining in this billing month immediately. Moving from Free to a paid plan bills the new plan immediately. Downgrades and cancellations keep current-plan features until ' . $this->e($recurs) . '.';
+    }
+
+    private function recurrenceDate(array $billing): string
+    {
+        $value = trim((string) ($billing['current_period_ends_at'] ?? ''));
+        return $value !== '' ? $value : (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->modify('+1 month')->format('Y-m-d H:i:s');
+    }
+
+    private function prorationCents(int $currentPriceCents, int $targetPriceCents, string $periodEnd): int
+    {
+        $difference = max(0, $targetPriceCents - $currentPriceCents);
+        if ($difference === 0) { return 0; }
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        try { $end = new \DateTimeImmutable($periodEnd, new \DateTimeZone('UTC')); } catch (Throwable) { $end = $now->modify('+1 month'); }
+        return (int) max(0, round($difference * min(1, max(0, $end->getTimestamp() - $now->getTimestamp()) / (30 * 86400))));
+    }
+
+    private function schedulePlanChange(TenantContext $tenant, array $targetPlan, string $changeType, string $effectiveAt): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE tenant_plan_assignments SET pending_plan_id = :plan_id, pending_plan_slug = :plan_slug, pending_change_type = :change_type, pending_effective_at = :effective_at, pending_proration_cents = 0, cancel_at_period_end = :cancel, billing_note = :billing_note WHERE tenant_id = :tenant_id');
+        $stmt->execute(['plan_id' => (int) $targetPlan['id'], 'plan_slug' => (string) $targetPlan['slug'], 'change_type' => $changeType, 'effective_at' => $effectiveAt, 'cancel' => $changeType === 'cancel' ? 1 : 0, 'billing_note' => ucfirst($changeType) . ' scheduled for ' . $effectiveAt . '. Current-plan access remains available until then.', 'tenant_id' => $tenant->tenantId]);
+    }
+
+    private function recordPendingPaidPlanChange(TenantContext $tenant, array $targetPlan, string $changeType, int $prorationCents): void
+    {
+        $stmt = $this->pdo->prepare('INSERT INTO tenant_plan_assignments (tenant_id, plan_id, status, billing_status, pending_plan_id, pending_plan_slug, pending_change_type, pending_effective_at, pending_proration_cents, billing_note, created_at) VALUES (:tenant_id, :plan_id, "active", "payment_pending", :pending_plan_id, :pending_plan_slug, :change_type, UTC_TIMESTAMP(), :proration, :billing_note, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE billing_status = "payment_pending", pending_plan_id = VALUES(pending_plan_id), pending_plan_slug = VALUES(pending_plan_slug), pending_change_type = VALUES(pending_change_type), pending_effective_at = VALUES(pending_effective_at), pending_proration_cents = VALUES(pending_proration_cents), billing_note = VALUES(billing_note)');
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'plan_id' => (int) $targetPlan['id'], 'pending_plan_id' => (int) $targetPlan['id'], 'pending_plan_slug' => (string) $targetPlan['slug'], 'change_type' => $changeType, 'proration' => $prorationCents, 'billing_note' => 'Stripe Checkout started for ' . $changeType . '. Immediate prorated charge: ' . $this->plainMoney($prorationCents) . '.']);
+    }
+
+    private function recordStripeCheckoutSession(TenantContext $tenant, int $planId, string $sessionId, int $prorationCents): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE tenant_plan_assignments SET stripe_checkout_session_id = :session_id, pending_proration_cents = :proration, pending_plan_id = :plan_id WHERE tenant_id = :tenant_id');
+        $stmt->execute(['session_id' => $sessionId, 'proration' => $prorationCents, 'plan_id' => $planId, 'tenant_id' => $tenant->tenantId]);
+    }
+
+    /** @return array<string,mixed> */
+    private function createBillingCheckoutSession(Request $request, TenantContext $tenant, array $targetPlan, ?array $currentUser, int $prorationCents): array
+    {
+        $secretKey = $this->platformSetting('stripe_secret_key');
+        $email = strtolower(trim((string) ($currentUser['email'] ?? '')));
+        if ($email === '') { throw new \RuntimeException('Current user email is required before billing checkout can start.'); }
+        $baseUrl = 'https://' . $request->host();
+        return (new \App\Platform\Billing\StripeSubscriptionCheckoutService())->createSubscriptionSession($secretKey, $tenant->tenantId, $targetPlan, $baseUrl . '/admin/billing?notice=billing-complete', $baseUrl . '/admin/billing?notice=billing-canceled', $email, $prorationCents);
+    }
+
+    private function platformSetting(string $key): string
+    {
+        if (!$this->tableExists('platform_settings')) { return ''; }
+        $stmt = $this->pdo->prepare('SELECT setting_value FROM platform_settings WHERE setting_key = :setting_key LIMIT 1');
+        $stmt->execute(['setting_key' => $key]);
+        $value = $stmt->fetchColumn();
+        return $value === false ? '' : (string) $value;
+    }
+
+    private function dateLabel(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') { return 'the next billing recurrence date'; }
+        try { return (new \DateTimeImmutable($value))->format('F j, Y'); } catch (Throwable) { return $value; }
     }
 
     /**
@@ -258,7 +386,7 @@ HTML;
         if (!$this->tableExists('tenant_plan_assignments')) {
             return;
         }
-        $stmt = $this->pdo->prepare('INSERT INTO tenant_plan_assignments (tenant_id, plan_id, status) VALUES (:tenant_id, :plan_id, "manual") ON DUPLICATE KEY UPDATE plan_id = VALUES(plan_id), status = "manual"');
+        $stmt = $this->pdo->prepare('INSERT INTO tenant_plan_assignments (tenant_id, plan_id, status, billing_status, current_period_started_at, current_period_ends_at) VALUES (:tenant_id, :plan_id, "manual", "manual", UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 MONTH)) ON DUPLICATE KEY UPDATE plan_id = VALUES(plan_id), status = "manual", billing_status = VALUES(billing_status), current_period_started_at = COALESCE(current_period_started_at, VALUES(current_period_started_at)), current_period_ends_at = COALESCE(current_period_ends_at, VALUES(current_period_ends_at)), pending_plan_id = NULL, pending_plan_slug = NULL, pending_change_type = NULL, pending_effective_at = NULL, pending_proration_cents = 0, cancel_at_period_end = 0');
         $stmt->execute(['tenant_id' => $tenant->tenantId, 'plan_id' => $planId]);
     }
 

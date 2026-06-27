@@ -1897,3 +1897,14 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
   requirement that can disagree with the actual admin authorization guard.
 
 <!-- End of file. -->
+
+## 2026-06-27 subscription billing workflow
+
+- Paid plan starts and upgrades use Stripe Checkout subscription mode and collect card details.
+- Free-to-paid changes bill the selected plan immediately. Paid upgrades bill a prorated difference immediately.
+- Downgrades and cancellations are scheduled for the current billing recurrence date and current-plan features remain until then.
+- `tenant_plan_assignments` stores billing status, recurrence dates, pending changes, Stripe identifiers, latest charge data, and cancel-at-period-end state.
+- Platform Admin tenant detail shows billing status, recurring date, Stripe subscription id, latest charge, and pending change details.
+- Pricing uses `-` instead of `0.00% + $0.00` or `Not included` for unavailable checkout features.
+
+<!-- End of file. -->

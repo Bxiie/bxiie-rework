@@ -1,0 +1,9 @@
+- User should be prompted for cc details when changing to a non-free plan.
+- User should be billed immediately when encountering a charge - for example, signing up for a non-free plan
+- System should rebill user monthly
+- when changing plans, require definite confirmation.  Warn that difference between this month's payment and the new plan, scaled by days left in the month, will be billed immediately, unless changing from a free plan.
+- When downgrading or canceling plan, inform user that they will have access to current plan features until 'date', where date is the billing recurrence date.  Downgrades  will take effect at that time.
+- On platform admin - tenant, show charge recurring date and billing details.
+- For a billing plan, the free plan should not show credit card rates as checkout is unavailable.
+- Change 'I am a real person, not an automated form submission.' to 'I am a real person.'
+- On the pricing comparison grid, replace free plan's '0.00% + $0.00' with '-'.  Change 'Not included' to '-'.

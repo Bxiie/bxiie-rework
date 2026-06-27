@@ -40,7 +40,7 @@ final class PricingController
 <section class="pricing-grid professional-pricing">
 {$cards}
 </section>
-<section class="platform-section commission-disclosure"><h2>How payouts work</h2><p>ArtsFolio commission on platform-processed artwork sales is <strong>{$commission}</strong>. Credit card charges are plan-disclosed and commonly shown as <strong>{$defaultCardFees}</strong>.</p><p>Artists receive the sale amount minus platform commission, minus the credit card percentage, minus the fixed credit card charge. Complimentary tenants do not pay subscription fees, but they still pay platform commission and credit card charges on sales.</p></section>
+<section class="platform-section commission-disclosure"><h2>How payouts work</h2><p>ArtsFolio commission on platform-processed artwork sales is <strong>{$commission}</strong>. Credit card charges are shown only for plans where checkout is available and are commonly <strong>{$defaultCardFees}</strong>.</p><p>Artists receive the sale amount minus platform commission, minus the credit card percentage, minus the fixed credit card charge. Complimentary tenants do not pay subscription fees, but they still pay platform commission and credit card charges on sales.</p></section>
 <section class="platform-section comparison-section"><h2>Plan comparison</h2>{$comparison}</section>
 <style>
 /* Pricing page final polish: Studio contrast, readable buttons, and comparison-row normalization. */
@@ -202,7 +202,7 @@ HTML;
             $artworks = $this->limitLabel($plan['allowed_artworks'] ?? null, 'artworks');
             $emails = $this->limitLabel($plan['allowed_email_addresses'] ?? null, 'email addresses');
             $customDomain = ((int) $plan['custom_domain_included']) === 1 ? 'Admin users: Custom domain included' : 'ArtsFolio subdomain included';
-            $sales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Online checkout available' : 'Online checkout not included';
+            $sales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Online checkout available' : 'Online checkout unavailable';
             $workflow = ((int) ($plan['curation_workflow_included'] ?? 0)) === 1
                 ? 'Curation workflow included'
                 : 'Curation workflow not included';
@@ -236,11 +236,11 @@ HTML;
             $price .= '<td>' . $this->priceLabel((int) $plan['monthly_price_cents']) . '</td>';
             $artworks .= '<td>' . AdminLayout::escape((string) ($plan['allowed_artworks'] ?? 'Configured by plan')) . '</td>';
             $emails .= '<td>' . AdminLayout::escape((string) ($plan['allowed_email_addresses'] ?? 'Configured by plan')) . '</td>';
-            $domains .= '<td>' . (((int) $plan['custom_domain_included']) === 1 ? 'Included' : 'Not included') . '</td>';
-            $notice .= '<td>' . (((string) $plan['slug']) === 'free' ? 'Included' : 'Not shown') . '</td>';
-            $sales .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Included' : 'Not included') . '</td>';
-            $workflow .= '<td>' . (((int) ($plan['curation_workflow_included'] ?? 0)) === 1 ? 'Included' : 'Not included') . '</td>';
-            $cardFees .= '<td>' . $this->cardFeesLabel($plan) . '</td>';
+            $domains .= '<td>' . (((int) $plan['custom_domain_included']) === 1 ? 'Included' : '-') . '</td>';
+            $notice .= '<td>' . (((string) $plan['slug']) === 'free' ? 'Included' : '-') . '</td>';
+            $sales .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Included' : '-') . '</td>';
+            $workflow .= '<td>' . (((int) ($plan['curation_workflow_included'] ?? 0)) === 1 ? 'Included' : '-') . '</td>';
+            $cardFees .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? $this->cardFeesLabel($plan) : '-') . '</td>';
         }
         return '<table class="admin-table"><thead><tr><th>Feature</th>' . $heads . '</tr></thead><tbody>' . $price . '</tr>' . $artworks . '</tr>' . $emails . '</tr>' . $domains . '</tr>' . $notice . '</tr>' . $sales . '</tr>' . $workflow . '</tr>' . $cardFees . '</tr></tbody></table>';
     }

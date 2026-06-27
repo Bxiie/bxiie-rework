@@ -118,6 +118,9 @@ final class TenantSignupService
                 'slug' => $slug,
                 'domain' => $domain,
                 'login_url' => 'https://' . $domain . '/login',
+                'selected_plan' => $selectedPlan ?? [],
+                'selected_plan_slug' => (string) ($selectedPlan['slug'] ?? 'free'),
+                'selected_plan_monthly_price_cents' => (int) ($selectedPlan['monthly_price_cents'] ?? 0),
             ];
         } catch (\Throwable $e) {
             $this->pdo->rollBack();
@@ -140,7 +143,7 @@ final class TenantSignupService
         }
 
         $stmt = $this->pdo->query(
-            "SELECT id, slug, name, monthly_price_cents
+            "SELECT id, slug, name, monthly_price_cents, description
              FROM plans
              WHERE is_active = 1
              ORDER BY monthly_price_cents ASC, id ASC"
@@ -172,90 +175,39 @@ final class TenantSignupService
     }
 
     /**
-     * Validates the selected plan when a free-month signup code is redeemed.
+     * Validates the selected public signup plan.
      */
     private function validateSelectedPlan(?array $signupCode, ?string $selectedPlanSlug): ?array
     {
-        if ($signupCode === null || (string) ($signupCode['code_type'] ?? '') !== 'free_months') {
-            return null;
-        }
-
         $selectedPlanSlug = strtolower(trim((string) $selectedPlanSlug));
-        if ($selectedPlanSlug === '') {
-            throw new RuntimeException('Choose a plan for the free access period.');
-        }
-        if (!$this->tableExists('plans')) {
-            throw new RuntimeException('Pricing plans are not available.');
-        }
-
-        $stmt = $this->pdo->prepare('SELECT id, slug, name, monthly_price_cents FROM plans WHERE slug = :slug AND is_active = 1 LIMIT 1');
+        if ($selectedPlanSlug === '') { $selectedPlanSlug = 'free'; }
+        if (!$this->tableExists('plans')) { return null; }
+        $stmt = $this->pdo->prepare('SELECT id, slug, name, monthly_price_cents, description FROM plans WHERE slug = :slug AND is_active = 1 LIMIT 1');
         $stmt->execute(['slug' => $selectedPlanSlug]);
         $plan = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$plan) {
-            throw new RuntimeException('Selected plan is not available.');
-        }
-
+        if (!$plan) { throw new RuntimeException('Selected plan is not available.'); }
         return $plan;
     }
 
     /**
-     * Assigns the selected plan and records the free-access end date.
+     * Assigns the selected plan     * Assigns the selected plan and records the free-access end date.
      */
     private function assignSignupCodePlanGrant(int $tenantId, ?array $signupCode, ?array $selectedPlan): void
     {
-        if ($signupCode === null || $selectedPlan === null || (string) ($signupCode['code_type'] ?? '') !== 'free_months') {
-            return;
-        }
-        if (!$this->tableExists('tenant_plan_assignments')) {
-            return;
-        }
-
-        $months = max(1, (int) ($signupCode['free_access_months'] ?? 0));
-        $complimentaryUntil = (new \DateTimeImmutable('now'))->modify('+' . $months . ' months')->format('Y-m-d H:i:s');
-        $values = [
-            'tenant_id' => $tenantId,
-            'plan_id' => (int) $selectedPlan['id'],
-            'status' => 'trial',
-            'complimentary_until' => $complimentaryUntil,
-            'granted_by_signup_code_id' => (int) $signupCode['id'],
-            'billing_note' => 'Free access signup code ' . (string) $signupCode['code'] . ' for ' . $months . ' month' . ($months === 1 ? '' : 's') . '.',
-            'created_at' => $this->now(),
-        ];
-
+        if ($selectedPlan === null || !$this->tableExists('tenant_plan_assignments')) { return; }
+        $isFreeAccess = $signupCode !== null && (string) ($signupCode['code_type'] ?? '') === 'free_months';
+        $months = $isFreeAccess ? max(1, (int) ($signupCode['free_access_months'] ?? 0)) : 0;
+        $complimentaryUntil = $isFreeAccess ? (new \DateTimeImmutable('now'))->modify('+' . $months . ' months')->format('Y-m-d H:i:s') : null;
+        $priceCents = (int) ($selectedPlan['monthly_price_cents'] ?? 0);
+        $billingStatus = $priceCents > 0 && !$isFreeAccess ? 'payment_pending' : ($isFreeAccess ? 'trial' : 'free');
+        $status = $isFreeAccess ? 'trial' : 'active';
+        $note = $isFreeAccess ? 'Free access signup code ' . (string) $signupCode['code'] . ' for ' . $months . ' month' . ($months === 1 ? '' : 's') . '.' : ($priceCents > 0 ? 'Paid signup selected. Stripe Checkout is required before billing is complete.' : 'Free plan selected at signup.');
+        $values = ['tenant_id' => $tenantId, 'plan_id' => (int) $selectedPlan['id'], 'status' => $status, 'billing_status' => $billingStatus, 'current_period_started_at' => $this->now(), 'current_period_ends_at' => (new \DateTimeImmutable('now'))->modify('+1 month')->format('Y-m-d H:i:s'), 'complimentary_until' => $complimentaryUntil, 'granted_by_signup_code_id' => $isFreeAccess ? (int) $signupCode['id'] : null, 'billing_note' => $note, 'created_at' => $this->now()];
         $stmt = $this->pdo->prepare('SELECT id FROM tenant_plan_assignments WHERE tenant_id = :tenant_id LIMIT 1');
         $stmt->execute(['tenant_id' => $tenantId]);
         $existingId = $stmt->fetchColumn();
-
-        if ($existingId !== false) {
-            $values['updated_at'] = $this->now();
-            $this->updateKnown('tenant_plan_assignments', (int) $existingId, $values);
-            return;
-        }
-
+        if ($existingId !== false) { $this->updateKnown('tenant_plan_assignments', (int) $existingId, $values); return; }
         $this->insertKnown('tenant_plan_assignments', $values);
-    }
-
-    private function normalizeSlug(string $slug): string
-    {
-        $slug = strtolower(trim($slug));
-        $slug = preg_replace('/[^a-z0-9-]+/', '-', $slug) ?? '';
-        $slug = trim($slug, '-');
-
-        if (!preg_match('/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/', $slug)) {
-            throw new RuntimeException('Tenant slug must be 3-63 lowercase letters, numbers, or hyphens.');
-        }
-
-        return $slug;
-    }
-
-    private function ensureTenantSlugAvailable(string $slug): void
-    {
-        $stmt = $this->pdo->prepare('SELECT id FROM tenants WHERE slug = :slug LIMIT 1');
-        $stmt->execute(['slug' => $slug]);
-
-        if ($stmt->fetchColumn() !== false) {
-            throw new RuntimeException('Tenant slug is already in use.');
-        }
     }
 
     private function ensureDomainAvailable(string $domain): void

@@ -12,6 +12,8 @@ use App\Platform\Auth\Session\SessionRepository;
 use App\Platform\Auth\Session\SessionTokenService;
 use App\Http\Controllers\Auth\LoginController;
 use App\Platform\Signup\TenantSignupService;
+use App\Platform\Settings\PlatformSettingsRepository;
+use App\Platform\Billing\StripeSubscriptionCheckoutService;
 use App\Support\Security\CsrfTokenService;
 
 /**
@@ -25,6 +27,7 @@ final class SignupController
         private readonly CsrfTokenService $csrf,
         private readonly ?SessionRepository $sessions = null,
         private readonly ?SessionTokenService $sessionTokens = null,
+        private readonly ?PlatformSettingsRepository $settings = null,
     ) {
     }
 
@@ -58,7 +61,7 @@ final class SignupController
         $oauthReturnTo = htmlspecialchars($this->signupReturnTo($signupCodeRaw), ENT_QUOTES, 'UTF-8');
         $googleSignupUrl = '/auth/google?return_to=' . rawurlencode($oauthReturnTo);
         $facebookSignupUrl = '/auth/facebook?return_to=' . rawurlencode($oauthReturnTo);
-        $planBlock = $this->freeAccessPlanBlock($signupCodeData);
+        $planBlock = $this->signupPlanBlock($signupCodeData, (string) ($_GET['plan'] ?? 'free'));
 
         return Response::html(<<<HTML
 <!doctype html>
@@ -157,6 +160,15 @@ HTML);
             $headers['Set-Cookie'] = SessionCookie::issueSetCookie($sessionToken, true);
         }
 
+        if ((int) ($result['selected_plan_monthly_price_cents'] ?? 0) > 0 && $this->settings !== null) {
+            try {
+                $checkout = (new StripeSubscriptionCheckoutService())->createSubscriptionSession((string) $this->settings->get('stripe_secret_key', ''), (int) $result['tenant_id'], (array) ($result['selected_plan'] ?? []), 'https://' . (string) $result['domain'] . '/admin/billing?notice=billing-complete', 'https://' . (string) $result['domain'] . '/admin/billing?notice=billing-canceled', strtolower(trim($adminEmail)), 0);
+                $headers['Location'] = (string) $checkout['url'];
+            } catch (\Throwable $e) {
+                error_log('Tenant paid signup checkout failed: ' . $e->getMessage());
+            }
+        }
+
         return new Response('', 302, $headers);
     }
 
@@ -175,32 +187,26 @@ HTML);
     }
 
     /**
-     * Renders the plan selector shown only for free-month signup codes.
+     * Renders the public signup plan selector.
      */
-    private function freeAccessPlanBlock(?array $signupCode): string
+    private function signupPlanBlock(?array $signupCode, string $selectedPlan): string
     {
-        if ($signupCode === null || (string) ($signupCode['code_type'] ?? '') !== 'free_months') {
-            return '';
-        }
-
-        $months = max(1, (int) ($signupCode['free_access_months'] ?? 0));
+        $plans = $this->signups->activePlans();
+        if ($plans === []) { return ''; }
+        $selectedPlan = strtolower(trim($selectedPlan)) ?: 'free';
+        $months = $signupCode !== null ? max(0, (int) ($signupCode['free_access_months'] ?? 0)) : 0;
         $options = '';
-        foreach ($this->signups->activePlans() as $plan) {
-            $slug = htmlspecialchars((string) $plan['slug'], ENT_QUOTES, 'UTF-8');
+        foreach ($plans as $plan) {
+            $slugRaw = (string) $plan['slug'];
+            $slug = htmlspecialchars($slugRaw, ENT_QUOTES, 'UTF-8');
             $name = htmlspecialchars((string) $plan['name'], ENT_QUOTES, 'UTF-8');
-            $price = ((int) ($plan['monthly_price_cents'] ?? 0)) > 0
-                ? '$' . number_format(((int) $plan['monthly_price_cents']) / 100, 2) . '/month'
-                : 'Free';
-            $options .= '<option value="' . $slug . '">' . $name . ' · ' . htmlspecialchars($price, ENT_QUOTES, 'UTF-8') . '</option>';
+            $priceCents = (int) ($plan['monthly_price_cents'] ?? 0);
+            $price = $priceCents > 0 ? '$' . number_format($priceCents / 100, 2) . '/month' : 'Free';
+            $selected = strtolower($slugRaw) === $selectedPlan ? ' selected' : '';
+            $options .= '<option value="' . $slug . '"' . $selected . '>' . $name . ' · ' . htmlspecialchars($price, ENT_QUOTES, 'UTF-8') . '</option>';
         }
-
-        if ($options === '') {
-            return '<p class="auth-error">No active plans are available for this free access code.</p>';
-        }
-
-        $label = htmlspecialchars($months . ' month' . ($months === 1 ? '' : 's'), ENT_QUOTES, 'UTF-8');
-
-        return '<label>Choose your plan<select name="selected_plan" required>' . $options . '</select></label><p class="auth-notice">This signup code grants free access to the selected plan for ' . $label . '.</p>';
+        $note = $months > 0 ? '<p class="auth-notice">This signup code grants free access to the selected plan for ' . htmlspecialchars($months . ' month' . ($months === 1 ? '' : 's'), ENT_QUOTES, 'UTF-8') . '. After that, paid plans require card details and bill monthly.</p>' : '<p class="auth-notice">Paid plans require card details and are billed immediately, then monthly. Free can be used without a card.</p>';
+        return '<label>Choose your plan<select name="selected_plan" required>' . $options . '</select></label>' . $note;
     }
 
     /**
