@@ -41,3 +41,13 @@ Migration `0053_stripe_webhook_event_log.sql` creates `stripe_webhook_events`.
 This table is the billing black-box recorder and should be checked during any payment incident.
 
 <!-- End of file. -->
+
+## Platform Admin billing health dashboard
+
+`app/Http/Controllers/Platform/Admin/BillingHealthController.php` powers Platform Admin → Billing Health at `/platform/admin/billing-health`.
+
+The controller is read-only and schema-tolerant. It checks `information_schema` before querying optional billing fields so it can diagnose partially applied billing migrations instead of failing on missing columns.
+
+The dashboard should be reviewed after billing migrations, Stripe webhook configuration changes, failed payments, and scheduled billing-change deployments.
+
+<!-- End of file. -->

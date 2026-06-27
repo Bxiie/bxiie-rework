@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Auth\TenantSessionBridgeController;
 use App\Http\Controllers\Platform\Admin\DashboardController as PlatformAdminDashboardController;
 use App\Http\Controllers\Platform\Admin\PricingController as PlatformAdminPricingController;
+use App\Http\Controllers\Platform\Admin\BillingHealthController as PlatformAdminBillingHealthController;
 use App\Http\Controllers\Platform\Admin\SalesController as PlatformAdminSalesController;
 use App\Http\Controllers\Platform\Admin\SalesAnalyticsController as PlatformAdminSalesAnalyticsController;
 use App\Http\Controllers\Platform\Admin\SettingsController as PlatformAdminSettingsController;
@@ -214,6 +215,7 @@ return static function (Router $router, array $context): void {
 
     $router->get('/platform/admin', fn (Request $request): Response => (new PlatformAdminDashboardController(new RequirePlatformRole(new MembershipRepository($pdo))))->index($request, $currentUser));
     $router->get('/platform/admin/pricing', fn (Request $request): Response => (new PlatformAdminPricingController(new RequirePlatformRole(new MembershipRepository($pdo)), $pdo, new PlatformSettingsRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
+    $router->get('/platform/admin/billing-health', fn (Request $request): Response => (new PlatformAdminBillingHealthController(new RequirePlatformRole(new MembershipRepository($pdo)), $pdo))->index($request, $currentUser));
     $router->get('/platform/admin/sales/analytics', fn (Request $request): Response => (new PlatformAdminSalesAnalyticsController(new RequirePlatformRole(new MembershipRepository($pdo)), new SalesRepository($pdo)))->index($request, $currentUser));
     $router->get('/platform/admin/sales', fn (Request $request): Response => (new PlatformAdminSalesController(new RequirePlatformRole(new MembershipRepository($pdo)), new SalesRepository($pdo)))->index($request, $currentUser));
     $router->post('/platform/admin/pricing', fn (Request $request): Response => (new PlatformAdminPricingController(new RequirePlatformRole(new MembershipRepository($pdo)), $pdo, new PlatformSettingsRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->update($request, $currentUser));
