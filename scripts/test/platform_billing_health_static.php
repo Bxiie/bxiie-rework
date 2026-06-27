@@ -37,6 +37,7 @@ $required = [
     [$controller, 'Failed Stripe webhook events', 'controller must check failed webhooks'],
     [$controller, 'stripe_webhook_events', 'controller must inspect webhook table when present'],
     [$controller, 'information_schema.columns', 'controller must be schema tolerant'],
+    [$controller, 'schema-tolerant ORDER BY', 'controller must not require tenant_plan_assignments.updated_at'],
     [$controller, 'latest_stripe_error', 'controller must surface portal/Stripe errors'],
     [$routes, 'PlatformAdminBillingHealthController', 'platform routes must import billing health controller'],
     [$routes, "/platform/admin/billing-health", 'platform routes must register billing health page'],

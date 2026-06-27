@@ -257,12 +257,20 @@ HTML,
             return '<tr><td colspan="7">Billing diagnostic columns are not available yet. Apply migrations 0049-0053.</td></tr>';
         }
 
+        // Use a schema-tolerant ORDER BY because older billing schemas may not have updated_at.
+        $orderBy = 'tpa.id DESC';
+        if (in_array('updated_at', $columns, true)) {
+            $orderBy = 'tpa.updated_at DESC, tpa.id DESC';
+        } elseif (in_array('created_at', $columns, true)) {
+            $orderBy = 'tpa.created_at DESC, tpa.id DESC';
+        }
+
         $sql = 'SELECT ' . implode(', ', $select) . '
                   FROM tenant_plan_assignments tpa
                   JOIN tenants t ON t.id = tpa.tenant_id
                   JOIN plans p ON p.id = tpa.plan_id
                  WHERE ' . implode(' OR ', $where) . '
-                 ORDER BY tpa.updated_at DESC, tpa.id DESC
+                 ORDER BY ' . $orderBy . '
                  LIMIT 50';
 
         try {
