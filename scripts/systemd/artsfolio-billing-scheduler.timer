@@ -1,0 +1,12 @@
+[Unit]
+Description=Run ArtsFolio scheduled billing change applicator hourly
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
+
+# End of file.

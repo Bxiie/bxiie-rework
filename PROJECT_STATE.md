@@ -1924,3 +1924,43 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
   ArtsFolio feature access at the end of the billing period.
 
 <!-- End of file. -->
+
+## 2026-06-27 stable Stripe Price IDs
+
+- Subscription billing now requires durable Stripe monthly Price IDs for paid plans.
+- Migration `0051_stable_stripe_plan_price_ids.sql` adds Stripe Product/Price fields to `plans` and Stripe subscription item tracking to `tenant_plan_assignments`.
+- Platform Admin → Pricing exposes Stripe Product ID, monthly Price ID, and lookup key fields.
+- Subscription Checkout uses `line_items[0][price]`; recurring dynamic Checkout `price_data` is intentionally rejected.
+- Stripe webhooks should include `customer.subscription.created` so ArtsFolio records `stripe_subscription_item_id` promptly.
+- Paid-to-paid upgrades can update the existing Stripe subscription item and request immediate invoicing; scheduled downgrades use stable target Price IDs at the recurrence boundary.
+
+<!-- End of file. -->
+
+## 2026-06-27 Stripe Billing Portal and scheduler
+
+- Tenant Admin → Billing includes a Stripe Billing Portal action for tenant
+  owners to update payment methods, view invoices, and recover failed payments.
+- `app/Platform/Billing/StripeBillingPortalService.php` creates
+  `/v1/billing_portal/sessions` using the stored Stripe customer ID.
+- Migration `0052_billing_portal_and_scheduler.sql` records portal session and
+  payment-method update request state on `tenant_plan_assignments`.
+- `scripts/systemd/artsfolio-billing-scheduler.service` and `.timer` run the
+  scheduled billing-change applicator hourly in production.
+- Optional platform setting `stripe_billing_portal_configuration_id` can point
+  to a Stripe `bpc_...` portal configuration.
+
+<!-- End of file. -->
+
+## 2026-06-27 Stripe webhook event logging
+
+- Migration `0053_stripe_webhook_event_log.sql` adds
+  `stripe_webhook_events`.
+- Stripe webhook processing is idempotent by Stripe `event_id`.
+- Processed duplicate events return success without re-running billing or sales
+  mutations.
+- Failed events are recorded with `last_error`, `response_code`, and
+  `attempt_count` so Stripe retries are diagnosable.
+- The table acts as the billing black-box recorder for subscription and
+  checkout incidents.
+
+<!-- End of file. -->

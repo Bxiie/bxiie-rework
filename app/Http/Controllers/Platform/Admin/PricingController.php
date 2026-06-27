@@ -47,6 +47,9 @@ final class PricingController
             $name = AdminLayout::escape((string) $plan['name']);
             $description = AdminLayout::escape((string) ($plan['description'] ?? ''));
             $monthly = number_format(((int) $plan['monthly_price_cents']) / 100, 2, '.', '');
+            $stripeProduct = AdminLayout::escape((string) ($plan['stripe_product_id'] ?? ''));
+            $stripePrice = AdminLayout::escape((string) ($plan['stripe_monthly_price_id'] ?? ''));
+            $stripeLookup = AdminLayout::escape((string) ($plan['stripe_price_lookup_key'] ?? ''));
             $artworks = (string) (int) ($plan['allowed_artworks'] ?? 0);
             $emails = (string) (int) ($plan['allowed_email_addresses'] ?? 0);
             $storage = (string) (int) ($plan['allowed_storage_gb'] ?? 0);
@@ -56,7 +59,7 @@ final class PricingController
             $ccFixed = number_format(((int) ($plan['credit_card_fixed_fee_cents'] ?? 30)) / 100, 2, '.', '');
             $allowSales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? ' checked' : '';
             $order = (string) (int) ($plan['display_order'] ?? 100);
-            $domain = ((int) $plan['custom_domain_included, admin_user_limit']) === 1 ? ' checked' : '';
+            $domain = ((int) $plan['custom_domain_included']) === 1 ? ' checked' : '';
             $active = ((int) $plan['is_active']) === 1 ? ' checked' : '';
             if ($canEdit) {
                 $rows .= <<<HTML
@@ -64,6 +67,9 @@ final class PricingController
     <td><code>{$slug}</code><input type="hidden" name="plans[{$id}][id]" value="{$id}"></td>
     <td><input type="text" name="plans[{$id}][name]" value="{$name}" required></td>
     <td><input type="number" name="plans[{$id}][monthly_price_dollars]" min="0" step="0.01" value="{$monthly}"></td>
+    <td><input type="text" name="plans[{$id}][stripe_product_id]" value="{$stripeProduct}" placeholder="prod_..."></td>
+    <td><input type="text" name="plans[{$id}][stripe_monthly_price_id]" value="{$stripePrice}" placeholder="price_..."></td>
+    <td><input type="text" name="plans[{$id}][stripe_price_lookup_key]" value="{$stripeLookup}" placeholder="artsfolio-studio-monthly"></td>
     <td><input type="number" name="plans[{$id}][allowed_artworks]" min="0" value="{$artworks}"></td>
     <td><input type="number" name="plans[{$id}][allowed_email_addresses]" min="0" value="{$emails}"></td>
     <td><input type="number" name="plans[{$id}][allowed_storage_gb]" min="0" value="{$storage}"></td>
@@ -76,7 +82,7 @@ final class PricingController
     <td><label><input type="checkbox" name="plans[{$id}][is_active]" value="1"{$active}> active</label></td>
     <td><input type="number" name="plans[{$id}][display_order]" min="0" value="{$order}"></td>
 </tr>
-<tr><td></td><td colspan="13"><label>Description<textarea name="plans[{$id}][description]" rows="2">{$description}</textarea></label></td></tr>
+<tr><td></td><td colspan="16"><label>Description<textarea name="plans[{$id}][description]" rows="2">{$description}</textarea></label></td></tr>
 HTML;
             } else {
                 $price = '$' . number_format(((int) $plan['monthly_price_cents']) / 100, 2);
@@ -95,12 +101,15 @@ HTML;
 <p class="admin-muted">Set public pricing, plan limits, platform sales commission, and plan-specific card processing fee disclosure. Complimentary tenants waive only subscription billing; they still pay platform commission and card processing fees on sales.</p>
 {$formOpen}
 <section class="admin-panel"><h2>Platform sales commission</h2><label>Commission on sales, percent<input type="number" name="platform_sales_commission_percent" min="0" max="100" step="0.01" value="{$commissionPercent}"></label><p class="admin-muted">Current disclosure: ArtsFolio commission is {$commissionPercent}% of platform-processed sales.</p></section>
-<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Slug</th><th>Name</th><th>Monthly</th><th>Allowed artworks</th><th>Allowed email addresses</th><th>Storage GB</th><th>Contact messages</th><th>Admin users</th><th>Custom domain</th><th>Sales</th><th>CC %</th><th>CC fixed</th><th>Status</th><th>Order</th></tr></thead><tbody>{$rows}</tbody></table></div>
+<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Slug</th><th>Name</th><th>Monthly</th><th>Stripe product</th><th>Stripe monthly price</th><th>Stripe lookup key</th><th>Allowed artworks</th><th>Allowed email addresses</th><th>Storage GB</th><th>Contact messages</th><th>Admin users</th><th>Custom domain</th><th>Sales</th><th>CC %</th><th>CC fixed</th><th>Status</th><th>Order</th></tr></thead><tbody>{$rows}</tbody></table></div>
 <section class="admin-panel"><h2>Create plan</h2>
 <div class="admin-form-grid three">
 <label>Slug<input name="new_plan[slug]" pattern="[a-z0-9-]+" placeholder="artist-plus"></label>
 <label>Name<input name="new_plan[name]" placeholder="Artist Plus"></label>
 <label>Monthly price<input type="number" name="new_plan[monthly_price_dollars]" min="0" step="0.01" value="0.00"></label>
+<label>Stripe product ID<input name="new_plan[stripe_product_id]" placeholder="prod_..."></label>
+<label>Stripe monthly Price ID<input name="new_plan[stripe_monthly_price_id]" placeholder="price_..."></label>
+<label>Stripe lookup key<input name="new_plan[stripe_price_lookup_key]" placeholder="artsfolio-plan-monthly"></label>
 <label>Allowed artworks<input type="number" name="new_plan[allowed_artworks]" min="0" value="100"></label>
 <label>Allowed email addresses<input type="number" name="new_plan[allowed_email_addresses]" min="0" value="500"></label>
 <label>Storage GB<input type="number" name="new_plan[allowed_storage_gb]" min="0" value="5"></label>
@@ -142,7 +151,7 @@ HTML, active: 'pricing'));
             if ($id < 1 || $name === '') {
                 continue;
             }
-            $stmt = $this->pdo->prepare('UPDATE plans SET name = :name, monthly_price_cents = :monthly_price_cents, description = :description, custom_domain_included = :custom_domain_included, allowed_artworks = :allowed_artworks, allowed_email_addresses = :allowed_email_addresses, allowed_storage_gb = :allowed_storage_gb, allowed_contact_messages = :allowed_contact_messages, allowed_admin_users = :allowed_admin_users, allow_sales = :allow_sales, credit_card_fee_basis_points = :credit_card_fee_basis_points, credit_card_fixed_fee_cents = :credit_card_fixed_fee_cents, display_order = :display_order, is_active = :is_active WHERE id = :id');
+            $stmt = $this->pdo->prepare('UPDATE plans SET name = :name, monthly_price_cents = :monthly_price_cents, stripe_product_id = :stripe_product_id, stripe_monthly_price_id = :stripe_monthly_price_id, stripe_price_lookup_key = :stripe_price_lookup_key, description = :description, custom_domain_included = :custom_domain_included, allowed_artworks = :allowed_artworks, allowed_email_addresses = :allowed_email_addresses, allowed_storage_gb = :allowed_storage_gb, allowed_contact_messages = :allowed_contact_messages, allowed_admin_users = :allowed_admin_users, allow_sales = :allow_sales, credit_card_fee_basis_points = :credit_card_fee_basis_points, credit_card_fixed_fee_cents = :credit_card_fixed_fee_cents, display_order = :display_order, is_active = :is_active WHERE id = :id');
             $stmt->execute($this->planParams($plan, $id, $name));
         }
 
@@ -153,7 +162,7 @@ HTML, active: 'pricing'));
             if (!preg_match('/^[a-z0-9-]+$/', $newSlug) || $newName === '') {
                 return Response::html('<h1>New plan requires a lowercase slug and name</h1>', 422);
             }
-            $insert = $this->pdo->prepare('INSERT INTO plans (slug, name, monthly_price_cents, description, custom_domain_included, allowed_artworks, allowed_email_addresses, allowed_storage_gb, allowed_contact_messages, allowed_admin_users, allow_sales, credit_card_fee_basis_points, credit_card_fixed_fee_cents, display_order, is_active) VALUES (:slug, :name, :monthly_price_cents, :description, :custom_domain_included, :allowed_artworks, :allowed_email_addresses, :allowed_storage_gb, :allowed_contact_messages, :allowed_admin_users, :allow_sales, :credit_card_fee_basis_points, :credit_card_fixed_fee_cents, :display_order, :is_active) ON DUPLICATE KEY UPDATE name = VALUES(name), monthly_price_cents = VALUES(monthly_price_cents), description = VALUES(description), custom_domain_included = VALUES(custom_domain_included), allowed_artworks = VALUES(allowed_artworks), allowed_email_addresses = VALUES(allowed_email_addresses), allowed_storage_gb = VALUES(allowed_storage_gb), allowed_contact_messages = VALUES(allowed_contact_messages), allowed_admin_users = VALUES(allowed_admin_users), allow_sales = VALUES(allow_sales), credit_card_fee_basis_points = VALUES(credit_card_fee_basis_points), credit_card_fixed_fee_cents = VALUES(credit_card_fixed_fee_cents), display_order = VALUES(display_order), is_active = VALUES(is_active)');
+            $insert = $this->pdo->prepare('INSERT INTO plans (slug, name, monthly_price_cents, stripe_product_id, stripe_monthly_price_id, stripe_price_lookup_key, description, custom_domain_included, allowed_artworks, allowed_email_addresses, allowed_storage_gb, allowed_contact_messages, allowed_admin_users, allow_sales, credit_card_fee_basis_points, credit_card_fixed_fee_cents, display_order, is_active) VALUES (:slug, :name, :monthly_price_cents, :stripe_product_id, :stripe_monthly_price_id, :stripe_price_lookup_key, :description, :custom_domain_included, :allowed_artworks, :allowed_email_addresses, :allowed_storage_gb, :allowed_contact_messages, :allowed_admin_users, :allow_sales, :credit_card_fee_basis_points, :credit_card_fixed_fee_cents, :display_order, :is_active) ON DUPLICATE KEY UPDATE name = VALUES(name), monthly_price_cents = VALUES(monthly_price_cents), stripe_product_id = VALUES(stripe_product_id), stripe_monthly_price_id = VALUES(stripe_monthly_price_id), stripe_price_lookup_key = VALUES(stripe_price_lookup_key), description = VALUES(description), custom_domain_included = VALUES(custom_domain_included), allowed_artworks = VALUES(allowed_artworks), allowed_email_addresses = VALUES(allowed_email_addresses), allowed_storage_gb = VALUES(allowed_storage_gb), allowed_contact_messages = VALUES(allowed_contact_messages), allowed_admin_users = VALUES(allowed_admin_users), allow_sales = VALUES(allow_sales), credit_card_fee_basis_points = VALUES(credit_card_fee_basis_points), credit_card_fixed_fee_cents = VALUES(credit_card_fixed_fee_cents), display_order = VALUES(display_order), is_active = VALUES(is_active)');
             $params = $this->planParams($newPlan, null, $newName);
             $params['slug'] = $newSlug;
             unset($params['id']);
@@ -170,6 +179,9 @@ HTML, active: 'pricing'));
         $params = [
             'name' => $name,
             'monthly_price_cents' => max(0, (int) round(((float) ($plan['monthly_price_dollars'] ?? 0)) * 100)),
+            'stripe_product_id' => trim((string) ($plan['stripe_product_id'] ?? '')),
+            'stripe_monthly_price_id' => trim((string) ($plan['stripe_monthly_price_id'] ?? '')),
+            'stripe_price_lookup_key' => trim((string) ($plan['stripe_price_lookup_key'] ?? '')),
             'description' => trim((string) ($plan['description'] ?? '')),
             'custom_domain_included' => isset($plan['custom_domain_included']) ? 1 : 0,
             'allowed_artworks' => max(0, (int) ($plan['allowed_artworks'] ?? 0)),
@@ -197,6 +209,9 @@ HTML, active: 'pricing'));
         $columns = $this->planColumns();
         $select = 'id, slug, name, monthly_price_cents, custom_domain_included, is_active, created_at'
             . ($columns['description'] ? ', description' : ', NULL AS description')
+            . ($columns['stripe_product_id'] ? ', stripe_product_id' : ', NULL AS stripe_product_id')
+            . ($columns['stripe_monthly_price_id'] ? ', stripe_monthly_price_id' : ', NULL AS stripe_monthly_price_id')
+            . ($columns['stripe_price_lookup_key'] ? ', stripe_price_lookup_key' : ', NULL AS stripe_price_lookup_key')
             . ($columns['allowed_artworks'] ? ', allowed_artworks' : ', NULL AS allowed_artworks')
             . ($columns['allowed_email_addresses'] ? ', allowed_email_addresses' : ', NULL AS allowed_email_addresses')
             . ($columns['allowed_storage_gb'] ? ', allowed_storage_gb' : ', 0 AS allowed_storage_gb')
@@ -216,7 +231,7 @@ HTML, active: 'pricing'));
 
     private function planColumns(): array
     {
-        $columns = ['description' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'allowed_storage_gb' => false, 'allowed_contact_messages' => false, 'allowed_admin_users' => false, 'allow_sales' => false, 'credit_card_fee_basis_points' => false, 'credit_card_fixed_fee_cents' => false, 'display_order' => false];
+        $columns = ['description' => false, 'stripe_product_id' => false, 'stripe_monthly_price_id' => false, 'stripe_price_lookup_key' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'allowed_storage_gb' => false, 'allowed_contact_messages' => false, 'allowed_admin_users' => false, 'allow_sales' => false, 'credit_card_fee_basis_points' => false, 'credit_card_fixed_fee_cents' => false, 'display_order' => false];
         $stmt = $this->pdo->prepare('SELECT column_name FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :table');
         $stmt->execute(['table' => 'plans']);
         foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $column) {

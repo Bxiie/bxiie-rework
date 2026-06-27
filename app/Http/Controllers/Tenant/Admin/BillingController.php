@@ -93,6 +93,15 @@ final class BillingController
     </form>
     <p class="admin-muted">Free access codes can move this tenant onto any active plan for the number of months configured by platform admin. Card fees, commissions, shipping, and taxes are not waived.</p>
   </div>
+  <div class="admin-panel">
+    <p class="admin-muted">Payment method</p>
+    <form method="post" action="/admin/billing/portal" class="admin-form">
+      <input type="hidden" name="csrf_token" value="{$csrf}">
+      <button type="submit">Update payment method</button>
+    </form>
+    <p class="admin-muted">Opens Stripe Billing Portal to update card details, view invoices, or resolve failed payments.</p>
+  </div>
+
 </section>
 
 <section class="admin-panel admin-panel-wide">
@@ -139,6 +148,16 @@ HTML;
             return new Response('', 303, ['Location' => '/admin/billing?notice=plan-scheduled']);
         }
         $prorationCents = $currentPrice > 0 ? $this->prorationCents($currentPrice, $targetPrice, $recurrence) : 0;
+        if ($currentPrice > 0 && $targetPrice > $currentPrice && $this->canUpdateStripeSubscriptionPrice($billing, $targetPlan)) {
+            try {
+                $update = $this->updateStripeSubscriptionPrice($billing, $targetPlan);
+                $this->recordStripeSubscriptionPriceUpdate($tenant, $targetPlan, $update);
+                FlashMessages::success('Plan upgraded and Stripe was instructed to invoice the prorated difference immediately.');
+                return new Response('', 303, ['Location' => '/admin/billing?notice=plan-upgraded']);
+            } catch (Throwable $e) {
+                return Response::html('<h1>Could not update Stripe subscription</h1><p>' . $this->e($e->getMessage()) . '</p>', 422);
+            }
+        }
         $this->recordPendingPaidPlanChange($tenant, $targetPlan, $currentPrice === 0 ? 'paid_start' : 'upgrade', $prorationCents);
         try {
             $session = $this->createBillingCheckoutSession($request, $tenant, $targetPlan, $currentUser, $prorationCents);
@@ -148,6 +167,42 @@ HTML;
             return Response::html('<h1>Could not start billing checkout</h1><p>' . $this->e($e->getMessage()) . '</p>', 422);
         }
     }
+
+    public function managePayment(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'owner'])) {
+            return Response::html('<h1>Forbidden</h1><p>Only tenant owners may manage payment methods.</p>', 403);
+        }
+        if (!$this->validCsrf((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::invalidCsrf();
+        }
+
+        $assignment = $this->latestBillingAssignment($tenant);
+        $customerId = trim((string) ($assignment['stripe_customer_id'] ?? ''));
+        if ($customerId === '') {
+            FlashMessages::error('Stripe customer details are not available yet. Start or complete paid checkout first.');
+            return new Response('', 303, ['Location' => '/admin/billing?notice=missing-stripe-customer']);
+        }
+
+        try {
+            $service = new \App\Platform\Billing\StripeBillingPortalService();
+            $session = $service->createSession(
+                $this->platformSetting('stripe_secret_key', ''),
+                $customerId,
+                $this->absoluteTenantUrl($request, '/admin/billing?notice=payment-method-return'),
+                $this->platformSetting('stripe_billing_portal_configuration_id', null)
+            );
+            $this->recordBillingPortalSession($tenant, (string) $session['id']);
+        } catch (Throwable $e) {
+            $this->recordBillingPortalError($tenant, $e->getMessage());
+            FlashMessages::error('Could not open Stripe Billing Portal: ' . $e->getMessage());
+            return new Response('', 303, ['Location' => '/admin/billing?notice=portal-error']);
+        }
+
+        return new Response('', 303, ['Location' => (string) $session['url']]);
+    }
+
+
 
     public function applyFreeAccessCode(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
@@ -212,6 +267,7 @@ HTML;
     <p><strong>Billing status:</strong> {$status}</p>
     <p><strong>Recurring billing date:</strong> {$recurs}</p>
     <p><strong>Stripe subscription:</strong> {$subscription}</p>
+    <p><strong>Stripe subscription item:</strong> {$this->e((string) ($billing['stripe_subscription_item_id'] ?? ''))}</p>
     <p><strong>Payment method:</strong> {$payment}</p>
     {$pending}
   </div>
@@ -221,7 +277,7 @@ HTML;
     private function planChangeHelp(array $currentPlan, array $billing): string
     {
         $recurs = $this->dateLabel($this->recurrenceDate($billing));
-        return 'Paid plans require card details. A paid upgrade starts Stripe Checkout and bills the prorated difference for the days remaining in this billing month immediately. Moving from Free to a paid plan bills the new plan immediately. Downgrades and cancellations keep current-plan features until ' . $this->e($recurs) . '.';
+        return 'Paid plans require card details. A paid upgrade updates the Stripe subscription with the target plan Price ID and bills the prorated difference for the days remaining in this billing month immediately when a Stripe subscription item is known; otherwise it starts Stripe Checkout. Moving from Free to a paid plan bills the new plan immediately. Downgrades and cancellations keep current-plan features until ' . $this->e($recurs) . '.';
     }
 
     private function recurrenceDate(array $billing): string
@@ -255,6 +311,41 @@ HTML;
     {
         $stmt = $this->pdo->prepare('UPDATE tenant_plan_assignments SET stripe_checkout_session_id = :session_id, pending_proration_cents = :proration, pending_plan_id = :plan_id WHERE tenant_id = :tenant_id');
         $stmt->execute(['session_id' => $sessionId, 'proration' => $prorationCents, 'plan_id' => $planId, 'tenant_id' => $tenant->tenantId]);
+    }
+
+    private function canUpdateStripeSubscriptionPrice(array $billing, array $targetPlan): bool
+    {
+        return trim((string) ($billing['stripe_subscription_id'] ?? '')) !== ''
+            && trim((string) ($billing['stripe_subscription_item_id'] ?? '')) !== ''
+            && trim((string) ($targetPlan['stripe_monthly_price_id'] ?? '')) !== '';
+    }
+
+    /** @return array<string,mixed> */
+    private function updateStripeSubscriptionPrice(array $billing, array $targetPlan): array
+    {
+        return (new \App\Platform\Billing\StripeSubscriptionCheckoutService())->updateSubscriptionPrice(
+            $this->platformSetting('stripe_secret_key'),
+            (string) $billing['stripe_subscription_id'],
+            (string) $billing['stripe_subscription_item_id'],
+            (string) $targetPlan['stripe_monthly_price_id'],
+            [
+                'artsfolio_billing_plan_id' => (string) $targetPlan['id'],
+                'artsfolio_billing_plan_slug' => (string) $targetPlan['slug'],
+            ],
+            'always_invoice',
+        );
+    }
+
+    /** @param array<string,mixed> $stripeUpdate */
+    private function recordStripeSubscriptionPriceUpdate(TenantContext $tenant, array $targetPlan, array $stripeUpdate): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE tenant_plan_assignments SET plan_id = :plan_id, billing_status = "active", stripe_subscription_status = :stripe_status, stripe_pending_update_id = :pending_update_id, billing_note = "Stripe subscription price updated with stable Price ID and immediate invoicing requested.", pending_plan_id = NULL, pending_plan_slug = NULL, pending_change_type = NULL, pending_effective_at = NULL, pending_proration_cents = 0 WHERE tenant_id = :tenant_id');
+        $stmt->execute([
+            'plan_id' => (int) $targetPlan['id'],
+            'stripe_status' => (string) ($stripeUpdate['status'] ?? 'active'),
+            'pending_update_id' => isset($stripeUpdate['pending_update']['id']) ? (string) $stripeUpdate['pending_update']['id'] : null,
+            'tenant_id' => $tenant->tenantId,
+        ]);
     }
 
     /** @return array<string,mixed> */
@@ -304,6 +395,70 @@ HTML;
 
         return count($groups);
     }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function latestBillingAssignment(TenantContext $tenant): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT *
+               FROM tenant_plan_assignments
+              WHERE tenant_id = :tenant_id
+              ORDER BY id DESC
+              LIMIT 1'
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return is_array($row) ? $row : [];
+    }
+
+    private function recordBillingPortalSession(TenantContext $tenant, string $sessionId): void
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE tenant_plan_assignments
+                SET billing_portal_last_session_id = :session_id,
+                    billing_portal_last_session_at = UTC_TIMESTAMP(),
+                    payment_method_update_requested_at = UTC_TIMESTAMP(),
+                    latest_stripe_error = NULL
+              WHERE tenant_id = :tenant_id
+              ORDER BY id DESC
+              LIMIT 1'
+        );
+        $stmt->execute([
+            'session_id' => $sessionId,
+            'tenant_id' => $tenant->tenantId,
+        ]);
+    }
+
+    private function recordBillingPortalError(TenantContext $tenant, string $message): void
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE tenant_plan_assignments
+                SET latest_stripe_error = :message,
+                    payment_method_update_requested_at = UTC_TIMESTAMP()
+              WHERE tenant_id = :tenant_id
+              ORDER BY id DESC
+              LIMIT 1'
+        );
+        $stmt->execute([
+            'message' => substr($message, 0, 2000),
+            'tenant_id' => $tenant->tenantId,
+        ]);
+    }
+
+    // Duplicate platformSetting() removed by repair_artsfolio_billing_portal_duplicate_helpers_20260627.py.
+
+private function absoluteTenantUrl(Request $request, string $path): string
+    {
+        $proto = $request->server('HTTP_X_FORWARDED_PROTO')
+            ?: (($request->server('HTTPS') === 'on' || $request->server('HTTPS') === '1') ? 'https' : 'http');
+
+        return $proto . '://' . $request->host() . $path;
+    }
+
+
 
     private function featureRows(array $plan, array $usage, TenantContext $tenant): string
     {

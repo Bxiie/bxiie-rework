@@ -1,0 +1,14 @@
+[Unit]
+Description=ArtsFolio scheduled billing change applicator
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=artsfolio
+Group=www-data
+WorkingDirectory=/var/www/artsfolio
+ExecStart=/usr/bin/php /var/www/artsfolio/scripts/billing/apply_pending_subscription_changes.php --limit=250
+Nice=5
+
+# End of file.

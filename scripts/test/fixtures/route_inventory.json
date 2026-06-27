@@ -872,6 +872,11 @@
     {
         "scope": "tenant",
         "method": "POST",
+        "path": "/admin/billing/portal"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/admin/contact-messages/delete"
     },
     {

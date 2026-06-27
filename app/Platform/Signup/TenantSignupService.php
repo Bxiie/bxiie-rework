@@ -143,7 +143,7 @@ final class TenantSignupService
         }
 
         $stmt = $this->pdo->query(
-            "SELECT id, slug, name, monthly_price_cents, description
+            "SELECT id, slug, name, monthly_price_cents, description, stripe_product_id, stripe_monthly_price_id, stripe_price_lookup_key
              FROM plans
              WHERE is_active = 1
              ORDER BY monthly_price_cents ASC, id ASC"
@@ -182,7 +182,7 @@ final class TenantSignupService
         $selectedPlanSlug = strtolower(trim((string) $selectedPlanSlug));
         if ($selectedPlanSlug === '') { $selectedPlanSlug = 'free'; }
         if (!$this->tableExists('plans')) { return null; }
-        $stmt = $this->pdo->prepare('SELECT id, slug, name, monthly_price_cents, description FROM plans WHERE slug = :slug AND is_active = 1 LIMIT 1');
+        $stmt = $this->pdo->prepare('SELECT id, slug, name, monthly_price_cents, description, stripe_product_id, stripe_monthly_price_id, stripe_price_lookup_key FROM plans WHERE slug = :slug AND is_active = 1 LIMIT 1');
         $stmt->execute(['slug' => $selectedPlanSlug]);
         $plan = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$plan) { throw new RuntimeException('Selected plan is not available.'); }
