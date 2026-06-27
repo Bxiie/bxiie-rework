@@ -51,3 +51,11 @@ The controller is read-only and schema-tolerant. It checks `information_schema` 
 The dashboard should be reviewed after billing migrations, Stripe webhook configuration changes, failed payments, and scheduled billing-change deployments.
 
 <!-- End of file. -->
+
+## Billing email notifications
+
+`App\Platform\Billing\BillingNotificationService` queues tenant-owner billing mail through `EmailOutboxRepository`.
+
+Templates live under `template/email/billing`. Webhook handlers and scheduled billing scripts call the notification service after successful local billing state changes. Stripe webhook idempotency prevents duplicate event delivery from queuing duplicate webhook-driven billing emails.
+
+<!-- End of file. -->

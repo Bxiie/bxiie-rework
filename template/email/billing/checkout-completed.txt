@@ -1,0 +1,11 @@
+Hello {{ tenant_name }},
+
+Your ArtsFolio billing is active for {{ plan_name }}.
+
+You can review your plan, renewal date, and payment details here:
+{{ billing_url }}
+
+Thanks,
+ArtsFolio
+
+# End of file.

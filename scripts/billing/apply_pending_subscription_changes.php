@@ -118,7 +118,11 @@ foreach ($rows as $row) {
 
     $update = $pdo->prepare('UPDATE tenant_plan_assignments SET plan_id = :plan_id, status = "active", billing_status = CASE WHEN :change_type = "cancel" THEN "canceled" ELSE "active" END, pending_change_applied_at = UTC_TIMESTAMP(), pending_plan_id = NULL, pending_plan_slug = NULL, pending_change_type = NULL, pending_effective_at = NULL, pending_proration_cents = 0, cancel_at_period_end = 0, billing_action_required_at = NULL, billing_note = :billing_note WHERE id = :id AND pending_change_applied_at IS NULL');
     $update->execute(['plan_id' => $targetPlanId, 'change_type' => $changeType, 'billing_note' => $changeType === 'cancel' ? 'Scheduled cancellation applied locally at recurrence date. Stripe subscription cancellation was requested and tenant is now on the Free plan.' : 'Scheduled downgrade applied at recurrence date using stable Stripe Price ID when available.', 'id' => (int) $row['id']]);
-    $applied += $update->rowCount() > 0 ? 1 : 0;
+    if ($update->rowCount() > 0) {
+        $applied += 1;
+        (new \App\Platform\Billing\BillingNotificationService($pdo))
+            ->queuePlanChangeApplied((int) $row['tenant_id'], $changeType, $targetPlanId);
+    }
 }
 
 printf("[PASS] Applied %d pending subscription plan change%s.

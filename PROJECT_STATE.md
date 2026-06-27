@@ -1983,3 +1983,17 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform admin navigation includes `Billing Health`.
 
 <!-- End of file. -->
+
+## 2026-06-27 billing email notifications
+
+- `App\Platform\Billing\BillingNotificationService` queues tenant-owner billing
+  emails through `email_outbox`.
+- Billing templates live under `template/email/billing`.
+- Stripe webhook handlers queue checkout-completed, payment-failed,
+  payment-recovered, and subscription-canceled emails after local state changes.
+- Tenant Admin plan scheduling queues scheduled downgrade/cancellation notices.
+- The scheduled billing applicator queues applied downgrade/cancellation notices.
+- Immediate paid-to-paid upgrades queue upgrade notices.
+- Billing notification delivery depends on the existing email worker.
+
+<!-- End of file. -->

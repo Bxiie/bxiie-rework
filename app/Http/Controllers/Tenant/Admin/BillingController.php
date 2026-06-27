@@ -299,6 +299,9 @@ HTML;
     {
         $stmt = $this->pdo->prepare('UPDATE tenant_plan_assignments SET pending_plan_id = :plan_id, pending_plan_slug = :plan_slug, pending_change_type = :change_type, pending_effective_at = :effective_at, pending_proration_cents = 0, cancel_at_period_end = :cancel, billing_note = :billing_note WHERE tenant_id = :tenant_id');
         $stmt->execute(['plan_id' => (int) $targetPlan['id'], 'plan_slug' => (string) $targetPlan['slug'], 'change_type' => $changeType, 'effective_at' => $effectiveAt, 'cancel' => $changeType === 'cancel' ? 1 : 0, 'billing_note' => ucfirst($changeType) . ' scheduled for ' . $effectiveAt . '. Current-plan access remains available until then.', 'tenant_id' => $tenant->tenantId]);
+
+        (new \App\Platform\Billing\BillingNotificationService($this->pdo))
+            ->queuePlanChangeScheduled($tenant->tenantId, $targetPlan, $changeType, $effectiveAt);
     }
 
     private function recordPendingPaidPlanChange(TenantContext $tenant, array $targetPlan, string $changeType, int $prorationCents): void
@@ -346,6 +349,9 @@ HTML;
             'pending_update_id' => isset($stripeUpdate['pending_update']['id']) ? (string) $stripeUpdate['pending_update']['id'] : null,
             'tenant_id' => $tenant->tenantId,
         ]);
+
+        (new \App\Platform\Billing\BillingNotificationService($this->pdo))
+            ->queuePlanUpgraded($tenant->tenantId, $targetPlan);
     }
 
     /** @return array<string,mixed> */

@@ -1,0 +1,13 @@
+Hello {{ tenant_name }},
+
+Your scheduled ArtsFolio {{ change_type }} has taken effect.
+
+Current plan: {{ plan_name }}
+
+Review billing details:
+{{ billing_url }}
+
+Thanks,
+ArtsFolio
+
+# End of file.

@@ -1,0 +1,13 @@
+Hello {{ tenant_name }},
+
+Your ArtsFolio plan was upgraded to {{ plan_name }}.
+
+Stripe has been instructed to invoice any immediate prorated difference.
+
+Review billing details:
+{{ billing_url }}
+
+Thanks,
+ArtsFolio
+
+# End of file.

@@ -1,0 +1,16 @@
+Hello {{ tenant_name }},
+
+Your ArtsFolio {{ change_type }} has been scheduled.
+
+Target plan: {{ plan_name }}
+Effective date: {{ effective_at }}
+
+You keep your current plan features until the effective date.
+
+Review billing details:
+{{ billing_url }}
+
+Thanks,
+ArtsFolio
+
+# End of file.

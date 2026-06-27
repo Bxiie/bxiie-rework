@@ -241,6 +241,8 @@ final class StripeWebhookController
             'session_id' => (string) $session['id'],
             'tenant_id' => $tenantId,
         ]);
+
+        $this->billingNotifications()->queueCheckoutCompletedFromSession($session);
     }
 
     /** @param array<string,mixed> $invoice */
@@ -253,6 +255,7 @@ final class StripeWebhookController
         $periodEnd = isset($invoice['lines']['data'][0]['period']['end'])
             ? gmdate('Y-m-d H:i:s', (int) $invoice['lines']['data'][0]['period']['end'])
             : (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->modify('+1 month')->format('Y-m-d H:i:s');
+        $wasPastDue = $this->billingNotifications()->subscriptionWasPastDue($subscriptionId);
 
         $stmt = $this->pdo()->prepare(
             'UPDATE tenant_plan_assignments
@@ -276,6 +279,10 @@ final class StripeWebhookController
             'amount_paid' => max(0, (int) ($invoice['amount_paid'] ?? 0)),
             'subscription_id' => $subscriptionId,
         ]);
+
+        if ($wasPastDue) {
+            $this->billingNotifications()->queuePaymentRecoveredFromInvoice($invoice);
+        }
     }
 
     /** @param array<string,mixed> $invoice */
@@ -303,6 +310,8 @@ final class StripeWebhookController
             'invoice_number' => (string) ($invoice['number'] ?? ''),
             'subscription_id' => $subscriptionId,
         ]);
+
+        $this->billingNotifications()->queuePaymentFailedFromInvoice($invoice);
     }
 
     /** @param array<string,mixed> $subscription */
@@ -389,6 +398,8 @@ final class StripeWebhookController
               WHERE stripe_subscription_id = :subscription_id'
         );
         $stmt->execute(['subscription_id' => $subscriptionId]);
+
+        $this->billingNotifications()->queueSubscriptionCanceledFromSubscription($subscription);
     }
 
     /** @param array<string,mixed> $subscription */
@@ -400,6 +411,11 @@ final class StripeWebhookController
         }
         $id = trim((string) ($items[0]['id'] ?? ''));
         return $id !== '' ? $id : null;
+    }
+
+    private function billingNotifications(): \App\Platform\Billing\BillingNotificationService
+    {
+        return new \App\Platform\Billing\BillingNotificationService($this->pdo());
     }
 
     private function pdo(): \PDO

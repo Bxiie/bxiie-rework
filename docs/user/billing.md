@@ -25,3 +25,11 @@ Tenant owners can update payment details from Tenant Admin → Billing. The upda
 After returning from Stripe, ArtsFolio continues showing the current billing status. Failed payments may take a moment to clear because Stripe sends confirmation through webhook events.
 
 <!-- End of file. -->
+
+## Billing emails
+
+ArtsFolio sends billing emails to tenant owners for important payment and plan events, including failed payments, recovered payments, completed checkouts, canceled subscriptions, scheduled downgrades/cancellations, and completed scheduled changes.
+
+Billing emails are sent through the ArtsFolio email outbox and may arrive shortly after Stripe confirms the event.
+
+<!-- End of file. -->

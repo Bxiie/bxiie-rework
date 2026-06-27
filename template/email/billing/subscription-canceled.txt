@@ -1,0 +1,11 @@
+Hello {{ tenant_name }},
+
+Your ArtsFolio subscription has been canceled.
+
+You can review billing details or choose a new plan here:
+{{ billing_url }}
+
+Thanks,
+ArtsFolio
+
+# End of file.

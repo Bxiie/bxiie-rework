@@ -1,0 +1,15 @@
+Hello {{ tenant_name }},
+
+Stripe reported that an ArtsFolio payment failed for {{ plan_name }}.
+
+Please update your payment method here:
+{{ billing_url }}
+
+{{ invoice_url }}
+
+If you have already updated your card, no further action may be needed. Stripe will confirm recovery through the billing system.
+
+Thanks,
+ArtsFolio
+
+# End of file.

@@ -1,0 +1,15 @@
+Hello {{ tenant_name }},
+
+Your ArtsFolio payment is back on track.
+
+Plan: {{ plan_name }}
+Amount paid: {{ amount }}
+Invoice: {{ invoice_url }}
+
+You can review billing details here:
+{{ billing_url }}
+
+Thanks,
+ArtsFolio
+
+# End of file.
