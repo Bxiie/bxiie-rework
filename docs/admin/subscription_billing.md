@@ -48,3 +48,18 @@ php scripts/billing/repair_unconfirmed_paid_entitlements.php --apply --tenant=bx
 By default, the command looks for paid local entitlements without `stripe_subscription_id` and with checkout/pending evidence. Use `--include-active` only when intentionally reviewing active paid rows that lack Stripe confirmation.
 
 <!-- End of file. -->
+
+
+## Canceled checkout entitlement repair
+
+If a tenant canceled Stripe Checkout but the local active plan was changed to the paid target, repair the row with:
+
+```bash
+cd /var/www/artsfolio
+php scripts/billing/repair_canceled_checkout_entitlement.php --dry-run --tenant=googlesignup
+php scripts/billing/repair_canceled_checkout_entitlement.php --apply --tenant=googlesignup
+```
+
+The command restores `plan_id` to Free, preserves the paid target in `pending_plan_id`, normalizes `pending_change_type` to `paid_start`, and clears bad pending proration.
+
+<!-- End of file. -->

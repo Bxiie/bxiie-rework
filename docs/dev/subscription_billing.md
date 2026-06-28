@@ -159,3 +159,12 @@ Use `scripts/billing/repair_unpaid_paid_start_entitlements.php --dry-run` to fin
 The command defaults to rows with checkout/pending evidence and supports `--include-active` for explicit review of active paid rows without Stripe subscriptions.
 
 <!-- End of file. -->
+
+
+## Canceled checkout entitlement repair
+
+`scripts/billing/repair_canceled_checkout_entitlement.php` repairs canceled/unpaid checkout rows that were shaped as paid upgrades: paid current `plan_id`, matching paid `pending_plan_id`, no Stripe subscription ID, and checkout-session evidence.
+
+Use it after aborted Checkout incidents before retesting checkout.
+
+<!-- End of file. -->

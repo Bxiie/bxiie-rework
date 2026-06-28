@@ -2086,3 +2086,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Use `--include-active` only for explicit review of active paid rows missing Stripe confirmation.
 
 <!-- End of file. -->
+
+
+## 2026-06-27 Canceled checkout entitlement repair
+
+- Added `scripts/billing/repair_canceled_checkout_entitlement.php` for canceled Stripe Checkout rows where the local paid target was activated before payment confirmation.
+- The command restores the active plan to Free, preserves pending paid target, normalizes pending change type to `paid_start`, and clears bad proration.
+
+<!-- End of file. -->
