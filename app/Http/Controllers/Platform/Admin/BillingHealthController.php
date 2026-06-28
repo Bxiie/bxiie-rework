@@ -44,15 +44,9 @@ final class BillingHealthController
         return Response::html(AdminLayout::render(
             title: 'Billing Health',
             active: 'billing_health',
-            body: <<<HTML
+            body: $this->actualPayingTenantsCard() . <<<HTML
 <p class="admin-muted">Read-only billing diagnostics for Stripe configuration, tenant subscription state, pending plan changes, and webhook processing.</p>
 {$summary}
-
-<div class="admin-card">
-    <h2>Actual paying tenants</h2>
-    <p class="admin-stat-value"><?= number_format($this->actualPayingTenants()) ?></p>
-    <p class="admin-muted">Active, non-complementary tenants on paid plans with confirmed Stripe subscriptions.</p>
-</div>
 
 <h2>Attention items</h2>
 <table class="admin-table">
@@ -524,6 +518,19 @@ HTML,
                 AND (tpa.stripe_subscription_id IS NOT NULL AND tpa.stripe_subscription_id <> "")
                 AND ' . $billingStatusClause
         );
+    }
+
+
+    private function actualPayingTenantsCard(): string
+    {
+        $actualPayingTenantCount = $this->actualPayingTenants();
+        $actualPayingTenantCountFormatted = number_format($actualPayingTenantCount);
+
+        return '<div class="admin-card">'
+            . '<h2>Actual paying tenants</h2>'
+            . '<p class="admin-stat-value">' . $actualPayingTenantCountFormatted . '</p>'
+            . '<p class="admin-muted">Active, non-complementary tenants on paid plans with confirmed Stripe subscriptions.</p>'
+            . '</div>';
     }
 
 

@@ -60,67 +60,9 @@ final class TenantsController
         return Response::html(AdminLayout::render(
             title: 'Tenants',
             active: 'tenants',
-            body: <<<HTML
+            body: $this->tenantSearchPanel() . <<<HTML
 <p class="admin-muted">Open a tenant to review tenant users, email addresses, names, roles, membership status, and last log on timestamps.</p>
 
-
-<div class="admin-card platform-tenant-search-card">
-    <form class="platform-tenant-search" method="get" action="/platform/admin/tenants" style="display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap;margin:0;">
-        <label style="display:flex;flex-direction:column;gap:.25rem;">
-            <span>Search tenants</span>
-            <input type="search" name="q" value="{$tenantSearchQuery}" placeholder="Name, slug, UUID, status, plan, or domain" autocomplete="off" data-platform-tenant-search-input>
-        </label>
-        <button type="submit">Search</button>
-        <a href="/platform/admin/tenants">Clear</a>
-        <span class="admin-muted" data-platform-tenant-search-count></span>
-    </form>
-</div>
-<script>
-(function () {
-    var input = document.querySelector('[data-platform-tenant-search-input]');
-    if (!input) {
-        return;
-    }
-
-    var table = document.querySelector('table');
-    if (!table) {
-        return;
-    }
-
-    var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
-    if (rows.length === 0) {
-        rows = Array.prototype.slice.call(table.querySelectorAll('tr')).slice(1);
-    }
-
-    rows.forEach(function (row) {
-        row.setAttribute('data-platform-tenant-search-row', '1');
-    });
-
-    var count = document.querySelector('[data-platform-tenant-search-count]');
-
-    function applyTenantSearch() {
-        var needle = (input.value || '').toLowerCase().trim();
-        var shown = 0;
-
-        rows.forEach(function (row) {
-            var text = (row.textContent || '').toLowerCase();
-            var match = needle === '' || text.indexOf(needle) !== -1;
-            row.hidden = !match;
-            row.style.display = match ? '' : 'none';
-            if (match) {
-                shown += 1;
-            }
-        });
-
-        if (count) {
-            count.textContent = needle === '' ? '' : shown + ' match' + (shown === 1 ? '' : 'es');
-        }
-    }
-
-    input.addEventListener('input', applyTenantSearch);
-    applyTenantSearch();
-}());
-</script>
 
 <table class="admin-table">
     <thead><tr><th>ID</th><th>Slug</th><th>Name</th><th>Status</th><th>Domains</th><th>Created</th><th>Actions</th></tr></thead>
@@ -411,6 +353,84 @@ HTML;
     {
         return AdminLayout::escape($value);
     }
+    private function tenantSearchPanel(): string
+    {
+        $tenantSearchRaw = trim((string) ($_GET['q'] ?? ''));
+        $tenantSearchValue = htmlspecialchars($tenantSearchRaw, ENT_QUOTES, 'UTF-8');
+
+        $html = '<div class="admin-card platform-tenant-search-card">'
+            . '<form class="platform-tenant-search" method="get" action="/platform/admin/tenants" style="display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap;margin:0;">'
+            . '<label style="display:flex;flex-direction:column;gap:.25rem;"><span>Search tenants</span>'
+            . '<input type="search" name="q" value="' . $tenantSearchValue . '" placeholder="Name, slug, UUID, status, or plan" autocomplete="off"></label>'
+            . '<button type="submit">Search</button>'
+            . '<a href="/platform/admin/tenants">Clear</a>'
+            . '</form>'
+            . '</div>';
+
+        if ($tenantSearchRaw === '') {
+            return $html;
+        }
+
+        $stmt = $this->pdo()->prepare(
+            'SELECT
+                    t.id,
+                    t.slug,
+                    t.name,
+                    t.uuid,
+                    t.status,
+                    COALESCE(t.complementary, 0) AS complementary,
+                    p.name AS plan_name,
+                    p.slug AS plan_slug,
+                    tpa.billing_status,
+                    tpa.stripe_subscription_id
+               FROM tenants t
+               LEFT JOIN tenant_plan_assignments tpa
+                    ON tpa.id = (
+                        SELECT MAX(tpa2.id)
+                          FROM tenant_plan_assignments tpa2
+                         WHERE tpa2.tenant_id = t.id
+                    )
+               LEFT JOIN plans p ON p.id = tpa.plan_id
+              WHERE CONCAT_WS(" ",
+                    t.id,
+                    t.slug,
+                    t.name,
+                    t.uuid,
+                    COALESCE(t.status, ""),
+                    COALESCE(p.name, ""),
+                    COALESCE(p.slug, ""),
+                    COALESCE(tpa.billing_status, ""),
+                    COALESCE(tpa.stripe_subscription_id, "")
+                ) LIKE :tenant_search
+              ORDER BY t.slug ASC
+              LIMIT 250'
+        );
+        $stmt->execute(['tenant_search' => '%' . $tenantSearchRaw . '%']);
+
+        $rows = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $tenant) {
+            $rows[] = '<tr>'
+                . '<td><a href="/platform/admin/tenants/' . (int) $tenant['id'] . '">' . htmlspecialchars((string) ($tenant['slug'] ?? ''), ENT_QUOTES, 'UTF-8') . '</a></td>'
+                . '<td>' . htmlspecialchars((string) ($tenant['name'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>'
+                . '<td>' . htmlspecialchars((string) ($tenant['uuid'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>'
+                . '<td>' . htmlspecialchars((string) ($tenant['status'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>'
+                . '<td>' . ((int) ($tenant['complementary'] ?? 0) === 1 ? 'Yes' : 'No') . '</td>'
+                . '<td>' . htmlspecialchars((string) ($tenant['plan_name'] ?? $tenant['plan_slug'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>'
+                . '<td>' . htmlspecialchars((string) ($tenant['billing_status'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>'
+                . '</tr>';
+        }
+
+        return $html
+            . '<div class="admin-card platform-tenant-search-results">'
+            . '<h2>Search results across all tenants</h2>'
+            . '<p class="admin-muted">' . number_format(count($rows)) . ' match' . (count($rows) === 1 ? '' : 'es') . ' for “' . $tenantSearchValue . '”. Results are capped at 250.</p>'
+            . '<table><thead><tr><th>Slug</th><th>Name</th><th>UUID</th><th>Status</th><th>Complimentary</th><th>Plan</th><th>Billing</th></tr></thead><tbody>'
+            . ($rows === [] ? '<tr><td colspan="7">No tenants matched.</td></tr>' : implode('', $rows))
+            . '</tbody></table>'
+            . '</div>';
+    }
+
+
 }
 
 // End of file.

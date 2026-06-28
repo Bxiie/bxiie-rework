@@ -2127,3 +2127,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Actual paying tenants require active tenant status, non-complementary flag when available, paid plan, confirmed Stripe subscription ID, and active-ish billing status when available.
 
 <!-- End of file. -->
+
+## 2026-06-27 Billing Health actual paying tenants render injection
+
+- Fixed Billing Health Actual paying tenants by rendering a helper-generated card through the AdminLayout body argument.
+- Avoided assuming BillingHealthController uses a `$body = ...` construction.
+- Preserved tenant search changes from the previous patch.
+
+<!-- End of file. -->
