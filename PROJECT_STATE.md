@@ -2037,3 +2037,17 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - This pass does not restrict tenant features or mutate billing state.
 
 <!-- End of file. -->
+
+## 2026-06-27 daily billing delinquency report
+
+- `scripts/billing/send_billing_delinquency_report.php` queues a daily
+  delinquency report to platform owner/admin users through `email_outbox`.
+- Email template: `template/email/billing/platform-delinquency-report.txt`.
+- Template key: `billing.delinquency_daily_report`.
+- The command suppresses duplicate same-day reports unless `--force` is used.
+- Systemd units:
+  - `scripts/systemd/artsfolio-billing-delinquency-report.service`
+  - `scripts/systemd/artsfolio-billing-delinquency-report.timer`
+- The production timer runs daily at 08:15 server time with a randomized delay.
+
+<!-- End of file. -->

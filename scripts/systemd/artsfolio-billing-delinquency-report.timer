@@ -1,0 +1,13 @@
+[Unit]
+Description=Run ArtsFolio daily billing delinquency report
+
+[Timer]
+OnCalendar=*-*-* 08:15:00
+Persistent=true
+RandomizedDelaySec=900
+Unit=artsfolio-billing-delinquency-report.service
+
+[Install]
+WantedBy=timers.target
+
+# End of file.

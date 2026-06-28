@@ -1,0 +1,20 @@
+[Unit]
+Description=ArtsFolio daily billing delinquency report
+After=network-online.target mariadb.service
+Wants=network-online.target mariadb.service
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/artsfolio
+Environment=ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env
+ExecStart=/usr/bin/php /var/www/artsfolio/scripts/billing/send_billing_delinquency_report.php --quiet
+Nice=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/tmp /var/www/artsfolio/storage
+
+# End of file.

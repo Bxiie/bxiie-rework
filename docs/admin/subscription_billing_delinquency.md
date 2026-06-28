@@ -37,3 +37,61 @@ app/Platform/Billing/BillingDelinquencyPolicy.php
 ```
 
 <!-- End of file. -->
+
+## Daily platform admin email report
+
+The platform queues a daily billing delinquency report email to platform owner/admin users.
+
+Command:
+
+```bash
+cd /var/www/artsfolio
+php scripts/billing/send_billing_delinquency_report.php
+```
+
+Dry run:
+
+```bash
+php scripts/billing/send_billing_delinquency_report.php --dry-run
+```
+
+Force resend for the same UTC day:
+
+```bash
+php scripts/billing/send_billing_delinquency_report.php --force
+```
+
+Systemd units:
+
+```text
+scripts/systemd/artsfolio-billing-delinquency-report.service
+scripts/systemd/artsfolio-billing-delinquency-report.timer
+```
+
+Install on production after deployment:
+
+```bash
+sudo cp /var/www/artsfolio/scripts/systemd/artsfolio-billing-delinquency-report.service /etc/systemd/system/
+sudo cp /var/www/artsfolio/scripts/systemd/artsfolio-billing-delinquency-report.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now artsfolio-billing-delinquency-report.timer
+sudo systemctl status artsfolio-billing-delinquency-report.timer --no-pager
+```
+
+Check recent runs:
+
+```bash
+sudo journalctl -u artsfolio-billing-delinquency-report.service -n 100 --no-pager
+```
+
+Outbox verification:
+
+```sql
+SELECT id, recipient_email, subject, template_key, status, available_at, sent_at, last_error
+FROM email_outbox
+WHERE template_key = 'billing.delinquency_daily_report'
+ORDER BY id DESC
+LIMIT 25;
+```
+
+<!-- End of file. -->

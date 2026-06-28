@@ -110,3 +110,18 @@ Current thresholds:
 This pass intentionally does not restrict tenant access. Enforcement and feature gating should be added separately after operational review.
 
 <!-- End of file. -->
+
+## Daily billing delinquency report
+
+`scripts/billing/send_billing_delinquency_report.php` sends a daily billing delinquency report to platform owner/admin users through `EmailOutboxRepository`.
+
+The command uses `BillingDelinquencyPolicy`, renders `template/email/billing/platform-delinquency-report.txt`, and queues `billing.delinquency_daily_report`.
+
+The command suppresses duplicate same-day reports unless `--force` is supplied. Use `--dry-run` for manual validation.
+
+Production scheduling is handled by:
+
+- `scripts/systemd/artsfolio-billing-delinquency-report.service`
+- `scripts/systemd/artsfolio-billing-delinquency-report.timer`
+
+<!-- End of file. -->
