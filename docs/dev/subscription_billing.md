@@ -125,3 +125,28 @@ Production scheduling is handled by:
 - `scripts/systemd/artsfolio-billing-delinquency-report.timer`
 
 <!-- End of file. -->
+
+## Free-to-paid proration guard
+
+`Tenant\Admin\BillingController::billablePaidUpgradeForProration()` is the gate for immediate proration.
+
+Proration is allowed only when:
+
+- current plan price is greater than zero
+- target plan price is higher than the current plan price
+- the tenant has a non-empty `stripe_subscription_id`
+- billing status is blank or one of `active`, `past_due`, or `unpaid`
+
+Free/no-subscription to paid plan starts must pass `0` proration cents into Stripe Checkout so the checkout page shows only the recurring target plan price.
+
+<!-- End of file. -->
+
+## Checkout entitlement activation guard
+
+`Tenant\Admin\BillingController::recordPendingPaidPlanChange()` must keep `tenant_plan_assignments.plan_id` on the current plan while Stripe Checkout is pending. The target paid plan belongs in `pending_plan_id`.
+
+Only `Platform\StripeWebhookController::markBillingCheckoutCompleted()` should activate the paid plan after Stripe confirms `checkout.session.completed`.
+
+Use `scripts/billing/repair_unpaid_paid_start_entitlements.php --dry-run` to find rows where unpaid paid-start checkout accidentally activated the paid plan locally.
+
+<!-- End of file. -->

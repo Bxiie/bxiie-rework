@@ -147,8 +147,9 @@ HTML;
             FlashMessages::success('Plan change scheduled. You keep current-plan features until ' . $this->dateLabel($recurrence) . '.');
             return new Response('', 303, ['Location' => '/admin/billing?notice=plan-scheduled']);
         }
-        $prorationCents = $currentPrice > 0 ? $this->prorationCents($currentPrice, $targetPrice, $recurrence) : 0;
-        if ($currentPrice > 0 && $targetPrice > $currentPrice && $this->canUpdateStripeSubscriptionPrice($billing, $targetPlan)) {
+        $billablePaidUpgrade = $this->billablePaidUpgradeForProration($billing, $currentPrice, $targetPrice);
+        $prorationCents = $billablePaidUpgrade ? $this->prorationCents($currentPrice, $targetPrice, $recurrence) : 0;
+        if ($billablePaidUpgrade && $this->canUpdateStripeSubscriptionPrice($billing, $targetPlan)) {
             try {
                 $update = $this->updateStripeSubscriptionPrice($billing, $targetPlan);
                 $this->recordStripeSubscriptionPriceUpdate($tenant, $targetPlan, $update);
@@ -158,7 +159,7 @@ HTML;
                 return Response::html('<h1>Could not update Stripe subscription</h1><p>' . $this->e($e->getMessage()) . '</p>', 422);
             }
         }
-        $this->recordPendingPaidPlanChange($tenant, $targetPlan, $currentPrice === 0 ? 'paid_start' : 'upgrade', $prorationCents);
+        $this->recordPendingPaidPlanChange($tenant, $currentPlan, $targetPlan, $billablePaidUpgrade ? 'upgrade' : 'paid_start', $prorationCents);
         try {
             $session = $this->createBillingCheckoutSession($request, $tenant, $targetPlan, $currentUser, $prorationCents);
             $this->recordStripeCheckoutSession($tenant, (int) $targetPlan['id'], (string) $session['id'], $prorationCents);
@@ -304,10 +305,13 @@ HTML;
             ->queuePlanChangeScheduled($tenant->tenantId, $targetPlan, $changeType, $effectiveAt);
     }
 
-    private function recordPendingPaidPlanChange(TenantContext $tenant, array $targetPlan, string $changeType, int $prorationCents): void
+    private function recordPendingPaidPlanChange(TenantContext $tenant, array $currentPlan, array $targetPlan, string $changeType, int $prorationCents): void
     {
         $stmt = $this->pdo->prepare('INSERT INTO tenant_plan_assignments (tenant_id, plan_id, status, billing_status, pending_plan_id, pending_plan_slug, pending_change_type, pending_effective_at, pending_proration_cents, billing_note, created_at) VALUES (:tenant_id, :plan_id, "active", "payment_pending", :pending_plan_id, :pending_plan_slug, :change_type, UTC_TIMESTAMP(), :proration, :billing_note, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE billing_status = "payment_pending", pending_plan_id = VALUES(pending_plan_id), pending_plan_slug = VALUES(pending_plan_slug), pending_change_type = VALUES(pending_change_type), pending_effective_at = VALUES(pending_effective_at), pending_proration_cents = VALUES(pending_proration_cents), billing_note = VALUES(billing_note)');
-        $stmt->execute(['tenant_id' => $tenant->tenantId, 'plan_id' => (int) $targetPlan['id'], 'pending_plan_id' => (int) $targetPlan['id'], 'pending_plan_slug' => (string) $targetPlan['slug'], 'change_type' => $changeType, 'proration' => $prorationCents, 'billing_note' => 'Stripe Checkout started for ' . $changeType . '. Immediate prorated charge: ' . $this->plainMoney($prorationCents) . '.']);
+                if ((int) ($currentPlan['id'] ?? 0) < 1) {
+            throw new \RuntimeException('Current plan ID is required before starting paid checkout; paid entitlement is activated only after Stripe confirms payment.');
+        }
+$stmt->execute(['tenant_id' => $tenant->tenantId, 'plan_id' => (int) ($currentPlan['id'] ?? 0), 'pending_plan_id' => (int) $targetPlan['id'], 'pending_plan_slug' => (string) $targetPlan['slug'], 'change_type' => $changeType, 'proration' => $prorationCents, 'billing_note' => 'Stripe Checkout started for ' . $changeType . '. Immediate prorated charge: ' . $this->plainMoney($prorationCents) . '.']);
     }
 
     private function recordStripeCheckoutSession(TenantContext $tenant, int $planId, string $sessionId, int $prorationCents): void
@@ -321,6 +325,32 @@ HTML;
         return trim((string) ($billing['stripe_subscription_id'] ?? '')) !== ''
             && trim((string) ($billing['stripe_subscription_item_id'] ?? '')) !== ''
             && trim((string) ($targetPlan['stripe_monthly_price_id'] ?? '')) !== '';
+    }
+
+    /**
+     * Proration only belongs to a real paid-to-paid subscription upgrade.
+     *
+     * A free tenant, complimentary tenant, or tenant without a Stripe
+     * subscription is starting a new paid subscription. Stripe Checkout should
+     * only show the recurring target plan price in that path.
+     */
+    private function billablePaidUpgradeForProration(array $billing, int $currentPriceCents, int $targetPriceCents): bool
+    {
+        if ($currentPriceCents <= 0 || $targetPriceCents <= $currentPriceCents) {
+            return false;
+        }
+
+        $subscriptionId = trim((string) ($billing['stripe_subscription_id'] ?? ''));
+        if ($subscriptionId === '') {
+            return false;
+        }
+
+        $billingStatus = strtolower(trim((string) ($billing['billing_status'] ?? '')));
+        if ($billingStatus === '') {
+            return true;
+        }
+
+        return in_array($billingStatus, ['active', 'past_due', 'unpaid'], true);
     }
 
     /** @return array<string,mixed> */

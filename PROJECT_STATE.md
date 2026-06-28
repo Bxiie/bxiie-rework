@@ -2051,3 +2051,29 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The production timer runs daily at 08:15 server time with a randomized delay.
 
 <!-- End of file. -->
+
+## 2026-06-27 Free-to-paid proration repair
+
+- Repaired tenant billing plan-change proration so Free/no-subscription to
+  paid plan starts do not add an immediate prorated Stripe Checkout line item.
+- Immediate proration is now gated by an existing `stripe_subscription_id`,
+  a current paid plan price, a higher target paid plan price, and an active-ish
+  billing state.
+- Free to Professional should show only the target monthly subscription price
+  in Stripe Checkout.
+
+<!-- End of file. -->
+
+## 2026-06-27 Unpaid Stripe Checkout entitlement repair
+
+- Starting Stripe Checkout no longer changes `tenant_plan_assignments.plan_id`
+  to the paid target.
+- Pending paid checkout keeps `plan_id` on the current/free plan and stores the
+  paid target in `pending_plan_id`.
+- Paid entitlement activation remains in the Stripe `checkout.session.completed`
+  webhook path.
+- `scripts/billing/repair_unpaid_paid_start_entitlements.php` can find and
+  repair rows where an unpaid `paid_start` checkout accidentally activated a
+  paid plan locally.
+
+<!-- End of file. -->

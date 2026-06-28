@@ -33,3 +33,15 @@ ArtsFolio sends billing emails to tenant owners for important payment and plan e
 Billing emails are sent through the ArtsFolio email outbox and may arrive shortly after Stripe confirms the event.
 
 <!-- End of file. -->
+
+## Free to paid plan changes
+
+When you move from the Free plan to a paid plan, Stripe Checkout charges the selected plan price. Prorated immediate charges are used only for upgrades from one paid plan to a higher paid plan during an active billing period.
+
+<!-- End of file. -->
+
+## Canceling Stripe Checkout
+
+If you cancel Stripe Checkout before paying, your ArtsFolio plan should not change. Paid features become active only after Stripe confirms the checkout payment.
+
+<!-- End of file. -->
