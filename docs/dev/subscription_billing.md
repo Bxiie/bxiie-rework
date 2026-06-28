@@ -94,3 +94,19 @@ Use `scripts/billing/audit_billing_state.php` to detect database drift from thes
 The auditor uses the standard application bootstrap and `config/database.php`, matching `scripts/database/migrate.php`.
 
 <!-- End of file. -->
+
+## Billing delinquency policy
+
+`App\Platform\Billing\BillingDelinquencyPolicy` defines read-only delinquency classification for failed subscription payments.
+
+Current thresholds:
+
+- `GRACE_DAYS = 7`
+- `RESTRICTION_DAYS = 14`
+- `FINAL_REVIEW_DAYS = 30`
+
+`scripts/billing/audit_billing_delinquency.php` loads the normal application bootstrap and `config/database.php`, then lists tenants with `billing_status IN ('past_due', 'unpaid')` classified by policy state.
+
+This pass intentionally does not restrict tenant access. Enforcement and feature gating should be added separately after operational review.
+
+<!-- End of file. -->

@@ -2024,3 +2024,16 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
   `config/database.php`, and is intended for post-deploy and incident checks.
 
 <!-- End of file. -->
+
+## 2026-06-27 billing delinquency policy
+
+- `App\Platform\Billing\BillingDelinquencyPolicy` defines read-only
+  delinquency thresholds for subscription billing failures.
+- Thresholds: 7-day grace period, 14-day restriction-review threshold, and
+  30-day final-review threshold.
+- `scripts/billing/audit_billing_delinquency.php` lists `past_due` and `unpaid`
+  tenants with age, policy state, suggested operator action, invoice links, and
+  Stripe IDs where available.
+- This pass does not restrict tenant features or mutate billing state.
+
+<!-- End of file. -->
