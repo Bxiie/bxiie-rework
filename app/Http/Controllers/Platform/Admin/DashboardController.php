@@ -43,7 +43,6 @@ final class DashboardController
 
 <section class="dashboard-metric-grid" aria-label="Platform summary metrics">
     {$this->metricCard('Tenants', $metrics['tenants_total'], $metrics['tenants_detail'], '/platform/admin/tenants')}
-    {$this->metricCard('Actual paying tenants', $metrics['actual_paying_tenants'], $metrics['actual_paying_detail'], '/platform/admin/billing-health')}
     {$this->metricCard('Paid-capable tenants', $metrics['paid_tenants'], $metrics['paid_detail'], '/platform/admin/tenants')}
     {$this->metricCard('30-day GMV', $this->money((int) $metrics['gmv_30d']), $metrics['sales_detail'], '/platform/admin/sales/analytics')}
     {$this->metricCard('30-day commission', $this->money((int) $metrics['commission_30d']), $metrics['commission_detail'], '/platform/admin/sales/analytics')}
@@ -104,7 +103,6 @@ HTML;
         $activeTenants = $this->scalarInt("SELECT COUNT(*) FROM tenants WHERE status IS NULL OR status IN ('pending_setup','trial','active')");
         $complementaryTenants = $this->columnExists('tenants', 'complementary') ? $this->scalarInt('SELECT COUNT(*) FROM tenants WHERE complementary = 1 AND (status IS NULL OR status <> "deleted")') : 0;
         $paidTenants = $this->scalarInt('SELECT COUNT(DISTINCT tpa.tenant_id) FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id JOIN tenants t ON t.id = tpa.tenant_id WHERE (t.status IS NULL OR t.status <> "deleted") AND p.monthly_price_cents > 0');
-        $actualPayingTenants = ($this->tableExists('tenant_plan_assignments') && $this->columnExists('tenant_plan_assignments', 'stripe_subscription_id')) ? $this->scalarInt('SELECT COUNT(DISTINCT tpa.tenant_id) FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id JOIN tenants t ON t.id = tpa.tenant_id WHERE t.status = "active" AND COALESCE(t.complementary, 0) = 0 AND p.monthly_price_cents > 0 AND (tpa.stripe_subscription_id IS NOT NULL AND tpa.stripe_subscription_id <> "") AND COALESCE(tpa.billing_status, "active") IN ("active", "past_due", "unpaid")') : 0;
         $gmv30d = $this->scalarInt('SELECT COALESCE(SUM(total_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
         $commission30d = $this->scalarInt('SELECT COALESCE(SUM(commission_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
         $sellerNet30d = $this->scalarInt('SELECT COALESCE(SUM(seller_net_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
