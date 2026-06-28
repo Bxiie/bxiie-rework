@@ -2172,4 +2172,19 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Added a logged-in tenant-site footer switch for unpublished sections and images using `preview_unpublished=1`.
 - Tenant public pages now require the preview switch for unpublished content instead of showing unpublished content to every logged-in user automatically.
 
+## 2026-06-28 route inventory snapshot refresh for tenant domains
+
+- Refreshed `scripts/test/fixtures/route_inventory.json` after adding tenant-host `/admin/domains` and `/admin/domains/action` routes.
+- `scripts/test/phase8_routing_static.php` now compares against a snapshot that includes tenant custom-domain management routes.
+
+## 2026-06-28 phase8 route inventory snapshot refresh
+
+- Refreshed `scripts/test/fixtures/route_inventory.json` after adding tenant-host `/admin/domains` and `/admin/domains/action` routes.
+- The Phase 8 routing static test now compares against the actual committed route snapshot path discovered from the test setup.
+
+## 2026-06-28 semantic Phase 8 route inventory comparison
+
+- Updated `scripts/test/phase8_routing_static.php` to compare normalized route inventory rows instead of byte-level JSON ordering.
+- The test still fails for route additions, removals, and handler changes, but no longer fails solely because fixture/generator JSON row order or key order differs.
+
 <!-- End of file. -->
