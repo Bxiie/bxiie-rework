@@ -14,4 +14,8 @@ Logged-in tenant users see a footer switch that toggles unpublished sections and
 
 Tenant owners and admins see a footer switch on public tenant pages. The switch adds or removes `preview_unpublished=1`, which controls whether unpublished sections and artwork images are displayed. Public visitors and non-admin users only see published content.
 
+## Persistent unpublished preview switch
+
+Tenant owners and admins see a footer switch on public tenant pages. The switch saves each user's unpublished-preview preference for the current tenant and toggles `preview_unpublished=1` or `preview_unpublished=0` when clicked. Public visitors and non-admin users only see published content even if they add the query parameter manually.
+
 <!-- End of file. -->

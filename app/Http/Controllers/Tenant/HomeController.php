@@ -1326,13 +1326,91 @@ HTML;
      * Returns true only when a tenant owner/admin explicitly enables the
      * unpublished public-site preview switch for the current request.
      */
+
+/**
+     * Checks tenant-scoped authorization for public-site unpublished previews.
+     *
+     * A general signed-in session is not enough. The user must have a tenant
+     * owner/admin role for the tenant currently being rendered.
+     */
+
+/**
+     * Renders the public-footer switch used by tenant owners/admins to preview
+     * unpublished sections and artwork without exposing them to public visitors.
+     */
+
+    /**
+     * Returns the saved unpublished-preview preference for a tenant owner/admin.
+     *
+     * The preview state is persisted per tenant and per user in tenant_settings
+     * using a user-specific key. Public visitors and non-admin users can add
+     * preview_unpublished=1 to a URL, but the flag is ignored unless the user is
+     * authorized for this tenant.
+     */
     private function unpublishedPreviewEnabled(TenantContext $tenant): bool
     {
         if (!$this->canPreviewUnpublished($tenant)) {
             return false;
         }
 
-        return (string) ($_GET['preview_unpublished'] ?? '') === '1';
+        $this->syncUnpublishedPreviewPreferenceFromQuery($tenant);
+
+        return $this->storedUnpublishedPreviewPreference($tenant);
+    }
+
+    /**
+     * Persists preview_unpublished=1 or preview_unpublished=0 when the footer
+     * switch is used. Invalid/missing values do not modify the saved preference.
+     */
+    private function syncUnpublishedPreviewPreferenceFromQuery(TenantContext $tenant): void
+    {
+        if (!$this->canPreviewUnpublished($tenant)) {
+            return;
+        }
+
+        if (!array_key_exists('preview_unpublished', $_GET)) {
+            return;
+        }
+
+        $raw = (string) $_GET['preview_unpublished'];
+        if (!in_array($raw, ['0', '1'], true)) {
+            return;
+        }
+
+        $this->settings->set($tenant, $this->unpublishedPreviewPreferenceKey(), $raw);
+    }
+
+    /**
+     * Reads the current user's saved unpublished-preview preference.
+     */
+    private function storedUnpublishedPreviewPreference(TenantContext $tenant): bool
+    {
+        if (!$this->canPreviewUnpublished($tenant)) {
+            return false;
+        }
+
+        return (string) $this->settings->get($tenant, $this->unpublishedPreviewPreferenceKey(), '0') === '1';
+    }
+
+    /**
+     * Builds the per-user tenant_settings key for public-site preview state.
+     */
+    private function unpublishedPreviewPreferenceKey(): string
+    {
+        return 'public_preview_unpublished_user_' . $this->currentUserId();
+    }
+
+    /**
+     * Returns the current authenticated user id, or zero for anonymous traffic.
+     */
+    private function currentUserId(): int
+    {
+        $currentUser = $this->currentUser;
+        if (!is_array($currentUser)) {
+            return 0;
+        }
+
+        return (int) ($currentUser['user_id'] ?? $currentUser['id'] ?? 0);
     }
 
     /**
@@ -1343,8 +1421,8 @@ HTML;
      */
     private function canPreviewUnpublished(TenantContext $tenant): bool
     {
-        $currentUser = $this->currentUser;
-        if (!is_array($currentUser) || empty($currentUser['user_id'])) {
+        $userId = $this->currentUserId();
+        if ($userId < 1) {
             return false;
         }
 
@@ -1365,7 +1443,7 @@ HTML;
             );
             $stmt->execute([
                 'tenant_id' => $tenant->tenantId,
-                'user_id' => (int) $currentUser['user_id'],
+                'user_id' => $userId,
             ]);
 
             return (bool) $stmt->fetchColumn();
@@ -1375,8 +1453,8 @@ HTML;
     }
 
     /**
-     * Renders the public-footer switch used by tenant owners/admins to preview
-     * unpublished sections and artwork without exposing them to public visitors.
+     * Renders the public-footer switch used by tenant owners/admins to save
+     * their unpublished-preview preference.
      */
     private function unpublishedPreviewFooterSwitch(TenantContext $tenant): string
     {
@@ -1384,27 +1462,19 @@ HTML;
             return '';
         }
 
-        $enabled = $this->unpublishedPreviewEnabled($tenant);
+        $enabled = $this->storedUnpublishedPreviewPreference($tenant);
         $path = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
         $query = $_GET;
+        $query['preview_unpublished'] = $enabled ? '0' : '1';
 
-        if ($enabled) {
-            unset($query['preview_unpublished']);
-        } else {
-            $query['preview_unpublished'] = '1';
-        }
-
-        $href = $path;
-        if ($query !== []) {
-            $href .= '?' . http_build_query($query);
-        }
-
+        $href = $path . '?' . http_build_query($query);
         $label = $enabled ? 'Hide unpublished sections and images' : 'Show unpublished sections and images';
         $state = $enabled ? 'Previewing unpublished content' : 'Published-only view';
 
         return '<div class="tenant-preview-switch" style="display:block;margin:.75rem 0;padding:.75rem;border:1px solid currentColor;">'
             . '<strong>' . $this->escape($state) . '</strong> '
             . '<a href="' . $this->escape($href) . '">' . $this->escape($label) . '</a>'
+            . '<small style="display:block;margin-top:.35rem;">Preview preference is saved for your user on this tenant.</small>'
             . '</div>';
     }
 

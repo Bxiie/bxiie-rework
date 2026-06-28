@@ -2199,4 +2199,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Rendered a concrete `$previewSwitch` variable in the public footer.
 - The switch is visible only to tenant owners/admins and toggles `preview_unpublished=1`.
 
+## 2026-06-28 persistent per-user tenant public preview switch
+
+- Reworked tenant public unpublished preview from a URL-only flag into a per-tenant, per-user stored preference.
+- The preference is stored in `tenant_settings` under `public_preview_unpublished_user_{user_id}` and requires tenant owner/admin authorization.
+- The public footer switch now toggles and saves the preference with `preview_unpublished=1` or `preview_unpublished=0`.
+- Anonymous visitors and non-admin users cannot enable unpublished content by adding the query parameter manually.
+
 <!-- End of file. -->
