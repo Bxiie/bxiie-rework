@@ -63,22 +63,16 @@ final class TenantsController
             body: <<<HTML
 <p class="admin-muted">Open a tenant to review tenant users, email addresses, names, roles, membership status, and last log on timestamps.</p>
 
+
 <div class="admin-card platform-tenant-search-card">
-    <form class="platform-tenant-search" method="get" action="/platform/admin/tenants" data-platform-tenant-search-form style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;margin:0;">
-        <label style="display:flex;flex-direction:column;gap:0.25rem;">
+    <form class="platform-tenant-search" method="get" action="/platform/admin/tenants" style="display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap;margin:0;">
+        <label style="display:flex;flex-direction:column;gap:.25rem;">
             <span>Search tenants</span>
-            <input
-                type="search"
-                name="q"
-                value="{$tenantSearchQuery}"
-                placeholder="Name, slug, UUID, status, plan, or domain"
-                autocomplete="off"
-                data-platform-tenant-search-input
-            >
+            <input type="search" name="q" value="{$tenantSearchQuery}" placeholder="Name, slug, UUID, status, plan, or domain" autocomplete="off" data-platform-tenant-search-input>
         </label>
         <button type="submit">Search</button>
         <a href="/platform/admin/tenants">Clear</a>
-        <span data-platform-tenant-search-count class="admin-muted"></span>
+        <span class="admin-muted" data-platform-tenant-search-count></span>
     </form>
 </div>
 <script>
@@ -92,8 +86,6 @@ final class TenantsController
     if (!table) {
         return;
     }
-
-    table.setAttribute('data-platform-tenant-search-table', '1');
 
     var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
     if (rows.length === 0) {
@@ -111,9 +103,10 @@ final class TenantsController
         var shown = 0;
 
         rows.forEach(function (row) {
-            var haystack = (row.textContent || '').toLowerCase();
-            var match = needle === '' || haystack.indexOf(needle) !== -1;
+            var text = (row.textContent || '').toLowerCase();
+            var match = needle === '' || text.indexOf(needle) !== -1;
             row.hidden = !match;
+            row.style.display = match ? '' : 'none';
             if (match) {
                 shown += 1;
             }

@@ -43,6 +43,7 @@ final class DashboardController
 
 <section class="dashboard-metric-grid" aria-label="Platform summary metrics">
     {$this->metricCard('Tenants', $metrics['tenants_total'], $metrics['tenants_detail'], '/platform/admin/tenants')}
+    {$this->metricCard('Actual paying tenants', $metrics['actual_paying_tenants'], $metrics['actual_paying_detail'], '/platform/admin/billing-health')}
     {$this->metricCard('Paid-capable tenants', $metrics['paid_tenants'], $metrics['paid_detail'], '/platform/admin/tenants')}
     {$this->metricCard('30-day GMV', $this->money((int) $metrics['gmv_30d']), $metrics['sales_detail'], '/platform/admin/sales/analytics')}
     {$this->metricCard('30-day commission', $this->money((int) $metrics['commission_30d']), $metrics['commission_detail'], '/platform/admin/sales/analytics')}
@@ -103,6 +104,7 @@ HTML;
         $activeTenants = $this->scalarInt("SELECT COUNT(*) FROM tenants WHERE status IS NULL OR status IN ('pending_setup','trial','active')");
         $complementaryTenants = $this->columnExists('tenants', 'complementary') ? $this->scalarInt('SELECT COUNT(*) FROM tenants WHERE complementary = 1 AND (status IS NULL OR status <> "deleted")') : 0;
         $paidTenants = $this->scalarInt('SELECT COUNT(DISTINCT tpa.tenant_id) FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id JOIN tenants t ON t.id = tpa.tenant_id WHERE (t.status IS NULL OR t.status <> "deleted") AND p.monthly_price_cents > 0');
+        $actualPayingTenants = $this->actualPayingTenants();
         $gmv30d = $this->scalarInt('SELECT COALESCE(SUM(total_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
         $commission30d = $this->scalarInt('SELECT COALESCE(SUM(commission_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
         $sellerNet30d = $this->scalarInt('SELECT COALESCE(SUM(seller_net_cents), 0) FROM sales_orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND payment_status IN ("paid", "complete", "succeeded")');
@@ -115,6 +117,8 @@ HTML;
             'tenants_total' => $this->number($tenantsTotal),
             'tenants_detail' => $this->number($activeTenants) . ' active/trial · ' . $this->number($complementaryTenants) . ' complimentary',
             'paid_tenants' => $this->number($paidTenants),
+            'actual_paying_tenants' => $this->number($actualPayingTenants),
+            'actual_paying_detail' => 'Confirmed Stripe subscriptions on paid plans',
             'paid_detail' => 'Tenants assigned to paid monthly plans',
             'gmv_30d' => $gmv30d,
             'sales_detail' => $this->number($orders30d) . ' orders in the last 30 days',
@@ -336,6 +340,36 @@ HTML;
     {
         return AdminLayout::escape($value);
     }
+    private function actualPayingTenants(): int
+    {
+        if (!$this->tableExists('tenant_plan_assignments') || !$this->tableExists('plans') || !$this->tableExists('tenants')) {
+            return 0;
+        }
+
+        if (!$this->columnExists('tenant_plan_assignments', 'stripe_subscription_id')) {
+            return 0;
+        }
+
+        $tenantStatusClause = $this->columnExists('tenants', 'status') ? 't.status = "active"' : '1 = 1';
+        $complementaryClause = $this->columnExists('tenants', 'complementary') ? 'COALESCE(t.complementary, 0) = 0' : '1 = 1';
+        $billingStatusClause = $this->columnExists('tenant_plan_assignments', 'billing_status')
+            ? 'COALESCE(tpa.billing_status, "active") IN ("active", "past_due", "unpaid")'
+            : '1 = 1';
+
+        return $this->scalarInt(
+            'SELECT COUNT(DISTINCT tpa.tenant_id)
+               FROM tenant_plan_assignments tpa
+               JOIN plans p ON p.id = tpa.plan_id
+               JOIN tenants t ON t.id = tpa.tenant_id
+              WHERE ' . $tenantStatusClause . '
+                AND ' . $complementaryClause . '
+                AND p.monthly_price_cents > 0
+                AND (tpa.stripe_subscription_id IS NOT NULL AND tpa.stripe_subscription_id <> "")
+                AND ' . $billingStatusClause
+        );
+    }
+
+
 }
 
 // End of file.

@@ -2118,3 +2118,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Re-add the metric after capturing the runtime exception and matching the current dashboard/database shape.
 
 <!-- End of file. -->
+
+## 2026-06-27 Platform tenant search and actual paying tenant metrics
+
+- Repaired Platform Admin tenant search by targeting the inline Platform Admin TenantsController table rendering.
+- Added guarded Actual paying tenants metric to the Platform Admin dashboard.
+- Added guarded Actual paying tenants metric to Platform Admin Billing Health.
+- Actual paying tenants require active tenant status, non-complementary flag when available, paid plan, confirmed Stripe subscription ID, and active-ish billing status when available.
+
+<!-- End of file. -->

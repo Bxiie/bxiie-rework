@@ -47,6 +47,13 @@ final class BillingHealthController
             body: <<<HTML
 <p class="admin-muted">Read-only billing diagnostics for Stripe configuration, tenant subscription state, pending plan changes, and webhook processing.</p>
 {$summary}
+
+<div class="admin-card">
+    <h2>Actual paying tenants</h2>
+    <p class="admin-stat-value"><?= number_format($this->actualPayingTenants()) ?></p>
+    <p class="admin-muted">Active, non-complementary tenants on paid plans with confirmed Stripe subscriptions.</p>
+</div>
+
 <h2>Attention items</h2>
 <table class="admin-table">
     <thead><tr><th>Status</th><th>Check</th><th>Count</th><th>Why it matters</th><th>Action</th></tr></thead>
@@ -490,6 +497,36 @@ HTML,
 
         return '<span class="admin-notice ' . $class . '">' . AdminLayout::escape($label) . '</span>';
     }
+    private function actualPayingTenants(): int
+    {
+        if (!$this->tableExists('tenant_plan_assignments') || !$this->tableExists('plans') || !$this->tableExists('tenants')) {
+            return 0;
+        }
+
+        if (!$this->columnExists('tenant_plan_assignments', 'stripe_subscription_id')) {
+            return 0;
+        }
+
+        $tenantStatusClause = $this->columnExists('tenants', 'status') ? 't.status = "active"' : '1 = 1';
+        $complementaryClause = $this->columnExists('tenants', 'complementary') ? 'COALESCE(t.complementary, 0) = 0' : '1 = 1';
+        $billingStatusClause = $this->columnExists('tenant_plan_assignments', 'billing_status')
+            ? 'COALESCE(tpa.billing_status, "active") IN ("active", "past_due", "unpaid")'
+            : '1 = 1';
+
+        return $this->scalarInt(
+            'SELECT COUNT(DISTINCT tpa.tenant_id)
+               FROM tenant_plan_assignments tpa
+               JOIN plans p ON p.id = tpa.plan_id
+               JOIN tenants t ON t.id = tpa.tenant_id
+              WHERE ' . $tenantStatusClause . '
+                AND ' . $complementaryClause . '
+                AND p.monthly_price_cents > 0
+                AND (tpa.stripe_subscription_id IS NOT NULL AND tpa.stripe_subscription_id <> "")
+                AND ' . $billingStatusClause
+        );
+    }
+
+
 }
 
 // End of file.
