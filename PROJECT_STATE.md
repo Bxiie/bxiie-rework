@@ -2143,3 +2143,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - This prevents HTTP 500 errors on production schemas where tenant metadata columns differ.
 
 <!-- End of file. -->
+
+## 2026-06-27 Platform tenant search emergency rollback
+
+- Removed Platform Admin tenant-search render injection after `/platform/admin/tenants` continued returning HTTP 500.
+- Left dashboard and Billing Health actual paying tenant metrics untouched.
+- Tenant search should be reintroduced only after inspecting the exact TenantsController render and route behavior.
+
+<!-- End of file. -->
