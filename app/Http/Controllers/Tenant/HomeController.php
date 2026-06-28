@@ -41,7 +41,7 @@ final class HomeController
             'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.'
         );
 
-        $includeUnpublished = $this->unpublishedPreviewEnabled();
+        $includeUnpublished = $this->unpublishedPreviewEnabled($tenant);
         $items = $this->artworks->latestPublished($tenant, 12, $includeUnpublished);
 
         $body = <<<HTML
@@ -98,7 +98,7 @@ HTML;
             24,
             [10, 20, 24, 30, 40, 50, 60, 70, 80, 90, 100],
         );
-        $includeUnpublished = $this->unpublishedPreviewEnabled();
+        $includeUnpublished = $this->unpublishedPreviewEnabled($tenant);
         $sections = $this->artworks->activeSections($tenant, $includeUnpublished);
         $displayOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
         $result = $this->artworks->publishedPage(
@@ -220,7 +220,7 @@ HTML;
 
     public function artwork(Request $request, TenantContext $tenant, string $slug): Response
     {
-        $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublishedPreviewEnabled());
+        $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublishedPreviewEnabled($tenant));
 
         if (!$artwork) {
             return Response::notFound("Artwork not found: {$slug}");
@@ -532,7 +532,8 @@ HTML;
      * hold an active membership and tenant-scoped owner/admin role for the
      * tenant currently being rendered.
      */
-    private function tenantAdminLink(TenantContext $tenant): string
+
+private function tenantAdminLink(TenantContext $tenant): string
     {
         // Static-test compatibility note: the former query required
         // tm.status = 'active'. Authorization now intentionally follows the
@@ -611,6 +612,7 @@ HTML;
         $contactSlug = $this->escape($this->settings->get($tenant, 'contact_slug', 'contact'));
         $backgroundStyle = $this->backgroundCssVariables($tenant);
         $footerSignupForm = $this->footerSignupForm($tenant, $contactSlug);
+        $previewSwitch = $this->unpublishedPreviewFooterSwitch($tenant);
         $socialLinks = $this->socialFooterLinks($tenant);
         $platformAdminLink = $this->tenantAdminLink($tenant);
         $turnstileScript = FirstPartyCaptcha::isConfigured($this->turnstileSiteKey($tenant)) ? '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>' : '';
@@ -646,7 +648,7 @@ HTML;
     <span>© {$year} {$copyrightName}</span>
     {$this->artsfolioFreePlanLink($tenant)}
     {$socialLinks}
-    {$this->unpublishedPreviewFooterSwitch()}
+    {$previewSwitch}
     {$footerSignupForm}
 </footer>
 {$this->cookieConsentBanner()}
@@ -931,33 +933,7 @@ HTML;
      * Builds the compact footer signup form available on every public tenant page.
      */
 
-    private function unpublishedPreviewEnabled(): bool
-    {
-        if ($this->currentUser === null) {
-            return false;
-        }
-
-        return (string) ($_GET['preview_unpublished'] ?? '') === '1';
-    }
-
-    private function unpublishedPreviewFooterSwitch(): string
-    {
-        if ($this->currentUser === null) {
-            return '';
-        }
-
-        $enabled = $this->unpublishedPreviewEnabled();
-        $path = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
-        $query = $_GET;
-        $query['preview_unpublished'] = $enabled ? '0' : '1';
-        $href = $path . '?' . http_build_query($query);
-        $label = $enabled ? 'Hide unpublished sections and images' : 'Show unpublished sections and images';
-        $state = $enabled ? 'Previewing unpublished content' : 'Published-only preview';
-
-        return '<div class="tenant-preview-switch"><strong>' . $this->escape($state) . '</strong> <a href="' . $this->escape($href) . '">' . $this->escape($label) . '</a></div>';
-    }
-
-    private function footerSignupForm(TenantContext $tenant, string $contactSlug): string
+private function footerSignupForm(TenantContext $tenant, string $contactSlug): string
     {
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
         $captcha = FirstPartyCaptcha::render('signup', (int) $tenant->tenantId, $this->turnstileSiteKey($tenant));
@@ -1346,6 +1322,93 @@ HTML;
     {
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
+    /**
+     * Returns true only when a tenant owner/admin explicitly enables the
+     * unpublished public-site preview switch for the current request.
+     */
+    private function unpublishedPreviewEnabled(TenantContext $tenant): bool
+    {
+        if (!$this->canPreviewUnpublished($tenant)) {
+            return false;
+        }
+
+        return (string) ($_GET['preview_unpublished'] ?? '') === '1';
+    }
+
+    /**
+     * Checks tenant-scoped authorization for public-site unpublished previews.
+     *
+     * A general signed-in session is not enough. The user must have a tenant
+     * owner/admin role for the tenant currently being rendered.
+     */
+    private function canPreviewUnpublished(TenantContext $tenant): bool
+    {
+        $currentUser = $this->currentUser;
+        if (!is_array($currentUser) || empty($currentUser['user_id'])) {
+            return false;
+        }
+
+        try {
+            $stmt = $this->pdo->prepare(
+                "SELECT 1
+                   FROM role_assignments ra
+                   JOIN roles r
+                     ON r.id = ra.role_id
+                    AND r.scope = 'tenant'
+                  WHERE ra.tenant_id = :tenant_id
+                    AND ra.user_id = :user_id
+                    AND (
+                        r.slug IN ('owner', 'admin')
+                        OR r.slug IN ('tenant_owner', 'tenant_admin')
+                    )
+                  LIMIT 1"
+            );
+            $stmt->execute([
+                'tenant_id' => $tenant->tenantId,
+                'user_id' => (int) $currentUser['user_id'],
+            ]);
+
+            return (bool) $stmt->fetchColumn();
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * Renders the public-footer switch used by tenant owners/admins to preview
+     * unpublished sections and artwork without exposing them to public visitors.
+     */
+    private function unpublishedPreviewFooterSwitch(TenantContext $tenant): string
+    {
+        if (!$this->canPreviewUnpublished($tenant)) {
+            return '';
+        }
+
+        $enabled = $this->unpublishedPreviewEnabled($tenant);
+        $path = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
+        $query = $_GET;
+
+        if ($enabled) {
+            unset($query['preview_unpublished']);
+        } else {
+            $query['preview_unpublished'] = '1';
+        }
+
+        $href = $path;
+        if ($query !== []) {
+            $href .= '?' . http_build_query($query);
+        }
+
+        $label = $enabled ? 'Hide unpublished sections and images' : 'Show unpublished sections and images';
+        $state = $enabled ? 'Previewing unpublished content' : 'Published-only view';
+
+        return '<div class="tenant-preview-switch" style="display:block;margin:.75rem 0;padding:.75rem;border:1px solid currentColor;">'
+            . '<strong>' . $this->escape($state) . '</strong> '
+            . '<a href="' . $this->escape($href) . '">' . $this->escape($label) . '</a>'
+            . '</div>';
+    }
+
+
 }
 
 // End of file.

@@ -2187,4 +2187,16 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Updated `scripts/test/phase8_routing_static.php` to compare normalized route inventory rows instead of byte-level JSON ordering.
 - The test still fails for route additions, removals, and handler changes, but no longer fails solely because fixture/generator JSON row order or key order differs.
 
+## 2026-06-28 tenant public preview switch concrete footer render
+
+- Reworked the unpublished preview switch to compute `$previewSwitch` in `HomeController::layout()` and render it directly in the tenant public footer.
+- The switch is visible only to tenant owners/admins and toggles `preview_unpublished=1`.
+- Home, portfolio, and artwork detail unpublished visibility now use the tenant-aware preview helper.
+
+## 2026-06-28 tenant public preview switch concrete footer render v2
+
+- Repaired tenant public unpublished preview gating to use `$this->unpublishedPreviewEnabled($tenant)` wherever HomeController previously exposed unpublished content to any signed-in user.
+- Rendered a concrete `$previewSwitch` variable in the public footer.
+- The switch is visible only to tenant owners/admins and toggles `preview_unpublished=1`.
+
 <!-- End of file. -->
