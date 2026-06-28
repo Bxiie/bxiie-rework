@@ -18,4 +18,8 @@ Tenant owners and admins see a footer switch on public tenant pages. The switch 
 
 Tenant owners and admins see a footer switch on public tenant pages. The switch saves each user's unpublished-preview preference for the current tenant and toggles `preview_unpublished=1` or `preview_unpublished=0` when clicked. Public visitors and non-admin users only see published content even if they add the query parameter manually.
 
+## No-reload unpublished preview switch
+
+Tenant owners and admins can toggle unpublished preview from the public footer without a browser reload. The switch saves the per-user tenant preference with a background request, refreshes the visible page content in place, and is not shown on About or Contact pages.
+
 <!-- End of file. -->

@@ -1456,9 +1456,17 @@ HTML;
      * Renders the public-footer switch used by tenant owners/admins to save
      * their unpublished-preview preference.
      */
+
+    /**
+     * Renders the public-footer switch used by tenant owners/admins to save
+     * their unpublished-preview preference without forcing a browser reload.
+     *
+     * The switch is intentionally hidden on contact and about pages because
+     * those pages do not display portfolio sections or artwork grids.
+     */
     private function unpublishedPreviewFooterSwitch(TenantContext $tenant): string
     {
-        if (!$this->canPreviewUnpublished($tenant)) {
+        if (!$this->canPreviewUnpublished($tenant) || $this->previewSwitchSuppressedForCurrentPath()) {
             return '';
         }
 
@@ -1470,12 +1478,113 @@ HTML;
         $href = $path . '?' . http_build_query($query);
         $label = $enabled ? 'Hide unpublished sections and images' : 'Show unpublished sections and images';
         $state = $enabled ? 'Previewing unpublished content' : 'Published-only view';
+        $nextValue = $enabled ? '0' : '1';
 
-        return '<div class="tenant-preview-switch" style="display:block;margin:.75rem 0;padding:.75rem;border:1px solid currentColor;">'
-            . '<strong>' . $this->escape($state) . '</strong> '
-            . '<a href="' . $this->escape($href) . '">' . $this->escape($label) . '</a>'
-            . '<small style="display:block;margin-top:.35rem;">Preview preference is saved for your user on this tenant.</small>'
-            . '</div>';
+        return '<div class="tenant-preview-switch" data-preview-switch="1" style="display:block;margin:.75rem 0;padding:.75rem;border:1px solid currentColor;">'
+            . '<strong data-preview-state>' . $this->escape($state) . '</strong> '
+            . '<button type="button" data-preview-toggle data-preview-url="' . $this->escape($href) . '" data-preview-next="' . $this->escape($nextValue) . '" style="font:inherit;text-decoration:underline;background:transparent;border:0;color:inherit;cursor:pointer;padding:0;">'
+            . $this->escape($label)
+            . '</button>'
+            . '<small data-preview-message style="display:block;margin-top:.35rem;">Preview preference is saved for your user on this tenant.</small>'
+            . '</div>'
+            . $this->unpublishedPreviewSwitchScript();
+    }
+
+
+    /**
+     * The preview switch only belongs on pages where unpublished portfolio
+     * sections or artwork images can affect the public display.
+     */
+    private function previewSwitchSuppressedForCurrentPath(): bool
+    {
+        $path = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
+        $path = '/' . trim($path, '/');
+
+        return in_array($path, ['/about', '/contact'], true);
+    }
+
+
+    /**
+     * Provides progressive-enhancement behavior for the preview switch.
+     *
+     * The button fetches the toggle URL to persist the setting server-side,
+     * then fetches the clean current URL and swaps in the returned body. That
+     * updates the page content without a full browser navigation. If JavaScript
+     * fails, users can still open the button URL manually from dev tools, but
+     * ordinary clicks remain no-reload controls.
+     */
+    private function unpublishedPreviewSwitchScript(): string
+    {
+        return <<<'HTML'
+<script>
+(function () {
+    if (window.__artsfolioPreviewSwitchReady) {
+        return;
+    }
+    window.__artsfolioPreviewSwitchReady = true;
+
+    document.addEventListener('click', async function (event) {
+        var button = event.target.closest('[data-preview-toggle]');
+        if (!button) {
+            return;
+        }
+
+        event.preventDefault();
+
+        var wrapper = button.closest('[data-preview-switch]');
+        var message = wrapper ? wrapper.querySelector('[data-preview-message]') : null;
+        var toggleUrl = button.getAttribute('data-preview-url');
+
+        if (!toggleUrl) {
+            return;
+        }
+
+        button.disabled = true;
+        if (message) {
+            message.textContent = 'Saving preview preference...';
+        }
+
+        try {
+            await fetch(toggleUrl, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            var cleanUrl = window.location.pathname + window.location.search
+                .replace(/([?&])preview_unpublished=(0|1)(&?)/, function (match, prefix, value, suffix) {
+                    return suffix ? prefix : '';
+                })
+                .replace(/[?&]$/, '');
+
+            var response = await fetch(cleanUrl || window.location.pathname, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            var html = await response.text();
+            var parsed = new DOMParser().parseFromString(html, 'text/html');
+
+            if (parsed.title) {
+                document.title = parsed.title;
+            }
+
+            document.body.replaceWith(parsed.body);
+        } catch (error) {
+            button.disabled = false;
+            if (message) {
+                message.textContent = 'Could not save preview preference. Please try again.';
+            }
+        }
+    });
+})();
+</script>
+HTML;
     }
 
 

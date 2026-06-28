@@ -2206,4 +2206,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The public footer switch now toggles and saves the preference with `preview_unpublished=1` or `preview_unpublished=0`.
 - Anonymous visitors and non-admin users cannot enable unpublished content by adding the query parameter manually.
 
+## 2026-06-28 no-reload tenant preview switch
+
+- Changed the public tenant unpublished-preview footer control from a reload link to a JavaScript-enhanced button.
+- The button saves the per-user tenant preference with `fetch()` and swaps in updated page content without full browser navigation.
+- The preview switch is suppressed on `/about` and `/contact` because those pages do not expose portfolio section/image preview content.
+
 <!-- End of file. -->
