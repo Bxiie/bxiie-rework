@@ -220,7 +220,7 @@ HTML;
 
     public function artwork(Request $request, TenantContext $tenant, string $slug): Response
     {
-        $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->currentUser !== null);
+        $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublishedPreviewEnabled());
 
         if (!$artwork) {
             return Response::notFound("Artwork not found: {$slug}");

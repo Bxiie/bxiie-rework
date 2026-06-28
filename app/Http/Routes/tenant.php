@@ -274,6 +274,8 @@ return static function (Router $router, array $context): void {
             return Response::html(AuthPage::pageMessage('Password reset requested', 'If that email address exists for this artist site, a reset link has been queued.'));
         });
     $router->get('/admin', fn (Request $request): Response => (new TenantAdminDashboardController($tenantSettings))->index($request, $tenant, $currentUser));
+        $router->get('/admin/domains', fn (Request $request): Response => (new TenantAdminDomainsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), $pdo))->index($request, $tenant, $currentUser));
+        $router->post('/admin/domains/action', fn (Request $request): Response => (new TenantAdminDomainsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), $pdo))->action($request, $tenant, $currentUser));
         $router->get('/admin/billing', fn (Request $request): Response => (new TenantAdminBillingController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->index($request, $tenant, $currentUser));
         $router->post('/admin/billing/plan', fn (Request $request): Response => (new TenantAdminBillingController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->updatePlan($request, $tenant, $currentUser));
         $router->post('/admin/billing/portal', fn (Request $request): Response => (new TenantAdminBillingController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->managePayment($request, $tenant, $currentUser));

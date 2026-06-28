@@ -2165,4 +2165,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Moved curation controls from home/portfolio cards to artwork detail pages.
 - Added a logged-in tenant-site footer switch for showing unpublished sections and images.
 
+## 2026-06-28 tenant custom-domain routes and unpublished preview footer switch
+
+- Added tenant-router `/admin/domains` and `/admin/domains/action` routes so custom-domain hosts can serve tenant-owned domain management.
+- Kept Tenant Admin navigation pointing to `/admin/domains`.
+- Added a logged-in tenant-site footer switch for unpublished sections and images using `preview_unpublished=1`.
+- Tenant public pages now require the preview switch for unpublished content instead of showing unpublished content to every logged-in user automatically.
+
 <!-- End of file. -->
