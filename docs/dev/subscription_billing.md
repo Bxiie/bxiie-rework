@@ -69,3 +69,28 @@ The page is read-only. It validates Stripe key presence and format, live/test co
 Use it before live billing cutover and after any Stripe plan or webhook changes.
 
 <!-- End of file. -->
+
+## Billing state vocabulary
+
+`App\Platform\Billing\BillingStatus` contains the canonical subscription billing status and pending-change vocabulary.
+
+Billing statuses:
+
+- `active`
+- `payment_pending`
+- `past_due`
+- `unpaid`
+- `canceled`
+- `cancellation_pending`
+
+Pending change types:
+
+- `upgrade`
+- `downgrade`
+- `cancel`
+
+Use `scripts/billing/audit_billing_state.php` to detect database drift from these values. New controllers, webhook handlers, dashboards, and maintenance scripts should use `BillingStatus` constants and helpers instead of retyping literals.
+
+The auditor uses the standard application bootstrap and `config/database.php`, matching `scripts/database/migrate.php`.
+
+<!-- End of file. -->

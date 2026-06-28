@@ -2009,3 +2009,18 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Platform admin navigation includes `Billing Config`.
 
 <!-- End of file. -->
+
+## 2026-06-27 canonical billing state helper
+
+- `App\Platform\Billing\BillingStatus` defines canonical subscription billing
+  statuses and pending-change types.
+- Billing statuses: `active`, `payment_pending`, `past_due`, `unpaid`,
+  `canceled`, and `cancellation_pending`.
+- Pending change types: `upgrade`, `downgrade`, and `cancel`.
+- `scripts/billing/audit_billing_state.php` audits live database state for
+  unknown statuses, unknown pending-change types, incomplete pending changes,
+  and paid assignments missing Stripe subscription IDs.
+- The audit command is read-only, uses the normal application bootstrap plus
+  `config/database.php`, and is intended for post-deploy and incident checks.
+
+<!-- End of file. -->
