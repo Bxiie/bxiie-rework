@@ -7,3 +7,9 @@ The Platform Admin tenants page includes an in-page tenant search that filters t
 The Platform Admin dashboard includes an Actual paying tenants count. This count is rendered from the dashboard view and counts active, non-complementary tenants on paid plans with confirmed Stripe subscription IDs.
 
 <!-- End of file. -->
+
+## Actual paying tenants dashboard metric
+
+The Platform Admin dashboard shows Actual paying tenants using the existing dashboard metric flow. This excludes Free, complimentary, and unconfirmed checkout tenants by requiring a paid current plan and a confirmed Stripe subscription ID.
+
+<!-- End of file. -->

@@ -2102,3 +2102,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Actual paying tenants are active, non-complementary tenants on paid plans with confirmed Stripe subscription IDs.
 
 <!-- End of file. -->
+
+## 2026-06-27 Platform dashboard actual paying tenants 500 repair
+
+- Removed raw view-style actual paying tenant code from Platform Admin DashboardController.
+- Added Actual paying tenants through the existing dashboard metrics and metricCard flow.
+- Actual paying tenants are active, non-complementary tenants on paid plans with confirmed Stripe subscription IDs.
+
+<!-- End of file. -->
