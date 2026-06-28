@@ -353,6 +353,7 @@ HTML;
     {
         return AdminLayout::escape($value);
     }
+
     private function tenantSearchPanel(): string
     {
         $tenantSearchRaw = trim((string) ($_GET['q'] ?? ''));
@@ -361,7 +362,7 @@ HTML;
         $html = '<div class="admin-card platform-tenant-search-card">'
             . '<form class="platform-tenant-search" method="get" action="/platform/admin/tenants" style="display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap;margin:0;">'
             . '<label style="display:flex;flex-direction:column;gap:.25rem;"><span>Search tenants</span>'
-            . '<input type="search" name="q" value="' . $tenantSearchValue . '" placeholder="Name, slug, UUID, status, or plan" autocomplete="off"></label>'
+            . '<input type="search" name="q" value="' . $tenantSearchValue . '" placeholder="Name, slug, UUID, status, plan, domain, or billing" autocomplete="off"></label>'
             . '<button type="submit">Search</button>'
             . '<a href="/platform/admin/tenants">Clear</a>'
             . '</form>'
@@ -371,47 +372,105 @@ HTML;
             return $html;
         }
 
-        $stmt = $this->pdo()->prepare(
-            'SELECT
-                    t.id,
-                    t.slug,
-                    t.name,
-                    t.uuid,
-                    t.status,
-                    COALESCE(t.complementary, 0) AS complementary,
-                    p.name AS plan_name,
-                    p.slug AS plan_slug,
-                    tpa.billing_status,
-                    tpa.stripe_subscription_id
-               FROM tenants t
-               LEFT JOIN tenant_plan_assignments tpa
+        $tenantSelects = ['t.id AS id'];
+        $tenantSearchExpressions = ['CAST(t.id AS CHAR)'];
+
+        foreach (['slug', 'name', 'site_name', 'display_name', 'title', 'uuid', 'status', 'custom_domain', 'primary_domain'] as $column) {
+            if ($this->tenantSearchColumnExists('tenants', $column)) {
+                $tenantSelects[] = 't.`' . $column . '` AS `' . $column . '`';
+                $tenantSearchExpressions[] = 'COALESCE(t.`' . $column . '`, "")';
+            }
+        }
+
+        if (!$this->tenantSearchColumnExists('tenants', 'slug')) {
+            $tenantSelects[] = 'CAST(t.id AS CHAR) AS slug';
+        }
+
+        if (!$this->tenantSearchColumnExists('tenants', 'name')) {
+            $tenantSelects[] = "'' AS name";
+        }
+
+        if (!$this->tenantSearchColumnExists('tenants', 'uuid')) {
+            $tenantSelects[] = "'' AS uuid";
+        }
+
+        if (!$this->tenantSearchColumnExists('tenants', 'status')) {
+            $tenantSelects[] = "'' AS status";
+        }
+
+        if ($this->tenantSearchColumnExists('tenants', 'complementary')) {
+            $tenantSelects[] = 'COALESCE(t.complementary, 0) AS complementary';
+        } else {
+            $tenantSelects[] = '0 AS complementary';
+        }
+
+        $joins = '';
+        $planSelects = ["'' AS plan_name", "'' AS plan_slug", "'' AS billing_status", "'' AS stripe_subscription_id"];
+
+        if (
+            $this->tenantSearchTableExists('tenant_plan_assignments')
+            && $this->tenantSearchTableExists('plans')
+            && $this->tenantSearchColumnExists('tenant_plan_assignments', 'tenant_id')
+            && $this->tenantSearchColumnExists('tenant_plan_assignments', 'plan_id')
+            && $this->tenantSearchColumnExists('plans', 'id')
+        ) {
+            $joins = ' LEFT JOIN tenant_plan_assignments tpa
                     ON tpa.id = (
                         SELECT MAX(tpa2.id)
                           FROM tenant_plan_assignments tpa2
                          WHERE tpa2.tenant_id = t.id
                     )
-               LEFT JOIN plans p ON p.id = tpa.plan_id
-              WHERE CONCAT_WS(" ",
-                    t.id,
-                    t.slug,
-                    t.name,
-                    t.uuid,
-                    COALESCE(t.status, ""),
-                    COALESCE(p.name, ""),
-                    COALESCE(p.slug, ""),
-                    COALESCE(tpa.billing_status, ""),
-                    COALESCE(tpa.stripe_subscription_id, "")
-                ) LIKE :tenant_search
-              ORDER BY t.slug ASC
-              LIMIT 250'
-        );
+               LEFT JOIN plans p ON p.id = tpa.plan_id';
+
+            $planSelects = [];
+            if ($this->tenantSearchColumnExists('plans', 'name')) {
+                $planSelects[] = 'p.name AS plan_name';
+                $tenantSearchExpressions[] = 'COALESCE(p.name, "")';
+            } else {
+                $planSelects[] = "'' AS plan_name";
+            }
+
+            if ($this->tenantSearchColumnExists('plans', 'slug')) {
+                $planSelects[] = 'p.slug AS plan_slug';
+                $tenantSearchExpressions[] = 'COALESCE(p.slug, "")';
+            } else {
+                $planSelects[] = "'' AS plan_slug";
+            }
+
+            if ($this->tenantSearchColumnExists('tenant_plan_assignments', 'billing_status')) {
+                $planSelects[] = 'tpa.billing_status AS billing_status';
+                $tenantSearchExpressions[] = 'COALESCE(tpa.billing_status, "")';
+            } else {
+                $planSelects[] = "'' AS billing_status";
+            }
+
+            if ($this->tenantSearchColumnExists('tenant_plan_assignments', 'stripe_subscription_id')) {
+                $planSelects[] = 'tpa.stripe_subscription_id AS stripe_subscription_id';
+                $tenantSearchExpressions[] = 'COALESCE(tpa.stripe_subscription_id, "")';
+            } else {
+                $planSelects[] = "'' AS stripe_subscription_id";
+            }
+        }
+
+        $sql = 'SELECT ' . implode(', ', array_merge($tenantSelects, $planSelects)) . '
+                  FROM tenants t' . $joins . '
+                 WHERE CONCAT_WS(" ", ' . implode(', ', $tenantSearchExpressions) . ') LIKE :tenant_search
+                 ORDER BY ' . ($this->tenantSearchColumnExists('tenants', 'slug') ? 't.slug ASC' : 't.id ASC') . '
+                 LIMIT 250';
+
+        $stmt = $this->pdo()->prepare($sql);
         $stmt->execute(['tenant_search' => '%' . $tenantSearchRaw . '%']);
 
         $rows = [];
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $tenant) {
+            $displayName = (string) ($tenant['name'] ?? '');
+            if ($displayName === '') {
+                $displayName = (string) ($tenant['site_name'] ?? $tenant['display_name'] ?? $tenant['title'] ?? '');
+            }
+
             $rows[] = '<tr>'
-                . '<td><a href="/platform/admin/tenants/' . (int) $tenant['id'] . '">' . htmlspecialchars((string) ($tenant['slug'] ?? ''), ENT_QUOTES, 'UTF-8') . '</a></td>'
-                . '<td>' . htmlspecialchars((string) ($tenant['name'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>'
+                . '<td><a href="/platform/admin/tenants/' . (int) $tenant['id'] . '">' . htmlspecialchars((string) ($tenant['slug'] ?? $tenant['id'] ?? ''), ENT_QUOTES, 'UTF-8') . '</a></td>'
+                . '<td>' . htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8') . '</td>'
                 . '<td>' . htmlspecialchars((string) ($tenant['uuid'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>'
                 . '<td>' . htmlspecialchars((string) ($tenant['status'] ?? ''), ENT_QUOTES, 'UTF-8') . '</td>'
                 . '<td>' . ((int) ($tenant['complementary'] ?? 0) === 1 ? 'Yes' : 'No') . '</td>'
@@ -428,6 +487,41 @@ HTML;
             . ($rows === [] ? '<tr><td colspan="7">No tenants matched.</td></tr>' : implode('', $rows))
             . '</tbody></table>'
             . '</div>';
+    }
+
+    private function tenantSearchTableExists(string $table): bool
+    {
+        if (!in_array($table, ['tenants', 'tenant_plan_assignments', 'plans'], true)) {
+            return false;
+        }
+
+        try {
+            $stmt = $this->pdo()->prepare('SHOW TABLES LIKE :table_name');
+            $stmt->execute(['table_name' => $table]);
+            return (bool) $stmt->fetchColumn();
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+
+    private function tenantSearchColumnExists(string $table, string $column): bool
+    {
+        if (!in_array($table, ['tenants', 'tenant_plan_assignments', 'plans'], true)) {
+            return false;
+        }
+
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $column)) {
+            return false;
+        }
+
+        try {
+            $stmt = $this->pdo()->prepare('SHOW COLUMNS FROM `' . $table . '` LIKE :column_name');
+            $stmt->execute(['column_name' => $column]);
+            return (bool) $stmt->fetchColumn();
+        } catch (Throwable) {
+            return false;
+        }
     }
 
 

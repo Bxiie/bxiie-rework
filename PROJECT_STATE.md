@@ -2135,3 +2135,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Preserved tenant search changes from the previous patch.
 
 <!-- End of file. -->
+
+## 2026-06-27 schema-safe Platform tenant search
+
+- Replaced Platform Admin tenant search SQL with a schema-aware implementation.
+- Search now checks optional tenant, plan, and billing columns before selecting or searching them.
+- This prevents HTTP 500 errors on production schemas where tenant metadata columns differ.
+
+<!-- End of file. -->
