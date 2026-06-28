@@ -33,3 +33,18 @@ php scripts/billing/repair_unpaid_paid_start_entitlements.php --dry-run --tenant
 ```
 
 <!-- End of file. -->
+
+
+## Broad unconfirmed paid entitlement repair
+
+If a tenant is locally on a paid plan but Stripe payment was never confirmed, use the broad repair command.
+
+```bash
+cd /var/www/artsfolio
+php scripts/billing/repair_unconfirmed_paid_entitlements.php --dry-run --tenant=bxiie
+php scripts/billing/repair_unconfirmed_paid_entitlements.php --apply --tenant=bxiie
+```
+
+By default, the command looks for paid local entitlements without `stripe_subscription_id` and with checkout/pending evidence. Use `--include-active` only when intentionally reviewing active paid rows that lack Stripe confirmation.
+
+<!-- End of file. -->

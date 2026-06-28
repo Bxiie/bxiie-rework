@@ -150,3 +150,12 @@ Only `Platform\StripeWebhookController::markBillingCheckoutCompleted()` should a
 Use `scripts/billing/repair_unpaid_paid_start_entitlements.php --dry-run` to find rows where unpaid paid-start checkout accidentally activated the paid plan locally.
 
 <!-- End of file. -->
+
+
+## Broad unconfirmed paid entitlement repair
+
+`scripts/billing/repair_unconfirmed_paid_entitlements.php` finds paid local entitlements that do not have confirmed Stripe subscription IDs. It is broader than `repair_unpaid_paid_start_entitlements.php` and is intended for checkout-cancel or malformed pending-state incidents.
+
+The command defaults to rows with checkout/pending evidence and supports `--include-active` for explicit review of active paid rows without Stripe subscriptions.
+
+<!-- End of file. -->

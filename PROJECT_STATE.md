@@ -2077,3 +2077,12 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
   paid plan locally.
 
 <!-- End of file. -->
+
+
+## 2026-06-27 Broad unconfirmed paid entitlement repair
+
+- Added `scripts/billing/repair_unconfirmed_paid_entitlements.php` for rows where the current local plan is paid but there is no confirmed Stripe subscription ID.
+- The command can dry-run or apply repairs, supports tenant filtering, and defaults to rows with checkout or pending-state evidence.
+- Use `--include-active` only for explicit review of active paid rows missing Stripe confirmation.
+
+<!-- End of file. -->
