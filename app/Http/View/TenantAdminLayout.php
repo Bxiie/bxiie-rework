@@ -98,6 +98,9 @@ final class TenantAdminLayout
     <main class="tenant-admin-main">
         <section class="tenant-admin-panel">
             <h1>{$this->escape($title)}</h1>
+
+
+
             {$body}
         </section>
     </main>

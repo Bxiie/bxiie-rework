@@ -2094,3 +2094,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The command restores the active plan to Free, preserves pending paid target, normalizes pending change type to `paid_start`, and clears bad proration.
 
 <!-- End of file. -->
+
+## 2026-06-27 Platform tenant search and paying tenant count
+
+- Added in-page search support to the Platform Admin tenants page without changing tenants controller SQL.
+- Added Platform Admin dashboard card for actual paying tenants without depending on DashboardController shape.
+- Actual paying tenants are active, non-complementary tenants on paid plans with confirmed Stripe subscription IDs.
+
+<!-- End of file. -->

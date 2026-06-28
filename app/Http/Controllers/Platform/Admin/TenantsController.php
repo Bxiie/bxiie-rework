@@ -56,11 +56,79 @@ final class TenantsController
             $rows = '<tr><td colspan="7">No tenants found.</td></tr>';
         }
 
+        $tenantSearchQuery = htmlspecialchars((string) ($_GET['q'] ?? ''), ENT_QUOTES, 'UTF-8');
         return Response::html(AdminLayout::render(
             title: 'Tenants',
             active: 'tenants',
             body: <<<HTML
 <p class="admin-muted">Open a tenant to review tenant users, email addresses, names, roles, membership status, and last log on timestamps.</p>
+
+<div class="admin-card platform-tenant-search-card">
+    <form class="platform-tenant-search" method="get" action="/platform/admin/tenants" data-platform-tenant-search-form style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;margin:0;">
+        <label style="display:flex;flex-direction:column;gap:0.25rem;">
+            <span>Search tenants</span>
+            <input
+                type="search"
+                name="q"
+                value="{$tenantSearchQuery}"
+                placeholder="Name, slug, UUID, status, plan, or domain"
+                autocomplete="off"
+                data-platform-tenant-search-input
+            >
+        </label>
+        <button type="submit">Search</button>
+        <a href="/platform/admin/tenants">Clear</a>
+        <span data-platform-tenant-search-count class="admin-muted"></span>
+    </form>
+</div>
+<script>
+(function () {
+    var input = document.querySelector('[data-platform-tenant-search-input]');
+    if (!input) {
+        return;
+    }
+
+    var table = document.querySelector('table');
+    if (!table) {
+        return;
+    }
+
+    table.setAttribute('data-platform-tenant-search-table', '1');
+
+    var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr'));
+    if (rows.length === 0) {
+        rows = Array.prototype.slice.call(table.querySelectorAll('tr')).slice(1);
+    }
+
+    rows.forEach(function (row) {
+        row.setAttribute('data-platform-tenant-search-row', '1');
+    });
+
+    var count = document.querySelector('[data-platform-tenant-search-count]');
+
+    function applyTenantSearch() {
+        var needle = (input.value || '').toLowerCase().trim();
+        var shown = 0;
+
+        rows.forEach(function (row) {
+            var haystack = (row.textContent || '').toLowerCase();
+            var match = needle === '' || haystack.indexOf(needle) !== -1;
+            row.hidden = !match;
+            if (match) {
+                shown += 1;
+            }
+        });
+
+        if (count) {
+            count.textContent = needle === '' ? '' : shown + ' match' + (shown === 1 ? '' : 'es');
+        }
+    }
+
+    input.addEventListener('input', applyTenantSearch);
+    applyTenantSearch();
+}());
+</script>
+
 <table class="admin-table">
     <thead><tr><th>ID</th><th>Slug</th><th>Name</th><th>Status</th><th>Domains</th><th>Created</th><th>Actions</th></tr></thead>
     <tbody>{$rows}</tbody>
