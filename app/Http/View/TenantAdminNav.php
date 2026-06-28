@@ -27,6 +27,7 @@ final class TenantAdminNav
             'events' => ['/admin/events', 'Events'],
             'messages' => ['/admin/contact-messages', 'Messages'],
             'email' => ['/admin/email-signups', 'Email Signups'],
+            'domains' => ['/admin/domains', 'Domains'],
             'billing' => ['/admin/billing', 'Billing'],
             'sales' => ['/admin/sales', 'Sales'],
             'sales_analytics' => ['/admin/sales/analytics', 'Sales Analytics'],

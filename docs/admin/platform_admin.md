@@ -20,4 +20,8 @@ The Platform Admin dashboard and Billing Health page show Actual paying tenants.
 
 The Platform Admin tenants page includes an in-page tenant search that filters the rendered tenant table.
 
+## Tenant search and drill-in
+
+Platform Admin Tenants supports server-side all-tenant search. Search results exclude deleted tenants and tenant drill-in uses a direct tenant lookup so every visible search result opens consistently.
+
 <!-- End of file. -->

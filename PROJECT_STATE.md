@@ -2158,4 +2158,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `TenantsController::index()` now renders either latest tenants or `searchTenants()` results.
 - Search runs across all tenants and reuses the existing tenant table renderer.
 
+## 2026-06-28 tenant drill-in, tenant domains, curation placement, and preview switch
+
+- Fixed Platform Admin tenant search/drill-in consistency by excluding deleted tenants from search and using direct tenant lookup for drill-in.
+- Exposed tenant-owned custom domain management in Tenant Admin navigation through the existing `/admin/domains` routes.
+- Moved curation controls from home/portfolio cards to artwork detail pages.
+- Added a logged-in tenant-site footer switch for showing unpublished sections and images.
+
 <!-- End of file. -->

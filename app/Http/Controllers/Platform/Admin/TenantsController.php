@@ -92,7 +92,7 @@ HTML,
 
         $tenant = $this->findTenant($tenantId);
         if (!$tenant) {
-            return Response::html('<h1>Tenant not found</h1>', 404);
+            return Response::html(ErrorPage::notFound('Tenant not found.'), 404);
         }
 
         $csrf = $this->escape($this->csrf->getOrCreate());
@@ -231,128 +231,8 @@ HTML;
      *
      * @return array<int,array<string,mixed>>
      */
-    private function searchTenants(string $query): array
-    {
-        $query = trim($query);
-        if ($query === '') {
-            return $this->tenants->latest();
-        }
 
-        $columns = ['t.id AS id'];
-        $search = ['CAST(t.id AS CHAR)'];
-
-        foreach (['slug', 'name', 'status', 'created_at'] as $column) {
-            if ($this->tenantSearchColumnExists('tenants', $column)) {
-                $columns[] = 't.`' . $column . '` AS `' . $column . '`';
-                $search[] = 'COALESCE(t.`' . $column . '`, "")';
-            }
-        }
-
-        foreach (['slug', 'name', 'status', 'created_at'] as $column) {
-            if (!$this->tenantSearchColumnExists('tenants', $column)) {
-                $columns[] = "'' AS `" . $column . "`";
-            }
-        }
-
-        $domainJoin = '';
-        $domainColumn = '0 AS domain_count';
-        if ($this->tenantSearchTableExists('tenant_domains') && $this->tenantSearchColumnExists('tenant_domains', 'tenant_id')) {
-            $domainJoin = ' LEFT JOIN (
-                    SELECT tenant_id, COUNT(*) AS domain_count
-                      FROM tenant_domains
-                     GROUP BY tenant_id
-                ) td ON td.tenant_id = t.id';
-            $domainColumn = 'COALESCE(td.domain_count, 0) AS domain_count';
-
-            foreach (['domain', 'hostname', 'host', 'fqdn'] as $domainSearchColumn) {
-                if ($this->tenantSearchColumnExists('tenant_domains', $domainSearchColumn)) {
-                    $domainJoin .= ' LEFT JOIN tenant_domains td_search ON td_search.tenant_id = t.id';
-                    $search[] = 'COALESCE(td_search.`' . $domainSearchColumn . '`, "")';
-                    break;
-                }
-            }
-        }
-        $columns[] = $domainColumn;
-
-        $planJoin = '';
-        if (
-            $this->tenantSearchTableExists('tenant_plan_assignments')
-            && $this->tenantSearchTableExists('plans')
-            && $this->tenantSearchColumnExists('tenant_plan_assignments', 'tenant_id')
-            && $this->tenantSearchColumnExists('tenant_plan_assignments', 'plan_id')
-            && $this->tenantSearchColumnExists('plans', 'id')
-        ) {
-            $planJoin = ' LEFT JOIN tenant_plan_assignments tpa_search
-                    ON tpa_search.id = (
-                        SELECT MAX(tpa2.id)
-                          FROM tenant_plan_assignments tpa2
-                         WHERE tpa2.tenant_id = t.id
-                    )
-                LEFT JOIN plans p_search ON p_search.id = tpa_search.plan_id';
-
-            foreach (['name', 'slug'] as $planColumn) {
-                if ($this->tenantSearchColumnExists('plans', $planColumn)) {
-                    $search[] = 'COALESCE(p_search.`' . $planColumn . '`, "")';
-                }
-            }
-
-            foreach (['billing_status', 'stripe_subscription_id'] as $billingColumn) {
-                if ($this->tenantSearchColumnExists('tenant_plan_assignments', $billingColumn)) {
-                    $search[] = 'COALESCE(tpa_search.`' . $billingColumn . '`, "")';
-                }
-            }
-        }
-
-        $sql = 'SELECT ' . implode(', ', $columns) . '
-                  FROM tenants t'
-            . $domainJoin
-            . $planJoin
-            . ' WHERE CONCAT_WS(" ", ' . implode(', ', $search) . ') LIKE :tenant_search
-                GROUP BY t.id
-                ORDER BY ' . ($this->tenantSearchColumnExists('tenants', 'slug') ? 't.slug ASC' : 't.id ASC') . '
-                LIMIT 250';
-
-        $stmt = $this->pdo()->prepare($sql);
-        $stmt->execute(['tenant_search' => '%' . $query . '%']);
-
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
-    }
-
-    private function tenantSearchTableExists(string $table): bool
-    {
-        if (!in_array($table, ['tenants', 'tenant_domains', 'tenant_plan_assignments', 'plans'], true)) {
-            return false;
-        }
-
-        try {
-            $stmt = $this->pdo()->prepare('SHOW TABLES LIKE :table_name');
-            $stmt->execute(['table_name' => $table]);
-            return (bool) $stmt->fetchColumn();
-        } catch (\Throwable) {
-            return false;
-        }
-    }
-
-    private function tenantSearchColumnExists(string $table, string $column): bool
-    {
-        if (!in_array($table, ['tenants', 'tenant_domains', 'tenant_plan_assignments', 'plans'], true)) {
-            return false;
-        }
-
-        if (!preg_match('/^[A-Za-z0-9_]+$/', $column)) {
-            return false;
-        }
-
-        try {
-            $stmt = $this->pdo()->prepare('SHOW COLUMNS FROM `' . $table . '` LIKE :column_name');
-            $stmt->execute(['column_name' => $column]);
-            return (bool) $stmt->fetchColumn();
-        } catch (\Throwable) {
-            return false;
-        }
-    }
-
-    private function pdo(): \PDO
+private function pdo(): \PDO
     {
         $ref = new \ReflectionProperty($this->tenants, 'pdo');
         $ref->setAccessible(true);
@@ -466,18 +346,7 @@ HTML;
         return new Response('', 303, ['Location' => '/platform/admin/tenants?notice=' . $action]);
     }
 
-    private function findTenant(int $tenantId): ?array
-    {
-        foreach ($this->tenants->latest(500) as $tenant) {
-            if ((int) $tenant['id'] === $tenantId) {
-                return $tenant;
-            }
-        }
-
-        return null;
-    }
-
-    private function canViewTenants(?array $currentUser): bool
+private function canViewTenants(?array $currentUser): bool
     {
         return $this->roles->allows($currentUser, [Roles::PLATFORM_OWNER, Roles::PLATFORM_ADMIN, Roles::PLATFORM_SUPPORT]);
     }
@@ -491,6 +360,87 @@ HTML;
     {
         return AdminLayout::escape($value);
     }
+
+    private function findTenant(int $tenantId): ?array
+    {
+        $stmt = $this->pdo()->prepare(
+            "SELECT
+                t.id,
+                t.uuid,
+                t.slug,
+                t.name,
+                t.status,
+                t.created_at,
+                COUNT(td.id) AS domain_count
+             FROM tenants t
+             LEFT JOIN tenant_domains td ON td.tenant_id = t.id
+             WHERE t.id = :tenant_id
+               AND t.status <> 'deleted'
+             GROUP BY t.id, t.uuid, t.slug, t.name, t.status, t.created_at
+             LIMIT 1"
+        );
+        $stmt->execute(['tenant_id' => $tenantId]);
+        $tenant = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $tenant ?: null;
+    }
+
+
+    /**
+     * Search all non-deleted tenants for the platform tenant list.
+     *
+     * Results are shaped like TenantAdminRepository::latest() so the existing
+     * table rendering and tenant drill-in links stay consistent.
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    private function searchTenants(string $query): array
+    {
+        $query = trim($query);
+        if ($query === '') {
+            return $this->tenants->latest();
+        }
+
+        $stmt = $this->pdo()->prepare(
+            "SELECT
+                t.id,
+                t.uuid,
+                t.slug,
+                t.name,
+                t.status,
+                t.created_at,
+                COUNT(td.id) AS domain_count
+             FROM tenants t
+             LEFT JOIN tenant_domains td ON td.tenant_id = t.id
+             LEFT JOIN tenant_plan_assignments tpa ON tpa.id = (
+                    SELECT MAX(tpa2.id)
+                    FROM tenant_plan_assignments tpa2
+                    WHERE tpa2.tenant_id = t.id
+             )
+             LEFT JOIN plans p ON p.id = tpa.plan_id
+             WHERE t.status <> 'deleted'
+               AND CONCAT_WS(' ',
+                    t.id,
+                    t.uuid,
+                    t.slug,
+                    t.name,
+                    t.status,
+                    t.created_at,
+                    COALESCE(td.hostname, ''),
+                    COALESCE(tpa.billing_status, ''),
+                    COALESCE(tpa.stripe_subscription_id, ''),
+                    COALESCE(p.name, ''),
+                    COALESCE(p.slug, '')
+               ) LIKE :tenant_search
+             GROUP BY t.id, t.uuid, t.slug, t.name, t.status, t.created_at
+             ORDER BY t.id DESC
+             LIMIT 250"
+        );
+        $stmt->execute(['tenant_search' => '%' . $query . '%']);
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+    }
+
 
 }
 

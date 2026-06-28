@@ -41,7 +41,7 @@ final class HomeController
             'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.'
         );
 
-        $includeUnpublished = $this->currentUser !== null;
+        $includeUnpublished = $this->unpublishedPreviewEnabled();
         $items = $this->artworks->latestPublished($tenant, 12, $includeUnpublished);
 
         $body = <<<HTML
@@ -67,14 +67,13 @@ HTML;
                 }
 
                 $unpublished = (string)($item['status'] ?? '') !== 'published' ? '<strong class="artwork-unpublished">Unpublished</strong>' : '';
-                $curationForm = $this->curation?->form($tenant->tenantId, (int)$item['id'], '/', $this->currentUser) ?? '';
                 $body .= <<<HTML
 <div class="card artwork-card-wrap"><a class="card artwork-card" href="/artwork/{$slug}">
     {$image}
     <span>{$title}</span>
     <small>{$meta}</small>
     {$unpublished}
-</a>{$curationForm}</div>
+</a></div>
 
 HTML;
             }
@@ -99,7 +98,7 @@ HTML;
             24,
             [10, 20, 24, 30, 40, 50, 60, 70, 80, 90, 100],
         );
-        $includeUnpublished = $this->currentUser !== null;
+        $includeUnpublished = $this->unpublishedPreviewEnabled();
         $sections = $this->artworks->activeSections($tenant, $includeUnpublished);
         $displayOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
         $result = $this->artworks->publishedPage(
@@ -163,7 +162,6 @@ HTML;
                 }
 
                 $unpublished = (string)($item['status'] ?? '') !== 'published' ? '<strong class="artwork-unpublished">Unpublished</strong>' : '';
-                $curationForm = $this->curation?->form($tenant->tenantId, (int)$item['id'], '/portfolio', $this->currentUser) ?? '';
                 $body .= <<<HTML
 <article style="border:1px solid #ddd;padding:1rem;background:#fffaf5;">
     <a href="/artwork/{$slug}">{$image}</a>
@@ -172,7 +170,6 @@ HTML;
     <p style="margin:.2rem 0;color:#666;">{$medium}</p>
     {$priceLine}
     {$unpublished}
-    {$curationForm}
 </article>
 HTML;
             }
@@ -252,6 +249,7 @@ HTML;
         $body .= "<p><strong>Year:</strong> {$year}</p>\n";
         $body .= "<div>{$description}</div>\n";
         $body .= $pricePanel;
+        $body .= $this->curation?->form($tenant->tenantId, (int) $artwork['id'], '/artwork/' . (string) $artwork['slug'], $this->currentUser) ?? '';
         $body .= '<p><a class="button artwork-inquiry-link" href="' . $contactLink . '">Contact the artist about this artwork</a></p>' . "\n";
 
         return $this->tenantPageResponse($this->layout(
@@ -648,6 +646,7 @@ HTML;
     <span>© {$year} {$copyrightName}</span>
     {$this->artsfolioFreePlanLink($tenant)}
     {$socialLinks}
+    {$this->unpublishedPreviewFooterSwitch()}
     {$footerSignupForm}
 </footer>
 {$this->cookieConsentBanner()}
@@ -931,6 +930,33 @@ HTML;
     /**
      * Builds the compact footer signup form available on every public tenant page.
      */
+
+    private function unpublishedPreviewEnabled(): bool
+    {
+        if ($this->currentUser === null) {
+            return false;
+        }
+
+        return (string) ($_GET['preview_unpublished'] ?? '') === '1';
+    }
+
+    private function unpublishedPreviewFooterSwitch(): string
+    {
+        if ($this->currentUser === null) {
+            return '';
+        }
+
+        $enabled = $this->unpublishedPreviewEnabled();
+        $path = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
+        $query = $_GET;
+        $query['preview_unpublished'] = $enabled ? '0' : '1';
+        $href = $path . '?' . http_build_query($query);
+        $label = $enabled ? 'Hide unpublished sections and images' : 'Show unpublished sections and images';
+        $state = $enabled ? 'Previewing unpublished content' : 'Published-only preview';
+
+        return '<div class="tenant-preview-switch"><strong>' . $this->escape($state) . '</strong> <a href="' . $this->escape($href) . '">' . $this->escape($label) . '</a></div>';
+    }
+
     private function footerSignupForm(TenantContext $tenant, string $contactSlug): string
     {
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
