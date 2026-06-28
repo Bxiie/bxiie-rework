@@ -2151,3 +2151,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Tenant search should be reintroduced only after inspecting the exact TenantsController render and route behavior.
 
 <!-- End of file. -->
+
+## 2026-06-27 direct Platform tenant search
+
+- Replaced failed render-injected tenant search with direct `index()` search routing.
+- `TenantsController::index()` now renders either latest tenants or `searchTenants()` results.
+- Search runs across all tenants and reuses the existing tenant table renderer.
+
+<!-- End of file. -->

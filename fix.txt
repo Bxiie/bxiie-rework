@@ -1,5 +1,8 @@
 ## Now
 
+- Tenant needs to be able to add own custom domain(s).
+- Curation controls should be on the page showing the artwork, not on the card.
+- Tenant pages should have a switch in the footer for logged-in tenant users controlling display of non-published portfolio sections and images
 
 ## billing
 - when changing plans, require definite confirmation.  Warn that difference between this month's payment and the new plan, scaled by days left in the month, will be billed immediatly, unless changing from a free plan.
