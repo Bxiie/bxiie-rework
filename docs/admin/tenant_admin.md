@@ -16,4 +16,8 @@ After a successful artwork upload, ArtsFolio redirects back to the branded uploa
 
 Admin fields that select site images use thumbnail radio-card pickers instead of blind UUID/dropdown controls. Available choices come from tenant artworks marked with the `Site Images` artwork type, including draft and published site-image assets.
 
+## Site image picker draft images
+
+Site image pickers include draft and published `Site Images` assets. Both draft and published choices show admin thumbnails. Draft choices are also marked `draft: will not show in interface until published.`
+
 <!-- End of file. -->

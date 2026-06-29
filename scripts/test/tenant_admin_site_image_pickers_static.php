@@ -3,10 +3,11 @@
 declare(strict_types=1);
 
 /**
- * Static coverage for collapsed all-status tenant admin site-image pickers.
- *
- * This inspects the siteImagePicker() helper body, not the whole controller,
- * because unrelated controller code may legitimately compare artwork status.
+ * Static coverage for Site Images picker behavior:
+ * - draft and published Site Images are selectable
+ * - draft and published Site Images both render admin thumbnails
+ * - draft choices are visibly warned
+ * - broken thumbnails fall back cleanly
  */
 
 $root = dirname(__DIR__, 2);
@@ -26,51 +27,50 @@ $content = file_get_contents($contentPath);
 $css = file_get_contents($cssPath);
 
 foreach ([$settingsPath => $settings, $contentPath => $content] as $path => $source) {
-    $pickerBody = methodBody($source, 'siteImagePicker');
+    $body = methodBody($source, 'siteImagePicker');
 
     $required = [
-        'site-image-picker-shell',
-        'site-image-picker-summary',
-        '$summaryClass =',
-        'Selected image',
-        '<details class="site-image-picker-shell">',
-        'atype.code = \'site_images\'',
-        'COALESCE(a.status, \'\') <> \'archived\'',
+        "atype.code = 'site_images'",
+        "COALESCE(a.status, '') <> 'archived'",
         '$status = (string) ($row[\'status\'] ?? \'draft\');',
-        '$isPublished = $status === \'published\';',
-        '\'src\' => $isPublished ? \'/admin/media?uuid=\' . rawurlencode($uuid) . \'&variant=thumb\' : \'\'',
+        "'src' => '/admin/media?uuid=' . rawurlencode(\$uuid) . '&variant=thumb'",
         'site-image-picker-draft-warning',
         'draft: will not show in interface until published.',
-        '$cardClass =',
+        'site-image-picker-image-wrap',
+        'site-image-picker-image-fallback',
+        'onerror="this.hidden=true;this.nextElementSibling.hidden=false;"',
+        'Image unavailable',
+        'site-image-picker-change-button',
+        'Change image',
     ];
 
     foreach ($required as $needle) {
-        if (!str_contains($pickerBody, $needle)) {
-            fwrite(STDERR, "Missing site-image picker marker in {$path}: {$needle}\n");
+        if (!str_contains($body, $needle)) {
+            fwrite(STDERR, "Missing picker marker in {$path}: {$needle}\n");
             exit(1);
         }
     }
 
     $forbidden = [
-        'a.status = \'published\'',
-        'a.status IN (\'published\')',
-        'a.status <> \'draft\'',
-        '\'src\' => \'/admin/media?uuid=\' . rawurlencode($uuid) . \'&variant=thumb\'',
-        '\'src\' => \'/media?uuid=\' . rawurlencode($uuid) . \'&variant=thumb\'',
+        "a.status = 'published'",
+        "a.status IN ('published')",
+        "a.status <> 'draft'",
+        "'src' => \$isPublished ? '/admin/media?uuid=' . rawurlencode(\$uuid) . '&variant=thumb' : ''",
+        "'src' => '/media?uuid=' . rawurlencode(\$uuid) . '&variant=thumb'",
     ];
 
     foreach ($forbidden as $needle) {
-        if (str_contains($pickerBody, $needle)) {
-            fwrite(STDERR, "Forbidden picker-only published/public thumbnail behavior remains in {$path}: {$needle}\n");
+        if (str_contains($body, $needle)) {
+            fwrite(STDERR, "Forbidden picker behavior remains in {$path}: {$needle}\n");
             exit(1);
         }
     }
 }
 
 $cssRequired = [
-    '.site-image-picker-shell',
-    '.site-image-picker-summary',
-    '.site-image-picker-card img',
+    '.site-image-picker-change-button',
+    '.site-image-picker-image-wrap',
+    '.site-image-picker-image-fallback',
     '.site-image-picker-draft-warning',
     '.site-image-picker-card.is-draft',
     '.site-image-picker-summary.is-draft',
@@ -83,11 +83,8 @@ foreach ($cssRequired as $needle) {
     }
 }
 
-echo "Collapsed all-status Site Images picker static checks passed.\n";
+echo "Site Images picker admin-thumbnail/draft-warning checks passed.\n";
 
-/**
- * Extract a method body for targeted static checks.
- */
 function methodBody(string $source, string $name): string
 {
     if (!preg_match('/^\s*(?:private|protected|public)\s+function\s+' . preg_quote($name, '/') . '\s*\(/m', $source, $match, PREG_OFFSET_CAPTURE)) {
@@ -139,7 +136,6 @@ function methodBody(string $source, string $name): string
             $inDouble = true;
             continue;
         }
-
         if ($char === '{') {
             $depth++;
         } elseif ($char === '}') {

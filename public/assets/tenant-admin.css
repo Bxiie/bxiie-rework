@@ -2917,3 +2917,62 @@ body.tenant-admin-page {
     font-size: .85rem;
     line-height: 1.2;
 }
+
+.site-image-picker-change-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: .45rem .8rem;
+    background: rgba(0, 0, 0, .06);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.site-image-picker-summary:hover .site-image-picker-change-button,
+.site-image-picker-summary:focus .site-image-picker-change-button {
+    background: rgba(0, 0, 0, .12);
+}
+
+.site-image-picker-image-wrap {
+    display: inline-flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.site-image-picker-image-fallback {
+    display: inline-flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    border-radius: .45rem;
+    padding: .45rem;
+    background: rgba(0, 0, 0, .08);
+    color: rgba(0, 0, 0, .72);
+    font-size: .82rem;
+    font-weight: 700;
+    line-height: 1.15;
+    text-align: center;
+}
+
+.site-image-picker-card.is-draft,
+.site-image-picker-summary.is-draft {
+    border-style: dashed;
+}
+
+.site-image-picker-draft-warning {
+    display: block;
+    margin-top: .25rem;
+    border-radius: .45rem;
+    padding: .35rem .45rem;
+    background: rgba(0, 0, 0, .08);
+    color: rgba(0, 0, 0, .82);
+    font-size: .78rem;
+    font-weight: 700;
+    line-height: 1.15;
+    text-align: center;
+}

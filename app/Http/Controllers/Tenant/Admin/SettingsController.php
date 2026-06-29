@@ -1577,7 +1577,6 @@ private function escape(string $value): string
             foreach ($stmt->fetchAll() as $row) {
                 $uuid = (string) $row['uuid'];
                 $status = (string) ($row['status'] ?? 'draft');
-                $isPublished = $status === 'published';
                 $label = (string) $row['label'];
                 if (!empty($row['year_created'])) {
                     $label .= ' · ' . (string) $row['year_created'];
@@ -1590,8 +1589,7 @@ private function escape(string $value): string
                     'uuid' => $uuid,
                     'label' => $label,
                     'status' => $status,
-                    'is_published' => $isPublished,
-                    'src' => $isPublished ? '/admin/media?uuid=' . rawurlencode($uuid) . '&variant=thumb' : '',
+                    'src' => '/admin/media?uuid=' . rawurlencode($uuid) . '&variant=thumb',
                     'selected' => $uuid === $selectedUuid,
                 ];
             }
@@ -1612,7 +1610,7 @@ private function escape(string $value): string
         ];
 
         $selectedPreview = $selectedChoice['src'] !== ''
-            ? '<img src="' . $this->escape((string) $selectedChoice['src']) . '" alt="">'
+            ? '<span class="site-image-picker-image-wrap"><img src="' . $this->escape((string) $selectedChoice['src']) . '" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="site-image-picker-image-fallback" hidden>Image unavailable</span></span>'
             : ((string) ($selectedChoice['status'] ?? '') === 'draft'
                 ? '<span class="site-image-picker-draft-warning">draft: will not show in interface until published.</span>'
                 : '<span class="site-image-picker-empty">No image</span>');
@@ -1622,7 +1620,8 @@ private function escape(string $value): string
             . '<span>Selected image</span>'
             . $selectedPreview
             . '<strong>' . $this->escape((string) $selectedChoice['label']) . '</strong>'
-            . '<em>Change</em>'
+            . $selectedDraftWarning
+            . '<span class="site-image-picker-change-button">Change image</span>'
             . '</summary>';
 
         $cards = '';
@@ -1632,7 +1631,7 @@ private function escape(string $value): string
             $safeLabel = $this->escape((string) $choice['label']);
             $checked = $choice['selected'] ? ' checked' : '';
             $image = $choice['src'] !== ''
-                ? '<img src="' . $this->escape((string) $choice['src']) . '" alt="">'
+                ? '<span class="site-image-picker-image-wrap"><img src="' . $this->escape((string) $choice['src']) . '" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="site-image-picker-image-fallback" hidden>Image unavailable</span></span>'
                 : ((string) ($choice['status'] ?? '') === 'draft'
                     ? '<span class="site-image-picker-draft-warning">draft: will not show in interface until published.</span>'
                     : '<span class="site-image-picker-empty">No image</span>');
@@ -1641,6 +1640,7 @@ private function escape(string $value): string
             $cards .= '<label class="' . $cardClass . '">'
                 . '<input type="radio" name="' . $this->escape($fieldName) . '" value="' . $safeUuid . '"' . $checked . '>'
                 . $image
+                . $draftWarning
                 . '<span>' . $safeLabel . '</span>'
                 . '</label>';
         }

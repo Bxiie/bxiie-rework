@@ -2238,4 +2238,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Draft choices no longer render image thumbnails; they display `draft: will not show in interface until published.`
 - Published choices continue to show admin thumbnails.
 
+## 2026-06-29 Site Images admin thumbnails for draft and published
+
+- Site image picker choices include non-archived draft and published `Site Images` assets.
+- Draft and published choices both render admin thumbnails through `/admin/media`.
+- Draft choices remain visibly marked `draft: will not show in interface until published.`
+- Published thumbnail failures use an `Image unavailable` fallback rather than browser broken-image UI.
+
 <!-- End of file. -->
