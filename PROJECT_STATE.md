@@ -2212,4 +2212,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - The button saves the per-user tenant preference with `fetch()` and swaps in updated page content without full browser navigation.
 - The preview switch is suppressed on `/about` and `/contact` because those pages do not expose portfolio section/image preview content.
 
+## 2026-06-29 branded artwork upload acknowledgement
+
+- Replaced the raw unbranded `ArtworkUploadController::submit()` success page with a redirect back to `/admin/artwork/upload?uploaded=1`.
+- `ArtworkUploadController::form()` now renders a branded success notice above the cleared upload form.
+- Upload fields are naturally clear after redirect and ready for the next image.
+
 <!-- End of file. -->

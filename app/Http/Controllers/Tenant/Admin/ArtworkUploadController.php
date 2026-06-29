@@ -37,6 +37,7 @@ final class ArtworkUploadController
         }
 
         $csrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
+        $uploadNotice = $this->uploadNoticeHtml();
 
         $body = <<<HTML
 <style>
@@ -68,6 +69,7 @@ final class ArtworkUploadController
     }
 </style>
 
+{$uploadNotice}
 <form id="artwork-upload-form" method="post" action="/admin/artwork/upload" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <p><label>Title<br><input type="text" name="title" required></label></p>
@@ -167,15 +169,44 @@ HTML;
             }
         }
 
-        $title = htmlspecialchars((string) $record['title'], ENT_QUOTES, 'UTF-8');
-        $statusLabel = ((string) ($record['status'] ?? 'draft')) === 'published' ? 'published' : 'saved as an unpublished draft';
+        $query = [
+            'uploaded' => '1',
+            'title' => (string) ($record['title'] ?? ''),
+            'status' => (string) ($record['status'] ?? 'draft'),
+        ];
 
-        return Response::html("<h1>Artwork uploaded</h1><p>{$title} has been {$statusLabel}.</p><p><a href=\"/admin/artworks\">Review artworks</a></p>");
+        return new Response('', 303, ['Location' => '/admin/artwork/upload?' . http_build_query($query)]);
     }
 
     /**
      * @param mixed $rawTypes
      */
+
+    /**
+     * Renders the branded post-upload acknowledgement on the upload form.
+     *
+     * Upload success redirects back here so the form fields and file input are
+     * naturally clear and ready for the next image.
+     */
+    private function uploadNoticeHtml(): string
+    {
+        if ((string) ($_GET['uploaded'] ?? '') !== '1') {
+            return '';
+        }
+
+        $title = trim((string) ($_GET['title'] ?? ''));
+        $status = (string) ($_GET['status'] ?? 'draft');
+        $titlePrefix = $title !== '' ? '<strong>' . htmlspecialchars($title, ENT_QUOTES, 'UTF-8') . '</strong> ' : '';
+        $statusText = $status === 'published'
+            ? 'has been uploaded and published.'
+            : 'has been uploaded and saved as an unpublished draft.';
+
+        return '<p class="admin-notice admin-notice-success"><strong>Artwork uploaded.</strong> '
+            . $titlePrefix
+            . htmlspecialchars($statusText, ENT_QUOTES, 'UTF-8')
+            . ' The form is ready for the next image.</p>';
+    }
+
     private function replaceArtworkTypes(int $artworkId, mixed $rawTypes): void
     {
         if ($this->pdo === null) {
