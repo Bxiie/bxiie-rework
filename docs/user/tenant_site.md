@@ -22,4 +22,8 @@ Tenant owners and admins see a footer switch on public tenant pages. The switch 
 
 Tenant owners and admins can toggle unpublished preview from the public footer without a browser reload. The switch saves the per-user tenant preference with a background request, refreshes the visible page content in place, and is not shown on About or Contact pages.
 
+## About and Contact site images
+
+About and Contact pages can show tenant-selected site images. Admin users can select draft or published Site Images assets, but public About/Contact pages only render the selected image after the underlying Site Images artwork is published.
+
 <!-- End of file. -->

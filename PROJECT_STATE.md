@@ -2245,4 +2245,17 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Draft choices remain visibly marked `draft: will not show in interface until published.`
 - Published thumbnail failures use an `Image unavailable` fallback rather than browser broken-image UI.
 
+## 2026-06-29 About and Contact selected site images v2
+
+- Confirmed Content admin already persists `about_media_uuid` and `contact_media_uuid`.
+- Added public About page rendering for `about_media_uuid` through `siteImageFigure()`.
+- Normalized Contact page rendering through a `$contactImageHtml` variable.
+- Public About/Contact images continue to render only when the selected Site Images artwork is published.
+
+## 2026-06-29 About selected site image v4
+
+- Added `$aboutImageHtml` rendering after the public About heading.
+- Confirmed Contact already renders the selected contact site image via `siteImageFigure()`.
+- Simplified the About/Contact static test so it does not brace-parse the Contact heredoc.
+
 <!-- End of file. -->

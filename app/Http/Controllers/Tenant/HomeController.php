@@ -263,8 +263,9 @@ HTML;
     {
         $this->track($request, $tenant, 'about_view');
         $about = $this->settings->get($tenant, 'about_content', '');
+        $aboutImageHtml = $this->siteImageFigure($tenant, 'about_media_uuid', 'about_image_opacity', 'About image');
         $events = $this->events($tenant);
-        $body = "<h1>About</h1>\n<article class=\"prose\">{$about}</article>\n";
+        $body = "<h1>About</h1>\n{$aboutImageHtml}\n<article class=\"prose\">{$about}</article>\n";
 
         if ($events !== '') {
             $body .= "<section class=\"events\"><h2>Exhibitions</h2>{$events}</section>\n";
@@ -286,13 +287,14 @@ HTML;
         $requestedArtworkSlug = trim((string) ($_GET['artwork'] ?? ''));
         $artworkSubject = $this->contactArtworkSubject($tenant, $requestedArtworkSlug);
         $artworkSlug = $artworkSubject !== '' ? $this->escape($requestedArtworkSlug) : '';
+        $contactImageHtml = $this->siteImageFigure($tenant, 'contact_media_uuid', 'contact_image_opacity', 'Contact image');
 
         return $this->tenantPageResponse($this->layout(
             tenant: $tenant,
             title: "{$this->escape($tenant->name)} | Contact",
             body: <<<HTML
 <h1>Contact</h1>
-{$this->siteImageFigure($tenant, 'contact_media_uuid', 'contact_image_opacity', 'Contact image')}
+{$contactImageHtml}
 <article class="prose">{$this->settings->get($tenant, 'contact_details', '')}</article>
 <section class="contact-grid">
 <form class="plan-edit-form" method="post" action="/contact" data-af-async-form data-af-result="contact-form-result" data-af-busy-label="Sending..." data-af-busy-message="Sending your message..." data-af-form-purpose="contact" data-af-success-message="Thank you. Your message has been sent.">
