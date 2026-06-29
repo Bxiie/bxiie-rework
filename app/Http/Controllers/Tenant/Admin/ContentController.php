@@ -158,60 +158,134 @@ private function safeOpacity(string $value, string $default): string
      * Admin pickers include draft and published site images because site assets
      * are reusable design assets, not necessarily public portfolio entries.
      */
+
+/**
+     * Normalizes site image media UUIDs so arbitrary form values cannot be
+     * persisted as public design assets.
+     */
+
+private function escape(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+
+    /**
+     * Builds a collapsed thumbnail picker from tenant artworks marked as Site Images.
+     *
+     * Admin pickers include every non-archived Site Images artwork regardless
+     * of published/draft status because these are tenant design assets.
+     */
     private function siteImagePicker(TenantContext $tenant, string $fieldName, string $selectedUuid): string
     {
-        $cards = '<label class="site-image-picker-card"><input type="radio" name="' . $this->escape($fieldName) . '" value=""' . ($selectedUuid === '' ? ' checked' : '') . '><span>No image</span></label>';
+        $choices = [[
+            'uuid' => '',
+            'label' => 'No image',
+            'src' => '',
+            'selected' => $selectedUuid === '',
+        ]];
 
-        if ($this->pdo === null) {
-            return '<div class="site-image-picker">' . $cards . '</div>';
+        if ($this->pdo !== null) {
+            $stmt = $this->pdo->prepare(
+                "SELECT DISTINCT
+                        m.uuid,
+                        COALESCE(NULLIF(m.title, ''), NULLIF(a.title, ''), m.original_filename) AS label,
+                        a.year_created,
+                        a.status
+                   FROM media_assets m
+                   INNER JOIN artworks a
+                      ON a.primary_media_id = m.id
+                     AND a.tenant_id = m.tenant_id
+                   INNER JOIN artwork_type_assignments ata
+                      ON ata.artwork_id = a.id
+                   INNER JOIN artwork_types atype
+                      ON atype.id = ata.type_id
+                     AND atype.code = 'site_images'
+                  WHERE m.tenant_id = :tenant_id
+                    AND m.is_private = 0
+                    AND COALESCE(a.status, '') <> 'archived'
+                    AND (m.mime_type LIKE 'image/%' OR m.mime_type IS NULL)
+                  ORDER BY label ASC
+                  LIMIT 300"
+            );
+            $stmt->execute(['tenant_id' => $tenant->tenantId]);
+
+            foreach ($stmt->fetchAll() as $row) {
+                $uuid = (string) $row['uuid'];
+                $status = (string) ($row['status'] ?? 'draft');
+                $isPublished = $status === 'published';
+                $label = (string) $row['label'];
+                if (!empty($row['year_created'])) {
+                    $label .= ' · ' . (string) $row['year_created'];
+                }
+                if (!empty($row['status'])) {
+                    $label .= ' · ' . (string) $row['status'];
+                }
+
+                $choices[] = [
+                    'uuid' => $uuid,
+                    'label' => $label,
+                    'status' => $status,
+                    'is_published' => $isPublished,
+                    'src' => $isPublished ? '/admin/media?uuid=' . rawurlencode($uuid) . '&variant=thumb' : '',
+                    'selected' => $uuid === $selectedUuid,
+                ];
+            }
         }
 
-        $stmt = $this->pdo->prepare(
-            "SELECT DISTINCT
-                    m.uuid,
-                    COALESCE(NULLIF(m.title, ''), NULLIF(a.title, ''), m.original_filename) AS label,
-                    a.year_created,
-                    a.status
-               FROM media_assets m
-               INNER JOIN artworks a
-                  ON a.primary_media_id = m.id
-                 AND a.tenant_id = m.tenant_id
-               INNER JOIN artwork_type_assignments ata
-                  ON ata.artwork_id = a.id
-               INNER JOIN artwork_types atype
-                  ON atype.id = ata.type_id
-                 AND atype.code = 'site_images'
-              WHERE m.tenant_id = :tenant_id
-                AND m.is_private = 0
-                AND (m.mime_type LIKE 'image/%' OR m.mime_type IS NULL)
-              ORDER BY label ASC
-              LIMIT 300"
-        );
-        $stmt->execute(['tenant_id' => $tenant->tenantId]);
-
-        foreach ($stmt->fetchAll() as $row) {
-            $uuid = (string) $row['uuid'];
-            $label = (string) $row['label'];
-            if (!empty($row['year_created'])) {
-                $label .= ' · ' . (string) $row['year_created'];
+        $selectedChoice = null;
+        foreach ($choices as $choice) {
+            if ($choice['selected']) {
+                $selectedChoice = $choice;
+                break;
             }
-            if (!empty($row['status'])) {
-                $label .= ' · ' . (string) $row['status'];
-            }
+        }
+        $selectedChoice ??= $choices[0] ?? [
+            'uuid' => '',
+            'label' => 'No image',
+            'src' => '',
+            'selected' => true,
+        ];
 
+        $selectedPreview = $selectedChoice['src'] !== ''
+            ? '<img src="' . $this->escape((string) $selectedChoice['src']) . '" alt="">'
+            : ((string) ($selectedChoice['status'] ?? '') === 'draft'
+                ? '<span class="site-image-picker-draft-warning">draft: will not show in interface until published.</span>'
+                : '<span class="site-image-picker-empty">No image</span>');
+
+        $summaryClass = ((string) ($selectedChoice['status'] ?? '') === 'draft') ? 'site-image-picker-summary is-draft' : 'site-image-picker-summary';
+        $summary = '<summary class="' . $summaryClass . '">'
+            . '<span>Selected image</span>'
+            . $selectedPreview
+            . '<strong>' . $this->escape((string) $selectedChoice['label']) . '</strong>'
+            . '<em>Change</em>'
+            . '</summary>';
+
+        $cards = '';
+        foreach ($choices as $choice) {
+            $uuid = (string) $choice['uuid'];
             $safeUuid = $this->escape($uuid);
-            $safeLabel = $this->escape($label);
-            $checked = $uuid === $selectedUuid ? ' checked' : '';
-            $src = '/media?uuid=' . rawurlencode($uuid) . '&variant=thumb';
+            $safeLabel = $this->escape((string) $choice['label']);
+            $checked = $choice['selected'] ? ' checked' : '';
+            $image = $choice['src'] !== ''
+                ? '<img src="' . $this->escape((string) $choice['src']) . '" alt="">'
+                : ((string) ($choice['status'] ?? '') === 'draft'
+                    ? '<span class="site-image-picker-draft-warning">draft: will not show in interface until published.</span>'
+                    : '<span class="site-image-picker-empty">No image</span>');
 
-            $cards .= '<label class="site-image-picker-card">'
+            $cardClass = ((string) ($choice['status'] ?? '') === 'draft') ? 'site-image-picker-card is-draft' : 'site-image-picker-card';
+            $cards .= '<label class="' . $cardClass . '">'
                 . '<input type="radio" name="' . $this->escape($fieldName) . '" value="' . $safeUuid . '"' . $checked . '>'
-                . '<img src="' . $this->escape($src) . '" alt="">'
+                . $image
                 . '<span>' . $safeLabel . '</span>'
                 . '</label>';
         }
 
-        return '<div class="site-image-picker">' . $cards . '</div>';
+        return '<details class="site-image-picker-shell">'
+            . $summary
+            . '<div class="site-image-picker">'
+            . $cards
+            . '</div>'
+            . '</details>';
     }
 
 
@@ -243,6 +317,7 @@ private function safeOpacity(string $value, string $default): string
               WHERE m.tenant_id = :tenant_id
                 AND m.uuid = :media_uuid
                 AND m.is_private = 0
+                AND COALESCE(a.status, '') <> 'archived'
                 AND (m.mime_type LIKE 'image/%' OR m.mime_type IS NULL)
               LIMIT 1"
         );
@@ -251,10 +326,6 @@ private function safeOpacity(string $value, string $default): string
         return $stmt->fetch() ? $value : '';
     }
 
-    private function escape(string $value): string
-    {
-        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-    }
 
 }
 

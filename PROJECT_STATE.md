@@ -2225,4 +2225,17 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Covered content images: about page and contact page.
 - The picker includes draft and published site-image assets so admin-only design assets are selectable before publication.
 
+## 2026-06-29 collapsed all-status site image pickers
+
+- Site image selectors are collapsed thumbnail pickers that show only the selected image until opened.
+- Available choices include every non-archived artwork marked `Site Images`, regardless of published/draft status.
+- Picker thumbnails use `/admin/media?uuid=...&variant=thumb` so draft site image thumbnails render for authorized tenant admins.
+
+## 2026-06-29 site image picker rollup draft warning
+
+- Scoped the Site Images picker static test to inspect only the picker helper body.
+- Site image picker choices include non-archived draft and published `Site Images` assets.
+- Draft choices no longer render image thumbnails; they display `draft: will not show in interface until published.`
+- Published choices continue to show admin thumbnails.
+
 <!-- End of file. -->

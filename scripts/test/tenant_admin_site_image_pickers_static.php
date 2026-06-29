@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 /**
- * Static coverage for site-image thumbnail pickers in tenant admin.
+ * Static coverage for collapsed all-status tenant admin site-image pickers.
+ *
+ * This inspects the siteImagePicker() helper body, not the whole controller,
+ * because unrelated controller code may legitimately compare artwork status.
  */
 
 $root = dirname(__DIR__, 2);
@@ -22,75 +25,133 @@ $settings = file_get_contents($settingsPath);
 $content = file_get_contents($contentPath);
 $css = file_get_contents($cssPath);
 
-$settingsRequired = [
-    'function siteImagePicker(TenantContext $tenant, string $fieldName, string $selectedUuid',
-    'function safeSiteImageMediaUuid(TenantContext $tenant, string $value): string',
-    '$topbarPicker = $this->siteImagePicker($tenant, \'topbar_media_uuid\', $topbarMediaUuid, true);',
-    '$menuPicker = $this->siteImagePicker($tenant, \'menu_media_uuid\', $menuMediaUuid, true);',
-    '$artworkCardPicker = $this->siteImagePicker($tenant, \'artwork_card_media_uuid\', $artworkCardMediaUuid, true);',
-    '$backgroundPicker = $this->siteImagePicker($tenant, \'background_media_uuid\', $backgroundMediaUuid, true);',
-    '{$topbarPicker}',
-    '{$menuPicker}',
-    '{$artworkCardPicker}',
-    '{$backgroundPicker}',
-    "atype.code = 'site_images'",
-    'a.status',
-];
+foreach ([$settingsPath => $settings, $contentPath => $content] as $path => $source) {
+    $pickerBody = methodBody($source, 'siteImagePicker');
 
-foreach ($settingsRequired as $needle) {
-    if (!str_contains($settings, $needle)) {
-        fwrite(STDERR, "Missing SettingsController site-image picker marker: {$needle}\n");
-        exit(1);
+    $required = [
+        'site-image-picker-shell',
+        'site-image-picker-summary',
+        '$summaryClass =',
+        'Selected image',
+        '<details class="site-image-picker-shell">',
+        'atype.code = \'site_images\'',
+        'COALESCE(a.status, \'\') <> \'archived\'',
+        '$status = (string) ($row[\'status\'] ?? \'draft\');',
+        '$isPublished = $status === \'published\';',
+        '\'src\' => $isPublished ? \'/admin/media?uuid=\' . rawurlencode($uuid) . \'&variant=thumb\' : \'\'',
+        'site-image-picker-draft-warning',
+        'draft: will not show in interface until published.',
+        '$cardClass =',
+    ];
+
+    foreach ($required as $needle) {
+        if (!str_contains($pickerBody, $needle)) {
+            fwrite(STDERR, "Missing site-image picker marker in {$path}: {$needle}\n");
+            exit(1);
+        }
     }
-}
 
-$contentRequired = [
-    'function siteImagePicker(TenantContext $tenant, string $fieldName, string $selectedUuid',
-    'function safeSiteImageMediaUuid(TenantContext $tenant, string $value): string',
-    '$aboutImagePicker = $this->siteImagePicker($tenant, \'about_media_uuid\', $aboutMediaUuid);',
-    '$contactImagePicker = $this->siteImagePicker($tenant, \'contact_media_uuid\', $contactMediaUuid);',
-    '{$aboutImagePicker}',
-    '{$contactImagePicker}',
-    "atype.code = 'site_images'",
-    'a.status',
-];
+    $forbidden = [
+        'a.status = \'published\'',
+        'a.status IN (\'published\')',
+        'a.status <> \'draft\'',
+        '\'src\' => \'/admin/media?uuid=\' . rawurlencode($uuid) . \'&variant=thumb\'',
+        '\'src\' => \'/media?uuid=\' . rawurlencode($uuid) . \'&variant=thumb\'',
+    ];
 
-foreach ($contentRequired as $needle) {
-    if (!str_contains($content, $needle)) {
-        fwrite(STDERR, "Missing ContentController site-image picker marker: {$needle}\n");
-        exit(1);
-    }
-}
-
-$forbiddenSelects = [
-    'name="background_media_uuid"',
-    'name="topbar_media_uuid"',
-    'name="menu_media_uuid"',
-    'name="artwork_card_media_uuid"',
-    'name="about_media_uuid"',
-    'name="contact_media_uuid"',
-];
-
-foreach ($forbiddenSelects as $needle) {
-    if (preg_match('/<select\b[^>]*' . preg_quote($needle, '/') . '/i', $settings . "\n" . $content)) {
-        fwrite(STDERR, "Blind select remains for site image field: {$needle}\n");
-        exit(1);
+    foreach ($forbidden as $needle) {
+        if (str_contains($pickerBody, $needle)) {
+            fwrite(STDERR, "Forbidden picker-only published/public thumbnail behavior remains in {$path}: {$needle}\n");
+            exit(1);
+        }
     }
 }
 
 $cssRequired = [
-    '.site-image-picker',
-    '.site-image-picker-card',
+    '.site-image-picker-shell',
+    '.site-image-picker-summary',
     '.site-image-picker-card img',
+    '.site-image-picker-draft-warning',
+    '.site-image-picker-card.is-draft',
+    '.site-image-picker-summary.is-draft',
 ];
 
 foreach ($cssRequired as $needle) {
     if (!str_contains($css, $needle)) {
-        fwrite(STDERR, "Missing site-image picker CSS marker: {$needle}\n");
+        fwrite(STDERR, "Missing picker CSS marker: {$needle}\n");
         exit(1);
     }
 }
 
-echo "Tenant admin site-image thumbnail picker static checks passed.\n";
+echo "Collapsed all-status Site Images picker static checks passed.\n";
+
+/**
+ * Extract a method body for targeted static checks.
+ */
+function methodBody(string $source, string $name): string
+{
+    if (!preg_match('/^\s*(?:private|protected|public)\s+function\s+' . preg_quote($name, '/') . '\s*\(/m', $source, $match, PREG_OFFSET_CAPTURE)) {
+        fwrite(STDERR, "Missing method: {$name}\n");
+        exit(1);
+    }
+
+    $start = $match[0][1];
+    $brace = strpos($source, '{', $start);
+    if ($brace === false) {
+        fwrite(STDERR, "Missing opening brace for method: {$name}\n");
+        exit(1);
+    }
+
+    $depth = 0;
+    $inSingle = false;
+    $inDouble = false;
+    $escaped = false;
+    $len = strlen($source);
+
+    for ($i = $brace; $i < $len; $i++) {
+        $char = $source[$i];
+
+        if ($escaped) {
+            $escaped = false;
+            continue;
+        }
+        if ($char === '\\') {
+            $escaped = true;
+            continue;
+        }
+        if ($inSingle) {
+            if ($char === "'") {
+                $inSingle = false;
+            }
+            continue;
+        }
+        if ($inDouble) {
+            if ($char === '"') {
+                $inDouble = false;
+            }
+            continue;
+        }
+        if ($char === "'") {
+            $inSingle = true;
+            continue;
+        }
+        if ($char === '"') {
+            $inDouble = true;
+            continue;
+        }
+
+        if ($char === '{') {
+            $depth++;
+        } elseif ($char === '}') {
+            $depth--;
+            if ($depth === 0) {
+                return substr($source, $start, $i - $start + 1);
+            }
+        }
+    }
+
+    fwrite(STDERR, "Missing closing brace for method: {$name}\n");
+    exit(1);
+}
 
 // End of file.

@@ -2726,3 +2726,194 @@ body.tenant-admin-page {
 }
 
 /* End of file. */
+
+.site-image-picker-shell {
+    margin: .5rem 0 1rem;
+}
+
+.site-image-picker-summary {
+    display: grid;
+    grid-template-columns: auto 5.25rem minmax(8rem, 1fr) auto;
+    gap: .75rem;
+    align-items: center;
+    width: min(100%, 38rem);
+    border: 1px solid rgba(120, 101, 74, .35);
+    border-radius: .75rem;
+    padding: .55rem .75rem;
+    background: rgba(255, 255, 255, .82);
+    cursor: pointer;
+}
+
+.site-image-picker-summary img,
+.site-image-picker-summary .site-image-picker-empty {
+    width: 5.25rem;
+    height: 3.75rem;
+    object-fit: cover;
+    border-radius: .45rem;
+    background: rgba(0, 0, 0, .06);
+}
+
+.site-image-picker-summary em {
+    font-style: normal;
+    text-decoration: underline;
+}
+
+.site-image-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+    gap: .75rem;
+    margin: .75rem 0 1rem;
+}
+
+.site-image-picker-card {
+    display: flex;
+    min-height: 9.5rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .45rem;
+    border: 1px solid rgba(120, 101, 74, .35);
+    border-radius: .75rem;
+    padding: .6rem;
+    background: rgba(255, 255, 255, .75);
+    cursor: pointer;
+    text-align: center;
+}
+
+.site-image-picker-card:has(input:checked) {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+}
+
+.site-image-picker-card input {
+    align-self: flex-start;
+}
+
+.site-image-picker-card img,
+.site-image-picker-card .site-image-picker-empty {
+    width: 6rem;
+    height: 6rem;
+    object-fit: cover;
+    border-radius: .45rem;
+    background: rgba(0, 0, 0, .06);
+}
+
+.site-image-picker-empty {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(0, 0, 0, .65);
+    font-size: .85rem;
+}
+
+.site-image-picker-card span {
+    font-size: .85rem;
+    line-height: 1.2;
+}
+
+.site-image-picker-shell {
+    margin: .5rem 0 1rem;
+}
+
+.site-image-picker-summary {
+    display: grid;
+    grid-template-columns: auto 5.25rem minmax(8rem, 1fr) auto;
+    gap: .75rem;
+    align-items: center;
+    width: min(100%, 38rem);
+    border: 1px solid rgba(120, 101, 74, .35);
+    border-radius: .75rem;
+    padding: .55rem .75rem;
+    background: rgba(255, 255, 255, .82);
+    cursor: pointer;
+}
+
+.site-image-picker-summary.is-draft {
+    border-style: dashed;
+}
+
+.site-image-picker-summary img,
+.site-image-picker-summary .site-image-picker-empty,
+.site-image-picker-summary .site-image-picker-draft-warning {
+    width: 5.25rem;
+    min-height: 3.75rem;
+}
+
+.site-image-picker-summary img {
+    height: 3.75rem;
+    object-fit: cover;
+    border-radius: .45rem;
+    background: rgba(0, 0, 0, .06);
+}
+
+.site-image-picker-summary em {
+    font-style: normal;
+    text-decoration: underline;
+}
+
+.site-image-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+    gap: .75rem;
+    margin: .75rem 0 1rem;
+}
+
+.site-image-picker-card {
+    display: flex;
+    min-height: 9.5rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .45rem;
+    border: 1px solid rgba(120, 101, 74, .35);
+    border-radius: .75rem;
+    padding: .6rem;
+    background: rgba(255, 255, 255, .75);
+    cursor: pointer;
+    text-align: center;
+}
+
+.site-image-picker-card.is-draft {
+    border-style: dashed;
+}
+
+.site-image-picker-card:has(input:checked) {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+}
+
+.site-image-picker-card input {
+    align-self: flex-start;
+}
+
+.site-image-picker-card img,
+.site-image-picker-card .site-image-picker-empty,
+.site-image-picker-card .site-image-picker-draft-warning {
+    width: 6rem;
+    height: 6rem;
+    object-fit: cover;
+    border-radius: .45rem;
+    background: rgba(0, 0, 0, .06);
+}
+
+.site-image-picker-empty,
+.site-image-picker-draft-warning {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(0, 0, 0, .65);
+    font-size: .85rem;
+    line-height: 1.15;
+    text-align: center;
+}
+
+.site-image-picker-draft-warning {
+    padding: .45rem;
+    color: rgba(0, 0, 0, .82);
+    font-weight: 700;
+}
+
+.site-image-picker-card span {
+    font-size: .85rem;
+    line-height: 1.2;
+}
