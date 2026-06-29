@@ -2218,4 +2218,11 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - `ArtworkUploadController::form()` now renders a branded success notice above the cleared upload form.
 - Upload fields are naturally clear after redirect and ready for the next image.
 
+## 2026-06-29 tenant admin site image thumbnail pickers
+
+- Tenant admin site-image fields now use thumbnail radio pickers built from artworks marked `Site Images`.
+- Covered settings images: top bar, menu, artwork card, and site background.
+- Covered content images: about page and contact page.
+- The picker includes draft and published site-image assets so admin-only design assets are selectable before publication.
+
 <!-- End of file. -->

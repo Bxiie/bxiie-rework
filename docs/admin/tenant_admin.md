@@ -12,4 +12,8 @@ Tenant admins can open `/admin/domains` on their own tenant domain, including cu
 
 After a successful artwork upload, ArtsFolio redirects back to the branded upload page with a success notice. The upload fields are cleared and ready for the next image, and the uploaded artwork is saved as an unpublished draft unless the tenant default publishes new uploads.
 
+## Site image thumbnail pickers
+
+Admin fields that select site images use thumbnail radio-card pickers instead of blind UUID/dropdown controls. Available choices come from tenant artworks marked with the `Site Images` artwork type, including draft and published site-image assets.
+
 <!-- End of file. -->

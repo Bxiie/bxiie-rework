@@ -142,6 +142,22 @@ HTML;
     /**
      * Builds a thumbnail picker from published artwork marked as Site Images.
      */
+
+private function safeOpacity(string $value, string $default): string
+    {
+        $opacity = is_numeric($value) ? (float) $value : (float) $default;
+        $opacity = max(0.0, min(1.0, $opacity));
+
+        return rtrim(rtrim(sprintf('%.2F', $opacity), '0'), '.');
+    }
+
+
+    /**
+     * Builds a thumbnail radio picker from tenant artworks marked as Site Images.
+     *
+     * Admin pickers include draft and published site images because site assets
+     * are reusable design assets, not necessarily public portfolio entries.
+     */
     private function siteImagePicker(TenantContext $tenant, string $fieldName, string $selectedUuid): string
     {
         $cards = '<label class="site-image-picker-card"><input type="radio" name="' . $this->escape($fieldName) . '" value=""' . ($selectedUuid === '' ? ' checked' : '') . '><span>No image</span></label>';
@@ -151,59 +167,88 @@ HTML;
         }
 
         $stmt = $this->pdo->prepare(
-            "SELECT DISTINCT m.uuid, COALESCE(NULLIF(m.title, ''), NULLIF(a.title, ''), m.original_filename) AS label
-             FROM media_assets m
-             INNER JOIN artworks a ON a.primary_media_id = m.id AND a.tenant_id = m.tenant_id AND a.status = 'published'
-             INNER JOIN artwork_type_assignments ata ON ata.artwork_id = a.id
-             INNER JOIN artwork_types atype ON atype.id = ata.type_id AND atype.code = 'site_images'
-             WHERE m.tenant_id = :tenant_id
-               AND m.is_private = 0
-               AND (m.mime_type LIKE 'image/%' OR m.mime_type IS NULL)
-             ORDER BY label ASC
-             LIMIT 300"
+            "SELECT DISTINCT
+                    m.uuid,
+                    COALESCE(NULLIF(m.title, ''), NULLIF(a.title, ''), m.original_filename) AS label,
+                    a.year_created,
+                    a.status
+               FROM media_assets m
+               INNER JOIN artworks a
+                  ON a.primary_media_id = m.id
+                 AND a.tenant_id = m.tenant_id
+               INNER JOIN artwork_type_assignments ata
+                  ON ata.artwork_id = a.id
+               INNER JOIN artwork_types atype
+                  ON atype.id = ata.type_id
+                 AND atype.code = 'site_images'
+              WHERE m.tenant_id = :tenant_id
+                AND m.is_private = 0
+                AND (m.mime_type LIKE 'image/%' OR m.mime_type IS NULL)
+              ORDER BY label ASC
+              LIMIT 300"
         );
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
 
         foreach ($stmt->fetchAll() as $row) {
             $uuid = (string) $row['uuid'];
+            $label = (string) $row['label'];
+            if (!empty($row['year_created'])) {
+                $label .= ' · ' . (string) $row['year_created'];
+            }
+            if (!empty($row['status'])) {
+                $label .= ' · ' . (string) $row['status'];
+            }
+
+            $safeUuid = $this->escape($uuid);
+            $safeLabel = $this->escape($label);
             $checked = $uuid === $selectedUuid ? ' checked' : '';
             $src = '/media?uuid=' . rawurlencode($uuid) . '&variant=thumb';
-            $cards .= '<label class="site-image-picker-card"><input type="radio" name="' . $this->escape($fieldName) . '" value="' . $this->escape($uuid) . '"' . $checked . '><img src="' . $this->escape($src) . '" alt=""><span>' . $this->escape((string) $row['label']) . '</span></label>';
+
+            $cards .= '<label class="site-image-picker-card">'
+                . '<input type="radio" name="' . $this->escape($fieldName) . '" value="' . $safeUuid . '"' . $checked . '>'
+                . '<img src="' . $this->escape($src) . '" alt="">'
+                . '<span>' . $safeLabel . '</span>'
+                . '</label>';
         }
 
         return '<div class="site-image-picker">' . $cards . '</div>';
     }
 
+
+    /**
+     * Normalizes site image media UUIDs so arbitrary form values cannot be
+     * persisted as public design assets.
+     */
     private function safeSiteImageMediaUuid(TenantContext $tenant, string $value): string
     {
         $value = strtolower(trim($value));
-        if ($value === '' || !preg_match('/^[a-f0-9-]{36}$/', $value) || $this->pdo === null) {
+        if ($value === '') {
+            return '';
+        }
+        if (!preg_match('/^[a-f0-9-]{36}$/', $value) || $this->pdo === null) {
             return '';
         }
 
         $stmt = $this->pdo->prepare(
             "SELECT m.uuid
-             FROM media_assets m
-             INNER JOIN artworks a ON a.primary_media_id = m.id AND a.tenant_id = m.tenant_id AND a.status = 'published'
-             INNER JOIN artwork_type_assignments ata ON ata.artwork_id = a.id
-             INNER JOIN artwork_types atype ON atype.id = ata.type_id AND atype.code = 'site_images'
-             WHERE m.tenant_id = :tenant_id
-               AND m.uuid = :media_uuid
-               AND m.is_private = 0
-               AND (m.mime_type LIKE 'image/%' OR m.mime_type IS NULL)
-             LIMIT 1"
+               FROM media_assets m
+               INNER JOIN artworks a
+                  ON a.primary_media_id = m.id
+                 AND a.tenant_id = m.tenant_id
+               INNER JOIN artwork_type_assignments ata
+                  ON ata.artwork_id = a.id
+               INNER JOIN artwork_types atype
+                  ON atype.id = ata.type_id
+                 AND atype.code = 'site_images'
+              WHERE m.tenant_id = :tenant_id
+                AND m.uuid = :media_uuid
+                AND m.is_private = 0
+                AND (m.mime_type LIKE 'image/%' OR m.mime_type IS NULL)
+              LIMIT 1"
         );
         $stmt->execute(['tenant_id' => $tenant->tenantId, 'media_uuid' => $value]);
 
         return $stmt->fetch() ? $value : '';
-    }
-
-    private function safeOpacity(string $value, string $default): string
-    {
-        $opacity = is_numeric($value) ? (float) $value : (float) $default;
-        $opacity = max(0.0, min(1.0, $opacity));
-
-        return rtrim(rtrim(sprintf('%.2F', $opacity), '0'), '.');
     }
 
     private function escape(string $value): string
