@@ -1,5 +1,29 @@
 ## Now
 
+- On edit artworks page, portfolio sections should be alphabetized
+- On edit artworks page, make 
+- After saving artwork, the user should be returned to the same artwork grid page that contains the recently-editied artwork
+- email tenant admin when multipole item stock s 10% of original quantity
+
+##
+
+Design a shopping cart implementation.  Here are a few requirements.
+- The shopping cart should be dedicated to a single artist, not cross-tenant.
+- The shopping cart should be able to hold multiple items.
+- Items should be a single item (e.g., a one-off artwork), multiple items (e.g., stickers, prints), sizeable (t-shirts, other clothing).  These details should be configurable at the artwork definition page.
+- Sizing could be s/m/l/xl/xxl, or could be numeric (shoes, other clothing)
+- Sizing may include gender (m/f/unisex)
+- The shopping cart should persist between user visits
+- If the platform is able to determine the owner of a shopping cart, the system should send abandoned cart reminders after 1, 3, and 7 days
+- The cart should be sent to checkout to Stripe.  Checkout should be possible without setting up products in Stripe.
+- Shipping costs should be configurable at the item level, as part of the artwork definition page
+- If the shopping cart is not empty, the shooping cart must be visible on the tenant pages.
+- Clicking on the shopping cart should bring the user to a page where they may review and edit tha cart, or checkout.
+
+
+
+##
+
 - Tenant needs to be able to add own custom domain(s).
 - Curation controls should be on the page showing the artwork, not on the card.
 - Tenant pages should have a switch in the footer for logged-in tenant users controlling display of non-published portfolio sections and images

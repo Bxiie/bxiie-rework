@@ -236,10 +236,23 @@ final class SalesController
 
     private function salesEnabled(TenantContext $tenant): bool
     {
-        $stmt = $this->pdo->prepare('SELECT p.monthly_price_cents, COALESCE(p.allow_sales, 0) AS allow_sales FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id WHERE tpa.tenant_id = :tenant_id AND tpa.status IN ("trial", "active", "manual") LIMIT 1');
-        $stmt->execute(['tenant_id' => $tenant->tenantId]);
-        $row = $stmt->fetch();
-        return $row && (int) ($row['monthly_price_cents'] ?? 0) > 0 && (int) ($row['allow_sales'] ?? 0) === 1;
+        try {
+            $stmt = $this->pdo->prepare(
+                'SELECT COALESCE(p.allow_sales, 0) AS allow_sales
+                 FROM tenant_plan_assignments tpa
+                 JOIN plans p ON p.id = tpa.plan_id
+                 WHERE tpa.tenant_id = :tenant_id
+                   AND tpa.status IN ("trial", "active", "manual")
+                 ORDER BY tpa.id DESC
+                 LIMIT 1'
+            );
+            $stmt->execute(['tenant_id' => $tenant->tenantId]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $row && (int) ($row['allow_sales'] ?? 0) === 1;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /** @param array<string,mixed> $config @param array<string,mixed> $variant @return array{shipping_price_cents:int,shipping_additional_item_cents:int} */

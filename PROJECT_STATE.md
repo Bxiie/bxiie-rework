@@ -2283,3 +2283,8 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
+
+- Shopping cart public product availability repair is applied: tenant public artwork pages now read `artwork_sale_config` and active `artwork_sale_variants` for buyer-facing availability and add-to-cart rendering, while falling back to legacy artwork inventory only as a display guard. Sales plan gating now uses `plans.allow_sales` instead of `monthly_price_cents > 0`, so complimentary/manual sales-enabled tenants can use checkout. Migration `0058_repair_cart_product_public_availability.sql` backfills missing/disabled default sale variants for for-sale configured products.
+- Shopping cart repair 2026-06-30: migration 0058 no longer uses MariaDB REGEXP for legacy price detection, and the tenant public HomeController keeps the `site-cart-link` cart chrome helper while rendering product add-to-cart forms.
+
+# End of file.

@@ -374,6 +374,11 @@ HTML
     /**
      * Renders variant-aware sales context on artwork detail pages.
      *
+     * Public rendering now treats the sale catalog tables as authoritative.
+     * If a legacy artwork was marked for sale before variants existed, this
+     * method still falls back to the artwork inventory columns so the buyer
+     * does not see a false sold-out state.
+     *
      * @param array<string,mixed> $artwork
      */
     private function artworkSalesPanel(TenantContext $tenant, array $artwork): string
@@ -389,7 +394,7 @@ HTML
         }
 
         $notesHtml = $salesNotes !== '' ? '<div class="prose sales-notes">' . $salesNotes . '</div>' : '';
-        $cartHtml = $this->cartForm($tenant, $artwork);
+        $cartHtml = $this->cartForm($tenant, $artwork, $config, $variants);
 
         return <<<HTML
 <section class="artwork-sales-panel">
@@ -406,21 +411,26 @@ HTML;
      * Renders a paid-plan cart form for purchasable artwork.
      *
      * @param array<string,mixed> $artwork
+     * @param array<string,mixed>|null $config
+     * @param list<array<string,mixed>> $variants
      */
-    private function cartForm(TenantContext $tenant, array $artwork): string
+    private function cartForm(TenantContext $tenant, array $artwork, ?array $config = null, array $variants = []): string
     {
         if (!$this->tenantSalesEnabled($tenant)) {
-            return '<p class="sales-note-small">Online checkout is available on paid ArtsFolio plans.</p>';
+            return '<p class="sales-note-small">Online checkout is not enabled for this artist plan.</p>';
         }
         if ((string) ($artwork['sale_status'] ?? '') !== 'for_sale') {
             return '';
         }
-        $config = $this->saleConfigForPublicArtwork($tenant, (int) ($artwork['id'] ?? 0));
+
+        $config ??= $this->saleConfigForPublicArtwork($tenant, (int) ($artwork['id'] ?? 0));
         if (!$config || (int) ($config['checkout_enabled'] ?? 0) !== 1) {
-            return '';
+            return '<p class="sales-note-small">Online checkout is not enabled for this item yet.</p>';
         }
+
+        $variants = $variants !== [] ? $variants : $this->saleVariantsForPublicArtwork($tenant, (int) ($artwork['id'] ?? 0));
         $variants = array_values(array_filter(
-            $this->saleVariantsForPublicArtwork($tenant, (int) ($artwork['id'] ?? 0)),
+            $variants,
             static fn (array $variant): bool => (int) ($variant['available_quantity'] ?? 0) > 0
         ));
         if ($variants === []) {
@@ -431,9 +441,10 @@ HTML;
         $artworkId = (int) ($artwork['id'] ?? 0);
         $isOneOff = (string) ($config['sale_kind'] ?? 'one_off') === 'one_off';
         $variantControl = $this->variantControl($variants);
+        $maxAvailable = max(1, (int) max(array_map(static fn (array $variant): int => (int) ($variant['available_quantity'] ?? 0), $variants)));
         $quantity = $isOneOff
             ? '<input type="hidden" name="quantity" value="1">'
-            : '<label>Quantity <input type="number" name="quantity" min="1" max="' . max(1, (int) max(array_column($variants, 'available_quantity'))) . '" value="1"></label>';
+            : '<label>Quantity <input type="number" name="quantity" min="1" max="' . $maxAvailable . '" value="1"></label>';
 
         return <<<HTML
 <form method="post" action="/cart/add" class="artwork-cart-form artwork-sale-options">
@@ -467,7 +478,7 @@ HTML;
     private function variantSummary(array $variant): string
     {
         $label = $this->variantPublicLabel($variant);
-        return $label === 'Default' ? '' : '<p class="sales-note-small">Option: ' . $this->escape($label) . '</p><input type="hidden" name="variant_id" value="' . (int) $variant['id'] . '">';
+        return $label === 'Default' ? '' : '<p class="sales-note-small">Option: ' . $this->escape($label) . '</p>';
     }
 
     /** @param array<string,mixed> $variant */
@@ -511,7 +522,7 @@ HTML;
                               AND r.expires_at > UTC_TIMESTAMP()
                         ), 0)) AS available_quantity
                  FROM artwork_sale_variants v
-                 JOIN artwork_sale_config c ON c.artwork_id = v.artwork_id
+                 JOIN artwork_sale_config c ON c.tenant_id = v.tenant_id AND c.artwork_id = v.artwork_id
                  WHERE v.tenant_id = :tenant_id
                    AND v.artwork_id = :artwork_id
                    AND v.is_active = 1
@@ -536,6 +547,9 @@ HTML;
         foreach ($variants as $variant) {
             $available += max(0, (int) ($variant['available_quantity'] ?? 0));
         }
+        if ($available <= 0 && ((int) ($artwork['inventory_quantity'] ?? 0)) > 0) {
+            $available = (int) $artwork['inventory_quantity'];
+        }
         return match ((string) ($config['sale_kind'] ?? 'one_off')) {
             'variant_inventory' => 'Sized / optioned item · ' . $available . ' available',
             'limited_quantity' => 'Multiple item · ' . $available . ' available',
@@ -543,47 +557,22 @@ HTML;
         };
     }
 
-    private function cartChrome(TenantContext $tenant): string
-    {
-        try {
-            $request = Request::fromGlobals();
-            $identity = new CartIdentityService($this->pdo);
-            $resolved = $identity->resolveCartForRequest($tenant, $request, false);
-            $cart = is_array($resolved['cart']) ? $resolved['cart'] : null;
-            if (!$cart) {
-                return '';
-            }
-            $summary = (new \App\Tenant\Sales\SalesRepository($this->pdo))->cartSummary($cart);
-            if ((int) $summary['item_count'] <= 0) {
-                return '';
-            }
-            $label = 'Cart (' . (int) $summary['item_count'] . ') ' . $this->money((int) $summary['total_cents']);
-            return '<a class="site-cart-link" href="/cart" aria-label="Shopping cart">' . $this->escape($label) . '</a>' . $identity->bridgePixels($tenant, $request, (int) $summary['cart_id']);
-        } catch (Throwable) {
-            return '';
-        }
-    }
-
-    private function money(int $cents): string
-    {
-        return '$' . number_format($cents / 100, 2);
-    }
-
     private function tenantSalesEnabled(TenantContext $tenant): bool
     {
         try {
             $stmt = $this->pdo->prepare(
-                "SELECT p.monthly_price_cents
+                "SELECT COALESCE(p.allow_sales, 0) AS allow_sales
                  FROM tenant_plan_assignments tpa
                  JOIN plans p ON p.id = tpa.plan_id
                  WHERE tpa.tenant_id = :tenant_id
                    AND tpa.status IN ('trial', 'active', 'manual')
+                 ORDER BY tpa.id DESC
                  LIMIT 1"
             );
             $stmt->execute(['tenant_id' => $tenant->tenantId]);
             $row = $stmt->fetch();
 
-            return $row && (int) ($row['monthly_price_cents'] ?? 0) > 0;
+            return $row && (int) ($row['allow_sales'] ?? 0) === 1;
         } catch (Throwable) {
             return false;
         }
@@ -798,6 +787,41 @@ private function tenantAdminLink(TenantContext $tenant): string
 HTML;
     }
 
+
+    /**
+     * Renders the visible public cart link and cross-domain bridge pixels.
+     *
+     * The cart is tenant-scoped, but each custom domain has its own browser
+     * cookie. CartIdentityService maps those first-party cookies back to the
+     * same canonical cart and emits signed bridge pixels for alternate tenant
+     * domains when a cart contains items.
+     */
+    private function cartChrome(TenantContext $tenant): string
+    {
+        try {
+            $request = Request::fromGlobals();
+            $identity = new CartIdentityService($this->pdo);
+            $resolved = $identity->resolveCartForRequest($tenant, $request, false);
+            $cart = is_array($resolved['cart'] ?? null) ? $resolved['cart'] : null;
+            if (!$cart) {
+                return '';
+            }
+
+            $summary = (new \App\Tenant\Sales\SalesRepository($this->pdo))->cartSummary($cart);
+            if ((int) ($summary['item_count'] ?? 0) <= 0) {
+                return '';
+            }
+
+            $label = 'Cart (' . (int) $summary['item_count'] . ') ' . $this->money((int) ($summary['total_cents'] ?? 0));
+
+            return '<a class="site-cart-link" href="/cart" aria-label="Shopping cart">'
+                . $this->escape($label)
+                . '</a>'
+                . $identity->bridgePixels($tenant, $request, (int) ($summary['cart_id'] ?? $cart['id'] ?? 0));
+        } catch (Throwable) {
+            return '';
+        }
+    }
 
     /**
      * Emits high-specificity tenant typography rules after /tenant.css.
