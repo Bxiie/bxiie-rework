@@ -1,3 +1,10 @@
+## 2026-06-30 America/New_York
+
+- Added shopping cart phase 1 schema plan in `database/migrations/0054_cart_variants_shipping_aliases.sql`.
+- Phase 1 creates `artwork_sale_config`, `artwork_sale_variants`, and `sales_cart_aliases`, extends cart/order/reservation rows with variant, shipping, known-owner, and 1/3/7-day abandonment fields, and backfills default sale variants from existing artwork sale fields.
+- Sales carts are tenant-scoped and domain-portable. Each hostname keeps a first-party cart cookie; future bridge endpoints will map hashed local cart tokens through `sales_cart_aliases` to one canonical `sales_carts` row for the tenant.
+- Phase 1 intentionally keeps the existing artwork-level cart uniqueness and runtime behavior until later phases make add-to-cart and checkout variant-aware.
+
 
 
 ## 2026-06-23 America/New_York
