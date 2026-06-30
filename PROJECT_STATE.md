@@ -2272,3 +2272,9 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Tenant artwork pages now render active sale variants, post `variant_id` to `/cart/add`, and show a non-empty cart link in tenant navigation. `CartIdentityService` maps host-local `artsfolio_cart` cookies to canonical tenant carts through `sales_cart_aliases`; signed bridge tokens attach carts between a tenant's active ArtsFolio subdomain and custom domains. Phase 3 also adds migration `0055_cart_variant_public_runtime.sql`, which makes cart-item uniqueness variant-based. Stripe shipping/order finalization remains Phase 4.
 
+## Phase 3 cart bridge route inventory snapshot
+
+- The committed route inventory snapshot includes the tenant `GET /cart/bridge` and `GET /cart/bridge-pixel` routes added for cross-domain cart continuity between tenant subdomains and custom domains.
+- `scripts/test/phase8_routing_static.php` remains the guard for intentional route changes; refresh `scripts/test/fixtures/route_inventory.json` whenever routes are deliberately added, removed, or changed.
+
+# End of file.

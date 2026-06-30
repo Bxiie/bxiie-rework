@@ -752,6 +752,16 @@
   {
     "scope": "tenant",
     "method": "GET",
+    "path": "/cart/bridge"
+  },
+  {
+    "scope": "tenant",
+    "method": "GET",
+    "path": "/cart/bridge-pixel"
+  },
+  {
+    "scope": "tenant",
+    "method": "GET",
     "path": "/checkout/success"
   },
   {
