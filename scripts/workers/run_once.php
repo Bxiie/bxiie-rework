@@ -17,6 +17,7 @@ use App\Platform\Jobs\BackgroundJobRepository;
 use App\Platform\Jobs\Handlers\AnalyticsRollupJobHandler;
 use App\Platform\Jobs\Handlers\RenderVhostJobHandler;
 use App\Platform\Jobs\Handlers\ReleaseExpiredSalesReservationsJobHandler;
+use App\Platform\Jobs\Handlers\QueueAbandonedCartEmailsJobHandler;
 use App\Platform\Jobs\Handlers\ScaleTenantFixtureJobHandler;
 use App\Platform\Jobs\Handlers\TenantSiteBootstrapJobHandler;
 use App\Platform\Jobs\Handlers\VerifyDnsJobHandler;
@@ -24,6 +25,7 @@ use App\Platform\Jobs\Handlers\WriteApprovedVhostJobHandler;
 use App\Platform\ScaleTesting\ScaleTenantFixtureService;
 use App\Platform\Tenancy\TenantDomainRepository;
 use App\Support\Database;
+use App\Tenant\Sales\AbandonedCartEmailQueueService;
 use App\Tenant\Sales\SalesRepository;
 
 $root = dirname(__DIR__, 2);
@@ -96,6 +98,16 @@ try {
             $handler = new AnalyticsRollupJobHandler(new AnalyticsRollupService($pdo));
             echo $handler->handle($job['payload']) . "\n";
             $jobs->enqueueSingleton('analytics.rollup', ['days' => (int) ($job['payload']['days'] ?? 3)], null, 300, (int) $job['id']);
+            $jobs->markComplete((int) $job['id']);
+            break;
+
+        case 'sales.cart.queue_abandoned_reminders':
+            $handler = new QueueAbandonedCartEmailsJobHandler(new AbandonedCartEmailQueueService($pdo, $root));
+            echo $handler->handle($job['payload']) . "
+";
+            $interval = max(3600, (int) ($job['payload']['interval_seconds'] ?? 3600));
+            $limit = max(1, min(1000, (int) ($job['payload']['limit_per_stage'] ?? 200)));
+            $jobs->enqueueSingleton('sales.cart.queue_abandoned_reminders', ['interval_seconds' => $interval, 'limit_per_stage' => $limit], null, $interval, (int) $job['id']);
             $jobs->markComplete((int) $job['id']);
             break;
 

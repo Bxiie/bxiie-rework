@@ -30,3 +30,8 @@ Some artworks may ask you to choose a size, fit, edition, or other option before
 
 If the artist uses both an ArtsFolio address and a custom domain, your cart follows between those addresses automatically.
 
+## Saved cart reminders
+
+If you enter your email on the cart page and leave before checkout, ArtsFolio may send a saved cart reminder. The reminder link can restore your cart even if the artist uses both an ArtsFolio subdomain and a custom domain.
+
+A saved cart reminder does not reserve the artwork forever. Originals, sizes, prints, and other limited items may sell out before you return. The cart page will show the current state before checkout.

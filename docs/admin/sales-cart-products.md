@@ -60,3 +60,10 @@ The artwork sales settings configured by administrators now appear on public art
 
 When a tenant uses both an ArtsFolio subdomain and a custom domain, the buyer cart follows between active domains through the cart bridge.
 
+## Abandoned-cart reminders
+
+ArtsFolio sends abandoned-cart reminders only when the system knows the buyer email. The reminders are queued after 1, 3, and 7 days, provided the cart is still active and at least one item remains available.
+
+The buyer receives a restore link that opens the cart on the tenant’s preferred public domain. If a size, print, sticker, or original artwork is no longer available, the cart page shows the current availability before checkout.
+
+The reminder system respects tenant email-list suppression records for unsubscribed, bounced, and complained addresses. It queues mail through the platform email outbox, so delivery and retry behavior remain visible in Platform Admin email diagnostics.

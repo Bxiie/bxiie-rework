@@ -14,7 +14,7 @@ $checks = [
     'app/Http/Controllers/Tenant/Admin/BillingController.php' => ['Feature usage by selected pricing tier', 'updatePlan', 'Complementary plan'],
     'app/Http/Controllers/Tenant/HomeController.php' => ['socialFooterLinks', 'effectivePlanSlug', 'instagram_url'],
     'app/Http/Controllers/Tenant/SalesController.php' => ['saveCartContact', 'allow_sales', 'customer_email'],
-    'scripts/email/queue_abandoned_cart_emails.php' => ['abandoned_12h_email_sent_at', 'abandoned_24h_email_sent_at', 'EmailOutboxRepository'],
+    'scripts/email/queue_abandoned_cart_emails.php' => ['abandoned_1d_email_sent_at', 'abandoned_3d_email_sent_at', 'abandoned_7d_email_sent_at', 'AbandonedCartEmailQueueService'],
     'database/migrations/0028_pricing_billing_auth_social_stabilization.sql' => ['allow_sales', 'complementary', 'customer_email'],
 ];
 

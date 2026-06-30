@@ -84,3 +84,19 @@ Phase 3 makes the public cart variant-aware. Public artwork pages render active 
 
 Checkout still uses the existing Stripe path in this phase. Shipping and variant snapshots are visible in the cart, but Stripe shipping finalization remains a Phase 4 responsibility.
 
+## Phase 5 abandoned-cart reminders
+
+Phase 5 queues known-owner abandoned-cart reminders at 1-day, 3-day, and 7-day intervals. The runtime is shared by `scripts/email/queue_abandoned_cart_emails.php` and the background worker job type `sales.cart.queue_abandoned_reminders` through `App\Tenant\Sales\AbandonedCartEmailQueueService`.
+
+Eligibility is intentionally conservative: the cart must be `active`, contain at least one still-available variant item, have a known owner email from `contact_email`, `customer_email`, or `user_id`, and have no checkout-pending or paid order attached. The queue also suppresses tenant email-list addresses that are unsubscribed, bounced, or complained where those records exist.
+
+Reminder links use the cart bridge endpoint. The email link targets the tenant preferred active domain and restores the canonical cart with a signed bridge token, so buyers can return from a different browser/domain without exposing raw cart tokens.
+
+The worker reschedules itself hourly with `BackgroundJobRepository::enqueueSingleton()`. Manual queueing remains available with:
+
+```bash
+cd /var/www/artsfolio
+php scripts/email/queue_abandoned_cart_emails.php
+```
+
+The script queues rows in `email_outbox`; it does not connect to SMTP directly.
