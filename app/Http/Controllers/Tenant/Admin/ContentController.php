@@ -53,7 +53,7 @@ final class ContentController
 <form method="post" action="/admin/content" class="admin-form admin-wide-form">
     <input type="hidden" name="csrf_token" value="{$csrf}">
 
-    <div class="admin-form-grid">
+    <div class="admin-form-grid content-page-grid">
         <section class="admin-panel admin-panel-wide">
             <h2>Home page</h2>
             <label>Home page text
@@ -61,7 +61,7 @@ final class ContentController
             </label>
         </section>
 
-        <section class="admin-panel">
+        <section class="admin-panel admin-panel-wide content-page-section content-page-about-section">
             <h2>About page</h2>
             <label>About content HTML
                 <textarea name="about_content" rows="14">{$aboutContent}</textarea>
@@ -73,7 +73,7 @@ final class ContentController
             {$aboutImagePicker}
         </section>
 
-        <section class="admin-panel">
+        <section class="admin-panel admin-panel-wide content-page-section content-page-contact-section">
             <h2>Contact page</h2>
             <label>Contact details HTML
                 <textarea name="contact_details" rows="14">{$contactDetails}</textarea>

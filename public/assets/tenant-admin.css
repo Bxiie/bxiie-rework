@@ -3963,3 +3963,88 @@ form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact"
 .site-image-picker-summary > .site-image-picker-change-button {
     grid-area: button !important;
 }
+
+/* content-page-grid-v25
+   Content page renderer now adds .content-page-grid and full-width section
+   classes directly. This replaces the earlier broad selector attempt. */
+.content-page-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.content-page-grid > .admin-panel,
+.content-page-grid > .content-page-section,
+.content-page-grid > .content-page-about-section,
+.content-page-grid > .content-page-contact-section {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    max-width: none !important;
+}
+
+.content-page-grid textarea {
+    width: 100%;
+}
+
+/* Full-width content cards can use a simple, roomy picker row. */
+.content-page-grid .site-image-picker-summary {
+    display: grid !important;
+    grid-template-columns: max-content max-content minmax(0, 1fr) max-content !important;
+    grid-template-areas: "label thumb title button" !important;
+    align-items: center !important;
+    column-gap: 1.25rem !important;
+    row-gap: 0.75rem !important;
+    overflow: hidden !important;
+}
+
+.content-page-grid .site-image-picker-summary > span:first-child {
+    grid-area: label !important;
+    white-space: nowrap !important;
+}
+
+.content-page-grid .site-image-picker-summary > .site-image-picker-image-wrap,
+.content-page-grid .site-image-picker-summary > .site-image-picker-empty {
+    grid-area: thumb !important;
+}
+
+.content-page-grid .site-image-picker-summary > .site-image-picker-image-wrap {
+    width: clamp(8rem, 18vw, 14rem) !important;
+    min-width: clamp(8rem, 18vw, 14rem) !important;
+    max-width: 14rem !important;
+    height: 7rem !important;
+}
+
+.content-page-grid .site-image-picker-summary > strong {
+    grid-area: title !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+}
+
+.content-page-grid .site-image-picker-summary > .site-image-picker-change-button {
+    grid-area: button !important;
+    justify-self: end !important;
+    white-space: nowrap !important;
+}
+
+@media (max-width: 760px) {
+    .content-page-grid .site-image-picker-summary {
+        grid-template-columns: 1fr !important;
+        grid-template-areas:
+            "label"
+            "thumb"
+            "title"
+            "button" !important;
+        align-items: stretch !important;
+    }
+
+    .content-page-grid .site-image-picker-summary > .site-image-picker-image-wrap {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        height: 9rem !important;
+    }
+
+    .content-page-grid .site-image-picker-summary > .site-image-picker-change-button {
+        justify-self: stretch !important;
+        text-align: center !important;
+    }
+}
