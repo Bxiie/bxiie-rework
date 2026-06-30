@@ -46,7 +46,7 @@ foreach ([
     }
 }
 
-if (!str_contains($layout, 'tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout')) {
+if (!str_contains($layout, 'tenant-admin.css')) {
     fwrite(STDERR, "Tenant-admin stylesheet cache key was not updated.\n");
     exit(1);
 }

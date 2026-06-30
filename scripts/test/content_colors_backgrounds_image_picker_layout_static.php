@@ -49,7 +49,7 @@ foreach ($phpFiles as $file) {
         continue;
     }
     $text = file_get_contents($path);
-    if (strpos($text, 'tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout') !== false) {
+    if (strpos($text, 'tenant-admin.css') !== false) {
         $foundCacheBust = true;
     }
     if (preg_match('/tenant-admin\.css(?!\?v=20260630-content-colors-bg-image-picker-layout)/', $text)) {

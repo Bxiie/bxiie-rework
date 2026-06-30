@@ -34,7 +34,7 @@ if (!preg_match('/\.site-header\s+nav\s+a,\s*\n\.site-header\s+nav\s+\.link-butt
 }
 
 if (!str_contains($adminCss, 'Tenant admin sidebar readability')) {
-    $failures[] = 'public/assets/tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout is missing the tenant admin sidebar readability block.';
+    $failures[] = 'public/assets/tenant-admin.css is missing the tenant admin sidebar readability block.';
 }
 
 if (!str_contains($adminCss, '.tenant-admin-sidebar') || !str_contains($adminCss, 'color: #fff !important')) {
