@@ -170,7 +170,7 @@ HTML;
         return <<<HTML
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>{$title}</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/platform.css"><link rel="stylesheet" href="/assets/platform-custom.css"><link rel="stylesheet" href="/assets/tenant-admin.css"><style>.directory-card{overflow:hidden;padding:0}.directory-card>div:not(.directory-card-thumb){padding:1rem}.directory-card-thumb{aspect-ratio:4/3;background:#f3efe7;overflow:hidden}.directory-card-thumb img{width:100%;height:100%;object-fit:cover;display:block}</style></head>
+<head><meta charset="utf-8"><title>{$title}</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/platform.css"><link rel="stylesheet" href="/assets/platform-custom.css"><link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout"><style>.directory-card{overflow:hidden;padding:0}.directory-card>div:not(.directory-card-thumb){padding:1rem}.directory-card-thumb{aspect-ratio:4/3;background:#f3efe7;overflow:hidden}.directory-card-thumb img{width:100%;height:100%;object-fit:cover;display:block}</style></head>
 <body><header class="platform-header"><a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a><nav><a href="/pricing">Pricing</a><a class="active" href="/directory">Artists</a><a href="/help">Help</a><a href="/login">Sign in</a></nav></header><main>{$body}</main><footer class="platform-footer"><span>© ArtsFolio</span><nav><a href="/help">Help</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer></body></html>
 HTML;
     }

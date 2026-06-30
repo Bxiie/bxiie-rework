@@ -41,7 +41,7 @@ $required = [
     [$css, 'Platform logo intrinsic-ratio repair', 'platform logo ratio repair CSS must exist'],
     [$css, 'height: auto !important;', 'platform logo height must preserve intrinsic ratio'],
     [$css, 'object-fit: contain;', 'platform logo must use contain fitting'],
-    [$layout, 'tenant-admin.css?v=20260623-sidebar-upload-palette&logo=20260623', 'admin stylesheet cache must be busted'],
+    [$layout, 'tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout&logo=20260623', 'admin stylesheet cache must be busted'],
 ];
 
 foreach ($required as [$haystack, $needle, $message]) {

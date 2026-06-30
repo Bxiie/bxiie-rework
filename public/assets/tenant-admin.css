@@ -2976,3 +2976,174 @@ body.tenant-admin-page {
     line-height: 1.15;
     text-align: center;
 }
+/* content-colors-bg-image-picker-layout-20260630
+   Keep selected-image/media picker rows readable on Content and Settings > Colors & Backgrounds.
+   The controls are reused in both places, so this fix is deliberately component-scoped rather
+   than page-scoped. */
+.tenant-admin [class*="image-picker"],
+.tenant-admin [class*="media-picker"],
+.tenant-admin [class*="image-selector"],
+.tenant-admin [class*="media-selector"],
+.tenant-admin [class*="selected-image"],
+.tenant-admin [class*="selected-media"] {
+    min-width: 0;
+}
+
+.tenant-admin [class*="image-picker"] [class*="selected"],
+.tenant-admin [class*="media-picker"] [class*="selected"],
+.tenant-admin [class*="image-selector"] [class*="selected"],
+.tenant-admin [class*="media-selector"] [class*="selected"],
+.tenant-admin [class*="selected-image"],
+.tenant-admin [class*="selected-media"] {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.tenant-admin [class*="image-picker"] img,
+.tenant-admin [class*="media-picker"] img,
+.tenant-admin [class*="image-selector"] img,
+.tenant-admin [class*="media-selector"] img,
+.tenant-admin [class*="selected-image"] img,
+.tenant-admin [class*="selected-media"] img {
+    flex: 0 0 auto;
+    height: 5rem;
+    max-width: min(10rem, 42vw);
+    object-fit: cover;
+    width: auto;
+}
+
+.tenant-admin [class*="image-picker"] [class*="thumbnail"],
+.tenant-admin [class*="media-picker"] [class*="thumbnail"],
+.tenant-admin [class*="image-selector"] [class*="thumbnail"],
+.tenant-admin [class*="media-selector"] [class*="thumbnail"],
+.tenant-admin [class*="selected-image"] [class*="thumbnail"],
+.tenant-admin [class*="selected-media"] [class*="thumbnail"],
+.tenant-admin [class*="image-picker"] [class*="placeholder"],
+.tenant-admin [class*="media-picker"] [class*="placeholder"],
+.tenant-admin [class*="selected-image"] [class*="placeholder"],
+.tenant-admin [class*="selected-media"] [class*="placeholder"] {
+    flex: 0 0 auto;
+    max-width: min(10rem, 42vw);
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.tenant-admin [class*="image-picker"] [class*="title"],
+.tenant-admin [class*="image-picker"] [class*="name"],
+.tenant-admin [class*="image-picker"] [class*="label"],
+.tenant-admin [class*="media-picker"] [class*="title"],
+.tenant-admin [class*="media-picker"] [class*="name"],
+.tenant-admin [class*="media-picker"] [class*="label"],
+.tenant-admin [class*="image-selector"] [class*="title"],
+.tenant-admin [class*="image-selector"] [class*="name"],
+.tenant-admin [class*="image-selector"] [class*="label"],
+.tenant-admin [class*="media-selector"] [class*="title"],
+.tenant-admin [class*="media-selector"] [class*="name"],
+.tenant-admin [class*="media-selector"] [class*="label"],
+.tenant-admin [class*="selected-image"] [class*="title"],
+.tenant-admin [class*="selected-image"] [class*="name"],
+.tenant-admin [class*="selected-image"] [class*="label"],
+.tenant-admin [class*="selected-media"] [class*="title"],
+.tenant-admin [class*="selected-media"] [class*="name"],
+.tenant-admin [class*="selected-media"] [class*="label"] {
+    flex: 1 1 14rem;
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.tenant-admin [class*="image-picker"] .button,
+.tenant-admin [class*="image-picker"] button,
+.tenant-admin [class*="image-picker"] a[class*="button"],
+.tenant-admin [class*="media-picker"] .button,
+.tenant-admin [class*="media-picker"] button,
+.tenant-admin [class*="media-picker"] a[class*="button"],
+.tenant-admin [class*="image-selector"] .button,
+.tenant-admin [class*="image-selector"] button,
+.tenant-admin [class*="image-selector"] a[class*="button"],
+.tenant-admin [class*="media-selector"] .button,
+.tenant-admin [class*="media-selector"] button,
+.tenant-admin [class*="media-selector"] a[class*="button"],
+.tenant-admin [class*="selected-image"] .button,
+.tenant-admin [class*="selected-image"] button,
+.tenant-admin [class*="selected-image"] a[class*="button"],
+.tenant-admin [class*="selected-media"] .button,
+.tenant-admin [class*="selected-media"] button,
+.tenant-admin [class*="selected-media"] a[class*="button"] {
+    flex: 0 0 auto;
+    margin-left: auto;
+    max-width: 100%;
+    white-space: nowrap;
+}
+
+.tenant-admin [class*="image-picker"] [class*="unavailable"],
+.tenant-admin [class*="media-picker"] [class*="unavailable"],
+.tenant-admin [class*="image-selector"] [class*="unavailable"],
+.tenant-admin [class*="media-selector"] [class*="unavailable"],
+.tenant-admin [class*="selected-image"] [class*="unavailable"],
+.tenant-admin [class*="selected-media"] [class*="unavailable"] {
+    flex: 0 0 auto;
+    max-width: min(8rem, 40vw);
+    overflow-wrap: anywhere;
+    text-align: center;
+    white-space: normal;
+}
+
+.tenant-admin [class*="settings-grid"],
+.tenant-admin [class*="content-grid"] {
+    min-width: 0;
+}
+
+@media (max-width: 980px) {
+    .tenant-admin [class*="settings-grid"],
+    .tenant-admin [class*="content-grid"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    .tenant-admin [class*="image-picker"] .button,
+    .tenant-admin [class*="image-picker"] button,
+    .tenant-admin [class*="image-picker"] a[class*="button"],
+    .tenant-admin [class*="media-picker"] .button,
+    .tenant-admin [class*="media-picker"] button,
+    .tenant-admin [class*="media-picker"] a[class*="button"],
+    .tenant-admin [class*="selected-image"] .button,
+    .tenant-admin [class*="selected-image"] button,
+    .tenant-admin [class*="selected-image"] a[class*="button"],
+    .tenant-admin [class*="selected-media"] .button,
+    .tenant-admin [class*="selected-media"] button,
+    .tenant-admin [class*="selected-media"] a[class*="button"] {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 560px) {
+    .tenant-admin [class*="image-picker"] [class*="selected"],
+    .tenant-admin [class*="media-picker"] [class*="selected"],
+    .tenant-admin [class*="image-selector"] [class*="selected"],
+    .tenant-admin [class*="media-selector"] [class*="selected"],
+    .tenant-admin [class*="selected-image"],
+    .tenant-admin [class*="selected-media"] {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .tenant-admin [class*="image-picker"] .button,
+    .tenant-admin [class*="image-picker"] button,
+    .tenant-admin [class*="image-picker"] a[class*="button"],
+    .tenant-admin [class*="media-picker"] .button,
+    .tenant-admin [class*="media-picker"] button,
+    .tenant-admin [class*="media-picker"] a[class*="button"],
+    .tenant-admin [class*="selected-image"] .button,
+    .tenant-admin [class*="selected-image"] button,
+    .tenant-admin [class*="selected-image"] a[class*="button"],
+    .tenant-admin [class*="selected-media"] .button,
+    .tenant-admin [class*="selected-media"] button,
+    .tenant-admin [class*="selected-media"] a[class*="button"] {
+        width: 100%;
+    }
+}

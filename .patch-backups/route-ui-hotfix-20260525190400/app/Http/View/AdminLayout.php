@@ -43,7 +43,7 @@ final class AdminLayout
     <link rel="stylesheet" href="/assets/site.css">
     <link rel="stylesheet" href="/assets/platform.css">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout">
 </head>
 <body class="tenant-admin-page platform-admin-page" style="--tenant-topbar-bg:#f7f1e8;--tenant-topbar-text:#151515;">
 <header class="site-header tenant-admin-public-header platform-admin-header">

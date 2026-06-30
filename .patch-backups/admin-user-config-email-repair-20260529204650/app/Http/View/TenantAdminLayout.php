@@ -50,7 +50,7 @@ final class TenantAdminLayout
     <title>{$browserTitle}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/assets/site.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout">
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
 </head>
 <body class="tenant-admin-page" style="--tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText};">

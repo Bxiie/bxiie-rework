@@ -9,7 +9,7 @@ declare(strict_types=1);
 $root = dirname(__DIR__, 2);
 $controller = file_get_contents($root . '/app/Http/Controllers/Tenant/Admin/SettingsController.php');
 $script = file_get_contents($root . '/public/assets/admin-color-fields.js');
-$css = file_get_contents($root . '/public/assets/tenant-admin.css');
+$css = file_get_contents($root . '/public/assets/tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout');
 $siteCss = file_get_contents($root . '/public/assets/site.css');
 $preflight = file_get_contents($root . '/scripts/test/preflight.sh');
 $tenantLayout = file_get_contents($root . '/app/Http/View/TenantAdminLayout.php');
@@ -51,8 +51,8 @@ $mustContain = [
     [$script, "setRootVariable('--menu-text-color'", 'Live preview updates menu text color'],
     [$css, '.tenant-palette-preview', 'Tenant admin CSS styles palette preview'],
     [$css, '.tenant-admin-panel .tenant-palette-button', 'Palette button CSS outranks generic tenant admin buttons'],
-    [$tenantLayout, 'tenant-admin.css?v=20260620-palette-buttons', 'Tenant admin CSS cache busts palette button styling'],
-    [$platformLayout, 'tenant-admin.css?v=20260620-palette-buttons', 'Platform admin CSS cache busts palette button styling'],
+    [$tenantLayout, 'tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout', 'Tenant admin CSS cache busts palette button styling'],
+    [$platformLayout, 'tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout', 'Platform admin CSS cache busts palette button styling'],
     [$siteCss, '--tenant-topbar-text', 'Public CSS uses top bar text variable'],
     [$siteCss, '--menu-text-color', 'Public CSS uses menu text variable'],
     [$controller, '--palette-button-bg', 'Palette buttons carry mood background color'],

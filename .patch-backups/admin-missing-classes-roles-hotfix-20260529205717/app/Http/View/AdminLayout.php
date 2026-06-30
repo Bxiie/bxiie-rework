@@ -61,7 +61,7 @@ final class AdminLayout
     <link rel="stylesheet" href="/assets/site.css">
     <link rel="stylesheet" href="/assets/platform.css">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout">
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
 </head>
 <body class="platform-admin-page">

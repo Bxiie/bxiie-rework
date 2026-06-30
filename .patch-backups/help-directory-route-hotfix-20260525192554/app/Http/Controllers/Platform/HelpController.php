@@ -138,7 +138,7 @@ HTML;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/assets/platform.css">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout">
 </head>
 <body class="tenant-admin-page platform-help-page">
 <header class="platform-header platform-help-header">

@@ -47,7 +47,7 @@ HTML;
     <meta name="description" content="ArtsFolio pricing for artist portfolio and sales platform plans.">
     <link rel="stylesheet" href="/assets/platform.css">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout">
 </head>
 <body>
 <header class="platform-header"><a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a><nav><a class="active" href="/pricing">Pricing</a><a href="/directory">Artists</a><a href="/help">Help</a><a href="/login">Sign in</a></nav></header>

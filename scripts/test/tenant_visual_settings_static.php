@@ -13,7 +13,7 @@ $checks = [
     'app/Http/View/TenantAdminLayout.php' => ['backgroundCssVariables', 'menu_background_enabled', '--site-bg-image'],
     'app/Http/Controllers/Tenant/Admin/SettingsController.php' => ['menu_background_enabled', 'Suppress panel'],
     'public/assets/site.css' => ['--menu-panel-padding', 'Tenant visual authority repair'],
-    'public/assets/tenant-admin.css' => ['Tenant admin visual authority repair', '--menu-panel-padding'],
+    'public/assets/tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout' => ['Tenant admin visual authority repair', '--menu-panel-padding'],
 ];
 
 foreach ($checks as $relative => $needles) {
