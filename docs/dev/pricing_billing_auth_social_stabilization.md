@@ -8,7 +8,7 @@ This change keeps tenant-domain behavior consistent across platform subdomains a
 - Tenant `/password/forgot` now accepts POST requests and queues branded password reset email through `email_outbox`.
 - Preflight must not send SMTP mail. Email tests may queue local outbox rows, but worker delivery is guarded by `ARTSFOLIO_PREFLIGHT_SEND_EMAIL=1` and should only be used with a safe SMTP sink.
 - Tenant footer renders configured Instagram, Facebook, and LinkedIn URLs.
-- Abandoned cart reminders are queued by `scripts/email/queue_abandoned_cart_emails.php`; the script queues only and does not send SMTP directly.
+- Abandoned cart reminders are queued by `scripts/email/queue_abandoned_cart_emails.php`; the script queues 1-day, 3-day, and 7-day reminders only and does not send SMTP directly.
 
 ## Billing and pricing
 
@@ -35,6 +35,7 @@ Cart contact email is collected on the tenant cart page before checkout. The que
 Recommended cron:
 
 ```cron
+# Optional manual fallback; the normal worker runs sales.cart.queue_abandoned_reminders hourly.
 17 * * * * cd /var/www/artsfolio && /usr/bin/php scripts/email/queue_abandoned_cart_emails.php >> storage/logs/abandoned-cart-email.log 2>&1
 ```
 

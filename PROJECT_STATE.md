@@ -2288,3 +2288,6 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Shopping cart repair 2026-06-30: migration 0058 no longer uses MariaDB REGEXP for legacy price detection, and the tenant public HomeController keeps the `site-cart-link` cart chrome helper while rendering product add-to-cart forms.
 
 # End of file.
+- Shopping cart repair 2026-06-30: public artwork sales notes are now direct-artist copy only. Artwork configured for platform checkout suppresses the tenant `sales_notes` direct-sales message and renders cart/checkout-specific messaging instead.
+
+# End of file.

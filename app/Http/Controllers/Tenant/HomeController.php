@@ -393,7 +393,8 @@ HTML
             return '';
         }
 
-        $notesHtml = $salesNotes !== '' ? '<div class="prose sales-notes">' . $salesNotes . '</div>' : '';
+        $platformCheckoutConfigured = $this->platformCheckoutConfigured($tenant, $artwork, $config);
+        $notesHtml = (!$platformCheckoutConfigured && $salesNotes !== '') ? '<div class="prose sales-notes">' . $salesNotes . '</div>' : '';
         $cartHtml = $this->cartForm($tenant, $artwork, $config, $variants);
 
         return <<<HTML
@@ -405,6 +406,31 @@ HTML
     {$cartHtml}
 </section>
 HTML;
+    }
+
+    /**
+     * Returns true when the artwork is configured for platform checkout.
+     *
+     * Direct-artist sales notes are useful for inquiry-only artworks, but they
+     * are misleading when the buyer can add the product to the ArtsFolio cart.
+     * This intentionally checks configuration rather than live availability so
+     * temporarily sold-out platform products do not fall back to direct-sales
+     * copy.
+     *
+     * @param array<string,mixed> $artwork
+     * @param array<string,mixed>|null $config
+     */
+    private function platformCheckoutConfigured(TenantContext $tenant, array $artwork, ?array $config): bool
+    {
+        if ((string) ($artwork['sale_status'] ?? '') !== 'for_sale') {
+            return false;
+        }
+
+        if (!$config || (int) ($config['checkout_enabled'] ?? 0) !== 1) {
+            return false;
+        }
+
+        return $this->tenantSalesEnabled($tenant);
     }
 
     /**

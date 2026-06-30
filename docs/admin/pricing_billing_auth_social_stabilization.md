@@ -30,6 +30,6 @@ Tenant content settings support Instagram, Facebook, and LinkedIn URLs. Valid `h
 
 ## Abandoned cart email
 
-Abandoned cart reminders are queued, not sent directly, by `scripts/email/queue_abandoned_cart_emails.php`. The normal worker performs delivery.
+Abandoned cart reminders are queued at 1, 3, and 7 days, not sent directly, by `scripts/email/queue_abandoned_cart_emails.php` or the `sales.cart.queue_abandoned_reminders` worker job. The normal email worker performs delivery.
 
 # End of file.

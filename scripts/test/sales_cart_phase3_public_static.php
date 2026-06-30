@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 /**
  * Static regression checks for shopping cart phase 3 public buyer behavior.
+ * Includes the public cart chrome helper because product-page repairs must
+ * not accidentally remove the non-empty cart navigation marker.
  */
 
 $root = dirname(__DIR__, 2);
