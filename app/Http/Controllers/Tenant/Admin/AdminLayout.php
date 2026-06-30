@@ -35,7 +35,7 @@ final class AdminLayout
     <title>{$safeTitle} | Bxiie</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/assets/site.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-site-image-picker-render-v20">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-site-image-picker-summary-grid-v22">
 </head>
 <body class="tenant-admin-page" style="--tenant-topbar-bg:#f7f2e8;--tenant-topbar-text:#111;">
 <header class="site-header tenant-admin-public-header">

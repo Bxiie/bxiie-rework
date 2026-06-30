@@ -3600,3 +3600,129 @@ input[type="color"] + .color-swatch,
     display: none !important;
 }
 
+/* site-image-picker-summary-grid-v22
+   The rendered row is <summary class="site-image-picker-summary">, not
+   .site-image-picker-current. Give the actual summary four explicit lanes:
+   label, thumbnail/empty state, title/status, Change image button. */
+.site-image-picker-summary {
+    display: grid !important;
+    grid-template-columns: max-content max-content minmax(14rem, 1fr) max-content !important;
+    align-items: center !important;
+    column-gap: 1.35rem !important;
+    row-gap: 0.75rem !important;
+    min-width: 0 !important;
+}
+
+.site-image-picker-summary > span:first-child {
+    grid-column: 1 !important;
+    justify-self: start !important;
+    white-space: nowrap !important;
+}
+
+.site-image-picker-summary > .site-image-picker-image-wrap,
+.site-image-picker-summary > .site-image-picker-empty,
+.site-image-picker-summary > .site-image-picker-draft-warning {
+    grid-column: 2 !important;
+    justify-self: start !important;
+}
+
+.site-image-picker-summary > .site-image-picker-image-wrap {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: clamp(7.5rem, 18vw, 16rem) !important;
+    min-width: clamp(7.5rem, 18vw, 16rem) !important;
+    height: 7rem !important;
+    overflow: hidden !important;
+    border-radius: 0.65rem !important;
+    background: rgba(0, 0, 0, 0.06) !important;
+}
+
+.site-image-picker-summary > .site-image-picker-image-wrap img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover !important;
+}
+
+.site-image-picker-summary > strong {
+    grid-column: 3 !important;
+    justify-self: start !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    display: block !important;
+    line-height: 1.15 !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    z-index: 1 !important;
+}
+
+.site-image-picker-summary > .site-image-picker-change-button {
+    grid-column: 4 !important;
+    justify-self: end !important;
+    white-space: nowrap !important;
+    min-width: max-content !important;
+    z-index: 2 !important;
+}
+
+/* Draft warning belongs with the title/status lane when a real thumbnail exists. */
+.site-image-picker-summary > .site-image-picker-image-wrap + strong + .site-image-picker-draft-warning {
+    grid-column: 3 !important;
+}
+
+/* The old fallback must never occupy the title lane. */
+.site-image-picker-summary .site-image-picker-image-fallback {
+    display: none !important;
+}
+
+@media (max-width: 900px) {
+    .site-image-picker-summary {
+        grid-template-columns: max-content minmax(7rem, 1fr) max-content !important;
+    }
+
+    .site-image-picker-summary > span:first-child {
+        grid-column: 1 !important;
+    }
+
+    .site-image-picker-summary > .site-image-picker-image-wrap,
+    .site-image-picker-summary > .site-image-picker-empty,
+    .site-image-picker-summary > .site-image-picker-draft-warning {
+        grid-column: 2 !important;
+    }
+
+    .site-image-picker-summary > strong {
+        grid-column: 2 !important;
+    }
+
+    .site-image-picker-summary > .site-image-picker-change-button {
+        grid-column: 3 !important;
+    }
+}
+
+@media (max-width: 680px) {
+    .site-image-picker-summary {
+        grid-template-columns: 1fr !important;
+        align-items: stretch !important;
+    }
+
+    .site-image-picker-summary > span:first-child,
+    .site-image-picker-summary > .site-image-picker-image-wrap,
+    .site-image-picker-summary > .site-image-picker-empty,
+    .site-image-picker-summary > .site-image-picker-draft-warning,
+    .site-image-picker-summary > strong,
+    .site-image-picker-summary > .site-image-picker-change-button {
+        grid-column: 1 !important;
+        justify-self: stretch !important;
+    }
+
+    .site-image-picker-summary > .site-image-picker-image-wrap {
+        width: 100% !important;
+        min-width: 0 !important;
+        height: 9rem !important;
+    }
+
+    .site-image-picker-summary > .site-image-picker-change-button {
+        text-align: center !important;
+    }
+}
