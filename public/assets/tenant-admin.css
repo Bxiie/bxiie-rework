@@ -2976,364 +2976,214 @@ body.tenant-admin-page {
     line-height: 1.15;
     text-align: center;
 }
-/* content-colors-bg-controls-layout-20260630-v6
-   Tenant admin Content and Settings > Colors & Backgrounds controls.
-   These controls are shared across content image choices, background image choices, and color fields. */
-.tenant-admin *,
-.tenant-admin *::before,
-.tenant-admin *::after {
-    box-sizing: border-box;
-}
-
-.tenant-admin .tenant-admin-panel,
-.tenant-admin .tenant-admin-card,
-.tenant-admin .tenant-admin-section,
-.tenant-admin .tenant-admin-form,
-.tenant-admin .tenant-admin-grid,
-.tenant-admin [class*="settings-grid"],
-.tenant-admin [class*="content-grid"],
-.tenant-admin [class*="form-grid"] {
-    min-width: 0 !important;
-}
-
-.tenant-admin [class*="settings-grid"],
-.tenant-admin [class*="content-grid"],
-.tenant-admin [class*="form-grid"] {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 32rem), 1fr)) !important;
-}
-
-/* Selected image/media rows: keep label, preview, title/status, and button in lanes instead of a pile-up. */
-.tenant-admin [class*="image-picker"],
-.tenant-admin [class*="media-picker"],
-.tenant-admin [class*="image-selector"],
-.tenant-admin [class*="media-selector"],
-.tenant-admin [class*="selected-image"],
-.tenant-admin [class*="selected-media"],
-.tenant-admin [class*="background-image"] {
-    min-width: 0 !important;
-    max-width: 100% !important;
-}
-
-.tenant-admin [class*="image-picker"],
-.tenant-admin [class*="media-picker"],
-.tenant-admin [class*="image-selector"],
-.tenant-admin [class*="media-selector"],
-.tenant-admin [class*="selected-image"],
-.tenant-admin [class*="selected-media"] {
-    align-items: center !important;
-    display: grid !important;
-    gap: 0.75rem 1rem !important;
-    grid-template-columns: auto auto minmax(0, 1fr) auto !important;
-    overflow: visible !important;
-}
-
-.tenant-admin [class*="image-picker"] > *,
-.tenant-admin [class*="media-picker"] > *,
-.tenant-admin [class*="image-selector"] > *,
-.tenant-admin [class*="media-selector"] > *,
-.tenant-admin [class*="selected-image"] > *,
-.tenant-admin [class*="selected-media"] > * {
-    min-width: 0 !important;
-}
-
-.tenant-admin [class*="image-picker"] img,
-.tenant-admin [class*="media-picker"] img,
-.tenant-admin [class*="image-selector"] img,
-.tenant-admin [class*="media-selector"] img,
-.tenant-admin [class*="selected-image"] img,
-.tenant-admin [class*="selected-media"] img {
-    border-radius: 0.65rem !important;
-    display: block !important;
-    height: 4.75rem !important;
-    max-width: 9.5rem !important;
-    object-fit: cover !important;
-    width: 9.5rem !important;
-}
-
-.tenant-admin [class*="image-picker"] [class*="thumb"],
-.tenant-admin [class*="media-picker"] [class*="thumb"],
-.tenant-admin [class*="image-selector"] [class*="thumb"],
-.tenant-admin [class*="media-selector"] [class*="thumb"],
-.tenant-admin [class*="selected-image"] [class*="thumb"],
-.tenant-admin [class*="selected-media"] [class*="thumb"],
-.tenant-admin [class*="image-picker"] [class*="placeholder"],
-.tenant-admin [class*="media-picker"] [class*="placeholder"],
-.tenant-admin [class*="selected-image"] [class*="placeholder"],
-.tenant-admin [class*="selected-media"] [class*="placeholder"],
-.tenant-admin [class*="image-picker"] [class*="unavailable"],
-.tenant-admin [class*="media-picker"] [class*="unavailable"],
-.tenant-admin [class*="selected-image"] [class*="unavailable"],
-.tenant-admin [class*="selected-media"] [class*="unavailable"] {
-    max-width: 9.5rem !important;
-    min-width: 0 !important;
-    overflow-wrap: anywhere !important;
-    text-align: center !important;
-    white-space: normal !important;
-}
-
-.tenant-admin [class*="image-picker"] [class*="title"],
-.tenant-admin [class*="image-picker"] [class*="name"],
-.tenant-admin [class*="image-picker"] [class*="label"],
-.tenant-admin [class*="media-picker"] [class*="title"],
-.tenant-admin [class*="media-picker"] [class*="name"],
-.tenant-admin [class*="media-picker"] [class*="label"],
-.tenant-admin [class*="image-selector"] [class*="title"],
-.tenant-admin [class*="image-selector"] [class*="name"],
-.tenant-admin [class*="image-selector"] [class*="label"],
-.tenant-admin [class*="media-selector"] [class*="title"],
-.tenant-admin [class*="media-selector"] [class*="name"],
-.tenant-admin [class*="media-selector"] [class*="label"],
-.tenant-admin [class*="selected-image"] [class*="title"],
-.tenant-admin [class*="selected-image"] [class*="name"],
-.tenant-admin [class*="selected-image"] [class*="label"],
-.tenant-admin [class*="selected-media"] [class*="title"],
-.tenant-admin [class*="selected-media"] [class*="name"],
-.tenant-admin [class*="selected-media"] [class*="label"] {
-    max-width: 100% !important;
-    min-width: 0 !important;
-    overflow-wrap: anywhere !important;
-    white-space: normal !important;
-}
-
-.tenant-admin [class*="image-picker"] button,
-.tenant-admin [class*="image-picker"] .button,
-.tenant-admin [class*="image-picker"] a[class*="button"],
-.tenant-admin [class*="media-picker"] button,
-.tenant-admin [class*="media-picker"] .button,
-.tenant-admin [class*="media-picker"] a[class*="button"],
-.tenant-admin [class*="image-selector"] button,
-.tenant-admin [class*="image-selector"] .button,
-.tenant-admin [class*="image-selector"] a[class*="button"],
-.tenant-admin [class*="media-selector"] button,
-.tenant-admin [class*="media-selector"] .button,
-.tenant-admin [class*="media-selector"] a[class*="button"],
-.tenant-admin [class*="selected-image"] button,
-.tenant-admin [class*="selected-image"] .button,
-.tenant-admin [class*="selected-image"] a[class*="button"],
-.tenant-admin [class*="selected-media"] button,
-.tenant-admin [class*="selected-media"] .button,
-.tenant-admin [class*="selected-media"] a[class*="button"] {
-    justify-self: end !important;
-    max-width: 100% !important;
-    white-space: nowrap !important;
-}
-
-/* Color picker rows: make the large picker the swatch, and remove the confusing tiny duplicate swatch. */
-.tenant-admin input[type="color"] {
-    appearance: none !important;
-    -webkit-appearance: none !important;
-    background: transparent !important;
-    border: 1px solid var(--tenant-border-color, #cfc6b8) !important;
-    border-radius: 0.7rem !important;
-    box-shadow: none !important;
-    cursor: pointer !important;
-    display: block !important;
-    height: 3.65rem !important;
-    min-width: 12rem !important;
-    padding: 0.35rem !important;
-    width: 100% !important;
-}
-
-.tenant-admin input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 0 !important;
-}
-
-.tenant-admin input[type="color"]::-webkit-color-swatch {
-    border: 0 !important;
-    border-radius: 0.45rem !important;
-}
-
-.tenant-admin input[type="color"]::-moz-color-swatch {
-    border: 0 !important;
-    border-radius: 0.45rem !important;
-}
-
-.tenant-admin input[type="color"] + [class*="swatch"],
-.tenant-admin input[type="color"] ~ [class*="swatch"],
-.tenant-admin [class*="color"] [class*="swatch"].tenant-color-preview,
-.tenant-admin [class*="color"] [class*="swatch"].tenant-admin-color-preview,
-.tenant-admin [class*="color"] [class*="preview"][aria-hidden="true"] {
-    display: none !important;
-}
-
-.tenant-admin [class*="color-row"],
-.tenant-admin [class*="color-field"],
-.tenant-admin [class*="color-control"],
-.tenant-admin [class*="colour-row"],
-.tenant-admin [class*="colour-field"],
-.tenant-admin [class*="colour-control"] {
-    align-items: end !important;
-    display: grid !important;
-    gap: 0.75rem !important;
-    grid-template-columns: minmax(12rem, 1fr) minmax(14rem, 1fr) !important;
-    min-width: 0 !important;
-}
-
-.tenant-admin [class*="color-row"] > *,
-.tenant-admin [class*="color-field"] > *,
-.tenant-admin [class*="color-control"] > *,
-.tenant-admin [class*="colour-row"] > *,
-.tenant-admin [class*="colour-field"] > *,
-.tenant-admin [class*="colour-control"] > * {
-    min-width: 0 !important;
-}
-
-@media (max-width: 900px) {
-    .tenant-admin [class*="image-picker"],
-    .tenant-admin [class*="media-picker"],
-    .tenant-admin [class*="image-selector"],
-    .tenant-admin [class*="media-selector"],
-    .tenant-admin [class*="selected-image"],
-    .tenant-admin [class*="selected-media"] {
-        grid-template-columns: auto minmax(0, 1fr) auto !important;
-    }
-
-    .tenant-admin [class*="image-picker"] img,
-    .tenant-admin [class*="media-picker"] img,
-    .tenant-admin [class*="image-selector"] img,
-    .tenant-admin [class*="media-selector"] img,
-    .tenant-admin [class*="selected-image"] img,
-    .tenant-admin [class*="selected-media"] img {
-        width: 7.5rem !important;
-    }
-}
-
-@media (max-width: 620px) {
-    .tenant-admin [class*="image-picker"],
-    .tenant-admin [class*="media-picker"],
-    .tenant-admin [class*="image-selector"],
-    .tenant-admin [class*="media-selector"],
-    .tenant-admin [class*="selected-image"],
-    .tenant-admin [class*="selected-media"],
-    .tenant-admin [class*="color-row"],
-    .tenant-admin [class*="color-field"],
-    .tenant-admin [class*="color-control"],
-    .tenant-admin [class*="colour-row"],
-    .tenant-admin [class*="colour-field"],
-    .tenant-admin [class*="colour-control"] {
-        grid-template-columns: 1fr !important;
-    }
-
-    .tenant-admin [class*="image-picker"] button,
-    .tenant-admin [class*="image-picker"] .button,
-    .tenant-admin [class*="image-picker"] a[class*="button"],
-    .tenant-admin [class*="media-picker"] button,
-    .tenant-admin [class*="media-picker"] .button,
-    .tenant-admin [class*="media-picker"] a[class*="button"],
-    .tenant-admin [class*="selected-image"] button,
-    .tenant-admin [class*="selected-image"] .button,
-    .tenant-admin [class*="selected-image"] a[class*="button"],
-    .tenant-admin [class*="selected-media"] button,
-    .tenant-admin [class*="selected-media"] .button,
-    .tenant-admin [class*="selected-media"] a[class*="button"] {
-        justify-self: stretch !important;
-        width: 100% !important;
-    }
-}
-
-/* content-colors-bg-controls-layout-20260630-v7
-   Keeps selected-image rows and tenant color controls readable in Content and
-   Settings > Colors & Backgrounds. */
+/* content-colors-bg-controls-layout-20260630-v8
+   Hard repair for selected-image/media picker rows and color controls in
+   Tenant Admin Content and Settings > Colors & Backgrounds. */
 .tenant-admin-panel .selected-image-row,
 .tenant-admin-panel .tenant-selected-image-row,
 .tenant-admin-panel .tenant-image-picker-row,
 .tenant-admin-panel .image-picker-selected,
-.tenant-admin-panel [data-selected-image-row] {
-  display: grid;
-  grid-template-columns: minmax(8rem, max-content) minmax(7rem, 10rem) minmax(0, 1fr) max-content;
-  align-items: center;
-  gap: 0.9rem;
-  min-width: 0;
+.tenant-admin-panel .selected-image-control,
+.tenant-admin-panel .selected-image-display,
+.tenant-admin-panel .selected-image-current,
+.tenant-admin-panel .current-selected-image,
+.tenant-admin-panel .image-picker-current,
+.tenant-admin-panel .media-picker-current,
+.tenant-admin-panel .selected-media,
+.tenant-admin-panel .selected-image,
+.tenant-admin-panel .tenant-selected-media,
+.tenant-admin-panel .tenant-media-selection,
+.tenant-admin-panel .tenant-image-picker-current,
+.tenant-admin-panel [data-selected-image-row],
+.tenant-admin-panel [data-image-picker-current],
+.tenant-admin-panel [class*="image-picker"]:has(img):has(button),
+.tenant-admin-panel [class*="image-picker"]:has(.tenant-admin-button),
+.tenant-admin-panel [class*="selected-image"]:has(button),
+.tenant-admin-panel [class*="selected-media"]:has(button),
+.tenant-admin-panel [class*="background-image"]:has(button),
+.tenant-admin-panel .tenant-form-control:has(img):has(button),
+.tenant-admin-panel .tenant-field-control:has(img):has(button) {
+  display: grid !important;
+  grid-template-columns: minmax(9rem, max-content) minmax(8rem, 10.5rem) minmax(0, 1fr) max-content !important;
+  align-items: center !important;
+  column-gap: 1.15rem !important;
+  row-gap: 0.65rem !important;
+  min-width: 0 !important;
 }
 
 .tenant-admin-panel .selected-image-row > *,
 .tenant-admin-panel .tenant-selected-image-row > *,
 .tenant-admin-panel .tenant-image-picker-row > *,
 .tenant-admin-panel .image-picker-selected > *,
-.tenant-admin-panel [data-selected-image-row] > * {
-  min-width: 0;
+.tenant-admin-panel .selected-image-control > *,
+.tenant-admin-panel .selected-image-display > *,
+.tenant-admin-panel .selected-image-current > *,
+.tenant-admin-panel .current-selected-image > *,
+.tenant-admin-panel .image-picker-current > *,
+.tenant-admin-panel .media-picker-current > *,
+.tenant-admin-panel .selected-media > *,
+.tenant-admin-panel .selected-image > *,
+.tenant-admin-panel .tenant-selected-media > *,
+.tenant-admin-panel .tenant-media-selection > *,
+.tenant-admin-panel .tenant-image-picker-current > *,
+.tenant-admin-panel [data-selected-image-row] > *,
+.tenant-admin-panel [data-image-picker-current] > *,
+.tenant-admin-panel [class*="image-picker"]:has(img):has(button) > *,
+.tenant-admin-panel [class*="selected-image"]:has(button) > *,
+.tenant-admin-panel [class*="selected-media"]:has(button) > *,
+.tenant-admin-panel [class*="background-image"]:has(button) > * {
+  min-width: 0 !important;
 }
 
 .tenant-admin-panel .selected-image-row img,
 .tenant-admin-panel .tenant-selected-image-row img,
 .tenant-admin-panel .tenant-image-picker-row img,
 .tenant-admin-panel .image-picker-selected img,
+.tenant-admin-panel .selected-image-control img,
+.tenant-admin-panel .selected-image-display img,
+.tenant-admin-panel .selected-image-current img,
+.tenant-admin-panel .current-selected-image img,
+.tenant-admin-panel .image-picker-current img,
+.tenant-admin-panel .media-picker-current img,
+.tenant-admin-panel .selected-media img,
+.tenant-admin-panel .selected-image img,
+.tenant-admin-panel .tenant-selected-media img,
+.tenant-admin-panel .tenant-media-selection img,
+.tenant-admin-panel .tenant-image-picker-current img,
 .tenant-admin-panel [data-selected-image-row] img,
-.tenant-admin-panel .selected-image-row .tenant-image-picker-thumb,
-.tenant-admin-panel .tenant-selected-image-row .tenant-image-picker-thumb,
-.tenant-admin-panel .tenant-image-picker-row .tenant-image-picker-thumb,
-.tenant-admin-panel .image-picker-selected .tenant-image-picker-thumb,
-.tenant-admin-panel [data-selected-image-row] .tenant-image-picker-thumb {
-  width: clamp(6rem, 12vw, 10rem);
-  height: 4.6rem;
-  object-fit: cover;
-  border-radius: 0.7rem;
-  flex: 0 0 auto;
+.tenant-admin-panel [data-image-picker-current] img,
+.tenant-admin-panel [class*="image-picker"]:has(button) img,
+.tenant-admin-panel [class*="selected-image"]:has(button) img,
+.tenant-admin-panel [class*="selected-media"]:has(button) img,
+.tenant-admin-panel [class*="background-image"]:has(button) img {
+  display: block !important;
+  width: clamp(8rem, 15vw, 10.5rem) !important;
+  height: 4.9rem !important;
+  max-width: 100% !important;
+  object-fit: cover !important;
+  border-radius: 0.7rem !important;
+  flex: 0 0 auto !important;
+}
+
+/* A broken fallback/alt image was rendering as a second gray thumbnail next to
+   the real thumbnail. Hide only that known duplicate. */
+.tenant-admin-panel img[alt="Image unavailable"],
+.tenant-admin-panel img[title="Image unavailable"] {
+  display: none !important;
 }
 
 .tenant-admin-panel .selected-image-row .tenant-image-picker-meta,
 .tenant-admin-panel .tenant-selected-image-row .tenant-image-picker-meta,
 .tenant-admin-panel .tenant-image-picker-row .tenant-image-picker-meta,
 .tenant-admin-panel .image-picker-selected .tenant-image-picker-meta,
+.tenant-admin-panel .selected-image-control .tenant-image-picker-meta,
+.tenant-admin-panel .selected-image-display .tenant-image-picker-meta,
+.tenant-admin-panel .selected-image-current .tenant-image-picker-meta,
+.tenant-admin-panel .current-selected-image .tenant-image-picker-meta,
+.tenant-admin-panel .image-picker-current .tenant-image-picker-meta,
+.tenant-admin-panel .media-picker-current .tenant-image-picker-meta,
+.tenant-admin-panel .selected-media .tenant-image-picker-meta,
+.tenant-admin-panel .selected-image .tenant-image-picker-meta,
 .tenant-admin-panel [data-selected-image-row] .tenant-image-picker-meta,
+.tenant-admin-panel [class*="image-picker"]:has(button) .tenant-image-picker-meta,
+.tenant-admin-panel [class*="selected-image"]:has(button) .tenant-image-picker-meta,
+.tenant-admin-panel [class*="selected-media"]:has(button) .tenant-image-picker-meta,
+.tenant-admin-panel [class*="background-image"]:has(button) .tenant-image-picker-meta,
 .tenant-admin-panel .selected-image-row .selected-image-title,
 .tenant-admin-panel .tenant-selected-image-row .selected-image-title,
 .tenant-admin-panel .tenant-image-picker-row .selected-image-title,
 .tenant-admin-panel .image-picker-selected .selected-image-title,
-.tenant-admin-panel [data-selected-image-row] .selected-image-title {
-  overflow-wrap: anywhere;
-  white-space: normal;
-  line-height: 1.15;
+.tenant-admin-panel [class*="image-picker"]:has(button) [class*="title"],
+.tenant-admin-panel [class*="selected-image"]:has(button) [class*="title"],
+.tenant-admin-panel [class*="selected-media"]:has(button) [class*="title"] {
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+  white-space: normal !important;
+  line-height: 1.15 !important;
+  max-width: 100% !important;
 }
 
+.tenant-admin-panel .selected-image-row button,
+.tenant-admin-panel .tenant-selected-image-row button,
+.tenant-admin-panel .tenant-image-picker-row button,
+.tenant-admin-panel .image-picker-selected button,
+.tenant-admin-panel .selected-image-control button,
+.tenant-admin-panel .selected-image-display button,
+.tenant-admin-panel .selected-image-current button,
+.tenant-admin-panel .current-selected-image button,
+.tenant-admin-panel .image-picker-current button,
+.tenant-admin-panel .media-picker-current button,
+.tenant-admin-panel .selected-media button,
+.tenant-admin-panel .selected-image button,
+.tenant-admin-panel [data-selected-image-row] button,
+.tenant-admin-panel [data-image-picker-current] button,
+.tenant-admin-panel [class*="image-picker"]:has(img):has(button) button,
+.tenant-admin-panel [class*="selected-image"]:has(button) button,
+.tenant-admin-panel [class*="selected-media"]:has(button) button,
+.tenant-admin-panel [class*="background-image"]:has(button) button,
 .tenant-admin-panel .selected-image-row .tenant-admin-button,
 .tenant-admin-panel .tenant-selected-image-row .tenant-admin-button,
 .tenant-admin-panel .tenant-image-picker-row .tenant-admin-button,
-.tenant-admin-panel .image-picker-selected .tenant-admin-button,
-.tenant-admin-panel [data-selected-image-row] .tenant-admin-button {
-  justify-self: end;
-  white-space: nowrap;
+.tenant-admin-panel .image-picker-selected .tenant-admin-button {
+  justify-self: end !important;
+  white-space: nowrap !important;
 }
 
 .tenant-admin-panel .tenant-color-control,
 .tenant-admin-panel .tenant-color-picker-row,
 .tenant-admin-panel .tenant-color-field,
-.tenant-admin-panel [data-color-picker-row] {
-  display: grid;
-  grid-template-columns: minmax(9rem, 1fr) minmax(12rem, 1fr);
-  align-items: center;
-  gap: 0.75rem;
+.tenant-admin-panel .tenant-color-row,
+.tenant-admin-panel [data-color-picker-row],
+.tenant-admin-panel [class*="color"]:has(input[type="color"]):has(input[type="text"]) {
+  display: grid !important;
+  grid-template-columns: minmax(9rem, 1fr) minmax(14rem, 1fr) !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
 }
 
 .tenant-admin-panel input[type="color"] {
-  width: 100%;
-  min-width: 12rem;
-  height: 3.65rem;
-  padding: 0.25rem;
-  border: 1px solid var(--tenant-border, #d8d0c3);
-  border-radius: 0.85rem;
-  background: transparent;
-  cursor: pointer;
+  display: block !important;
+  width: 100% !important;
+  min-width: 14rem !important;
+  height: 3.65rem !important;
+  padding: 0.25rem !important;
+  border: 1px solid var(--tenant-border, #d8d0c3) !important;
+  border-radius: 0.85rem !important;
+  background: transparent !important;
+  cursor: pointer !important;
 }
 
 .tenant-admin-panel input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
+  padding: 0 !important;
 }
 
 .tenant-admin-panel input[type="color"]::-webkit-color-swatch {
-  border: 0;
-  border-radius: 0.65rem;
+  border: 0 !important;
+  border-radius: 0.65rem !important;
 }
 
 .tenant-admin-panel input[type="color"]::-moz-color-swatch {
-  border: 0;
-  border-radius: 0.65rem;
+  border: 0 !important;
+  border-radius: 0.65rem !important;
 }
 
+/* Remove the small trailing swatch/chip now that the color input itself is the swatch. */
 .tenant-admin-panel .tenant-color-swatch,
 .tenant-admin-panel .color-swatch,
 .tenant-admin-panel .current-color-swatch,
-.tenant-admin-panel .tenant-current-color-swatch {
+.tenant-admin-panel .tenant-current-color-swatch,
+.tenant-admin-panel .tenant-color-preview,
+.tenant-admin-panel .color-preview,
+.tenant-admin-panel .current-color-preview,
+.tenant-admin-panel .swatch-preview,
+.tenant-admin-panel [class*="color-swatch"],
+.tenant-admin-panel [class*="color-preview"],
+.tenant-admin-panel [class*="swatch"]:not(input[type="color"]):not(.tenant-palette-swatch),
+.tenant-admin-panel .tenant-color-control:has(input[type="color"]) > :last-child:not(input[type="color"]):not(input[type="text"]):not(input[type="hidden"]),
+.tenant-admin-panel .tenant-color-picker-row:has(input[type="color"]) > :last-child:not(input[type="color"]):not(input[type="text"]):not(input[type="hidden"]),
+.tenant-admin-panel .tenant-color-field:has(input[type="color"]) > :last-child:not(input[type="color"]):not(input[type="text"]):not(input[type="hidden"]),
+.tenant-admin-panel .tenant-color-row:has(input[type="color"]) > :last-child:not(input[type="color"]):not(input[type="text"]):not(input[type="hidden"]),
+.tenant-admin-panel [data-color-picker-row]:has(input[type="color"]) > :last-child:not(input[type="color"]):not(input[type="text"]):not(input[type="hidden"]) {
   display: none !important;
 }
 
@@ -3342,26 +3192,47 @@ body.tenant-admin-page {
   .tenant-admin-panel .tenant-selected-image-row,
   .tenant-admin-panel .tenant-image-picker-row,
   .tenant-admin-panel .image-picker-selected,
-  .tenant-admin-panel [data-selected-image-row] {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: stretch;
+  .tenant-admin-panel .selected-image-control,
+  .tenant-admin-panel .selected-image-display,
+  .tenant-admin-panel .selected-image-current,
+  .tenant-admin-panel .current-selected-image,
+  .tenant-admin-panel .image-picker-current,
+  .tenant-admin-panel .media-picker-current,
+  .tenant-admin-panel .selected-media,
+  .tenant-admin-panel .selected-image,
+  .tenant-admin-panel .tenant-selected-media,
+  .tenant-admin-panel .tenant-media-selection,
+  .tenant-admin-panel .tenant-image-picker-current,
+  .tenant-admin-panel [data-selected-image-row],
+  .tenant-admin-panel [data-image-picker-current],
+  .tenant-admin-panel [class*="image-picker"]:has(img):has(button),
+  .tenant-admin-panel [class*="selected-image"]:has(button),
+  .tenant-admin-panel [class*="selected-media"]:has(button),
+  .tenant-admin-panel [class*="background-image"]:has(button) {
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
   }
 
-  .tenant-admin-panel .selected-image-row .tenant-admin-button,
-  .tenant-admin-panel .tenant-selected-image-row .tenant-admin-button,
-  .tenant-admin-panel .tenant-image-picker-row .tenant-admin-button,
-  .tenant-admin-panel .image-picker-selected .tenant-admin-button,
-  .tenant-admin-panel [data-selected-image-row] .tenant-admin-button {
-    justify-self: stretch;
-    text-align: center;
+  .tenant-admin-panel .selected-image-row button,
+  .tenant-admin-panel .tenant-selected-image-row button,
+  .tenant-admin-panel .tenant-image-picker-row button,
+  .tenant-admin-panel .image-picker-selected button,
+  .tenant-admin-panel [class*="image-picker"]:has(button) button,
+  .tenant-admin-panel [class*="selected-image"]:has(button) button,
+  .tenant-admin-panel [class*="selected-media"]:has(button) button,
+  .tenant-admin-panel [class*="background-image"]:has(button) button {
+    justify-self: stretch !important;
+    text-align: center !important;
   }
 
   .tenant-admin-panel .tenant-color-control,
   .tenant-admin-panel .tenant-color-picker-row,
   .tenant-admin-panel .tenant-color-field,
-  .tenant-admin-panel [data-color-picker-row] {
-    grid-template-columns: minmax(0, 1fr);
+  .tenant-admin-panel .tenant-color-row,
+  .tenant-admin-panel [data-color-picker-row],
+  .tenant-admin-panel [class*="color"]:has(input[type="color"]):has(input[type="text"]) {
+    grid-template-columns: minmax(0, 1fr) !important;
   }
 }
-/* end content-colors-bg-controls-layout-20260630-v7 */
+/* end content-colors-bg-controls-layout-20260630-v8 */
 
