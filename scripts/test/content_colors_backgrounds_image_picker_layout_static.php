@@ -1,57 +1,85 @@
 <?php
 $root = dirname(__DIR__, 2);
-$cssCandidates = [
-    $root . '/public/assets/tenant-admin.css',
-    $root . '/public/assets/css/tenant-admin.css',
-];
-$cssPath = null;
-foreach ($cssCandidates as $candidate) {
-    if (is_file($candidate)) {
-        $cssPath = $candidate;
-        break;
-    }
-}
-$failures = [];
-if ($cssPath === null) {
-    $failures[] = 'tenant-admin.css not found in expected public locations.';
-    $css = '';
+$css = $root . '/public/assets/tenant-admin.css';
+$js = $root . '/public/assets/tenant-admin-layout-rescue.js';
+$errors = [];
+
+if (!is_file($css)) {
+    $errors[] = 'tenant-admin.css missing at public/assets/tenant-admin.css';
 } else {
-    $css = file_get_contents($cssPath);
-}
-$requiredCss = [
-    'content-colors-backgrounds-controls-layout-20260630-v10:start',
-    'img[alt*="image unavailable" i]',
-    'grid-template-columns: minmax(9.5rem, max-content) 10.5rem minmax(14rem, 1fr) max-content',
-    'input[type="color"]::-webkit-color-swatch',
-    'Remove the redundant tiny trailing color swatches',
-    'main input[type="color"] ~ [class*="swatch"]',
-];
-foreach ($requiredCss as $needle) {
-    if ($css !== '' && strpos($css, $needle) === false) {
-        $failures[] = 'tenant-admin.css missing layout marker: ' . $needle;
+    $cssContents = file_get_contents($css);
+    foreach ([
+        'artsfolio-content-colors-layout-v13 start',
+        '.js-af-image-picker-row',
+        '.js-af-picker-thumb',
+        '.js-af-picker-title',
+        '.js-af-picker-action',
+        '.js-af-broken-image',
+        '.js-af-extra-color-swatch',
+        'input[type="color"]',
+    ] as $needle) {
+        if (strpos($cssContents, $needle) === false) {
+            $errors[] = "tenant-admin.css missing layout marker: $needle";
+        }
     }
 }
-$testDir = __DIR__;
-$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($testDir, FilesystemIterator::SKIP_DOTS));
-$badTestPaths = [];
-foreach ($iterator as $file) {
-    if (!$file->isFile() || $file->getExtension() !== 'php') {
-        continue;
-    }
-    $path = $file->getPathname();
-    $contents = file_get_contents($path);
-    if (preg_match('/file_get_contents\([^\)]*tenant-admin\.css\?v=/', $contents)) {
-        $badTestPaths[] = substr($path, strlen($root) + 1);
+
+if (!is_file($js)) {
+    $errors[] = 'tenant-admin-layout-rescue.js missing';
+} else {
+    $jsContents = file_get_contents($js);
+    foreach ([
+        'Static-test marker: Image unavailable',
+        'normalizePickerRow',
+        'buttonLooksLikeChangeImage',
+        'js-af-picker-placeholder',
+        'normalizeColorRows',
+        'js-af-extra-color-swatch',
+    ] as $needle) {
+        if (strpos($jsContents, $needle) === false) {
+            $errors[] = "layout rescue JS missing marker: $needle";
+        }
     }
 }
-if ($badTestPaths) {
-    $failures[] = 'Live static tests still use cache-busted tenant-admin.css as a filesystem path: ' . implode(', ', $badTestPaths);
-}
-if ($failures) {
-    fwrite(STDERR, "Content/colors background controls layout static check failed:\n");
-    foreach ($failures as $failure) {
-        fwrite(STDERR, ' - ' . $failure . "\n");
+
+$liveRoots = ['app', 'resources', 'views', 'templates'];
+$foundScript = false;
+$badStaticCssPaths = [];
+foreach ($liveRoots as $dir) {
+    $base = $root . '/' . $dir;
+    if (!is_dir($base)) continue;
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($base, FilesystemIterator::SKIP_DOTS));
+    foreach ($it as $file) {
+        if (!$file->isFile() || substr($file->getFilename(), -4) !== '.php') continue;
+        $contents = file_get_contents($file->getPathname());
+        if (strpos($contents, 'tenant-admin-layout-rescue.js') !== false) $foundScript = true;
     }
+}
+$testBase = $root . '/scripts/test';
+if (is_dir($testBase)) {
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($testBase, FilesystemIterator::SKIP_DOTS));
+    foreach ($it as $file) {
+        if (!$file->isFile() || substr($file->getFilename(), -4) !== '.php') continue;
+        $contents = file_get_contents($file->getPathname());
+        if (preg_match('/file_get_contents\([^)]*tenant-admin\.css\?v=/', $contents)) {
+            $badStaticCssPaths[] = str_replace($root . '/', '', $file->getPathname());
+        }
+    }
+}
+if (!$foundScript) {
+    $errors[] = 'layout rescue JS is not referenced by any live app/template PHP file';
+}
+if ($badStaticCssPaths) {
+    $errors[] = 'Static tests still use cache-busted tenant-admin.css as a filesystem path: ' . implode(', ', $badStaticCssPaths);
+}
+
+if ($errors) {
+    fwrite(STDERR, "Content/colors background controls layout static check failed:
+ - " . implode("
+ - ", $errors) . "
+");
     exit(1);
 }
-echo "Content/colors background controls layout static checks passed.\n";
+
+echo "Content/colors background controls layout static checks passed.
+";
