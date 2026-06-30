@@ -50,6 +50,16 @@ php scripts/database/check_migration_integrity.php
 ./scripts/test/preflight.sh
 ```
 
+
+## Phase 4 checkout finalization
+
+Phase 4 makes checkout order creation variant-native. `SalesRepository::createOrderFromCart()` locks the selected `artwork_sale_variants` rows, checks live reservations by `variant_id`, snapshots variant label, size, fit, item shipping, and line shipping onto `sales_order_items`, and writes `sales_orders.shipping_cents` plus a buyer-facing total that includes shipping.
+
+`StripeCheckoutService` still uses inline `price_data`; tenants do not need Stripe Products or Prices. Shipping is sent as an inline fixed `shipping_options[0][shipping_rate_data]` entry named **Standard shipping**, computed from ArtsFolio item-level and variant-level shipping configuration. The buyer email is passed to Stripe when known.
+
+Stripe webhooks now consume inventory from `artwork_sale_variants`, not directly from `artworks`. After successful payment, ArtsFolio synchronizes the legacy artwork inventory/sold fields from active variants so older screens and reports stay coherent while variants remain the source of truth.
+
+<!-- End of file. -->
 <!-- End of file. -->
 
 ## Phase 2 admin persistence

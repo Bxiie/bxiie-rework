@@ -22,6 +22,14 @@ Every sellable item should have a variant row. Even a one-off original has a def
 
 Buyers may move between the tenant platform subdomain and the tenant custom domain. ArtsFolio keeps a separate secure cookie on each host and maps those cookies to the same cart through `sales_cart_aliases`.
 
+
+## Phase 4 checkout behavior
+
+Phase 4 activates the stored sales settings during checkout. When a buyer starts Stripe Checkout, ArtsFolio reserves the exact variant in the cart, snapshots the chosen size or fit onto the order, computes item-level shipping, and sends the total shipping amount to Stripe as inline shipping. No Stripe catalog setup is required for individual artworks, prints, stickers, or sized items.
+
+Payment completion decrements the purchased variant inventory. If all active variants are sold out, the artwork is marked sold. Administrators should continue editing inventory from the artwork sale configuration panel rather than editing Stripe products.
+
+<!-- End of file. -->
 <!-- End of file. -->
 
 ## Phase 2 admin controls

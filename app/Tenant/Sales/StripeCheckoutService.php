@@ -11,12 +11,33 @@ use RuntimeException;
  */
 final class StripeCheckoutService
 {
-    public function createSession(string $secretKey, array $order, array $items, string $successUrl, string $cancelUrl, ?string $connectedAccountId, int $applicationFeeCents): array
-    {
+    /**
+     * Creates a Stripe Checkout Session from ArtsFolio-owned catalog data.
+     *
+     * ArtsFolio intentionally sends inline price_data and inline shipping rate
+     * data so tenants do not need matching Products, Prices, or Shipping Rates
+     * created inside Stripe. Stripe is payment collection, not catalog truth.
+     *
+     * @param array<string,mixed> $order
+     * @param list<array<string,mixed>> $items
+     * @return array<string,mixed>
+     */
+    public function createSession(
+        string $secretKey,
+        array $order,
+        array $items,
+        string $successUrl,
+        string $cancelUrl,
+        ?string $connectedAccountId,
+        int $applicationFeeCents,
+        int $shippingCents = 0,
+        ?string $customerEmail = null,
+    ): array {
         if (trim($secretKey) === '') {
             throw new RuntimeException('Stripe secret key is not configured in platform admin settings.');
         }
 
+        $currency = strtolower((string) ($order['currency'] ?? 'usd')) ?: 'usd';
         $payload = [
             'mode' => 'payment',
             'success_url' => $successUrl,
@@ -25,11 +46,25 @@ final class StripeCheckoutService
             'client_reference_id' => (string) $order['order_number'],
             'metadata[artsfolio_order_id]' => (string) $order['id'],
             'metadata[artsfolio_tenant_id]' => (string) $order['tenant_id'],
+            'metadata[artsfolio_cart_id]' => (string) ($order['cart_id'] ?? ''),
+            'metadata[artsfolio_order_number]' => (string) $order['order_number'],
             'payment_intent_data[metadata][artsfolio_order_id]' => (string) $order['id'],
             'payment_intent_data[metadata][artsfolio_tenant_id]' => (string) $order['tenant_id'],
+            'payment_intent_data[metadata][artsfolio_cart_id]' => (string) ($order['cart_id'] ?? ''),
             'shipping_address_collection[allowed_countries][0]' => 'US',
             'shipping_address_collection[allowed_countries][1]' => 'CA',
         ];
+
+        if ($customerEmail !== null && filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+            $payload['customer_email'] = $customerEmail;
+        }
+
+        if ($shippingCents > 0) {
+            $payload['shipping_options[0][shipping_rate_data][type]'] = 'fixed_amount';
+            $payload['shipping_options[0][shipping_rate_data][fixed_amount][amount]'] = (string) $shippingCents;
+            $payload['shipping_options[0][shipping_rate_data][fixed_amount][currency]'] = $currency;
+            $payload['shipping_options[0][shipping_rate_data][display_name]'] = 'Standard shipping';
+        }
 
         if ($connectedAccountId !== null && $connectedAccountId !== '') {
             $payload['payment_intent_data[transfer_data][destination]'] = $connectedAccountId;
@@ -40,9 +75,14 @@ final class StripeCheckoutService
 
         foreach (array_values($items) as $index => $item) {
             $payload["line_items[{$index}][quantity]"] = (string) max(1, (int) $item['quantity']);
-            $payload["line_items[{$index}][price_data][currency]"] = 'usd';
+            $payload["line_items[{$index}][price_data][currency]"] = $currency;
             $payload["line_items[{$index}][price_data][unit_amount]"] = (string) max(50, (int) $item['unit_price_cents']);
             $payload["line_items[{$index}][price_data][product_data][name]"] = (string) $item['title_snapshot'];
+
+            $description = $this->variantDescription($item);
+            if ($description !== '') {
+                $payload["line_items[{$index}][price_data][product_data][description]"] = $description;
+            }
         }
 
         $body = http_build_query($payload);
@@ -61,10 +101,10 @@ final class StripeCheckoutService
             }
             curl_close($ch);
         } else {
-            $context = stream_context_create(['http' => ['method' => 'POST', 'header' => implode("\r\n", $headers), 'content' => $body, 'timeout' => 20, 'ignore_errors' => true]]);
+            $context = stream_context_create(['http' => ['method' => 'POST', 'header' => implode("\\r\\n", $headers), 'content' => $body, 'timeout' => 20, 'ignore_errors' => true]]);
             $raw = file_get_contents('https://api.stripe.com/v1/checkout/sessions', false, $context);
             $statusLine = $http_response_header[0] ?? '';
-            preg_match('/\s(\d{3})\s/', $statusLine, $match);
+            preg_match('/\\s(\\d{3})\\s/', $statusLine, $match);
             $status = isset($match[1]) ? (int) $match[1] : 0;
         }
 
@@ -77,6 +117,20 @@ final class StripeCheckoutService
         }
 
         return $decoded;
+    }
+
+    /** @param array<string,mixed> $item */
+    private function variantDescription(array $item): string
+    {
+        $parts = [];
+        foreach (['variant_label_snapshot', 'size_value_snapshot', 'gender_value_snapshot'] as $key) {
+            $value = trim((string) ($item[$key] ?? ''));
+            if ($value !== '' && $value !== 'Default' && $value !== 'not_applicable') {
+                $parts[] = $value;
+            }
+        }
+
+        return implode(' · ', array_values(array_unique($parts)));
     }
 }
 

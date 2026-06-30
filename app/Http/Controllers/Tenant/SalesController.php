@@ -187,6 +187,7 @@ final class SalesController
 
         try {
             $order = $this->sales->createOrderFromCart($tenant, $cart, $items, $commissionCents, (int) $fees['credit_card_fee_cents'], (int) $fees['seller_net_cents']);
+            $customerEmail = strtolower(trim((string) ($_POST['customer_email'] ?? (($cart['contact_email'] ?? '') ?: ($cart['customer_email'] ?? '')))));
             $session = (new StripeCheckoutService())->createSession(
                 (string) $this->platformSettings->get('stripe_secret_key', ''),
                 $order,
@@ -195,6 +196,8 @@ final class SalesController
                 $cancelUrl,
                 trim((string) $this->tenantSettings->get($tenant, 'stripe_connected_account_id', '')) ?: null,
                 $commissionCents + (int) $fees['credit_card_fee_cents'],
+                (int) $fees['shipping_cents'],
+                $customerEmail !== '' ? $customerEmail : null,
             );
             $this->sales->attachCheckoutSession((int) $order['id'], (string) $session['id'], (string) $session['url']);
             $this->sales->markCartCheckedOut((int) $cart['id']);
@@ -280,18 +283,24 @@ final class SalesController
     private function saleEconomics(TenantContext $tenant, array $items): array
     {
         $subtotal = 0;
+        $shipping = 0;
         foreach ($items as $item) {
-            $subtotal += (int) $item['quantity'] * (int) $item['unit_price_cents'];
+            $quantity = max(1, (int) ($item['quantity'] ?? 1));
+            $subtotal += $quantity * (int) $item['unit_price_cents'];
+            $shipping += $this->lineShippingCents($item);
         }
+        $total = $subtotal + $shipping;
         $commissionBasisPoints = max(0, min(10000, (int) $this->platformSettings->get('platform_sales_commission_basis_points', '500')));
         $planFees = $this->planPaymentFees($tenant);
         $commission = (int) round($subtotal * ($commissionBasisPoints / 10000));
-        $creditCardFee = (int) round($subtotal * (((int) $planFees['credit_card_fee_basis_points']) / 10000)) + (int) $planFees['credit_card_fixed_fee_cents'];
+        $creditCardFee = (int) round($total * (((int) $planFees['credit_card_fee_basis_points']) / 10000)) + (int) $planFees['credit_card_fixed_fee_cents'];
         return [
             'subtotal_cents' => $subtotal,
+            'shipping_cents' => $shipping,
+            'total_cents' => $total,
             'commission_cents' => $commission,
             'credit_card_fee_cents' => $creditCardFee,
-            'seller_net_cents' => max(0, $subtotal - $commission - $creditCardFee),
+            'seller_net_cents' => max(0, $total - $commission - $creditCardFee),
         ];
     }
 

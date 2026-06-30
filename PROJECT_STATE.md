@@ -1777,6 +1777,10 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 
 - Google and Facebook tenant signup use the same idempotent onboarding lifecycle queue. Missing tenant lifecycle messages can be repaired with `scripts/email/reconcile_tenant_lifecycle_emails.php`. Tenant public pages show Admin only to an active tenant owner or administrator and are emitted private/no-store with Vary: Cookie.
 
+
+## Shopping cart phase 4
+
+Shopping cart phase 4 completed the checkout/payment runtime for the variant-aware cart. Checkout order creation now locks and reserves `artwork_sale_variants` rows, writes variant and shipping snapshots to order items, records `sales_orders.shipping_cents`, and sends Stripe Checkout inline `price_data` plus inline fixed `shipping_options[0][shipping_rate_data]` rather than relying on Stripe catalog objects. Stripe payment completion decrements variant inventory and then synchronizes legacy artwork inventory and sold status from active variants. Abandoned cart reminder cadence remains a later phase.
 <!-- End of file. -->
 
 ## Phase 5 placement matrix column filters (2026-06-22)

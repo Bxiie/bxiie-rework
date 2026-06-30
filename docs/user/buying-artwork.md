@@ -8,6 +8,14 @@ When the cart is not empty, the artist site will show a cart link. The cart page
 
 If the artist has both an ArtsFolio subdomain and a custom domain, the cart should follow between those domains. Each domain stores its own secure cart cookie, and ArtsFolio connects those cookies to the same artist cart behind the scenes.
 
+
+## Checkout and shipping
+
+At checkout, ArtsFolio sends your selected items, sizes, quantities, and standard shipping total to Stripe Checkout. Stripe securely collects payment. The artist receives the order with the selected variant details, shipping information, and payment status.
+
+If an item sells out while you are checking out, ArtsFolio may ask you to return to the cart and update your selection.
+
+<!-- End of file. -->
 <!-- End of file. -->
 
 ## Phase 2 status
