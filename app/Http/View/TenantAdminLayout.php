@@ -99,8 +99,6 @@ final class TenantAdminLayout
         <section class="tenant-admin-panel">
             <h1>{$this->escape($title)}</h1>
 
-
-
             {$body}
         </section>
     </main>
@@ -115,7 +113,6 @@ final class TenantAdminLayout
         <a href="https://artsfol.io/contact">Contact artsfol.io</a>
     </nav>
 </footer>
-<script defer src="/assets/tenant-admin-layout-rescue.js?v=20260630-image-picker-color-layout-v13"></script>
 </body>
 </html>
 HTML;

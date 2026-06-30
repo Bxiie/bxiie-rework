@@ -3598,3 +3598,346 @@ main div:has(> input[type="color"]):has(> input[type="text"]) > :last-child:not(
 }
 /* artsfolio-content-colors-layout-v13 end */
 
+/* content-colors-backgrounds-admin-layout-v14 begin */
+/* Rescue the selected-image rows used by Content and Settings > Colors & Backgrounds. */
+.tenant-admin-selected-image-rescued,
+.tenant-admin-image-picker-rescued,
+.tenant-admin-layout-rescue-row {
+  display: grid !important;
+  grid-template-columns: 132px 164px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  column-gap: 1.25rem !important;
+  row-gap: .75rem !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.tenant-admin-selected-image-rescued .tenant-admin-layout-rescue-label,
+.tenant-admin-image-picker-rescued .tenant-admin-layout-rescue-label,
+.tenant-admin-layout-rescue-row .tenant-admin-layout-rescue-label {
+  display: none !important;
+}
+
+.tenant-admin-layout-rescue-hidden,
+.tenant-admin-layout-rescue-row [alt="Image unavailable"],
+.tenant-admin-layout-rescue-row [alt*="Image unavailable"],
+.tenant-admin-layout-rescue-row [aria-label="Image unavailable"],
+.tenant-admin-layout-rescue-row [aria-label*="Image unavailable"] {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+}
+
+.tenant-admin-layout-rescue-thumb,
+.tenant-admin-layout-rescue-row img:not(.tenant-admin-layout-rescue-hidden) {
+  grid-column: 1 !important;
+  width: 164px !important;
+  max-width: 164px !important;
+  height: 116px !important;
+  object-fit: cover !important;
+  border-radius: 12px !important;
+}
+
+.tenant-admin-layout-rescue-row .tenant-admin-layout-rescue-empty,
+.tenant-admin-layout-rescue-row .tenant-admin-no-image,
+.tenant-admin-layout-rescue-row [class*="placeholder"],
+.tenant-admin-layout-rescue-row [class*="Placeholder"] {
+  grid-column: 1 !important;
+}
+
+.tenant-admin-layout-rescue-title {
+  grid-column: 2 / 4 !important;
+  min-width: 0 !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  line-height: 1.15 !important;
+  white-space: normal !important;
+  position: static !important;
+  transform: none !important;
+}
+
+.tenant-admin-layout-rescue-row button,
+.tenant-admin-layout-rescue-row a[href],
+.tenant-admin-layout-rescue-row input[type="button"],
+.tenant-admin-layout-rescue-row input[type="submit"] {
+  grid-column: 4 !important;
+  justify-self: end !important;
+  white-space: nowrap !important;
+  position: static !important;
+  transform: none !important;
+}
+
+/* Color controls: the long input is the swatch; the extra tiny swatch is hidden. */
+.tenant-admin-color-control-rescued {
+  display: grid !important;
+  grid-template-columns: minmax(9rem, 1fr) minmax(12rem, 1fr) !important;
+  align-items: center !important;
+  gap: .75rem !important;
+}
+
+.tenant-admin-color-control-rescued input[type="color"] {
+  display: block !important;
+  width: 100% !important;
+  min-height: 3.25rem !important;
+  height: 3.25rem !important;
+  padding: .25rem !important;
+  border-radius: 14px !important;
+  cursor: pointer !important;
+}
+
+.tenant-admin-color-control-rescued .tenant-admin-color-swatch,
+.tenant-admin-color-control-rescued .tenant-admin-color-preview,
+.tenant-admin-color-control-rescued [class*="swatch"],
+.tenant-admin-color-control-rescued [class*="Swatch"],
+.tenant-admin-color-control-rescued [class*="preview"],
+.tenant-admin-color-control-rescued [class*="Preview"] {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .tenant-admin-selected-image-rescued,
+  .tenant-admin-image-picker-rescued,
+  .tenant-admin-layout-rescue-row {
+    grid-template-columns: 112px minmax(0, 1fr) !important;
+  }
+  .tenant-admin-layout-rescue-thumb,
+  .tenant-admin-layout-rescue-row img:not(.tenant-admin-layout-rescue-hidden) {
+    grid-column: 1 !important;
+    width: 112px !important;
+    max-width: 112px !important;
+    height: 86px !important;
+  }
+  .tenant-admin-layout-rescue-title {
+    grid-column: 2 !important;
+  }
+  .tenant-admin-layout-rescue-row button,
+  .tenant-admin-layout-rescue-row a[href],
+  .tenant-admin-layout-rescue-row input[type="button"],
+  .tenant-admin-layout-rescue-row input[type="submit"] {
+    grid-column: 1 / -1 !important;
+    justify-self: start !important;
+  }
+  .tenant-admin-color-control-rescued {
+    grid-template-columns: 1fr !important;
+  }
+}
+/* content-colors-backgrounds-admin-layout-v14 end */
+
+/* artsfolio-content-colors-bg-picker-layout-v15
+   Stabilize admin selected-image/background-image rows and simplify color controls. */
+.tenant-admin-panel [class*="image"]:has(> button:last-child),
+.tenant-admin-panel [class*="Image"]:has(> button:last-child),
+.tenant-admin-panel .selected-image-row,
+.tenant-admin-panel .selected-media-row,
+.tenant-admin-panel .background-image-row,
+.tenant-admin-panel .tenant-selected-image-row {
+  display: grid !important;
+  grid-template-columns: minmax(96px, auto) minmax(92px, 180px) minmax(0, 1fr) max-content !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  overflow: hidden !important;
+}
+
+.tenant-admin-panel [class*="image"]:has(> button:last-child) > img,
+.tenant-admin-panel [class*="Image"]:has(> button:last-child) > img,
+.tenant-admin-panel .selected-image-row > img,
+.tenant-admin-panel .selected-media-row > img,
+.tenant-admin-panel .background-image-row > img,
+.tenant-admin-panel .tenant-selected-image-row > img {
+  width: 10rem !important;
+  max-width: 10rem !important;
+  height: 6.25rem !important;
+  object-fit: cover !important;
+  border-radius: .65rem !important;
+  grid-column: 2 !important;
+}
+
+.tenant-admin-panel [class*="image"]:has(> button:last-child) > img[alt*="unavailable" i],
+.tenant-admin-panel [class*="Image"]:has(> button:last-child) > img[alt*="unavailable" i],
+.tenant-admin-panel [class*="image"]:has(> button:last-child) > img[src=""],
+.tenant-admin-panel [class*="Image"]:has(> button:last-child) > img[src=""] {
+  display: none !important;
+}
+
+.tenant-admin-panel [class*="image"]:has(> button:last-child) > :not(button):not(img),
+.tenant-admin-panel [class*="Image"]:has(> button:last-child) > :not(button):not(img),
+.tenant-admin-panel .selected-image-row > :not(button):not(img),
+.tenant-admin-panel .selected-media-row > :not(button):not(img),
+.tenant-admin-panel .background-image-row > :not(button):not(img),
+.tenant-admin-panel .tenant-selected-image-row > :not(button):not(img) {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.tenant-admin-panel [class*="image"]:has(> button:last-child) > button:last-child,
+.tenant-admin-panel [class*="Image"]:has(> button:last-child) > button:last-child,
+.tenant-admin-panel .selected-image-row > button:last-child,
+.tenant-admin-panel .selected-media-row > button:last-child,
+.tenant-admin-panel .background-image-row > button:last-child,
+.tenant-admin-panel .tenant-selected-image-row > button:last-child {
+  grid-column: 4 !important;
+  justify-self: end !important;
+  white-space: nowrap !important;
+}
+
+.tenant-admin-panel input[type="color"] {
+  min-height: 3.5rem !important;
+  width: 100% !important;
+  padding: .35rem !important;
+  border-radius: .85rem !important;
+}
+
+.tenant-admin-panel input[type="color"] + .tenant-color-swatch,
+.tenant-admin-panel input[type="color"] + [class*="swatch" i],
+.tenant-admin-panel input[type="color"] ~ .tenant-color-swatch,
+.tenant-admin-panel input[type="color"] ~ [class*="swatch" i] {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .tenant-admin-panel [class*="image"]:has(> button:last-child),
+  .tenant-admin-panel [class*="Image"]:has(> button:last-child),
+  .tenant-admin-panel .selected-image-row,
+  .tenant-admin-panel .selected-media-row,
+  .tenant-admin-panel .background-image-row,
+  .tenant-admin-panel .tenant-selected-image-row {
+    grid-template-columns: minmax(84px, auto) minmax(0, 1fr) !important;
+  }
+  .tenant-admin-panel [class*="image"]:has(> button:last-child) > button:last-child,
+  .tenant-admin-panel [class*="Image"]:has(> button:last-child) > button:last-child,
+  .tenant-admin-panel .selected-image-row > button:last-child,
+  .tenant-admin-panel .selected-media-row > button:last-child,
+  .tenant-admin-panel .background-image-row > button:last-child,
+  .tenant-admin-panel .tenant-selected-image-row > button:last-child {
+    grid-column: 1 / -1 !important;
+    justify-self: stretch !important;
+  }
+}
+/* /artsfolio-content-colors-bg-picker-layout-v15 */
+
+/* content-colors-bg-controls-layout-v18
+   Tenant admin controls: large color swatches and safer selected-image rows.
+   The picker DOM varies across pages, so these selectors are intentionally broad
+   but scoped to tenant/admin panels.
+   Markers: selected-image image-picker selected-media background-image Change image Image unavailable */
+.tenant-admin-panel input[type="color"],
+.tenant-admin-form input[type="color"],
+.admin-panel input[type="color"],
+form input[type="color"] {
+    min-height: 3.25rem;
+    border-radius: 1rem;
+    padding: 0.25rem;
+    cursor: pointer;
+}
+
+.tenant-admin-panel input[type="color"]::-webkit-color-swatch-wrapper,
+.tenant-admin-form input[type="color"]::-webkit-color-swatch-wrapper,
+.admin-panel input[type="color"]::-webkit-color-swatch-wrapper,
+form input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.tenant-admin-panel input[type="color"]::-webkit-color-swatch,
+.tenant-admin-form input[type="color"]::-webkit-color-swatch,
+.admin-panel input[type="color"]::-webkit-color-swatch,
+form input[type="color"]::-webkit-color-swatch {
+    border: 0;
+    border-radius: 0.75rem;
+}
+
+.tenant-admin-panel input[type="color"]::-moz-color-swatch,
+.tenant-admin-form input[type="color"]::-moz-color-swatch,
+.admin-panel input[type="color"]::-moz-color-swatch,
+form input[type="color"]::-moz-color-swatch {
+    border: 0;
+    border-radius: 0.75rem;
+}
+
+.tenant-admin-panel input[type="color"] + .tenant-color-swatch,
+.tenant-admin-panel input[type="color"] + .color-preview-swatch,
+.tenant-admin-panel input[type="color"] + .color-swatch,
+.tenant-admin-panel .tenant-color-swatch[aria-hidden="true"],
+.tenant-admin-panel .color-preview-swatch[aria-hidden="true"],
+.tenant-admin-panel .color-swatch[aria-hidden="true"],
+.tenant-admin-form input[type="color"] + .tenant-color-swatch,
+.tenant-admin-form input[type="color"] + .color-preview-swatch,
+.tenant-admin-form input[type="color"] + .color-swatch,
+form input[type="color"] + .tenant-color-swatch,
+form input[type="color"] + .color-preview-swatch,
+form input[type="color"] + .color-swatch {
+    display: none !important;
+}
+
+.tenant-admin-panel [class*="selected-image"],
+.tenant-admin-panel [class*="image-picker"],
+.tenant-admin-panel [class*="selected-media"],
+.tenant-admin-panel [class*="background-image"],
+.tenant-admin-form [class*="selected-image"],
+.tenant-admin-form [class*="image-picker"],
+.tenant-admin-form [class*="selected-media"],
+.tenant-admin-form [class*="background-image"] {
+    min-width: 0;
+}
+
+.tenant-admin-panel [class*="selected-image"] img,
+.tenant-admin-panel [class*="image-picker"] img,
+.tenant-admin-panel [class*="selected-media"] img,
+.tenant-admin-panel [class*="background-image"] img,
+.tenant-admin-form [class*="selected-image"] img,
+.tenant-admin-form [class*="image-picker"] img,
+.tenant-admin-form [class*="selected-media"] img,
+.tenant-admin-form [class*="background-image"] img {
+    flex: 0 0 auto;
+    max-width: 10rem;
+    object-fit: cover;
+}
+
+.tenant-admin-panel [class*="selected-image"] button,
+.tenant-admin-panel [class*="image-picker"] button,
+.tenant-admin-panel [class*="selected-media"] button,
+.tenant-admin-panel [class*="background-image"] button,
+.tenant-admin-form [class*="selected-image"] button,
+.tenant-admin-form [class*="image-picker"] button,
+.tenant-admin-form [class*="selected-media"] button,
+.tenant-admin-form [class*="background-image"] button {
+    flex: 0 0 auto;
+    margin-left: auto;
+    white-space: normal;
+}
+
+.tenant-admin-panel [class*="selected-image"] *,
+.tenant-admin-panel [class*="image-picker"] *,
+.tenant-admin-panel [class*="selected-media"] *,
+.tenant-admin-panel [class*="background-image"] *,
+.tenant-admin-form [class*="selected-image"] *,
+.tenant-admin-form [class*="image-picker"] *,
+.tenant-admin-form [class*="selected-media"] *,
+.tenant-admin-form [class*="background-image"] * {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+    .tenant-admin-panel [class*="selected-image"] button,
+    .tenant-admin-panel [class*="image-picker"] button,
+    .tenant-admin-panel [class*="selected-media"] button,
+    .tenant-admin-panel [class*="background-image"] button,
+    .tenant-admin-form [class*="selected-image"] button,
+    .tenant-admin-form [class*="image-picker"] button,
+    .tenant-admin-form [class*="selected-media"] button,
+    .tenant-admin-form [class*="background-image"] button {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+

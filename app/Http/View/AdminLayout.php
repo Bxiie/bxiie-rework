@@ -92,7 +92,6 @@ final class AdminLayout
     <span>{$platformCopyright}</span>
     <nav><a href="/help">Help</a><a href="/account/timezone">Time zone</a><a href="/help/developer">Developer reference</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav>
 </footer>
-<script defer src="/assets/tenant-admin-layout-rescue.js?v=20260630-image-picker-color-layout-v13"></script>
 </body>
 </html>
 HTML;
