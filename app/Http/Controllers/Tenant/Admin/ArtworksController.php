@@ -13,6 +13,7 @@ use App\Platform\Directory\TenantDirectoryProfileRepository;
 use App\Platform\Tenancy\TenantContext;
 use App\Platform\Audit\AuditLogRepository;
 use App\Support\Pagination\Pagination;
+use App\Tenant\Sales\ArtworkSaleAdminForm;
 use PDO;
 use App\Http\View\AdminLayout;
 
@@ -316,11 +317,13 @@ HTML;
         }
 
         $selected = fn (string $a, string $b): string => $a === $b ? ' selected' : '';
+        $saleFieldset = (new ArtworkSaleAdminForm($this->pdo))->render($tenant->tenantId, $artwork);
 
         $body = <<<HTML
 <main>
     <p><a href="/admin/artworks">&larr; Artworks</a></p>
     <h1>Edit artwork</h1>
+    <!-- Sales &amp; checkout controls are rendered by ArtworkSaleAdminForm. -->
     {$artworkPreview}
     <form method="post" action="/admin/artworks/edit">
         <input type="hidden" name="id" value="{$id}">
@@ -357,14 +360,7 @@ HTML;
             <p>Choose where this artwork appears.</p>
             {$sectionOptions}
         </fieldset>
-        <p><label>Price<br><input type="text" name="price" value="{$price}"></label></p>
-        <fieldset style="margin:1rem 0;padding:1rem;border:1px solid #ccc;">
-            <legend>Sales inventory</legend>
-            <p>Mark one-off for traditional original work. Use multiple for editioned objects, postcards, shirts, or other inventory-backed items.</p>
-            <label style="display:block;margin:.25rem 0;"><input type="radio" name="sales_inventory_mode" value="one_off"{$oneOffChecked}> One-off artwork</label>
-            <label style="display:block;margin:.25rem 0;"><input type="radio" name="sales_inventory_mode" value="multiple"{$multipleChecked}> Multiple / inventory item</label>
-            <label style="display:block;margin:.5rem 0;">Inventory quantity<br><input type="number" name="inventory_quantity" min="1" step="1" value="{$inventoryQuantity}"></label>
-        </fieldset>
+        {$saleFieldset}
         <button type="submit">Save artwork</button>
     </form>
 </main>
@@ -396,12 +392,9 @@ HTML;
         $status = in_array(($_POST['status'] ?? 'draft'), ['draft', 'published', 'archived'], true) ? (string) $_POST['status'] : 'draft';
         $saleStatus = in_array(($_POST['sale_status'] ?? 'nfs'), ['nfs', 'for_sale', 'sold'], true) ? (string) $_POST['sale_status'] : 'nfs';
         $price = $saleStatus === 'nfs' ? null : trim((string) ($_POST['price'] ?? ''));
-        $salesInventoryMode = (string) ($_POST['sales_inventory_mode'] ?? 'one_off');
-        $isOneOff = $salesInventoryMode === 'multiple' ? 0 : 1;
-        $inventoryQuantity = max(1, (int) ($_POST['inventory_quantity'] ?? 1));
-        if ($isOneOff === 1) {
-            $inventoryQuantity = 1;
-        }
+        $legacySalesInventory = (new ArtworkSaleAdminForm($this->pdo))->legacyInventoryFromPost($_POST);
+        $isOneOff = $legacySalesInventory['is_one_off'];
+        $inventoryQuantity = $legacySalesInventory['inventory_quantity'];
 
         $stmt = $this->pdo->prepare(
             "UPDATE artworks
@@ -435,6 +428,7 @@ HTML;
 
         $this->replaceArtworkTypes($id, $_POST['artwork_types'] ?? []);
         $this->replaceArtworkSections($tenant, $id, $_POST['section_ids'] ?? []);
+        (new ArtworkSaleAdminForm($this->pdo))->saveFromPost($tenant->tenantId, $id, $_POST, $saleStatus);
 
         return new Response('', 303, ['Location' => '/admin/artworks?notice=artwork-saved#artwork-' . $id]);
     }

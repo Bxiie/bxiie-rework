@@ -2266,3 +2266,5 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 - Simplified the About/Contact static test so it does not brace-parse the Contact heredoc.
 
 <!-- End of file. -->
+- Phase 2 adds tenant-admin artwork sale controls on upload and edit screens through `App\Tenant\Sales\ArtworkSaleAdminForm`. The controls persist product type, sizing schema, gender/fit schema, checkout enablement, shipping defaults, variant rows, SKU/internal codes, and inventory to `artwork_sale_config` and `artwork_sale_variants` while preserving the legacy artwork-level sales columns for current runtime compatibility.
+

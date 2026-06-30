@@ -51,3 +51,20 @@ php scripts/database/check_migration_integrity.php
 ```
 
 <!-- End of file. -->
+
+## Phase 2 admin persistence
+
+Phase 2 introduces `App\Tenant\Sales\ArtworkSaleAdminForm`, a small helper used by both `ArtworkUploadController` and `ArtworksController`. It renders the tenant-admin **Sales & checkout** form controls and persists submitted data into the Phase 1 sale catalog tables.
+
+The helper intentionally keeps legacy artwork columns synchronized:
+
+- `artworks.price` remains the human-facing price string used by existing public rendering.
+- `artworks.is_one_off` remains compatible with the current artwork-level cart path.
+- `artworks.inventory_quantity` is kept as the simple quantity or the sum of active variant quantities.
+
+For one-off and multiple-identical-item listings, the helper keeps one active `artwork_sale_variants` row named `Default`. For `variant_inventory`, the helper marks existing variants inactive first, then updates or inserts submitted active variant rows. This protects old cart/order references while allowing admins to remove choices from future purchases.
+
+Phase 2 does not change public add-to-cart, Stripe checkout, inventory reservation, or abandoned cart behavior. Those runtime changes are intentionally held for later phases.
+
+<!-- End of file. -->
+

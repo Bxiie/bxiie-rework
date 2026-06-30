@@ -4048,3 +4048,45 @@ form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact"
         text-align: center !important;
     }
 }
+
+/* Phase-two sales catalog controls. */
+.admin-sale-config {
+    background: rgba(255, 255, 255, 0.72);
+    border-radius: 14px;
+}
+
+.admin-sale-grid {
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    margin: 1rem 0;
+}
+
+.admin-sale-variants summary {
+    cursor: pointer;
+    font-weight: 700;
+    margin: 1rem 0 0.5rem;
+}
+
+.admin-sale-variant-table {
+    border-collapse: collapse;
+    min-width: 980px;
+    width: 100%;
+}
+
+.admin-sale-variant-table th,
+.admin-sale-variant-table td {
+    border: 1px solid rgba(30, 25, 20, 0.18);
+    padding: 0.45rem;
+    vertical-align: top;
+}
+
+.admin-sale-variant-table input[type="text"],
+.admin-sale-variant-table input[type="number"],
+.admin-sale-variant-table select {
+    max-width: 12rem;
+    width: 100%;
+}
+
+/* End of file. */
+

@@ -14,6 +14,7 @@ use App\Platform\Tenancy\TenantContext;
 use App\Platform\Audit\AuditLogRepository;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Artwork\ArtworkUploadService;
+use App\Tenant\Sales\ArtworkSaleAdminForm;
 use PDO;
 
 /**
@@ -38,6 +39,7 @@ final class ArtworkUploadController
 
         $csrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
         $uploadNotice = $this->uploadNoticeHtml();
+        $saleFieldset = $this->pdo !== null ? (new ArtworkSaleAdminForm($this->pdo))->render($tenant->tenantId) : '';
 
         $body = <<<HTML
 <style>
@@ -91,14 +93,7 @@ final class ArtworkUploadController
         <label><input type="checkbox" name="artwork_types[]" value="portfolio_images" checked> Portfolio Images</label>
         <label><input type="checkbox" name="artwork_types[]" value="site_images"> Site Images</label>
     </fieldset>
-    <p><label>Price<br><input type="text" name="price" placeholder="1200, 1200 USD, contact for price"></label></p>
-    <fieldset>
-        <legend>Sales inventory</legend>
-        <p>Use one-off for an original work. Use multiple for inventory-backed items such as postcards, shirts, prints, or editions.</p>
-        <label><input type="radio" name="sales_inventory_mode" value="one_off" checked> One-off artwork</label>
-        <label><input type="radio" name="sales_inventory_mode" value="multiple"> Multiple / inventory item</label>
-        <p><label>Inventory quantity<br><input type="number" name="inventory_quantity" min="1" step="1" value="1"></label></p>
-    </fieldset>
+    {$saleFieldset}
     <p><label>Image<br><input type="file" name="artwork" accept="image/jpeg,image/png,image/webp,image/gif" required></label></p>
     <button id="artwork-upload-button" type="submit">Upload artwork</button>
     <p id="artwork-upload-status" class="upload-status" role="status" aria-live="polite">
@@ -150,7 +145,7 @@ HTML;
         if (!empty($record['artwork_id'])) {
             $artworkId = (int) $record['artwork_id'];
             $this->replaceArtworkTypes($artworkId, $_POST['artwork_types'] ?? ['portfolio_images']);
-            $this->updateSalesInventory($artworkId, $_POST['sales_inventory_mode'] ?? 'one_off', $_POST['inventory_quantity'] ?? 1);
+            $this->updateSalesInventory($tenant, $artworkId, $_POST);
         }
 
         if ($this->auditLog !== null) {
@@ -250,23 +245,35 @@ HTML;
      * metadata, so it is patched onto the row here until the broader sales
      * subsystem centralizes catalog writes.
      */
-    private function updateSalesInventory(int $artworkId, mixed $mode, mixed $quantity): void
+    /**
+     * Persist both legacy artwork inventory fields and the phase-one sale catalog.
+     *
+     * The upload service creates the artwork row first. Once the row exists,
+     * this method records the richer checkout configuration used by later cart
+     * phases while keeping current public cart behavior compatible.
+     *
+     * @param array<string,mixed> $post
+     */
+    private function updateSalesInventory(TenantContext $tenant, int $artworkId, array $post): void
     {
         if ($this->pdo === null) {
             return;
         }
 
-        $isOneOff = (string) $mode === 'multiple' ? 0 : 1;
-        $inventoryQuantity = $isOneOff === 1 ? 1 : max(1, (int) $quantity);
+        $salesForm = new ArtworkSaleAdminForm($this->pdo);
+        $legacySalesInventory = $salesForm->legacyInventoryFromPost($post);
 
         $stmt = $this->pdo->prepare(
-            'UPDATE artworks SET is_one_off = :is_one_off, inventory_quantity = :inventory_quantity, updated_at = CURRENT_TIMESTAMP WHERE id = :id'
+            'UPDATE artworks SET is_one_off = :is_one_off, inventory_quantity = :inventory_quantity, updated_at = CURRENT_TIMESTAMP WHERE id = :id AND tenant_id = :tenant_id'
         );
         $stmt->execute([
-            'is_one_off' => $isOneOff,
-            'inventory_quantity' => $inventoryQuantity,
+            'is_one_off' => $legacySalesInventory['is_one_off'],
+            'inventory_quantity' => $legacySalesInventory['inventory_quantity'],
             'id' => $artworkId,
+            'tenant_id' => $tenant->tenantId,
         ]);
+
+        $salesForm->saveFromPost($tenant->tenantId, $artworkId, $post, (string) ($post['sale_status'] ?? 'nfs'));
     }
 
 

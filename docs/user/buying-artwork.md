@@ -9,3 +9,10 @@ When the cart is not empty, the artist site will show a cart link. The cart page
 If the artist has both an ArtsFolio subdomain and a custom domain, the cart should follow between those domains. Each domain stores its own secure cart cookie, and ArtsFolio connects those cookies to the same artist cart behind the scenes.
 
 <!-- End of file. -->
+
+## Phase 2 status
+
+Artists can now configure future shopping-cart details in the admin area, including one-off artwork, multiple inventory items, sized variants, gender/fit options, and shipping defaults. Buyer-facing size selection and variant-aware checkout will appear in later phases.
+
+<!-- End of file. -->
+
