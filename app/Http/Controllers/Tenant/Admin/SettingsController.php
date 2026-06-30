@@ -1610,7 +1610,7 @@ private function escape(string $value): string
         ];
 
         $selectedPreview = $selectedChoice['src'] !== ''
-            ? '<span class="site-image-picker-image-wrap"><img src="' . $this->escape((string) $selectedChoice['src']) . '" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="site-image-picker-image-fallback" hidden>Image unavailable</span></span>'
+            ? '<span class="site-image-picker-image-wrap"><img src="' . $this->escape((string) $selectedChoice['src']) . '" alt="" loading="lazy" decoding="async" onerror="this.closest(\'.site-image-picker-image-wrap\')?.classList.add(\'is-missing\');this.remove();"></span>'
             : ((string) ($selectedChoice['status'] ?? '') === 'draft'
                 ? '<span class="site-image-picker-draft-warning">draft: will not show in interface until published.</span>'
                 : '<span class="site-image-picker-empty">No image</span>');
@@ -1631,7 +1631,7 @@ private function escape(string $value): string
             $safeLabel = $this->escape((string) $choice['label']);
             $checked = $choice['selected'] ? ' checked' : '';
             $image = $choice['src'] !== ''
-                ? '<span class="site-image-picker-image-wrap"><img src="' . $this->escape((string) $choice['src']) . '" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="site-image-picker-image-fallback" hidden>Image unavailable</span></span>'
+                ? '<span class="site-image-picker-image-wrap"><img src="' . $this->escape((string) $choice['src']) . '" alt="" loading="lazy" decoding="async" onerror="this.closest(\'.site-image-picker-image-wrap\')?.classList.add(\'is-missing\');this.remove();"></span>'
                 : ((string) ($choice['status'] ?? '') === 'draft'
                     ? '<span class="site-image-picker-draft-warning">draft: will not show in interface until published.</span>'
                     : '<span class="site-image-picker-empty">No image</span>');

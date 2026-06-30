@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
+
 $cssCandidates = [
     $root . '/public/assets/tenant-admin.css',
     $root . '/public/assets/css/tenant-admin.css',
@@ -24,10 +25,13 @@ if ($cssPath === null) {
     $css = file_get_contents($cssPath);
 
     $requiredCssMarkers = [
-        'content-colors-bg-controls-layout',
-        'content-colors-bg-image-picker-unavailable-v19',
+        'site-image-picker-render-v20',
+        '.site-image-picker-current',
+        '.site-image-picker-image-wrap',
+        '.site-image-picker-image-fallback',
+        '.site-image-picker-change-button',
         'input[type="color"]',
-        '::-webkit-color-swatch',
+        'input[type="color"] + .tenant-color-swatch',
         '.tenant-admin-panel .tenant-palette-button',
         '.tenant-palette-preview',
         '.tenant-palette-toolbar',
@@ -39,44 +43,40 @@ if ($cssPath === null) {
             $errors[] = 'tenant-admin.css missing marker: ' . $marker;
         }
     }
+}
 
-    $smallSwatchHideMarkers = [
-        'input[type="color"] + .tenant-color-swatch',
-        '.tenant-color-swatch[aria-hidden="true"]',
-        '.color-preview-swatch',
-    ];
+$rendererFiles = [
+    'app/Http/Controllers/Tenant/Admin/SettingsController.php',
+    'app/Http/Controllers/Tenant/Admin/ContentController.php',
+];
 
-    $hasSmallSwatchHide = false;
-    foreach ($smallSwatchHideMarkers as $marker) {
-        if (strpos($css, $marker) !== false) {
-            $hasSmallSwatchHide = true;
-            break;
-        }
+foreach ($rendererFiles as $rendererFile) {
+    $path = $root . '/' . $rendererFile;
+    if (!is_file($path)) {
+        $errors[] = 'Renderer file missing: ' . $rendererFile;
+        continue;
     }
 
-    if (!$hasSmallSwatchHide) {
-        $errors[] = 'tenant-admin.css missing a rule to hide redundant small color swatches.';
+    $contents = file_get_contents($path);
+
+    if (strpos($contents, 'site-image-picker-image-wrap') === false) {
+        $errors[] = $rendererFile . ' missing site image picker thumbnail wrapper.';
     }
 
-    $pickerMarkers = [
-        'selected-image',
-        'image-picker',
-        'selected-media',
-        'background-image',
-        'Change image',
-        'Image unavailable',
-    ];
-
-    $hasPickerRepairMarker = false;
-    foreach ($pickerMarkers as $marker) {
-        if (strpos($css, $marker) !== false) {
-            $hasPickerRepairMarker = true;
-            break;
-        }
+    if (strpos($contents, 'site-image-picker-change-button') === false) {
+        $errors[] = $rendererFile . ' missing site image picker change button.';
     }
 
-    if (!$hasPickerRepairMarker) {
-        $errors[] = 'tenant-admin.css missing selected image picker layout repair markers.';
+    if (strpos($contents, 'this.nextElementSibling.hidden=false') !== false) {
+        $errors[] = $rendererFile . ' still unhides the Image unavailable fallback.';
+    }
+
+    if (strpos($contents, '>Image unavailable<') !== false) {
+        $errors[] = $rendererFile . ' still renders visible Image unavailable fallback text.';
+    }
+
+    if (strpos($contents, 'site-image-picker-image-fallback') !== false) {
+        $errors[] = $rendererFile . ' still renders the old image fallback span.';
     }
 }
 

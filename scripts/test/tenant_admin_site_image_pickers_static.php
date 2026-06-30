@@ -39,7 +39,7 @@ foreach ([$settingsPath => $settings, $contentPath => $content] as $path => $sou
         'site-image-picker-image-wrap',
         'site-image-picker-image-fallback',
         'onerror="this.hidden=true;this.nextElementSibling.hidden=false;"',
-        'Image unavailable',
+        
         'site-image-picker-change-button',
         'Change image',
     ];

@@ -231,7 +231,7 @@ HTML;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout-v19">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-site-image-picker-render-v20">
 </head>
 <body class="tenant-admin-page platform-help-page">
 <header class="platform-header platform-help-header">
@@ -248,7 +248,6 @@ HTML;
     </main>
 </div>
 <footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer>
-<script defer src="/assets/tenant-admin-layout-rescue.js?v=20260630-image-picker-color-layout-v13"></script>
 </body>
 </html>
 HTML;

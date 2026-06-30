@@ -344,14 +344,13 @@ HTML;
     <meta name="description" content="ArtsFolio pricing for artist portfolio and sales platform plans.">
     <link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-colors-bg-image-picker-layout-v19">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-site-image-picker-render-v20">
 </head>
 <body>
 <header class="platform-header"><a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>{$canonicalNav}</header>
 <main>{$body}</main>
 <footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer>
-<script src="/assets/platform.js" defer></script><script defer src="/assets/tenant-admin-layout-rescue.js?v=20260630-image-picker-color-layout-v13"></script>
-</body>
+<script src="/assets/platform.js" defer></script></body>
 </html>
 HTML;
     }
