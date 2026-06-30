@@ -66,7 +66,7 @@ final class AdminLayout
     <link rel="stylesheet" href="/assets/site.css">
     <link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-colors-bg-controls-layout-v8&logo=20260623">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-colors-bg-controls-layout-v10&logo=20260623">
     <script defer src="/assets/admin-color-fields.js?v=20260620-palette-contrast"></script>
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css?v=20260623-email-outbox-containment">
     <script defer src="/assets/admin-typography-fields.js?v=20260620-typography-live"></script>

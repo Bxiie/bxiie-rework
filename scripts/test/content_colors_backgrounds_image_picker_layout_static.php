@@ -18,37 +18,39 @@ if ($cssPath === null) {
 } else {
     $css = file_get_contents($cssPath);
 }
-$required = [
-    'v8 layout marker' => 'content-colors-bg-controls-layout-20260630-v8',
-    'selected-image broad selector' => '[class*="selected-image"]:has(button)',
-    'image-picker broad selector' => '[class*="image-picker"]:has(img):has(button)',
-    'selected-image grid lanes' => 'grid-template-columns: minmax(9rem, max-content) minmax(8rem, 10.5rem) minmax(0, 1fr) max-content',
-    'children shrink guard' => 'min-width: 0 !important',
-    'duplicate unavailable image hidden' => 'img[alt="Image unavailable"]',
-    'image title wraps' => 'overflow-wrap: anywhere !important',
-    'change button nowrap' => 'white-space: nowrap !important',
-    'color input large swatch' => 'input[type="color"]',
-    'color layout two columns' => 'grid-template-columns: minmax(9rem, 1fr) minmax(14rem, 1fr)',
-    'small color swatches hidden' => '[class*="color-swatch"]',
-    'trailing color preview hidden' => ':has(input[type="color"]) > :last-child:not(input[type="color"])',
+$requiredCss = [
+    'content-colors-backgrounds-controls-layout-20260630-v10:start',
+    'img[alt*="image unavailable" i]',
+    'grid-template-columns: minmax(9.5rem, max-content) 10.5rem minmax(14rem, 1fr) max-content',
+    'input[type="color"]::-webkit-color-swatch',
+    'Remove the redundant tiny trailing color swatches',
+    'main input[type="color"] ~ [class*="swatch"]',
 ];
-foreach ($required as $label => $needle) {
-    if (strpos($css, $needle) === false) {
-        $failures[] = $label . ' missing: ' . $needle;
+foreach ($requiredCss as $needle) {
+    if ($css !== '' && strpos($css, $needle) === false) {
+        $failures[] = 'tenant-admin.css missing layout marker: ' . $needle;
     }
 }
-// Only live tests in scripts/test should be checked. Do not inspect storage/update-backups.
-$testDir = $root . '/scripts/test';
-foreach (glob($testDir . '/*.php') ?: [] as $file) {
-    $body = file_get_contents($file);
-    if (preg_match('/file_get_contents\([^\)]*tenant-admin\.css\?v=/', $body)) {
-        $failures[] = 'Static test uses cache-busted tenant-admin.css as a filesystem path: ' . basename($file);
+$testDir = __DIR__;
+$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($testDir, FilesystemIterator::SKIP_DOTS));
+$badTestPaths = [];
+foreach ($iterator as $file) {
+    if (!$file->isFile() || $file->getExtension() !== 'php') {
+        continue;
     }
+    $path = $file->getPathname();
+    $contents = file_get_contents($path);
+    if (preg_match('/file_get_contents\([^\)]*tenant-admin\.css\?v=/', $contents)) {
+        $badTestPaths[] = substr($path, strlen($root) + 1);
+    }
+}
+if ($badTestPaths) {
+    $failures[] = 'Live static tests still use cache-busted tenant-admin.css as a filesystem path: ' . implode(', ', $badTestPaths);
 }
 if ($failures) {
     fwrite(STDERR, "Content/colors background controls layout static check failed:\n");
     foreach ($failures as $failure) {
-        fwrite(STDERR, " - " . $failure . "\n");
+        fwrite(STDERR, ' - ' . $failure . "\n");
     }
     exit(1);
 }

@@ -201,7 +201,7 @@ HTML;
         return <<<HTML
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>{$title}</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools"><link rel="stylesheet" href="/assets/platform-custom.css"><link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-colors-bg-controls-layout-v8"><script src="/assets/directory-pagination.js" defer></script></head>
+<head><meta charset="utf-8"><title>{$title}</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools"><link rel="stylesheet" href="/assets/platform-custom.css"><link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-colors-bg-controls-layout-v10"><script src="/assets/directory-pagination.js" defer></script></head>
 <body><header class="platform-header"><a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>{$canonicalNav}</header><main>{$body}</main><footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer></body></html>
 HTML;
     }

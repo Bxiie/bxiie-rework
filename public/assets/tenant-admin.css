@@ -3236,3 +3236,237 @@ body.tenant-admin-page {
 }
 /* end content-colors-bg-controls-layout-20260630-v8 */
 
+/* content-colors-backgrounds-controls-layout-20260630-v10:start */
+/*
+   The selected-image controls on Content and Settings > Colors & Backgrounds use
+   several older markup shapes. This block intentionally targets the shared behavior:
+   a bordered row with an image/no-image preview and a Change image action.
+*/
+.tenant-admin-panel img[alt="Image unavailable"],
+.tenant-admin-panel img[alt*="image unavailable" i],
+.tenant-admin-page img[alt="Image unavailable"],
+.tenant-admin-page img[alt*="image unavailable" i],
+.tenant-admin-main img[alt="Image unavailable"],
+.tenant-admin-main img[alt*="image unavailable" i],
+main img[alt="Image unavailable"],
+main img[alt*="image unavailable" i] {
+    display: none !important;
+}
+
+.tenant-admin-panel [class*="selected"][class*="image"]:has(button),
+.tenant-admin-panel [class*="image"][class*="picker"]:has(button),
+.tenant-admin-panel [class*="media"][class*="picker"]:has(button),
+.tenant-admin-panel [class*="background"][class*="image"]:has(button),
+.tenant-admin-page [class*="selected"][class*="image"]:has(button),
+.tenant-admin-page [class*="image"][class*="picker"]:has(button),
+.tenant-admin-page [class*="media"][class*="picker"]:has(button),
+.tenant-admin-page [class*="background"][class*="image"]:has(button),
+.tenant-admin-main [class*="selected"][class*="image"]:has(button),
+.tenant-admin-main [class*="image"][class*="picker"]:has(button),
+.tenant-admin-main [class*="media"][class*="picker"]:has(button),
+.tenant-admin-main [class*="background"][class*="image"]:has(button),
+main [class*="selected"][class*="image"]:has(button),
+main [class*="image"][class*="picker"]:has(button),
+main [class*="media"][class*="picker"]:has(button),
+main [class*="background"][class*="image"]:has(button),
+main div:has(> button):has(> img),
+main div:has(> button):has(> picture),
+main div:has(> button):has(> [class*="thumb"]),
+main div:has(> button):has(> [class*="preview"]),
+main div:has(> button):has(> [class*="placeholder"]) {
+    display: grid !important;
+    grid-template-columns: minmax(9.5rem, max-content) 10.5rem minmax(14rem, 1fr) max-content !important;
+    align-items: center !important;
+    column-gap: 1.35rem !important;
+    row-gap: .85rem !important;
+    min-height: 7.5rem !important;
+    overflow: visible !important;
+}
+
+.tenant-admin-panel [class*="selected"][class*="image"]:has(button) > :first-child,
+.tenant-admin-panel [class*="image"][class*="picker"]:has(button) > :first-child,
+.tenant-admin-panel [class*="media"][class*="picker"]:has(button) > :first-child,
+.tenant-admin-panel [class*="background"][class*="image"]:has(button) > :first-child,
+.tenant-admin-page [class*="selected"][class*="image"]:has(button) > :first-child,
+.tenant-admin-page [class*="image"][class*="picker"]:has(button) > :first-child,
+.tenant-admin-page [class*="media"][class*="picker"]:has(button) > :first-child,
+.tenant-admin-page [class*="background"][class*="image"]:has(button) > :first-child,
+.tenant-admin-main [class*="selected"][class*="image"]:has(button) > :first-child,
+.tenant-admin-main [class*="image"][class*="picker"]:has(button) > :first-child,
+.tenant-admin-main [class*="media"][class*="picker"]:has(button) > :first-child,
+.tenant-admin-main [class*="background"][class*="image"]:has(button) > :first-child,
+main div:has(> button):has(> img) > :first-child,
+main div:has(> button):has(> picture) > :first-child,
+main div:has(> button):has(> [class*="thumb"]) > :first-child,
+main div:has(> button):has(> [class*="preview"]) > :first-child,
+main div:has(> button):has(> [class*="placeholder"]) > :first-child {
+    grid-column: 1 !important;
+    min-width: 9.5rem !important;
+    max-width: none !important;
+    overflow: visible !important;
+    white-space: nowrap !important;
+    text-overflow: clip !important;
+}
+
+.tenant-admin-panel [class*="selected"][class*="image"]:has(button) > img,
+.tenant-admin-panel [class*="selected"][class*="image"]:has(button) > picture,
+.tenant-admin-panel [class*="image"][class*="picker"]:has(button) > img,
+.tenant-admin-panel [class*="image"][class*="picker"]:has(button) > picture,
+.tenant-admin-panel [class*="media"][class*="picker"]:has(button) > img,
+.tenant-admin-panel [class*="media"][class*="picker"]:has(button) > picture,
+.tenant-admin-panel [class*="background"][class*="image"]:has(button) > img,
+.tenant-admin-panel [class*="background"][class*="image"]:has(button) > picture,
+main div:has(> button):has(> img) > img,
+main div:has(> button):has(> picture) > picture,
+main div:has(> button):has(> [class*="thumb"]) > [class*="thumb"],
+main div:has(> button):has(> [class*="preview"]) > [class*="preview"],
+main div:has(> button):has(> [class*="placeholder"]) > [class*="placeholder"] {
+    grid-column: 2 !important;
+    width: 10.5rem !important;
+    min-width: 10.5rem !important;
+    max-width: 10.5rem !important;
+    height: 6.25rem !important;
+    min-height: 6.25rem !important;
+    max-height: 6.25rem !important;
+    object-fit: cover !important;
+    border-radius: .7rem !important;
+    overflow: hidden !important;
+    position: static !important;
+}
+
+.tenant-admin-panel [class*="selected"][class*="image"]:has(button) > button,
+.tenant-admin-panel [class*="image"][class*="picker"]:has(button) > button,
+.tenant-admin-panel [class*="media"][class*="picker"]:has(button) > button,
+.tenant-admin-panel [class*="background"][class*="image"]:has(button) > button,
+.tenant-admin-page [class*="selected"][class*="image"]:has(button) > button,
+.tenant-admin-page [class*="image"][class*="picker"]:has(button) > button,
+.tenant-admin-page [class*="media"][class*="picker"]:has(button) > button,
+.tenant-admin-page [class*="background"][class*="image"]:has(button) > button,
+.tenant-admin-main [class*="selected"][class*="image"]:has(button) > button,
+.tenant-admin-main [class*="image"][class*="picker"]:has(button) > button,
+.tenant-admin-main [class*="media"][class*="picker"]:has(button) > button,
+.tenant-admin-main [class*="background"][class*="image"]:has(button) > button,
+main div:has(> button):has(> img) > button,
+main div:has(> button):has(> picture) > button,
+main div:has(> button):has(> [class*="thumb"]) > button,
+main div:has(> button):has(> [class*="preview"]) > button,
+main div:has(> button):has(> [class*="placeholder"]) > button {
+    grid-column: 4 !important;
+    justify-self: end !important;
+    white-space: nowrap !important;
+}
+
+.tenant-admin-panel [class*="selected"][class*="image"]:has(button) > :not(:first-child):not(img):not(picture):not(button),
+.tenant-admin-panel [class*="image"][class*="picker"]:has(button) > :not(:first-child):not(img):not(picture):not(button),
+.tenant-admin-panel [class*="media"][class*="picker"]:has(button) > :not(:first-child):not(img):not(picture):not(button),
+.tenant-admin-panel [class*="background"][class*="image"]:has(button) > :not(:first-child):not(img):not(picture):not(button),
+main div:has(> button):has(> img) > :not(:first-child):not(img):not(picture):not(button),
+main div:has(> button):has(> picture) > :not(:first-child):not(img):not(picture):not(button),
+main div:has(> button):has(> [class*="thumb"]) > :not(:first-child):not(img):not(picture):not(button),
+main div:has(> button):has(> [class*="preview"]) > :not(:first-child):not(img):not(picture):not(button),
+main div:has(> button):has(> [class*="placeholder"]) > :not(:first-child):not(img):not(picture):not(button) {
+    grid-column: 3 !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    position: static !important;
+    z-index: auto !important;
+}
+
+/* Large, obvious color picker. The hex text field remains separate. */
+.tenant-admin-panel input[type="color"],
+.tenant-admin-page input[type="color"],
+.tenant-admin-main input[type="color"],
+main input[type="color"] {
+    width: 100% !important;
+    min-width: 12rem !important;
+    height: 3.6rem !important;
+    padding: 0 !important;
+    border: 1px solid var(--tenant-admin-border, #cfc6b9) !important;
+    border-radius: .7rem !important;
+    background: transparent !important;
+    cursor: pointer !important;
+}
+
+.tenant-admin-panel input[type="color"]::-webkit-color-swatch-wrapper,
+.tenant-admin-page input[type="color"]::-webkit-color-swatch-wrapper,
+.tenant-admin-main input[type="color"]::-webkit-color-swatch-wrapper,
+main input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0 !important;
+}
+
+.tenant-admin-panel input[type="color"]::-webkit-color-swatch,
+.tenant-admin-page input[type="color"]::-webkit-color-swatch,
+.tenant-admin-main input[type="color"]::-webkit-color-swatch,
+main input[type="color"]::-webkit-color-swatch {
+    border: 0 !important;
+    border-radius: .65rem !important;
+}
+
+.tenant-admin-panel input[type="color"]::-moz-color-swatch,
+.tenant-admin-page input[type="color"]::-moz-color-swatch,
+.tenant-admin-main input[type="color"]::-moz-color-swatch,
+main input[type="color"]::-moz-color-swatch {
+    border: 0 !important;
+    border-radius: .65rem !important;
+}
+
+/* Remove the redundant tiny trailing color swatches. */
+.tenant-color-swatch,
+.tenant-admin-color-swatch,
+.tenant-color-preview-swatch,
+.tenant-color-preview,
+.color-swatch,
+.color-preview,
+.palette-current-swatch,
+.swatch-current,
+input[type="color"] + .tenant-color-swatch,
+input[type="color"] + .tenant-admin-color-swatch,
+input[type="color"] + .tenant-color-preview,
+input[type="color"] + .color-swatch,
+input[type="color"] + .color-preview,
+main input[type="color"] ~ [class*="swatch"],
+main input[type="color"] ~ [class*="preview"]:not([class*="palette"]):not([class*="toolbar"]),
+main .tenant-admin-field:has(input[type="color"]) > :last-child[class*="swatch"],
+main .tenant-admin-field:has(input[type="color"]) > :last-child[class*="preview"],
+main .form-row:has(input[type="color"]) > :last-child[class*="swatch"],
+main .form-row:has(input[type="color"]) > :last-child[class*="preview"],
+main div:has(> input[type="color"]):has(> input[type="text"]) > :last-child:not(input):not(label):not(button):not(select):not(textarea) {
+    display: none !important;
+}
+
+@media (max-width: 760px) {
+    main div:has(> button):has(> img),
+    main div:has(> button):has(> picture),
+    main div:has(> button):has(> [class*="thumb"]),
+    main div:has(> button):has(> [class*="preview"]),
+    main div:has(> button):has(> [class*="placeholder"]) {
+        grid-template-columns: 1fr auto !important;
+        min-height: 0 !important;
+    }
+    main div:has(> button):has(> img) > :first-child,
+    main div:has(> button):has(> picture) > :first-child,
+    main div:has(> button):has(> [class*="thumb"]) > :first-child,
+    main div:has(> button):has(> [class*="preview"]) > :first-child,
+    main div:has(> button):has(> [class*="placeholder"]) > :first-child {
+        grid-column: 1 / -1 !important;
+    }
+    main div:has(> button):has(> img) > img,
+    main div:has(> button):has(> picture) > picture,
+    main div:has(> button):has(> [class*="thumb"]) > [class*="thumb"],
+    main div:has(> button):has(> [class*="preview"]) > [class*="preview"],
+    main div:has(> button):has(> [class*="placeholder"]) > [class*="placeholder"] {
+        grid-column: 1 !important;
+    }
+    main div:has(> button):has(> img) > button,
+    main div:has(> button):has(> picture) > button,
+    main div:has(> button):has(> [class*="thumb"]) > button,
+    main div:has(> button):has(> [class*="preview"]) > button,
+    main div:has(> button):has(> [class*="placeholder"]) > button {
+        grid-column: 2 !important;
+    }
+}
+/* content-colors-backgrounds-controls-layout-20260630-v10:end */
+
