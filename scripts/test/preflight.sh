@@ -366,6 +366,8 @@ run_if_exists scripts/test/admin_notifications_watermark_nav_static.php
 
 echo "== Content/colors background image picker layout =="
 php scripts/test/content_colors_backgrounds_image_picker_layout_static.php
+echo "== Content about/contact full-width layout =="
+php scripts/test/content_about_contact_full_width_static.php
 
 run_php scripts/test/oauth_button_branding_static.php
 

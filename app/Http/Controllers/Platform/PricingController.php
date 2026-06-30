@@ -344,7 +344,7 @@ HTML;
     <meta name="description" content="ArtsFolio pricing for artist portfolio and sales platform plans.">
     <link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-site-image-picker-compact-summary-grid-v23">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-about-contact-wide-v24">
 </head>
 <body>
 <header class="platform-header"><a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>{$canonicalNav}</header>

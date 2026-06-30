@@ -3878,3 +3878,88 @@ details.site-image-picker,
         text-align: center !important;
     }
 }
+
+/* content-about-contact-wide-v24
+   Content page: About page and Contact page cards should stack full-width
+   instead of being squeezed into side-by-side columns. This intentionally keys
+   off the actual textareas so other two-column admin grids keep their layout. */
+form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact" i][name*="html" i])
+:is(
+    .tenant-admin-grid,
+    .tenant-admin-form-grid,
+    .tenant-admin-card-grid,
+    .tenant-settings-grid,
+    .tenant-content-grid,
+    .content-grid,
+    .settings-grid,
+    .admin-grid,
+    [class*="grid" i]
+) {
+    grid-template-columns: minmax(0, 1fr) !important;
+}
+
+form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact" i][name*="html" i])
+:is(
+    .tenant-admin-grid,
+    .tenant-admin-form-grid,
+    .tenant-admin-card-grid,
+    .tenant-settings-grid,
+    .tenant-content-grid,
+    .content-grid,
+    .settings-grid,
+    .admin-grid,
+    [class*="grid" i]
+) > *:has(textarea[name*="about" i][name*="html" i]),
+form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact" i][name*="html" i])
+:is(
+    .tenant-admin-grid,
+    .tenant-admin-form-grid,
+    .tenant-admin-card-grid,
+    .tenant-settings-grid,
+    .tenant-content-grid,
+    .content-grid,
+    .settings-grid,
+    .admin-grid,
+    [class*="grid" i]
+) > *:has(textarea[name*="contact" i][name*="html" i]) {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    max-width: none !important;
+}
+
+/* If the content page panels/cards themselves have layout width limits, relax them. */
+form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact" i][name*="html" i])
+*:has(> textarea[name*="about" i][name*="html" i]),
+form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact" i][name*="html" i])
+*:has(> textarea[name*="contact" i][name*="html" i]) {
+    max-width: none !important;
+}
+
+/* Full-width cards give the picker enough room; keep the summary usable there. */
+form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact" i][name*="html" i])
+.site-image-picker-summary {
+    grid-template-columns: max-content max-content minmax(0, 1fr) max-content !important;
+    grid-template-areas: "label thumb title button" !important;
+}
+
+form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact" i][name*="html" i])
+.site-image-picker-summary > span:first-child {
+    grid-area: label !important;
+}
+
+form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact" i][name*="html" i])
+.site-image-picker-summary > .site-image-picker-image-wrap,
+form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact" i][name*="html" i])
+.site-image-picker-summary > .site-image-picker-empty {
+    grid-area: thumb !important;
+}
+
+form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact" i][name*="html" i])
+.site-image-picker-summary > strong {
+    grid-area: title !important;
+}
+
+form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact" i][name*="html" i])
+.site-image-picker-summary > .site-image-picker-change-button {
+    grid-area: button !important;
+}
