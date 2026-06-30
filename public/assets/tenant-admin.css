@@ -3726,3 +3726,155 @@ input[type="color"] + .color-swatch,
         text-align: center !important;
     }
 }
+
+/* site-image-picker-compact-summary-grid-v23
+   Content can render two site-image pickers side-by-side. A four-column
+   summary row is too wide there, so the actual <summary> gets a compact
+   three-column/two-row grid:
+   row 1: Selected image | title/status | Change image
+   row 2: thumbnail      | title/status | Change image
+*/
+.site-image-picker,
+.site-image-picker details,
+details.site-image-picker,
+.site-image-picker-summary {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.site-image-picker-summary {
+    display: grid !important;
+    grid-template-columns: max-content minmax(0, 1fr) max-content !important;
+    grid-template-areas:
+        "label title button"
+        "thumb  title button" !important;
+    align-items: center !important;
+    column-gap: 1rem !important;
+    row-gap: 0.45rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+.site-image-picker-summary > span:first-child {
+    grid-area: label !important;
+    justify-self: start !important;
+    align-self: end !important;
+    white-space: nowrap !important;
+    min-width: 0 !important;
+    position: static !important;
+    transform: none !important;
+}
+
+.site-image-picker-summary > .site-image-picker-image-wrap,
+.site-image-picker-summary > .site-image-picker-empty,
+.site-image-picker-summary > .site-image-picker-draft-warning:not(:last-child) {
+    grid-area: thumb !important;
+    justify-self: start !important;
+    align-self: start !important;
+    position: static !important;
+    transform: none !important;
+}
+
+.site-image-picker-summary > .site-image-picker-image-wrap {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: clamp(5.25rem, 12vw, 9.5rem) !important;
+    min-width: clamp(5.25rem, 12vw, 9.5rem) !important;
+    max-width: 9.5rem !important;
+    height: 5.25rem !important;
+    overflow: hidden !important;
+    border-radius: 0.65rem !important;
+    background: rgba(0, 0, 0, 0.06) !important;
+    z-index: 0 !important;
+}
+
+.site-image-picker-summary > .site-image-picker-image-wrap img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    object-fit: cover !important;
+    position: static !important;
+    transform: none !important;
+}
+
+.site-image-picker-summary > strong {
+    grid-area: title !important;
+    justify-self: start !important;
+    align-self: center !important;
+    display: block !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    line-height: 1.15 !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    position: static !important;
+    transform: none !important;
+    z-index: 1 !important;
+}
+
+.site-image-picker-summary > .site-image-picker-image-wrap + strong + .site-image-picker-draft-warning,
+.site-image-picker-summary > strong + .site-image-picker-draft-warning {
+    grid-area: title !important;
+    align-self: end !important;
+    justify-self: start !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+    position: static !important;
+    transform: none !important;
+}
+
+.site-image-picker-summary > .site-image-picker-change-button {
+    grid-area: button !important;
+    justify-self: end !important;
+    align-self: center !important;
+    white-space: nowrap !important;
+    min-width: max-content !important;
+    max-width: 100% !important;
+    position: static !important;
+    transform: none !important;
+    z-index: 2 !important;
+}
+
+.site-image-picker-summary .site-image-picker-image-fallback {
+    display: none !important;
+}
+
+@media (max-width: 760px) {
+    .site-image-picker-summary {
+        grid-template-columns: minmax(0, 1fr) max-content !important;
+        grid-template-areas:
+            "label button"
+            "thumb  button"
+            "title title" !important;
+    }
+
+    .site-image-picker-summary > .site-image-picker-image-wrap {
+        width: min(11rem, 100%) !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        height: 6.25rem !important;
+    }
+}
+
+@media (max-width: 520px) {
+    .site-image-picker-summary {
+        grid-template-columns: 1fr !important;
+        grid-template-areas:
+            "label"
+            "thumb"
+            "title"
+            "button" !important;
+        align-items: stretch !important;
+    }
+
+    .site-image-picker-summary > .site-image-picker-change-button {
+        justify-self: stretch !important;
+        text-align: center !important;
+    }
+}

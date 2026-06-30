@@ -27,6 +27,8 @@ if ($cssPath === null) {
     $requiredCssMarkers = [
         'site-image-picker-render-v20',
         'site-image-picker-summary-grid-v22',
+        'site-image-picker-compact-summary-grid-v23',
+        'grid-template-areas',
         '.site-image-picker-summary',
         '.site-image-picker-current',
         '.site-image-picker-image-wrap',

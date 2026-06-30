@@ -231,7 +231,7 @@ HTML;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-site-image-picker-summary-grid-v22">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-site-image-picker-compact-summary-grid-v23">
 </head>
 <body class="tenant-admin-page platform-help-page">
 <header class="platform-header platform-help-header">
