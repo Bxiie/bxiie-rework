@@ -3825,59 +3825,40 @@ main div:has(> input[type="color"]):has(> input[type="text"]) > :last-child:not(
 }
 /* /artsfolio-content-colors-bg-picker-layout-v15 */
 
-/* content-colors-bg-controls-layout-v18
-   Tenant admin controls: large color swatches and safer selected-image rows.
-   The picker DOM varies across pages, so these selectors are intentionally broad
-   but scoped to tenant/admin panels.
-   Markers: selected-image image-picker selected-media background-image Change image Image unavailable */
-.tenant-admin-panel input[type="color"],
-.tenant-admin-form input[type="color"],
-.admin-panel input[type="color"],
-form input[type="color"] {
-    min-height: 3.25rem;
-    border-radius: 1rem;
-    padding: 0.25rem;
-    cursor: pointer;
-}
-
-.tenant-admin-panel input[type="color"]::-webkit-color-swatch-wrapper,
-.tenant-admin-form input[type="color"]::-webkit-color-swatch-wrapper,
-.admin-panel input[type="color"]::-webkit-color-swatch-wrapper,
-form input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 0;
-}
-
-.tenant-admin-panel input[type="color"]::-webkit-color-swatch,
-.tenant-admin-form input[type="color"]::-webkit-color-swatch,
-.admin-panel input[type="color"]::-webkit-color-swatch,
-form input[type="color"]::-webkit-color-swatch {
-    border: 0;
-    border-radius: 0.75rem;
-}
-
-.tenant-admin-panel input[type="color"]::-moz-color-swatch,
-.tenant-admin-form input[type="color"]::-moz-color-swatch,
-.admin-panel input[type="color"]::-moz-color-swatch,
-form input[type="color"]::-moz-color-swatch {
-    border: 0;
-    border-radius: 0.75rem;
-}
-
-.tenant-admin-panel input[type="color"] + .tenant-color-swatch,
-.tenant-admin-panel input[type="color"] + .color-preview-swatch,
-.tenant-admin-panel input[type="color"] + .color-swatch,
-.tenant-admin-panel .tenant-color-swatch[aria-hidden="true"],
-.tenant-admin-panel .color-preview-swatch[aria-hidden="true"],
-.tenant-admin-panel .color-swatch[aria-hidden="true"],
-.tenant-admin-form input[type="color"] + .tenant-color-swatch,
-.tenant-admin-form input[type="color"] + .color-preview-swatch,
-.tenant-admin-form input[type="color"] + .color-swatch,
-form input[type="color"] + .tenant-color-swatch,
-form input[type="color"] + .color-preview-swatch,
-form input[type="color"] + .color-swatch {
+/* content-colors-bg-image-picker-unavailable-v19
+   The "Image unavailable" artifact is a broken <img> fallback whose alt text
+   is being rendered by the browser. Hide only that broken placeholder, not the
+   real selected thumbnail. Markers: Image unavailable Change image selected-image. */
+.tenant-admin-panel img[alt="Image unavailable"],
+.tenant-admin-panel img[alt*="Image unavailable" i],
+.tenant-admin-panel img[title="Image unavailable"],
+.tenant-admin-panel img[title*="Image unavailable" i],
+.tenant-admin-form img[alt="Image unavailable"],
+.tenant-admin-form img[alt*="Image unavailable" i],
+.tenant-admin-form img[title="Image unavailable"],
+.tenant-admin-form img[title*="Image unavailable" i],
+.admin-panel img[alt="Image unavailable"],
+.admin-panel img[alt*="Image unavailable" i],
+.admin-panel img[title="Image unavailable"],
+.admin-panel img[title*="Image unavailable" i],
+form img[alt="Image unavailable"],
+form img[alt*="Image unavailable" i],
+form img[title="Image unavailable"],
+form img[title*="Image unavailable" i] {
     display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
 }
 
+/* Keep selected image rows from pinching text into unreadable columns. */
 .tenant-admin-panel [class*="selected-image"],
 .tenant-admin-panel [class*="image-picker"],
 .tenant-admin-panel [class*="selected-media"],
@@ -3887,32 +3868,6 @@ form input[type="color"] + .color-swatch {
 .tenant-admin-form [class*="selected-media"],
 .tenant-admin-form [class*="background-image"] {
     min-width: 0;
-}
-
-.tenant-admin-panel [class*="selected-image"] img,
-.tenant-admin-panel [class*="image-picker"] img,
-.tenant-admin-panel [class*="selected-media"] img,
-.tenant-admin-panel [class*="background-image"] img,
-.tenant-admin-form [class*="selected-image"] img,
-.tenant-admin-form [class*="image-picker"] img,
-.tenant-admin-form [class*="selected-media"] img,
-.tenant-admin-form [class*="background-image"] img {
-    flex: 0 0 auto;
-    max-width: 10rem;
-    object-fit: cover;
-}
-
-.tenant-admin-panel [class*="selected-image"] button,
-.tenant-admin-panel [class*="image-picker"] button,
-.tenant-admin-panel [class*="selected-media"] button,
-.tenant-admin-panel [class*="background-image"] button,
-.tenant-admin-form [class*="selected-image"] button,
-.tenant-admin-form [class*="image-picker"] button,
-.tenant-admin-form [class*="selected-media"] button,
-.tenant-admin-form [class*="background-image"] button {
-    flex: 0 0 auto;
-    margin-left: auto;
-    white-space: normal;
 }
 
 .tenant-admin-panel [class*="selected-image"] *,
@@ -3927,17 +3882,19 @@ form input[type="color"] + .color-swatch {
     overflow-wrap: anywhere;
 }
 
-@media (max-width: 760px) {
-    .tenant-admin-panel [class*="selected-image"] button,
-    .tenant-admin-panel [class*="image-picker"] button,
-    .tenant-admin-panel [class*="selected-media"] button,
-    .tenant-admin-panel [class*="background-image"] button,
-    .tenant-admin-form [class*="selected-image"] button,
-    .tenant-admin-form [class*="image-picker"] button,
-    .tenant-admin-form [class*="selected-media"] button,
-    .tenant-admin-form [class*="background-image"] button {
-        width: 100%;
-        margin-left: 0;
-    }
+/* Long color input is the swatch; redundant small swatches stay hidden. */
+.tenant-admin-panel input[type="color"] + .tenant-color-swatch,
+.tenant-admin-panel input[type="color"] + .color-preview-swatch,
+.tenant-admin-panel input[type="color"] + .color-swatch,
+.tenant-admin-panel .tenant-color-swatch[aria-hidden="true"],
+.tenant-admin-panel .color-preview-swatch[aria-hidden="true"],
+.tenant-admin-panel .color-swatch[aria-hidden="true"],
+.tenant-admin-form input[type="color"] + .tenant-color-swatch,
+.tenant-admin-form input[type="color"] + .color-preview-swatch,
+.tenant-admin-form input[type="color"] + .color-swatch,
+form input[type="color"] + .tenant-color-swatch,
+form input[type="color"] + .color-preview-swatch,
+form input[type="color"] + .color-swatch {
+    display: none !important;
 }
 

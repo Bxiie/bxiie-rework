@@ -25,6 +25,7 @@ if ($cssPath === null) {
 
     $requiredCssMarkers = [
         'content-colors-bg-controls-layout',
+        'content-colors-bg-image-picker-unavailable-v19',
         'input[type="color"]',
         '::-webkit-color-swatch',
         '.tenant-admin-panel .tenant-palette-button',
