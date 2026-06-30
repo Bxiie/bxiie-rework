@@ -68,3 +68,9 @@ Phase 2 does not change public add-to-cart, Stripe checkout, inventory reservati
 
 <!-- End of file. -->
 
+## Phase 3 public cart runtime
+
+Phase 3 makes the public cart variant-aware. Public artwork pages render active `artwork_sale_variants`, post `variant_id` to `/cart/add`, and show a non-empty cart indicator in tenant navigation. `CartIdentityService` resolves one canonical tenant cart across platform subdomains and custom domains through first-party host cookies plus signed cart bridge tokens. The `/cart/bridge-pixel` endpoint silently attaches alternate active tenant domains, and `/cart/bridge` is available for clicked links.
+
+Checkout still uses the existing Stripe path in this phase. Shipping and variant snapshots are visible in the cart, but Stripe shipping finalization remains a Phase 4 responsibility.
+

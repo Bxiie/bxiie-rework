@@ -16,3 +16,9 @@ Artists can now configure future shopping-cart details in the admin area, includ
 
 <!-- End of file. -->
 
+## Buying sized or optioned artwork
+
+Some artworks may ask you to choose a size, fit, edition, or other option before adding the item to your cart. Choose a size or option, set the quantity when available, and select Add to cart. The cart link appears in the site navigation whenever your cart has items.
+
+If the artist uses both an ArtsFolio address and a custom domain, your cart follows between those addresses automatically.
+

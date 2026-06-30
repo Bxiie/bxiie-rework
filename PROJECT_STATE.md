@@ -2268,3 +2268,7 @@ Tenant admins choose the public directory thumbnail from Admin → Directory. Th
 <!-- End of file. -->
 - Phase 2 adds tenant-admin artwork sale controls on upload and edit screens through `App\Tenant\Sales\ArtworkSaleAdminForm`. The controls persist product type, sizing schema, gender/fit schema, checkout enablement, shipping defaults, variant rows, SKU/internal codes, and inventory to `artwork_sale_config` and `artwork_sale_variants` while preserving the legacy artwork-level sales columns for current runtime compatibility.
 
+## Shopping cart phase 3
+
+Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Tenant artwork pages now render active sale variants, post `variant_id` to `/cart/add`, and show a non-empty cart link in tenant navigation. `CartIdentityService` maps host-local `artsfolio_cart` cookies to canonical tenant carts through `sales_cart_aliases`; signed bridge tokens attach carts between a tenant's active ArtsFolio subdomain and custom domains. Phase 3 also adds migration `0055_cart_variant_public_runtime.sql`, which makes cart-item uniqueness variant-based. Stripe shipping/order finalization remains Phase 4.
+

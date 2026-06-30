@@ -11,6 +11,7 @@ use App\Services\FirstPartyCaptcha;
 use App\Support\Pagination\Pagination;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Artwork\ArtworkReadRepository;
+use App\Tenant\Sales\CartIdentityService;
 use App\Tenant\Settings\TenantSettingsRepository;
 use PDO;
 use Throwable;
@@ -371,7 +372,7 @@ HTML
     }
 
     /**
-     * Renders phase-one sales context on artwork detail pages.
+     * Renders variant-aware sales context on artwork detail pages.
      *
      * @param array<string,mixed> $artwork
      */
@@ -379,11 +380,11 @@ HTML
     {
         $priceLine = $this->publicPriceLine($artwork);
         $salesNotes = trim((string) $this->settings->get($tenant, 'sales_notes', ''));
-        $inventoryLabel = ((int) ($artwork['is_one_off'] ?? 1)) === 1
-            ? 'One-off artwork'
-            : 'Multiple item · ' . max(1, (int) ($artwork['inventory_quantity'] ?? 1)) . ' available';
+        $config = $this->saleConfigForPublicArtwork($tenant, (int) ($artwork['id'] ?? 0));
+        $variants = $this->saleVariantsForPublicArtwork($tenant, (int) ($artwork['id'] ?? 0));
+        $inventoryLabel = $this->publicInventoryLabel($config, $variants, $artwork);
 
-        if ($priceLine === '' && $salesNotes === '') {
+        if ($priceLine === '' && $salesNotes === '' && $config === null) {
             return '';
         }
 
@@ -411,26 +412,161 @@ HTML;
         if (!$this->tenantSalesEnabled($tenant)) {
             return '<p class="sales-note-small">Online checkout is available on paid ArtsFolio plans.</p>';
         }
-        if ((string) ($artwork['sale_status'] ?? '') !== 'for_sale' || trim((string) ($artwork['price'] ?? '')) === '') {
+        if ((string) ($artwork['sale_status'] ?? '') !== 'for_sale') {
             return '';
+        }
+        $config = $this->saleConfigForPublicArtwork($tenant, (int) ($artwork['id'] ?? 0));
+        if (!$config || (int) ($config['checkout_enabled'] ?? 0) !== 1) {
+            return '';
+        }
+        $variants = array_values(array_filter(
+            $this->saleVariantsForPublicArtwork($tenant, (int) ($artwork['id'] ?? 0)),
+            static fn (array $variant): bool => (int) ($variant['available_quantity'] ?? 0) > 0
+        ));
+        if ($variants === []) {
+            return '<p class="sales-note-small">This item is currently sold out.</p>';
         }
 
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
         $artworkId = (int) ($artwork['id'] ?? 0);
-        $isOneOff = ((int) ($artwork['is_one_off'] ?? 1)) === 1;
+        $isOneOff = (string) ($config['sale_kind'] ?? 'one_off') === 'one_off';
+        $variantControl = $this->variantControl($variants);
         $quantity = $isOneOff
             ? '<input type="hidden" name="quantity" value="1">'
-            : '<label>Quantity <input type="number" name="quantity" min="1" max="' . max(1, (int) ($artwork['inventory_quantity'] ?? 1)) . '" value="1"></label>';
+            : '<label>Quantity <input type="number" name="quantity" min="1" max="' . max(1, (int) max(array_column($variants, 'available_quantity'))) . '" value="1"></label>';
 
         return <<<HTML
-<form method="post" action="/cart/add" class="artwork-cart-form">
+<form method="post" action="/cart/add" class="artwork-cart-form artwork-sale-options">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <input type="hidden" name="artwork_id" value="{$artworkId}">
+    {$variantControl}
     {$quantity}
     <button class="button" type="submit">Add to cart</button>
 </form>
 <p class="sales-note-small">Checkout is processed securely through Stripe.</p>
 HTML;
+    }
+
+    /** @param list<array<string,mixed>> $variants */
+    private function variantControl(array $variants): string
+    {
+        if (count($variants) === 1) {
+            return '<input type="hidden" name="variant_id" value="' . (int) $variants[0]['id'] . '">' . $this->variantSummary($variants[0]);
+        }
+
+        $options = '';
+        foreach ($variants as $variant) {
+            $label = $this->variantPublicLabel($variant) . ' · ' . $this->money((int) ($variant['resolved_price_cents'] ?? $variant['price_cents'] ?? 0)) . ' · ' . (int) ($variant['available_quantity'] ?? 0) . ' available';
+            $options .= '<option value="' . (int) $variant['id'] . '">' . $this->escape($label) . '</option>';
+        }
+
+        return '<label>Choose option <select name="variant_id" required>' . $options . '</select></label>';
+    }
+
+    /** @param array<string,mixed> $variant */
+    private function variantSummary(array $variant): string
+    {
+        $label = $this->variantPublicLabel($variant);
+        return $label === 'Default' ? '' : '<p class="sales-note-small">Option: ' . $this->escape($label) . '</p><input type="hidden" name="variant_id" value="' . (int) $variant['id'] . '">';
+    }
+
+    /** @param array<string,mixed> $variant */
+    private function variantPublicLabel(array $variant): string
+    {
+        $parts = [];
+        foreach (['variant_label', 'size_value', 'gender_value'] as $key) {
+            $value = trim((string) ($variant[$key] ?? ''));
+            if ($value !== '' && $value !== 'not_applicable') {
+                $parts[] = $value;
+            }
+        }
+
+        return implode(' · ', array_unique($parts)) ?: 'Default';
+    }
+
+    /** @return array<string,mixed>|null */
+    private function saleConfigForPublicArtwork(TenantContext $tenant, int $artworkId): ?array
+    {
+        try {
+            $stmt = $this->pdo->prepare('SELECT * FROM artwork_sale_config WHERE tenant_id = :tenant_id AND artwork_id = :artwork_id LIMIT 1');
+            $stmt->execute(['tenant_id' => $tenant->tenantId, 'artwork_id' => $artworkId]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row ?: null;
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /** @return list<array<string,mixed>> */
+    private function saleVariantsForPublicArtwork(TenantContext $tenant, int $artworkId): array
+    {
+        try {
+            $stmt = $this->pdo->prepare(
+                'SELECT v.*, COALESCE(v.price_cents, c.base_price_cents, 0) AS resolved_price_cents,
+                        GREATEST(0, v.inventory_quantity - COALESCE((
+                            SELECT SUM(r.quantity)
+                            FROM sales_inventory_reservations r
+                            WHERE r.variant_id = v.id
+                              AND r.status = "reserved"
+                              AND r.expires_at > UTC_TIMESTAMP()
+                        ), 0)) AS available_quantity
+                 FROM artwork_sale_variants v
+                 JOIN artwork_sale_config c ON c.artwork_id = v.artwork_id
+                 WHERE v.tenant_id = :tenant_id
+                   AND v.artwork_id = :artwork_id
+                   AND v.is_active = 1
+                 ORDER BY v.sort_order ASC, v.id ASC'
+            );
+            $stmt->execute(['tenant_id' => $tenant->tenantId, 'artwork_id' => $artworkId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
+    /** @param array<string,mixed>|null $config @param list<array<string,mixed>> $variants @param array<string,mixed> $artwork */
+    private function publicInventoryLabel(?array $config, array $variants, array $artwork): string
+    {
+        if (!$config) {
+            return ((int) ($artwork['is_one_off'] ?? 1)) === 1
+                ? 'One-off artwork'
+                : 'Multiple item · ' . max(1, (int) ($artwork['inventory_quantity'] ?? 1)) . ' available';
+        }
+        $available = 0;
+        foreach ($variants as $variant) {
+            $available += max(0, (int) ($variant['available_quantity'] ?? 0));
+        }
+        return match ((string) ($config['sale_kind'] ?? 'one_off')) {
+            'variant_inventory' => 'Sized / optioned item · ' . $available . ' available',
+            'limited_quantity' => 'Multiple item · ' . $available . ' available',
+            default => 'One-off artwork',
+        };
+    }
+
+    private function cartChrome(TenantContext $tenant): string
+    {
+        try {
+            $request = Request::fromGlobals();
+            $identity = new CartIdentityService($this->pdo);
+            $resolved = $identity->resolveCartForRequest($tenant, $request, false);
+            $cart = is_array($resolved['cart']) ? $resolved['cart'] : null;
+            if (!$cart) {
+                return '';
+            }
+            $summary = (new \App\Tenant\Sales\SalesRepository($this->pdo))->cartSummary($cart);
+            if ((int) $summary['item_count'] <= 0) {
+                return '';
+            }
+            $label = 'Cart (' . (int) $summary['item_count'] . ') ' . $this->money((int) $summary['total_cents']);
+            return '<a class="site-cart-link" href="/cart" aria-label="Shopping cart">' . $this->escape($label) . '</a>' . $identity->bridgePixels($tenant, $request, (int) $summary['cart_id']);
+        } catch (Throwable) {
+            return '';
+        }
+    }
+
+    private function money(int $cents): string
+    {
+        return '$' . number_format($cents / 100, 2);
     }
 
     private function tenantSalesEnabled(TenantContext $tenant): bool
@@ -617,6 +753,7 @@ private function tenantAdminLink(TenantContext $tenant): string
         $previewSwitch = $this->unpublishedPreviewFooterSwitch($tenant);
         $socialLinks = $this->socialFooterLinks($tenant);
         $platformAdminLink = $this->tenantAdminLink($tenant);
+        $cartChrome = $this->cartChrome($tenant);
         $turnstileScript = FirstPartyCaptcha::isConfigured($this->turnstileSiteKey($tenant)) ? '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>' : '';
 
         return <<<HTML
@@ -641,6 +778,7 @@ private function tenantAdminLink(TenantContext $tenant): string
         <a href="/{$aboutSlug}">{$aboutTab}</a>
         <a href="/{$contactSlug}">{$contactTab}</a>
         {$platformAdminLink}
+        {$cartChrome}
     </nav>
 </header>
 <main class="site-main tenant-content-surface">

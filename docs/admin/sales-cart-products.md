@@ -46,3 +46,9 @@ Phase 2 only stores the configuration. Public variant selection, variant-aware c
 
 <!-- End of file. -->
 
+## Phase 3 public buyer behavior
+
+The artwork sales settings configured by administrators now appear on public artwork pages. The variant-aware public cart forms let buyers choose a size, fit, or other option before adding an item to the cart. If the cart is not empty, tenant pages show a cart link in the site navigation.
+
+When a tenant uses both an ArtsFolio subdomain and a custom domain, the buyer cart follows between active domains through the cart bridge.
+

@@ -83,6 +83,145 @@ final class SalesRepository
         $stmt->execute(['cart_id' => $cartId, 'id' => $itemId, 'quantity' => $quantity]);
     }
 
+    /**
+     * Returns the sale configuration row for a tenant artwork.
+     *
+     * @return array<string,mixed>|null
+     */
+    public function saleConfigForArtwork(TenantContext $tenant, int $artworkId): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM artwork_sale_config WHERE tenant_id = :tenant_id AND artwork_id = :artwork_id LIMIT 1');
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'artwork_id' => $artworkId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
+
+    /**
+     * Returns active sale variants with current reservation-adjusted availability.
+     *
+     * @return list<array<string,mixed>>
+     */
+    public function variantsForArtwork(TenantContext $tenant, int $artworkId, bool $activeOnly = true): array
+    {
+        $activeClause = $activeOnly ? 'AND v.is_active = 1' : '';
+        $stmt = $this->pdo->prepare(
+            'SELECT v.*,
+                    GREATEST(0, v.inventory_quantity - COALESCE((
+                        SELECT SUM(r.quantity)
+                        FROM sales_inventory_reservations r
+                        WHERE r.variant_id = v.id
+                          AND r.status = "reserved"
+                          AND r.expires_at > UTC_TIMESTAMP()
+                    ), 0)) AS available_quantity
+             FROM artwork_sale_variants v
+             WHERE v.tenant_id = :tenant_id
+               AND v.artwork_id = :artwork_id
+               ' . $activeClause . '
+             ORDER BY v.sort_order ASC, v.id ASC'
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'artwork_id' => $artworkId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    /**
+     * Returns one active purchasable variant for an artwork.
+     *
+     * @return array<string,mixed>|null
+     */
+    public function variantForPurchase(TenantContext $tenant, int $artworkId, int $variantId): ?array
+    {
+        foreach ($this->variantsForArtwork($tenant, $artworkId, true) as $variant) {
+            if ((int) $variant['id'] === $variantId) {
+                return $variant;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Adds a variant-aware row to the cart while snapshotting price, option, and shipping fields.
+     *
+     * @param array<string,mixed> $cart
+     * @param array<string,mixed> $artwork
+     * @param array<string,mixed> $variant
+     * @param array{shipping_price_cents:int,shipping_additional_item_cents:int} $shipping
+     */
+    public function addVariantItem(array $cart, array $artwork, array $variant, int $quantity, int $unitPriceCents, array $shipping): void
+    {
+        $quantity = max(1, $quantity);
+        $maxQuantity = max(1, (int) ($variant['available_quantity'] ?? $variant['inventory_quantity'] ?? 1));
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO sales_cart_items (
+                cart_id, artwork_id, variant_id, quantity, unit_price_cents,
+                shipping_price_cents, shipping_additional_item_cents,
+                title_snapshot, variant_label_snapshot, size_value_snapshot, gender_value_snapshot, media_uuid_snapshot
+             ) VALUES (
+                :cart_id, :artwork_id, :variant_id, :quantity, :unit_price_cents,
+                :shipping_price_cents, :shipping_additional_item_cents,
+                :title, :variant_label, :size_value, :gender_value, :media_uuid
+             )
+             ON DUPLICATE KEY UPDATE
+                quantity = LEAST(quantity + VALUES(quantity), :max_quantity),
+                unit_price_cents = VALUES(unit_price_cents),
+                shipping_price_cents = VALUES(shipping_price_cents),
+                shipping_additional_item_cents = VALUES(shipping_additional_item_cents),
+                title_snapshot = VALUES(title_snapshot),
+                variant_label_snapshot = VALUES(variant_label_snapshot),
+                size_value_snapshot = VALUES(size_value_snapshot),
+                gender_value_snapshot = VALUES(gender_value_snapshot),
+                media_uuid_snapshot = VALUES(media_uuid_snapshot),
+                updated_at = CURRENT_TIMESTAMP'
+        );
+        $stmt->execute([
+            'cart_id' => (int) $cart['id'],
+            'artwork_id' => (int) $artwork['id'],
+            'variant_id' => (int) $variant['id'],
+            'quantity' => min($quantity, $maxQuantity),
+            'max_quantity' => $maxQuantity,
+            'unit_price_cents' => $unitPriceCents,
+            'shipping_price_cents' => max(0, (int) $shipping['shipping_price_cents']),
+            'shipping_additional_item_cents' => max(0, (int) $shipping['shipping_additional_item_cents']),
+            'title' => (string) $artwork['title'],
+            'variant_label' => (string) ($variant['variant_label'] ?? 'Default'),
+            'size_value' => $variant['size_value'] ?? null,
+            'gender_value' => $variant['gender_value'] ?? 'not_applicable',
+            'media_uuid' => $artwork['media_uuid'] ?? null,
+        ]);
+
+        $touch = $this->pdo->prepare('UPDATE sales_carts SET last_item_added_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = :cart_id');
+        $touch->execute(['cart_id' => (int) $cart['id']]);
+    }
+
+    /**
+     * Returns a compact non-empty cart summary for tenant chrome.
+     *
+     * @return array{item_count:int,subtotal_cents:int,shipping_cents:int,total_cents:int,cart_id:int}
+     */
+    public function cartSummary(array $cart): array
+    {
+        $items = $this->items($cart);
+        $itemCount = 0;
+        $subtotal = 0;
+        $shipping = 0;
+        foreach ($items as $item) {
+            $quantity = max(1, (int) ($item['quantity'] ?? 1));
+            $itemCount += $quantity;
+            $subtotal += $quantity * (int) ($item['unit_price_cents'] ?? 0);
+            $shipping += max(0, (int) ($item['shipping_price_cents'] ?? 0)) + max(0, $quantity - 1) * max(0, (int) ($item['shipping_additional_item_cents'] ?? 0));
+        }
+
+        return [
+            'item_count' => $itemCount,
+            'subtotal_cents' => $subtotal,
+            'shipping_cents' => $shipping,
+            'total_cents' => $subtotal + $shipping,
+            'cart_id' => (int) $cart['id'],
+        ];
+    }
+
     public function createOrderFromCart(TenantContext $tenant, array $cart, array $items, int $commissionCents, int $creditCardFeeCents = 0, int $sellerNetCents = 0): array
     {
         if ($items === []) {

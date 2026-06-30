@@ -317,6 +317,8 @@ return static function (Router $router, array $context): void {
         $router->post('/signup', fn (Request $request): Response => $signupController->submit($request, $tenant));
         $tenantSalesController = new TenantSalesController(new SalesRepository($pdo), new TenantSettingsRepository($pdo), new PlatformSettingsRepository($pdo), new CsrfTokenService(), $pdo);
         $router->get('/cart', fn (Request $request): Response => $tenantSalesController->cart($request, $tenant));
+        $router->get('/cart/bridge-pixel', fn (Request $request): Response => $tenantSalesController->bridgePixel($request, $tenant));
+        $router->get('/cart/bridge', fn (Request $request): Response => $tenantSalesController->bridge($request, $tenant));
         $router->post('/cart/add', fn (Request $request): Response => $tenantSalesController->add($request, $tenant));
         $router->post('/cart/update', fn (Request $request): Response => $tenantSalesController->update($request, $tenant));
         $router->post('/cart/checkout', fn (Request $request): Response => $tenantSalesController->checkout($request, $tenant));
