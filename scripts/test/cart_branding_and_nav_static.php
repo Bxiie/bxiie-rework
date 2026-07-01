@@ -11,7 +11,7 @@ foreach ([
     'tenant-cart-link',
     'href="/cart"',
     'private function cartMoney',
-    'return \'<a class="site-cart-link tenant-cart-link" href="/cart"',
+    'item_count',
 ] as $needle) {
     if (!str_contains($home, $needle)) {
         $failures[] = "HomeController missing {$needle}";

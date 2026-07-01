@@ -2338,3 +2338,7 @@ Tenant public pages now render a Cart navigation link consistently through HomeC
 
 `SalesRepository::lineShippingCents()` is required by checkout order creation. A force repair inserts the helper directly before the `SalesRepository` class closing brace when it is missing, and the static test now uses literal single-quoted markers so `$quantity` is not interpolated by PHP during the test itself.
 
+## Cart navigation visibility and Stripe checkout cancellation
+- Tenant public cart navigation is visible only when the resolved active tenant cart contains at least one item. Empty carts and cart-summary failures do not render a misleading Cart link.
+- `/cart/checkout` keeps the active cart cookie and cart row while the buyer is redirected to Stripe. Stripe `cancel_url` returns to `/cart?checkout=cancelled&order_id=...`; the cart page tenant-checks that order, releases its pending reservations, marks the order `checkout_cancelled`, and leaves the cart available for editing or retry.
+

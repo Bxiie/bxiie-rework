@@ -91,6 +91,8 @@ final class SalesController
 
     public function cart(Request $request, TenantContext $tenant): Response
     {
+        $this->releaseCancelledCheckout($tenant);
+
         $identity = new CartIdentityService($this->pdo);
         $resolved = $identity->resolveCartForRequest($tenant, $request, false);
         $cart = is_array($resolved['cart']) ? $resolved['cart'] : null;
@@ -190,11 +192,11 @@ final class SalesController
         $scheme = 'https';
         $host = $request->host();
         $successUrl = $scheme . '://' . $host . '/checkout/success?session_id={CHECKOUT_SESSION_ID}';
-        $cancelUrl = $scheme . '://' . $host . '/cart?checkout=cancelled';
         $order = null;
 
         try {
             $order = $this->sales->createOrderFromCart($tenant, $cart, $items, $commissionCents, (int) $fees['credit_card_fee_cents'], (int) $fees['seller_net_cents']);
+            $cancelUrl = $scheme . '://' . $host . '/cart?checkout=cancelled&order_id=' . (int) $order['id'];
             $customerEmail = strtolower(trim((string) ($_POST['customer_email'] ?? (($cart['contact_email'] ?? '') ?: ($cart['customer_email'] ?? '')))));
             $session = (new StripeCheckoutService())->createSession(
                 (string) $this->platformSettings->get('stripe_secret_key', ''),
@@ -208,8 +210,11 @@ final class SalesController
                 $customerEmail !== '' ? $customerEmail : null,
             );
             $this->sales->attachCheckoutSession((int) $order['id'], (string) $session['id'], (string) $session['url']);
-            $this->sales->markCartCheckedOut((int) $cart['id']);
-            return new Response('', 303, ['Location' => (string) $session['url'], 'Set-Cookie' => (new CartIdentityService($this->pdo))->expireCartCookie()]);
+
+            // Keep the active cart cookie and cart row in place while the buyer
+            // is at Stripe. If they cancel and return, /cart can release this
+            // checkout attempt's reservations and show the original cart again.
+            return new Response('', 303, ['Location' => (string) $session['url']]);
         } catch (Throwable $e) {
             if (is_array($order) && isset($order['id'])) {
                 $this->sales->releaseReservationsForOrder((int) $order['id']);
@@ -324,7 +329,7 @@ final class SalesController
         <a href="/{$portfolioSlug}">{$portfolioTab}</a>
         <a href="/{$aboutSlug}">{$aboutTab}</a>
         <a href="/{$contactSlug}">{$contactTab}</a>
-        <a class="site-cart-link tenant-cart-link" href="/cart" aria-label="Shopping cart">Cart</a>
+        {$this->cartChromeForTenantPage($tenant)}
     </nav>
 </header>
 <main class="site-main tenant-content-surface cart-page-surface">
@@ -333,6 +338,60 @@ final class SalesController
 </body>
 </html>
 HTML;
+    }
+
+    /**
+     * Release reservations when Stripe sends the buyer back through cancel_url.
+     *
+     * The order id is tenant-checked before release. The cart remains active so
+     * the buyer can edit the cart or start checkout again without rebuilding it.
+     */
+    private function releaseCancelledCheckout(TenantContext $tenant): void
+    {
+        if ((string) ($_GET['checkout'] ?? '') !== 'cancelled') {
+            return;
+        }
+        $orderId = (int) ($_GET['order_id'] ?? 0);
+        if ($orderId <= 0) {
+            return;
+        }
+        try {
+            $order = $this->sales->order($tenant, $orderId);
+            if ($order && (string) ($order['payment_status'] ?? '') === 'checkout_pending') {
+                $this->sales->releaseReservationsForOrder($orderId, 'checkout_cancelled');
+            }
+        } catch (Throwable) {
+            // Cart display should not fail because a cancellation cleanup has
+            // already happened or because the payment attempt was not found.
+        }
+    }
+
+    /**
+     * Render a cart link inside SalesController's tenant shell only when the
+     * active tenant cart has items. This mirrors HomeController cart chrome.
+     */
+    private function cartChromeForTenantPage(TenantContext $tenant): string
+    {
+        try {
+            $request = Request::fromGlobals();
+            $resolved = (new CartIdentityService($this->pdo))->resolveCartForRequest($tenant, $request, false);
+            $cart = is_array($resolved['cart'] ?? null) ? $resolved['cart'] : null;
+            if (!$cart) {
+                return '';
+            }
+            $summary = $this->sales->cartSummary($cart);
+            if ((int) ($summary['item_count'] ?? 0) <= 0) {
+                return '';
+            }
+
+            return '<a class="site-cart-link tenant-cart-link" href="/cart" aria-label="Shopping cart">Cart ('
+                . (int) $summary['item_count']
+                . ') '
+                . $this->money((int) ($summary['total_cents'] ?? 0))
+                . '</a>';
+        } catch (Throwable) {
+            return '';
+        }
     }
 
     private function saveCartContact(int $cartId): void

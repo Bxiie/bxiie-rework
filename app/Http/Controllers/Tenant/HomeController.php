@@ -829,30 +829,29 @@ HTML;
             $identity = new CartIdentityService($this->pdo);
             $resolved = $identity->resolveCartForRequest($tenant, $request, false);
             $cart = is_array($resolved['cart'] ?? null) ? $resolved['cart'] : null;
-            $label = 'Cart';
-            $bridgePixels = '';
-
-            if ($cart) {
-                $summary = (new \App\Tenant\Sales\SalesRepository($this->pdo))->cartSummary($cart);
-                if ((int) ($summary['item_count'] ?? 0) > 0) {
-                    $label = 'Cart (' . (int) $summary['item_count'] . ') ' . $this->cartMoney((int) ($summary['total_cents'] ?? 0));
-                    $bridgePixels = $identity->bridgePixels($tenant, $request, (int) ($summary['cart_id'] ?? $cart['id'] ?? 0));
-                }
+            if (!$cart) {
+                return '';
             }
+
+            $summary = (new \App\Tenant\Sales\SalesRepository($this->pdo))->cartSummary($cart);
+            if ((int) ($summary['item_count'] ?? 0) <= 0) {
+                return '';
+            }
+
+            $label = 'Cart (' . (int) $summary['item_count'] . ') ' . $this->cartMoney((int) ($summary['total_cents'] ?? 0));
+            $bridgePixels = $identity->bridgePixels($tenant, $request, (int) ($summary['cart_id'] ?? $cart['id'] ?? 0));
 
             return '<a class="site-cart-link tenant-cart-link" href="/cart" aria-label="Shopping cart">'
                 . $this->escape($label)
                 . '</a>'
                 . $bridgePixels;
         } catch (Throwable) {
-            // The cart link is a navigation affordance and must not disappear if
-            // cart summary lookup fails. The /cart page can recover or show an
-            // empty cart, while a missing link strands the buyer.
-            return '<a class="site-cart-link tenant-cart-link" href="/cart" aria-label="Shopping cart">Cart</a>';
+            // Cart chrome is intentionally hidden when the current tenant cart
+            // cannot be resolved. A broken cart summary must not expose an empty
+            // or misleading cart link on public tenant pages.
+            return '';
         }
     }
-
-
 
     /**
      * Formats public cart money without depending on SalesController helpers.
