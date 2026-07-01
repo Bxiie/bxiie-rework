@@ -503,7 +503,7 @@ final class SalesRepository
 
                 $decrement = $this->pdo->prepare(
                     'UPDATE artwork_sale_variants
-                        SET inventory_quantity = inventory_quantity - :quantity,
+                        SET inventory_quantity = inventory_quantity - :decrement_quantity,
                             updated_at = CURRENT_TIMESTAMP
                       WHERE id = :variant_id
                         AND tenant_id = :tenant_id
@@ -511,6 +511,7 @@ final class SalesRepository
                         AND inventory_quantity >= :quantity'
                 );
                 $decrement->execute([
+                    'decrement_quantity' => (int) $reservation['quantity'],
                     'quantity' => (int) $reservation['quantity'],
                     'variant_id' => $variantId,
                     'artwork_id' => (int) $reservation['artwork_id'],

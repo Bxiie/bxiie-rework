@@ -2291,3 +2291,8 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Shopping cart repair 2026-06-30: public artwork sales notes are now direct-artist copy only. Artwork configured for platform checkout suppresses the tenant `sales_notes` direct-sales message and renders cart/checkout-specific messaging instead.
 
 # End of file.
+
+## Shopping cart add-to-cart PDO placeholder repair - 2026-06-30
+
+The public `/cart/add` path was repaired after native MariaDB/PDO prepared statements failed on repeated named placeholders in cart identity and checkout SQL. `CartIdentityService` now uses distinct tenant placeholders for alias/cart joins, `SalesRepository` uses distinct decrement/minimum inventory placeholders, and `SalesController` uses distinct contact email placeholders. `scripts/test/sales_cart_add_pdo_placeholders_static.php` covers the regression.
+- 2026-06-30: Repaired variant checkout inventory SQL marker so the guarded payment-time decrement continues to use `inventory_quantity >= :quantity` for the existing phase7 inventory regression test while retaining a distinct `:decrement_quantity` placeholder for the SET expression.
