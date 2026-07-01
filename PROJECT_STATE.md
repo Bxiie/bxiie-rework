@@ -2314,3 +2314,5 @@ The variant inventory decrement SQL intentionally uses `:decrement_quantity` for
 
 ## Shopping cart / sales checkout
 - Cart-add runtime failures are logged to `storage/logs/cart_add.log`, falling back to `/tmp/artsfolio_cart_add.log`, with the `[ArtsFolio cart/add]` marker so production 500s can be diagnosed even when PHP `error_log()` is routed outside the application tree.
+
+- 2026-07-01: Repaired tenant `/cart/add` CSRF validation to call `CsrfTokenService::validate()` instead of the nonexistent `verify()` method. Kept targeted cart-add failure logging in place for production diagnostics.

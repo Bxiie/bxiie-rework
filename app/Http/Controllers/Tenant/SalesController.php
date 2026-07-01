@@ -391,7 +391,7 @@ final class SalesController
 
     private function verifyCsrf(): bool
     {
-        return $this->csrf->verify((string) ($_POST['csrf_token'] ?? ''));
+        return $this->csrf->validate((string) ($_POST['csrf_token'] ?? ''));
     }
 
     private function money(int $cents): string
