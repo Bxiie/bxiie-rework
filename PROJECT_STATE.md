@@ -2333,3 +2333,8 @@ The cart checkout line-shipping static test was corrected to use single-quoted l
 ## Shopping cart branding and navigation repair - 2026-07-01
 
 Tenant public pages now render a Cart navigation link consistently through HomeController::cartChrome. The link no longer depends on HomeController calling SalesController-only helper methods, so buyers are not stranded after adding an item. SalesController cart, checkout error, and order success responses now render inside a small tenant-branded public shell with /assets/site.css and /tenant.css instead of returning unbranded utility HTML.
+
+## Cart checkout line-shipping force repair - 2026-07-01
+
+`SalesRepository::lineShippingCents()` is required by checkout order creation. A force repair inserts the helper directly before the `SalesRepository` class closing brace when it is missing, and the static test now uses literal single-quoted markers so `$quantity` is not interpolated by PHP during the test itself.
+

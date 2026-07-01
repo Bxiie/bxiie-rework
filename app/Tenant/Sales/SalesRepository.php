@@ -785,6 +785,17 @@ final class SalesRepository
         $stmt = $this->pdo->query('SELECT o.*, t.name AS tenant_name, t.slug AS tenant_slug FROM sales_orders o JOIN tenants t ON t.id = o.tenant_id ORDER BY o.created_at DESC LIMIT ' . max(1, $limit));
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /** @param array<string,mixed> $item */
+    private function lineShippingCents(array $item): int
+    {
+        $quantity = max(1, (int) ($item['quantity'] ?? 1));
+        $firstItemCents = max(0, (int) ($item['shipping_price_cents'] ?? 0));
+        $additionalItemCents = max(0, (int) ($item['shipping_additional_item_cents'] ?? 0));
+
+        return $firstItemCents + max(0, $quantity - 1) * $additionalItemCents;
+    }
+
 }
 
 // End of file.
