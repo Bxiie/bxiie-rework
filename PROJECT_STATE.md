@@ -2322,3 +2322,11 @@ The variant inventory decrement SQL intentionally uses `:decrement_quantity` for
 - Repaired `SalesRepository::artworkForPurchase()` to select `media_assets.uuid AS media_uuid` via `artworks.primary_media_id` instead of selecting nonexistent `artworks.media_uuid`.
 - Added static coverage in `scripts/test/cart_add_media_uuid_join_static.php` so the cart add path cannot regress to the invalid column.
 
+## Cart checkout line-shipping repair - 2026-07-01
+
+The variant-aware checkout path depends on `SalesRepository::lineShippingCents()` when computing order-level and item-level shipping snapshots. A repair restored this helper after a partial Phase 4 application left `/cart/checkout` calling the method without defining it. The helper computes first-item shipping plus additional-item shipping from `sales_cart_items.shipping_price_cents` and `sales_cart_items.shipping_additional_item_cents`.
+
+## Cart checkout line-shipping static test repair - 2026-07-01
+
+The cart checkout line-shipping static test was corrected to use single-quoted literal needles. The previous double-quoted `max(0, $quantity - 1)` marker caused PHP variable interpolation during the test and produced a false failure for `max(0,  - 1)`.
+
