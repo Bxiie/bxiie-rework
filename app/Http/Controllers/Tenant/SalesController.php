@@ -85,7 +85,7 @@ final class SalesController
         } catch (Throwable $e) {
             $this->logCartAddFailure($tenant, $request, $e);
 
-            return Response::html('<h1>Cart error</h1><p>The item could not be added to the cart. The exact error has been written to the PHP error log with the marker <code>[ArtsFolio cart/add]</code>.</p><p><a href="javascript:history.back()">Return to artwork</a></p>', 500);
+            return Response::html('<h1>Cart error</h1><p>The item could not be added to the cart. The exact error has been written to <code>storage/logs/cart_add.log</code> or <code>/tmp/artsfolio_cart_add.log</code> with the marker <code>[ArtsFolio cart/add]</code>.</p><p><a href="javascript:history.back()">Return to artwork</a></p>', 500);
         }
     }
 
@@ -231,6 +231,7 @@ final class SalesController
      * Log cart-add failures with enough request context to diagnose production 500s without exposing internals to buyers.
      */
     private function logCartAddFailure(TenantContext $tenant, Request $request, Throwable $e): void
+    
     {
         $payload = [
             'tenant_id' => (int) $tenant->tenantId,
@@ -244,7 +245,26 @@ final class SalesController
             'file' => $e->getFile(),
             'line' => $e->getLine(),
         ];
-        error_log('[ArtsFolio cart/add] ' . json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+        $line = '[ArtsFolio cart/add] ' . json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL;
+
+        $root = dirname(__DIR__, 4);
+        $logDir = $root . '/storage/logs';
+        if (!is_dir($logDir)) {
+            @mkdir($logDir, 0775, true);
+        }
+
+        $written = false;
+        $logPath = $logDir . '/cart_add.log';
+        if (is_dir($logDir) && (is_writable($logDir) || (is_file($logPath) && is_writable($logPath)))) {
+            $written = @file_put_contents($logPath, $line, FILE_APPEND | LOCK_EX) !== false;
+        }
+
+        if (!$written) {
+            @file_put_contents('/tmp/artsfolio_cart_add.log', $line, FILE_APPEND | LOCK_EX);
+        }
+
+        error_log($line);
     }
 
     private function saveCartContact(int $cartId): void
