@@ -2310,3 +2310,5 @@ The variant inventory decrement SQL intentionally uses `:decrement_quantity` for
 - Cart-add 500 diagnostic includes explicit static markers for required cart/product schema columns, including `artwork_sale_variants.inventory_quantity`.
 - Added `scripts/debug/cart_add_500_diagnostic.php` to inspect schema and sale configuration used by tenant `/cart/add` failures.
 - The diagnostic checks `INFORMATION_SCHEMA.TABLES`, `INFORMATION_SCHEMA.COLUMNS`, sale config rows, active variants, and computed `available_quantity`.
+- Cart add runtime diagnostics are installed: `SalesController::add()` logs uncaught `/cart/add` failures with the `[ArtsFolio cart/add]` marker, and `scripts/debug/cart_add_500_diagnostic.php` checks the deployed schema, tenant sales entitlement, checkout config, and variant availability using `tenant_plan_assignments` rather than a nonexistent `tenants.plan_id` column.
+

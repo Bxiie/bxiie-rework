@@ -31,54 +31,62 @@ final class SalesController
 
     public function add(Request $request, TenantContext $tenant): Response
     {
-        if (!$this->verifyCsrf()) {
-            return Response::html('<h1>Security check failed</h1><p>Please return to the artwork page and try again.</p>', 422);
-        }
-        if (!$this->salesEnabled($tenant)) {
-            return Response::html('<h1>Checkout unavailable</h1><p>Online sales are available on paid ArtsFolio plans.</p>', 403);
-        }
+        try {
 
-        $artworkId = (int) ($_POST['artwork_id'] ?? 0);
-        $variantId = (int) ($_POST['variant_id'] ?? 0);
-        $quantity = max(1, (int) ($_POST['quantity'] ?? 1));
-        $artwork = $this->sales->artworkForPurchase($tenant, $artworkId);
-        $config = $this->sales->saleConfigForArtwork($tenant, $artworkId);
-        $variant = $variantId > 0 ? $this->sales->variantForPurchase($tenant, $artworkId, $variantId) : null;
+            if (!$this->verifyCsrf()) {
+                return Response::html('<h1>Security check failed</h1><p>Please return to the artwork page and try again.</p>', 422);
+            }
+            if (!$this->salesEnabled($tenant)) {
+                return Response::html('<h1>Checkout unavailable</h1><p>Online sales are available on paid ArtsFolio plans.</p>', 403);
+            }
 
-        if (!$artwork || (string) ($artwork['sale_status'] ?? '') !== 'for_sale' || !$config || (int) ($config['checkout_enabled'] ?? 0) !== 1) {
-            return Response::html('<h1>Artwork unavailable</h1><p>This artwork is not currently available for online purchase.</p>', 422);
-        }
-        if (!$variant) {
-            $variants = $this->sales->variantsForArtwork($tenant, $artworkId, true);
-            $variant = $variants[0] ?? null;
-        }
-        if (!$variant) {
-            return Response::html('<h1>Variant unavailable</h1><p>Please choose another option for this artwork.</p>', 422);
-        }
-        if ((string) ($config['sale_kind'] ?? 'one_off') === 'one_off') {
-            $quantity = 1;
-        }
+            $artworkId = (int) ($_POST['artwork_id'] ?? 0);
+            $variantId = (int) ($_POST['variant_id'] ?? 0);
+            $quantity = max(1, (int) ($_POST['quantity'] ?? 1));
+            $artwork = $this->sales->artworkForPurchase($tenant, $artworkId);
+            $config = $this->sales->saleConfigForArtwork($tenant, $artworkId);
+            $variant = $variantId > 0 ? $this->sales->variantForPurchase($tenant, $artworkId, $variantId) : null;
 
-        $available = max(0, (int) ($variant['available_quantity'] ?? 0));
-        if ($quantity > $available) {
-            return Response::html('<h1>Quantity unavailable</h1><p>Another buyer may currently have this option reserved in checkout. Please try again shortly.</p>', 409);
-        }
+            if (!$artwork || (string) ($artwork['sale_status'] ?? '') !== 'for_sale' || !$config || (int) ($config['checkout_enabled'] ?? 0) !== 1) {
+                return Response::html('<h1>Artwork unavailable</h1><p>This artwork is not currently available for online purchase.</p>', 422);
+            }
+            if (!$variant) {
+                $variants = $this->sales->variantsForArtwork($tenant, $artworkId, true);
+                $variant = $variants[0] ?? null;
+            }
+            if (!$variant) {
+                return Response::html('<h1>Variant unavailable</h1><p>Please choose another option for this artwork.</p>', 422);
+            }
+            if ((string) ($config['sale_kind'] ?? 'one_off') === 'one_off') {
+                $quantity = 1;
+            }
 
-        $priceCents = (int) ($variant['price_cents'] ?? 0) > 0 ? (int) $variant['price_cents'] : (int) ($config['base_price_cents'] ?? 0);
-        if ($priceCents <= 0) {
-            return Response::html('<h1>Price unavailable</h1><p>This artwork needs a numeric price before checkout can be used.</p>', 422);
-        }
+            $available = max(0, (int) ($variant['available_quantity'] ?? 0));
+            if ($quantity > $available) {
+                return Response::html('<h1>Quantity unavailable</h1><p>Another buyer may currently have this option reserved in checkout. Please try again shortly.</p>', 409);
+            }
 
-        $shipping = $this->shippingForVariant($config, $variant);
-        $identity = new CartIdentityService($this->pdo);
-        $resolved = $identity->resolveCartForRequest($tenant, $request, true);
-        $cart = $resolved['cart'];
-        if (!is_array($cart)) {
-            return Response::html('<h1>Cart unavailable</h1><p>Please try again.</p>', 500);
-        }
-        $this->sales->addVariantItem($cart, $artwork, $variant, $quantity, $priceCents, $shipping);
+            $priceCents = (int) ($variant['price_cents'] ?? 0) > 0 ? (int) $variant['price_cents'] : (int) ($config['base_price_cents'] ?? 0);
+            if ($priceCents <= 0) {
+                return Response::html('<h1>Price unavailable</h1><p>This artwork needs a numeric price before checkout can be used.</p>', 422);
+            }
 
-        return new Response('', 303, ['Location' => '/cart', 'Set-Cookie' => (string) $resolved['set_cookie']]);
+            $shipping = $this->shippingForVariant($config, $variant);
+            $identity = new CartIdentityService($this->pdo);
+            $resolved = $identity->resolveCartForRequest($tenant, $request, true);
+            $cart = $resolved['cart'];
+            if (!is_array($cart)) {
+                return Response::html('<h1>Cart unavailable</h1><p>Please try again.</p>', 500);
+            }
+            $this->sales->addVariantItem($cart, $artwork, $variant, $quantity, $priceCents, $shipping);
+
+            return new Response('', 303, ['Location' => '/cart', 'Set-Cookie' => (string) $resolved['set_cookie']]);
+        
+        } catch (Throwable $e) {
+            $this->logCartAddFailure($tenant, $request, $e);
+
+            return Response::html('<h1>Cart error</h1><p>The item could not be added to the cart. The exact error has been written to the PHP error log with the marker <code>[ArtsFolio cart/add]</code>.</p><p><a href="javascript:history.back()">Return to artwork</a></p>', 500);
+        }
     }
 
     public function cart(Request $request, TenantContext $tenant): Response
@@ -216,6 +224,27 @@ final class SalesController
         $order = $sessionId !== '' ? $this->sales->orderBySession($tenant, $sessionId) : null;
         $number = $order ? $this->e((string) $order['order_number']) : 'your order';
         return Response::html('<!doctype html><html><head><meta charset="utf-8"><title>Order received</title><link rel="stylesheet" href="/assets/site.css"></head><body><main class="site-main tenant-content-surface"><h1>Order received</h1><p>Thank you. We received ' . $number . ' and the artist will follow up as it moves through the sales workflow.</p><p><a href="/portfolio">Return to portfolio</a></p></main></body></html>');
+    }
+
+
+    /**
+     * Log cart-add failures with enough request context to diagnose production 500s without exposing internals to buyers.
+     */
+    private function logCartAddFailure(TenantContext $tenant, Request $request, Throwable $e): void
+    {
+        $payload = [
+            'tenant_id' => (int) $tenant->tenantId,
+            'host' => $request->host(),
+            'path' => $request->path(),
+            'artwork_id' => (int) ($_POST['artwork_id'] ?? 0),
+            'variant_id' => (int) ($_POST['variant_id'] ?? 0),
+            'quantity' => (int) ($_POST['quantity'] ?? 0),
+            'exception' => get_class($e),
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ];
+        error_log('[ArtsFolio cart/add] ' . json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
     }
 
     private function saveCartContact(int $cartId): void
