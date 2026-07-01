@@ -34,7 +34,7 @@ final class SalesRepository
 
     public function artworkForPurchase(TenantContext $tenant, int $artworkId): ?array
     {
-        $stmt = $this->pdo->prepare('SELECT a.id, a.tenant_id, a.title, a.slug, a.media_uuid, a.sale_status, a.price, a.is_one_off, a.inventory_quantity, GREATEST(0, a.inventory_quantity - COALESCE((SELECT SUM(r.quantity) FROM sales_inventory_reservations r WHERE r.artwork_id = a.id AND r.status = "reserved" AND r.expires_at > UTC_TIMESTAMP()), 0)) AS available_quantity FROM artworks a WHERE a.tenant_id = :tenant_id AND a.id = :id AND a.status = "published" LIMIT 1');
+        $stmt = $this->pdo->prepare('SELECT a.id, a.tenant_id, a.title, a.slug, m.uuid AS media_uuid, a.sale_status, a.price, a.is_one_off, a.inventory_quantity, GREATEST(0, a.inventory_quantity - COALESCE((SELECT SUM(r.quantity) FROM sales_inventory_reservations r WHERE r.artwork_id = a.id AND r.status = "reserved" AND r.expires_at > UTC_TIMESTAMP()), 0)) AS available_quantity FROM artworks a LEFT JOIN media_assets m ON m.id = a.primary_media_id WHERE a.tenant_id = :tenant_id AND a.id = :id AND a.status = "published" LIMIT 1');
         $stmt->execute(['tenant_id' => $tenant->tenantId, 'id' => $artworkId]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
