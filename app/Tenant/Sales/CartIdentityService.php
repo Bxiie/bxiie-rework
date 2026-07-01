@@ -153,13 +153,17 @@ final class CartIdentityService
             'SELECT c.*
              FROM sales_cart_aliases a
              JOIN sales_carts c ON c.id = a.cart_id
-             WHERE a.tenant_id = :tenant_id
+             WHERE a.tenant_id = :alias_tenant_id
                AND a.cart_token_hash = :hash
                AND c.status = "active"
-               AND c.tenant_id = :tenant_id
+               AND c.tenant_id = :cart_tenant_id
              LIMIT 1'
         );
-        $stmt->execute(['tenant_id' => $tenant->tenantId, 'hash' => $this->tokenHash($token)]);
+        $stmt->execute([
+            'alias_tenant_id' => $tenant->tenantId,
+            'cart_tenant_id' => $tenant->tenantId,
+            'hash' => $this->tokenHash($token),
+        ]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row ?: null;

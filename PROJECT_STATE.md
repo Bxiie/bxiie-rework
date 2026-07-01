@@ -2296,3 +2296,7 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 
 The public `/cart/add` path was repaired after native MariaDB/PDO prepared statements failed on repeated named placeholders in cart identity and checkout SQL. `CartIdentityService` now uses distinct tenant placeholders for alias/cart joins, `SalesRepository` uses distinct decrement/minimum inventory placeholders, and `SalesController` uses distinct contact email placeholders. `scripts/test/sales_cart_add_pdo_placeholders_static.php` covers the regression.
 - 2026-06-30: Repaired variant checkout inventory SQL marker so the guarded payment-time decrement continues to use `inventory_quantity >= :quantity` for the existing phase7 inventory regression test while retaining a distinct `:decrement_quantity` placeholder for the SET expression.
+
+## Shopping cart inventory static-test compatibility
+
+The variant checkout inventory decrement uses `:decrement_quantity` for subtraction and `:quantity` for the `inventory_quantity >= :quantity` guard. This preserves the existing Phase 7 inventory safety marker while avoiding the old unsafe `GREATEST(0, inventory_quantity - :quantity)` decrement pattern.

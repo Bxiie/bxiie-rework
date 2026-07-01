@@ -226,8 +226,13 @@ final class SalesController
             return;
         }
         try {
-            $stmt = $this->pdo->prepare('UPDATE sales_carts SET customer_email = :email, contact_email = :email, customer_name = :name, updated_at = CURRENT_TIMESTAMP WHERE id = :id');
-            $stmt->execute(['id' => $cartId, 'email' => $email, 'name' => $name !== '' ? $name : null]);
+            $stmt = $this->pdo->prepare('UPDATE sales_carts SET customer_email = :customer_email, contact_email = :contact_email, customer_name = :name, updated_at = CURRENT_TIMESTAMP WHERE id = :id');
+            $stmt->execute([
+                'id' => $cartId,
+                'customer_email' => $email,
+                'contact_email' => $email,
+                'name' => $name !== '' ? $name : null,
+            ]);
         } catch (Throwable) {
             $stmt = $this->pdo->prepare('UPDATE sales_carts SET customer_email = :email, customer_name = :name, updated_at = CURRENT_TIMESTAMP WHERE id = :id');
             $stmt->execute(['id' => $cartId, 'email' => $email, 'name' => $name !== '' ? $name : null]);
