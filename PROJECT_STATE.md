@@ -2304,4 +2304,9 @@ The variant checkout inventory decrement uses `:decrement_quantity` for subtract
 ## Shopping cart inventory marker repair
 
 The variant inventory decrement SQL intentionally uses `:decrement_quantity` for subtraction and `:quantity` for the `inventory_quantity >= :quantity` safety guard. This preserves the older Phase 7 static inventory marker while keeping the newer distinct placeholder for the decrement expression.
+- 2026-07-01: Repaired the cart-add 500 diagnostic static markers so the diagnostic explicitly records Phase 3/4 table.column requirements such as `sales_cart_items.variant_id` before running the live database checker.
 
+## Shopping cart cart-add 500 diagnostic
+- Cart-add 500 diagnostic includes explicit static markers for required cart/product schema columns, including `artwork_sale_variants.inventory_quantity`.
+- Added `scripts/debug/cart_add_500_diagnostic.php` to inspect schema and sale configuration used by tenant `/cart/add` failures.
+- The diagnostic checks `INFORMATION_SCHEMA.TABLES`, `INFORMATION_SCHEMA.COLUMNS`, sale config rows, active variants, and computed `available_quantity`.
