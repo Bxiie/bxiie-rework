@@ -2300,3 +2300,8 @@ The public `/cart/add` path was repaired after native MariaDB/PDO prepared state
 ## Shopping cart inventory static-test compatibility
 
 The variant checkout inventory decrement uses `:decrement_quantity` for subtraction and `:quantity` for the `inventory_quantity >= :quantity` guard. This preserves the existing Phase 7 inventory safety marker while avoiding the old unsafe `GREATEST(0, inventory_quantity - :quantity)` decrement pattern.
+
+## Shopping cart inventory marker repair
+
+The variant inventory decrement SQL intentionally uses `:decrement_quantity` for subtraction and `:quantity` for the `inventory_quantity >= :quantity` safety guard. This preserves the older Phase 7 static inventory marker while keeping the newer distinct placeholder for the decrement expression.
+
