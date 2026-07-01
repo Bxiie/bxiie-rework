@@ -1833,3 +1833,26 @@ body article.pricing-card.featured h3 {
 }
 
 /* End of file. */
+
+/* Cart branding and navigation repair. */
+.tenant-cart-link {
+    white-space: nowrap;
+}
+.cart-page-surface {
+    max-width: 1100px;
+}
+.cart-review-form {
+    display: grid;
+    gap: 1rem;
+}
+.cart-review-table {
+    width: 100%;
+}
+.cart-totals,
+.sales-fee-disclosure {
+    border: 1px solid color-mix(in srgb, var(--primary, #111), transparent 80%);
+    border-radius: 16px;
+    padding: 1rem;
+    background: color-mix(in srgb, var(--bg, #fff), white 72%);
+}
+/* End of file. */

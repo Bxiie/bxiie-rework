@@ -37,7 +37,7 @@ final class SalesController
                 return Response::html('<h1>Security check failed</h1><p>Please return to the artwork page and try again.</p>', 422);
             }
             if (!$this->salesEnabled($tenant)) {
-                return Response::html('<h1>Checkout unavailable</h1><p>Online sales are available on paid ArtsFolio plans.</p>', 403);
+                return $this->tenantPageResponse($tenant, 'Checkout unavailable', '<h1>Checkout unavailable</h1><p>Online sales are not enabled for this artist plan.</p><p><a href="/cart">Return to cart</a></p>', 403);
             }
 
             $artworkId = (int) ($_POST['artwork_id'] ?? 0);
@@ -116,9 +116,9 @@ final class SalesController
         $feeDisclosure = $items === [] ? '' : '<div class="sales-fee-disclosure"><p><strong>Seller payout disclosure:</strong> the artist receives sale amount minus ArtsFolio commission and credit card charges.</p><p>On this cart: platform commission ' . $this->money($fees['commission_cents']) . ', estimated credit card charges ' . $this->money($fees['credit_card_fee_cents']) . ', estimated artist proceeds ' . $this->money($fees['seller_net_cents']) . '.</p></div>';
         $customerFields = '<fieldset class="tenant-form"><legend>Cart contact</legend><label>Name<input name="customer_name" value="' . $customerName . '" autocomplete="name"></label><label>Email<input type="email" name="customer_email" value="' . $customerEmail . '" autocomplete="email" required></label><p class="muted">Email lets ArtsFolio send checkout reminders for abandoned carts.</p></fieldset>';
         $checkout = $items === [] ? '<p>Your cart is empty.</p>' : $customerFields . '<div class="cart-totals"><p><strong>Subtotal:</strong> ' . $this->money($subtotal) . '</p><p><strong>Shipping:</strong> ' . $this->money($shippingTotal) . '</p><p><strong>Total:</strong> ' . $this->money($total) . '</p></div>' . $feeDisclosure . '<button type="submit" formaction="/cart/update">Update cart</button> <button type="submit" formaction="/cart/checkout">Checkout with Stripe</button>';
-        $body = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Cart</title><link rel="stylesheet" href="/assets/site.css"></head><body><main class="site-main tenant-content-surface"><h1>Shopping cart</h1><form class="plan-edit-form cart-review-form" method="post"><input type="hidden" name="csrf_token" value="' . $csrf . '"><table class="admin-table cart-review-table"><thead><tr><th>Artwork</th><th>Qty</th><th>Unit</th><th>Shipping</th><th>Total</th></tr></thead><tbody>' . $rows . '</tbody></table>' . $checkout . '</form><p><a href="/portfolio">Continue browsing</a></p></main></body></html>';
+        $content = '<h1>Shopping cart</h1><form class="plan-edit-form cart-review-form" method="post"><input type="hidden" name="csrf_token" value="' . $csrf . '"><table class="admin-table cart-review-table"><thead><tr><th>Artwork</th><th>Qty</th><th>Unit</th><th>Shipping</th><th>Total</th></tr></thead><tbody>' . $rows . '</tbody></table>' . $checkout . '</form><p><a href="/portfolio">Continue browsing</a></p>';
 
-        return Response::html($body, 200, $resolved['set_cookie'] ? ['Set-Cookie' => (string) $resolved['set_cookie']] : []);
+        return $this->tenantPageResponse($tenant, 'Shopping cart', $content, 200, $resolved['set_cookie'] ? ['Set-Cookie' => (string) $resolved['set_cookie']] : []);
     }
 
     public function update(Request $request, TenantContext $tenant): Response
@@ -174,7 +174,7 @@ final class SalesController
             return new Response('', 303, ['Location' => '/cart?error=security']);
         }
         if (!$this->salesEnabled($tenant)) {
-            return Response::html('<h1>Checkout unavailable</h1><p>Online sales are available on paid ArtsFolio plans.</p>', 403);
+            return $this->tenantPageResponse($tenant, 'Checkout unavailable', '<h1>Checkout unavailable</h1><p>Online sales are not enabled for this artist plan.</p><p><a href="/cart">Return to cart</a></p>', 403);
         }
 
         $resolved = (new CartIdentityService($this->pdo))->resolveCartForRequest($tenant, $request, false);
@@ -214,7 +214,7 @@ final class SalesController
             if (is_array($order) && isset($order['id'])) {
                 $this->sales->releaseReservationsForOrder((int) $order['id']);
             }
-            return Response::html('<h1>Checkout could not be started</h1><p>' . $this->e($e->getMessage()) . '</p><p><a href="/cart">Return to cart</a></p>', 502);
+            return $this->tenantPageResponse($tenant, 'Checkout could not be started', '<h1>Checkout could not be started</h1><p>' . $this->e($e->getMessage()) . '</p><p><a href="/cart">Return to cart</a></p>', 502);
         }
     }
 
@@ -223,7 +223,7 @@ final class SalesController
         $sessionId = trim((string) ($_GET['session_id'] ?? ''));
         $order = $sessionId !== '' ? $this->sales->orderBySession($tenant, $sessionId) : null;
         $number = $order ? $this->e((string) $order['order_number']) : 'your order';
-        return Response::html('<!doctype html><html><head><meta charset="utf-8"><title>Order received</title><link rel="stylesheet" href="/assets/site.css"></head><body><main class="site-main tenant-content-surface"><h1>Order received</h1><p>Thank you. We received ' . $number . ' and the artist will follow up as it moves through the sales workflow.</p><p><a href="/portfolio">Return to portfolio</a></p></main></body></html>');
+        return $this->tenantPageResponse($tenant, 'Order received', '<h1>Order received</h1><p>Thank you. We received ' . $number . ' and the artist will follow up as it moves through the sales workflow.</p><p><a href="/portfolio">Return to portfolio</a></p>');
     }
 
 
@@ -265,6 +265,74 @@ final class SalesController
         }
 
         error_log($line);
+    }
+
+
+    /**
+     * Renders cart and checkout utility pages inside the tenant public chrome.
+     *
+     * SalesController cannot call HomeController's private layout method, so it
+     * keeps a deliberately small branded shell here. This prevents /cart,
+     * checkout errors, and order success pages from falling back to unbranded
+     * utility documents.
+     *
+     * @param array<string,string> $headers
+     */
+    private function tenantPageResponse(TenantContext $tenant, string $title, string $body, int $status = 200, array $headers = []): Response
+    {
+        $baseHeaders = [
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'Pragma' => 'no-cache',
+            'Vary' => 'Cookie',
+        ];
+
+        return Response::html($this->tenantPage($tenant, $title, $body), $status, array_merge($baseHeaders, $headers));
+    }
+
+    private function tenantPage(TenantContext $tenant, string $title, string $body): string
+    {
+        $siteTitle = $this->e((string) $this->tenantSettings->get($tenant, 'site_title', $tenant->name));
+        $browserTitle = $this->e($title . ' · ' . html_entity_decode($siteTitle, ENT_QUOTES, 'UTF-8'));
+        $homeTab = $this->e((string) $this->tenantSettings->get($tenant, 'home_tab', 'Home'));
+        $portfolioTab = $this->e((string) $this->tenantSettings->get($tenant, 'portfolio_tab', 'Portfolio'));
+        $aboutTab = $this->e((string) $this->tenantSettings->get($tenant, 'about_tab', 'About'));
+        $contactTab = $this->e((string) $this->tenantSettings->get($tenant, 'contact_tab', 'Contact'));
+        $portfolioSlug = $this->e((string) $this->tenantSettings->get($tenant, 'portfolio_slug', 'portfolio'));
+        $aboutSlug = $this->e((string) $this->tenantSettings->get($tenant, 'about_slug', 'about'));
+        $contactSlug = $this->e((string) $this->tenantSettings->get($tenant, 'contact_slug', 'contact'));
+        $primaryColor = $this->e((string) $this->tenantSettings->get($tenant, 'primary_color', '#111111'));
+        $accentColor = $this->e((string) $this->tenantSettings->get($tenant, 'accent_color', '#c9a85f'));
+        $backgroundColor = $this->e((string) $this->tenantSettings->get($tenant, 'background_color', '#f7f2e8'));
+        $textColor = $this->e((string) $this->tenantSettings->get($tenant, 'text_color', '#1f1a14'));
+
+        return <<<HTML
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{$browserTitle}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Artist portfolio cart">
+    <link rel="stylesheet" href="/assets/site.css?v=20260620-typography-apply">
+    <link rel="stylesheet" href="/tenant.css">
+</head>
+<body class="tenant-cart-page" style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--text-color:{$textColor};">
+<header class="site-header">
+    <a class="brand" href="/">{$siteTitle}</a>
+    <nav>
+        <a href="/">{$homeTab}</a>
+        <a href="/{$portfolioSlug}">{$portfolioTab}</a>
+        <a href="/{$aboutSlug}">{$aboutTab}</a>
+        <a href="/{$contactSlug}">{$contactTab}</a>
+        <a class="site-cart-link tenant-cart-link" href="/cart" aria-label="Shopping cart">Cart</a>
+    </nav>
+</header>
+<main class="site-main tenant-content-surface cart-page-surface">
+{$body}
+</main>
+</body>
+</html>
+HTML;
     }
 
     private function saveCartContact(int $cartId): void

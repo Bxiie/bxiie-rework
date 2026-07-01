@@ -829,26 +829,38 @@ HTML;
             $identity = new CartIdentityService($this->pdo);
             $resolved = $identity->resolveCartForRequest($tenant, $request, false);
             $cart = is_array($resolved['cart'] ?? null) ? $resolved['cart'] : null;
-            if (!$cart) {
-                return '';
+            $label = 'Cart';
+            $bridgePixels = '';
+
+            if ($cart) {
+                $summary = (new \App\Tenant\Sales\SalesRepository($this->pdo))->cartSummary($cart);
+                if ((int) ($summary['item_count'] ?? 0) > 0) {
+                    $label = 'Cart (' . (int) $summary['item_count'] . ') ' . $this->cartMoney((int) ($summary['total_cents'] ?? 0));
+                    $bridgePixels = $identity->bridgePixels($tenant, $request, (int) ($summary['cart_id'] ?? $cart['id'] ?? 0));
+                }
             }
 
-            $summary = (new \App\Tenant\Sales\SalesRepository($this->pdo))->cartSummary($cart);
-            if ((int) ($summary['item_count'] ?? 0) <= 0) {
-                return '';
-            }
-
-            $label = 'Cart (' . (int) $summary['item_count'] . ') ' . $this->money((int) ($summary['total_cents'] ?? 0));
-
-            return '<a class="site-cart-link" href="/cart" aria-label="Shopping cart">'
+            return '<a class="site-cart-link tenant-cart-link" href="/cart" aria-label="Shopping cart">'
                 . $this->escape($label)
                 . '</a>'
-                . $identity->bridgePixels($tenant, $request, (int) ($summary['cart_id'] ?? $cart['id'] ?? 0));
+                . $bridgePixels;
         } catch (Throwable) {
-            return '';
+            // The cart link is a navigation affordance and must not disappear if
+            // cart summary lookup fails. The /cart page can recover or show an
+            // empty cart, while a missing link strands the buyer.
+            return '<a class="site-cart-link tenant-cart-link" href="/cart" aria-label="Shopping cart">Cart</a>';
         }
     }
 
+
+
+    /**
+     * Formats public cart money without depending on SalesController helpers.
+     */
+    private function cartMoney(int $cents): string
+    {
+        return '$' . number_format($cents / 100, 2);
+    }
     /**
      * Emits high-specificity tenant typography rules after /tenant.css.
      *

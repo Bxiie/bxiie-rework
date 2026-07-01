@@ -2330,3 +2330,6 @@ The variant-aware checkout path depends on `SalesRepository::lineShippingCents()
 
 The cart checkout line-shipping static test was corrected to use single-quoted literal needles. The previous double-quoted `max(0, $quantity - 1)` marker caused PHP variable interpolation during the test and produced a false failure for `max(0,  - 1)`.
 
+## Shopping cart branding and navigation repair - 2026-07-01
+
+Tenant public pages now render a Cart navigation link consistently through HomeController::cartChrome. The link no longer depends on HomeController calling SalesController-only helper methods, so buyers are not stranded after adding an item. SalesController cart, checkout error, and order success responses now render inside a small tenant-branded public shell with /assets/site.css and /tenant.css instead of returning unbranded utility HTML.
