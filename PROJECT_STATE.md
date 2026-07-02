@@ -2365,3 +2365,11 @@ The tenant artwork Sales & checkout section now uses a compact product-type sele
 The tenant-admin artwork Sales & checkout form now starts the “Variant rows for sizes, fits, editions, and inventory” disclosure collapsed. The variant editor remains available for sized products, editions, and advanced inventory, but the default artwork edit view is simpler for one-off and simple quantity products.
 
 # End of file.
+- Shopping cart/public artwork repair 2026-07-02: artwork detail pages no longer render the Sales panel, inventory mode, or direct-artist sales notes for artwork whose `sale_status` is not `for_sale`; not-for-sale artwork stays informational only.
+
+# End of file.
+- Test repair 2026-07-02: `scripts/test/nfs_artwork_hides_sales_panel_static.php` now uses single-quoted literal markers so PHP does not interpolate `$artwork` while checking the not-for-sale artwork sales-panel guard.
+
+# End of file.
+- 2026-07-02: Repaired the NFS artwork sales-panel static test so PHP markers containing `$artwork['sale_status']` are checked with nowdoc strings instead of invalid interpolated strings.
+- 2026-07-02: Repaired NFS artwork sales-panel static coverage to check the actual HomeController::artworkSalesPanel method name instead of the obsolete salesPanel marker.
