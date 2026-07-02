@@ -2359,3 +2359,9 @@ The shipping-profile static coverage now checks durable implementation markers i
 The tenant artwork Sales & checkout section now uses a compact product-type select instead of large radio rows and removes the obsolete hidden legacy inventory controls. Shipping profiles are the primary shipping control. Legacy shipping amount/mode fields remain available only inside an advanced disclosure for older records that still need compatibility values.
 
 # End of file.
+
+## 2026-07-02 - Artwork variant rows collapsed by default
+
+The tenant-admin artwork Sales & checkout form now starts the “Variant rows for sizes, fits, editions, and inventory” disclosure collapsed. The variant editor remains available for sized products, editions, and advanced inventory, but the default artwork edit view is simpler for one-off and simple quantity products.
+
+# End of file.

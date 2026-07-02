@@ -99,7 +99,7 @@ final class ArtworkSaleAdminForm
                 <label>SKU / internal code<br><input type="text" name="default_sku" value="{$sku}" maxlength="120"></label>
             </div>
             <p><label><input type="checkbox" name="require_shipping_address" value="1"{$shippingRequiredChecked}> Require a shipping address at checkout</label></p>
-            <details class="admin-sale-variants" open>
+            <details class="admin-sale-variants">
                 <summary>Variant rows for sizes, fits, editions, and inventory</summary>
                 <p>Use one row per sellable option. For one-off or multiple identical item listings, keep one active row named Default. For shirts, shoes, prints with sizes, or other options, add one active row per size or fit.</p>
                 <div style="overflow-x:auto;">
