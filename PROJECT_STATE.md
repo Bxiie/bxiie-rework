@@ -2350,3 +2350,6 @@ Tenant public pages now render a Cart navigation link consistently through HomeC
 ## Shipping profile static test repair
 
 The shipping-profile static coverage now checks durable implementation markers instead of exact prose. `scripts/test/shipping_profiles_static.php` verifies profile-backed cart behavior through `shipping_profile_id` and the seeded `Small flat items` profile, while `scripts/test/shipping_profiles_admin_edit_static.php` verifies that the artwork edit form does not hard-fail during a shipping-profile deploy or migration gap.
+- Tenant admin artwork edit now guards `ArtworkSaleAdminForm::render()` and logs sales/shipping-profile form failures to `storage/logs/admin_artwork_edit.log` with marker `[ArtsFolio admin artwork edit]`, while still rendering the rest of the artwork edit page.
+# End of file.
+- Shipping profile admin artwork forms now guard profile loading with table/class checks and write `[ArtsFolio admin artwork edit]` diagnostics to `storage/logs/admin_artwork_edit.log` with a `/tmp/artsfolio_admin_artwork_edit.log` fallback.

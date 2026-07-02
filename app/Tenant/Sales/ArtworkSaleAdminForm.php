@@ -513,6 +513,69 @@ HTML;
     /**
      * @param array<string,string> $options
      */
+    private function shippingProfileOptions(int $tenantId, int $selectedId): string
+    {
+        try {
+            if (!$this->tableExists('tenant_shipping_profiles')) {
+                $this->logAdminArtworkEdit('tenant_shipping_profiles table is missing; run migration 0059_tenant_shipping_profiles.sql.');
+                return '<option value="">Shipping profiles unavailable until migration 0059 runs</option>';
+            }
+
+            if (!class_exists(ShippingProfileService::class)) {
+                $this->logAdminArtworkEdit('ShippingProfileService class is missing from deployed code.');
+                return '<option value="">Shipping profiles unavailable until code deploy completes</option>';
+            }
+
+            $profiles = (new ShippingProfileService($this->pdo))->profiles($tenantId);
+        } catch (\Throwable $e) {
+            $this->logAdminArtworkEdit('Unable to load shipping profiles: ' . $e->getMessage());
+            return '<option value="">Shipping profiles unavailable; check storage/logs/admin_artwork_edit.log</option>';
+        }
+
+        if (!$profiles) {
+            return '<option value="">No shipping profiles found</option>';
+        }
+
+        $html = '';
+        foreach ($profiles as $profile) {
+            $id = (int) $profile['id'];
+            $label = (string) $profile['name'];
+            $mode = (string) $profile['mode'];
+            $selected = $id === $selectedId ? ' selected' : '';
+            $html .= '<option value="' . $id . '"' . $selected . '>'
+                . htmlspecialchars($label . ' (' . $mode . ')', ENT_QUOTES, 'UTF-8')
+                . '</option>';
+        }
+
+        return $html;
+    }
+
+    private function tableExists(string $tableName): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name'
+        );
+        $stmt->execute(['table_name' => $tableName]);
+
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    private function logAdminArtworkEdit(string $message): void
+    {
+        $line = '[ArtsFolio admin artwork edit] ' . $message . PHP_EOL;
+        error_log(rtrim($line));
+
+        $root = dirname(__DIR__, 3);
+        $logDir = $root . '/storage/logs';
+        if (is_dir($logDir) || @mkdir($logDir, 0775, true)) {
+            if (@file_put_contents($logDir . '/admin_artwork_edit.log', $line, FILE_APPEND | LOCK_EX) !== false) {
+                return;
+            }
+        }
+
+        @file_put_contents('/tmp/artsfolio_admin_artwork_edit.log', $line, FILE_APPEND | LOCK_EX);
+    }
+
     private function selectOptions(array $options, string $current): string
     {
         $html = '';

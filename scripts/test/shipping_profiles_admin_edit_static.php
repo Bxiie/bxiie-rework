@@ -22,6 +22,8 @@ if (!is_file($formPath)) {
         'INFORMATION_SCHEMA.TABLES',
         'Shipping profiles unavailable until migration 0059 runs',
         '[ArtsFolio admin artwork edit]',
+        'admin_artwork_edit.log',
+        '/tmp/artsfolio_admin_artwork_edit.log',
     ] as $needle) {
         if (!str_contains($form, $needle)) {
             $failures[] = "ArtworkSaleAdminForm missing {$needle}";
@@ -29,7 +31,7 @@ if (!is_file($formPath)) {
     }
 }
 
-if ($failures) {
+if ($failures !== []) {
     fwrite(STDERR, "Shipping profile admin edit static checks failed:\n - " . implode("\n - ", $failures) . "\n");
     exit(1);
 }
