@@ -2353,3 +2353,9 @@ The shipping-profile static coverage now checks durable implementation markers i
 - Tenant admin artwork edit now guards `ArtworkSaleAdminForm::render()` and logs sales/shipping-profile form failures to `storage/logs/admin_artwork_edit.log` with marker `[ArtsFolio admin artwork edit]`, while still rendering the rest of the artwork edit page.
 # End of file.
 - Shipping profile admin artwork forms now guard profile loading with table/class checks and write `[ArtsFolio admin artwork edit]` diagnostics to `storage/logs/admin_artwork_edit.log` with a `/tmp/artsfolio_admin_artwork_edit.log` fallback.
+
+## 2026-07-02 - Artwork sales admin usability cleanup
+
+The tenant artwork Sales & checkout section now uses a compact product-type select instead of large radio rows and removes the obsolete hidden legacy inventory controls. Shipping profiles are the primary shipping control. Legacy shipping amount/mode fields remain available only inside an advanced disclosure for older records that still need compatibility values.
+
+# End of file.

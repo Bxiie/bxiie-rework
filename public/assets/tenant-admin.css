@@ -4090,3 +4090,91 @@ form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact"
 
 /* End of file. */
 
+/* Compact sales checkout form controls for artwork admin. */
+.admin-sale-config {
+    border: 1px solid rgba(120, 97, 70, .28) !important;
+    border-radius: 18px;
+    background: rgba(255,255,255,.72);
+}
+
+.admin-sale-config .admin-sale-help {
+    margin-top: 0;
+    max-width: 72rem;
+}
+
+.admin-sale-config .admin-sale-topline {
+    display: grid;
+    grid-template-columns: minmax(18rem, 2fr) minmax(12rem, 1fr);
+    gap: 1rem;
+    align-items: end;
+    margin: 1rem 0;
+}
+
+.admin-sale-config .admin-sale-checkout-toggle {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    min-height: auto;
+    padding: .85rem 1rem;
+    border: 1px solid rgba(120, 97, 70, .22);
+    border-radius: 14px;
+    background: rgba(255,255,255,.62);
+}
+
+.admin-sale-config .admin-sale-checkout-toggle input[type="checkbox"] {
+    width: 1.2rem;
+    height: 1.2rem;
+    min-width: 1.2rem;
+}
+
+.admin-sale-config .admin-sale-grid {
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: 1rem;
+    align-items: start;
+}
+
+.admin-sale-config .admin-sale-grid label,
+.admin-sale-config .admin-sale-topline label {
+    display: block;
+}
+
+.admin-sale-config select,
+.admin-sale-config input[type="text"],
+.admin-sale-config input[type="number"] {
+    min-height: 2.8rem;
+    padding: .65rem .8rem;
+}
+
+.admin-sale-config small {
+    display: block;
+    margin-top: .35rem;
+    line-height: 1.25;
+    opacity: .78;
+}
+
+.admin-sale-config .admin-sale-advanced-shipping {
+    grid-column: 1 / -1;
+    padding: .85rem 1rem;
+    border: 1px dashed rgba(120, 97, 70, .34);
+    border-radius: 14px;
+    background: rgba(255,255,255,.48);
+}
+
+.admin-sale-config .admin-sale-advanced-shipping summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.admin-sale-config .admin-sale-advanced-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 1rem;
+    margin-top: .75rem;
+}
+
+@media (max-width: 760px) {
+    .admin-sale-config .admin-sale-topline {
+        grid-template-columns: 1fr;
+    }
+}
+/* End of file. */

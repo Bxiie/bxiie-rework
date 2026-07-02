@@ -46,12 +46,11 @@ final class ArtworkSaleAdminForm
         $shippingAdditional = htmlspecialchars($this->moneyFromCents($config['shipping_additional_item_cents']), ENT_QUOTES, 'UTF-8');
         $simpleInventory = max(1, (int) ($variants[0]['inventory_quantity'] ?? $artwork['inventory_quantity'] ?? 1));
         $sku = htmlspecialchars((string) ($variants[0]['sku'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $saleModeMultipleChecked = $saleKind === 'one_off' ? '' : ' checked';
-        $saleModeOneOffChecked = $saleKind === 'one_off' ? ' checked' : '';
-
-        $kindOptions = $this->radio('sale_kind', 'one_off', 'One-off artwork', $saleKind)
-            . $this->radio('sale_kind', 'limited_quantity', 'Multiple identical items', $saleKind)
-            . $this->radio('sale_kind', 'variant_inventory', 'Sized / variant items', $saleKind);
+        $kindOptions = $this->selectOptions([
+            'one_off' => 'One-off artwork',
+            'limited_quantity' => 'Multiple identical items',
+            'variant_inventory' => 'Sized / variant items',
+        ], $saleKind);
         $optionOptions = $this->selectOptions([
             'none' => 'No sizing/options',
             'size_alpha' => 'Alpha sizes: XS/S/M/L/XL/XXL',
@@ -76,23 +75,26 @@ final class ArtworkSaleAdminForm
         return <<<HTML
         <fieldset class="admin-sale-config" style="margin:1rem 0;padding:1rem;border:1px solid #ccc;">
             <legend>Sales &amp; checkout</legend>
-            <p>Configure how this artwork appears in the cart. These controls write the new sale catalog tables while keeping the legacy artwork price and inventory fields synchronized for the current checkout runtime.</p>
-            <p><label>Price<br><input type="text" name="price" value="{$price}" placeholder="1200 or 1200.00"></label></p>
-            <p><label><input type="checkbox" name="checkout_enabled" value="1"{$checkoutChecked}> Enable checkout for this artwork when sale status is For sale</label></p>
+            <p class="admin-sale-help">Configure the buyer-facing product, inventory, shipping profile, and checkout behavior for this artwork.</p>
+            <div class="admin-sale-topline">
+                <label class="admin-sale-checkout-toggle"><input type="checkbox" name="checkout_enabled" value="1"{$checkoutChecked}> Enable platform checkout when this artwork is marked For sale</label>
+                <label>Price<br><input type="text" name="price" value="{$price}" placeholder="1200 or 1200.00"></label>
+            </div>
             <div class="admin-sale-grid">
-                <div>
-                    <strong>Product type</strong>
-                    {$kindOptions}
-                    <input type="hidden" name="sales_inventory_mode" value="multiple">
-                    <label style="display:none"><input type="radio" name="sales_inventory_mode" value="one_off"{$saleModeOneOffChecked}> Legacy one-off</label>
-                    <label style="display:none"><input type="radio" name="sales_inventory_mode" value="multiple"{$saleModeMultipleChecked}> Legacy multiple</label>
-                </div>
+                <label>Product type<br><select name="sale_kind">{$kindOptions}</select><small>Choose whether this is a single original, a quantity-based product, or a sized/variant product.</small></label>
                 <label>Sizing/options<br><select name="option_schema">{$optionOptions}</select></label>
                 <label>Gender / fit<br><select name="gender_schema">{$genderOptions}</select></label>
-                <label>Shipping mode<br><select name="shipping_mode">{$shippingOptions}</select></label>
+                <input type="hidden" name="shipping_mode" value="{$shippingMode}">
                 <label>Shipping profile<br><select name="shipping_profile_id">{$shippingProfileOptions}</select><small>Profiles group similar items, so several sticker products can share one flat shipping charge.</small></label>
-                <label>Shipping charge<br><input type="text" name="shipping_price" value="{$shippingPrice}" placeholder="0.00"></label>
-                <label>Additional item shipping<br><input type="text" name="shipping_additional_item" value="{$shippingAdditional}" placeholder="0.00"></label>
+                <details class="admin-sale-advanced-shipping">
+                    <summary>Advanced legacy shipping overrides</summary>
+                    <p>Use these only for older product records that are not yet assigned to a shipping profile. For normal products, choose a shipping profile above.</p>
+                    <div class="admin-sale-advanced-grid">
+                        <label>Legacy shipping charge<br><input type="text" name="shipping_price" value="{$shippingPrice}" placeholder="0.00"></label>
+                        <label>Legacy additional item shipping<br><input type="text" name="shipping_additional_item" value="{$shippingAdditional}" placeholder="0.00"></label>
+                        <label>Legacy shipping mode<br><select name="shipping_mode_legacy_display" disabled>{$shippingOptions}</select></label>
+                    </div>
+                </details>
                 <label>Default inventory quantity<br><input type="number" name="inventory_quantity" min="1" step="1" value="{$simpleInventory}"></label>
                 <label>SKU / internal code<br><input type="text" name="default_sku" value="{$sku}" maxlength="120"></label>
             </div>
@@ -206,7 +208,7 @@ HTML;
      */
     public function legacyInventoryFromPost(array $post): array
     {
-        $saleKind = $this->allowed((string) ($post['sale_kind'] ?? $post['sales_inventory_mode'] ?? 'one_off'), ['one_off', 'limited_quantity', 'variant_inventory', 'multiple'], 'one_off');
+        $saleKind = $this->allowed((string) ($post['sale_kind'] ?? 'one_off'), ['one_off', 'limited_quantity', 'variant_inventory', 'multiple'], 'one_off');
         if ($saleKind === 'one_off') {
             return ['is_one_off' => 1, 'inventory_quantity' => 1];
         }
