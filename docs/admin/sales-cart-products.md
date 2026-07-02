@@ -67,3 +67,17 @@ ArtsFolio sends abandoned-cart reminders only when the system knows the buyer em
 The buyer receives a restore link that opens the cart on the tenant’s preferred public domain. If a size, print, sticker, or original artwork is no longer available, the cart page shows the current availability before checkout.
 
 The reminder system respects tenant email-list suppression records for unsubscribed, bounced, and complained addresses. It queues mail through the platform email outbox, so delivery and retry behavior remain visible in Platform Admin email diagnostics.
+
+
+## Shipping profiles
+
+Sales-enabled tenants can use shipping profiles to group similar products into one buyer-friendly shipping calculation. For example, a **Small flat items** profile can charge $5.00 once for stickers, postcards, or small flat prints even when the buyer adds several different artworks to the same cart.
+
+Default profiles seeded by the platform:
+
+- **Small flat items**: one flat $5.00 profile-level charge.
+- **Small merchandise**: $6.00 first item, $2.00 additional items, capped at $14.00.
+- **Free shipping**: $0.00 shipping.
+- **Large artwork / quoted shipping**: checkout disabled until the artist quotes shipping.
+
+On the artwork definition page, select the profile that best fits the item. Use **Small flat items** for sticker-style products where many different items can travel in the same envelope.

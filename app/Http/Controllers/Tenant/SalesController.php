@@ -11,6 +11,7 @@ use App\Platform\Tenancy\TenantContext;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Sales\CartIdentityService;
 use App\Tenant\Sales\SalesRepository;
+use App\Tenant\Sales\ShippingProfileService;
 use App\Tenant\Sales\StripeCheckoutService;
 use App\Tenant\Settings\TenantSettingsRepository;
 use PDO;
@@ -436,23 +437,62 @@ HTML;
         }
     }
 
-    /** @param array<string,mixed> $config @param array<string,mixed> $variant @return array{shipping_price_cents:int,shipping_additional_item_cents:int} */
+    /** @param array<string,mixed> $config @param array<string,mixed> $variant @return array<string,mixed> */
     private function shippingForVariant(array $config, array $variant): array
     {
+        $profileId = (int) ($variant['shipping_profile_id'] ?? 0);
+        if ($profileId <= 0) {
+            $profileId = (int) ($config['shipping_profile_id'] ?? 0);
+        }
+        $profile = (new ShippingProfileService($this->pdo))->profile((int) ($config['tenant_id'] ?? $variant['tenant_id'] ?? 0), $profileId > 0 ? $profileId : null);
+        if ($profile && (int) ($profile['allow_checkout'] ?? 1) !== 1) {
+            throw new RuntimeException('This item requires a shipping quote before checkout.');
+        }
+        if ($profile) {
+            $mode = (string) ($profile['mode'] ?? 'flat_profile');
+            $base = max(0, (int) ($profile['base_shipping_cents'] ?? 0));
+            $additional = max(0, (int) ($profile['additional_item_cents'] ?? 0));
+            if ($mode === 'free') {
+                $base = 0;
+                $additional = 0;
+            } elseif ($mode === 'flat_profile') {
+                $additional = 0;
+            } elseif ($mode === 'per_item') {
+                $additional = $base;
+            }
+
+            return [
+                'shipping_price_cents' => $base,
+                'shipping_additional_item_cents' => $additional,
+                'shipping_profile_id' => (int) $profile['id'],
+                'shipping_profile_name' => (string) $profile['name'],
+                'shipping_profile_mode' => $mode,
+                'shipping_profile_max_cents' => $profile['max_shipping_cents'] !== null ? max(0, (int) $profile['max_shipping_cents']) : null,
+            ];
+        }
+
         $mode = (string) ($config['shipping_mode'] ?? 'none');
         if ($mode === 'variant') {
             return [
                 'shipping_price_cents' => max(0, (int) ($variant['shipping_price_cents'] ?? 0)),
                 'shipping_additional_item_cents' => max(0, (int) ($variant['shipping_additional_item_cents'] ?? 0)),
+                'shipping_profile_id' => null,
+                'shipping_profile_name' => null,
+                'shipping_profile_mode' => 'legacy_variant',
+                'shipping_profile_max_cents' => null,
             ];
         }
         if ($mode === 'none') {
-            return ['shipping_price_cents' => 0, 'shipping_additional_item_cents' => 0];
+            return ['shipping_price_cents' => 0, 'shipping_additional_item_cents' => 0, 'shipping_profile_id' => null, 'shipping_profile_name' => null, 'shipping_profile_mode' => 'legacy_none', 'shipping_profile_max_cents' => null];
         }
 
         return [
             'shipping_price_cents' => max(0, (int) ($config['shipping_price_cents'] ?? 0)),
             'shipping_additional_item_cents' => $mode === 'flat_per_item' ? max(0, (int) ($config['shipping_additional_item_cents'] ?? 0)) : 0,
+            'shipping_profile_id' => null,
+            'shipping_profile_name' => null,
+            'shipping_profile_mode' => 'legacy_' . $mode,
+            'shipping_profile_max_cents' => null,
         ];
     }
 

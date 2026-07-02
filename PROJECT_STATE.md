@@ -2342,3 +2342,5 @@ Tenant public pages now render a Cart navigation link consistently through HomeC
 - Tenant public cart navigation is visible only when the resolved active tenant cart contains at least one item. Empty carts and cart-summary failures do not render a misleading Cart link.
 - `/cart/checkout` keeps the active cart cookie and cart row while the buyer is redirected to Stripe. Stripe `cancel_url` returns to `/cart?checkout=cancelled&order_id=...`; the cart page tenant-checks that order, releases its pending reservations, marks the order `checkout_cancelled`, and leaves the cart available for editing or retry.
 
+
+- Shipping profiles are implemented through `tenant_shipping_profiles`. Artwork sale configs and variants can point to a profile, and cart/order items snapshot the selected profile. `SalesRepository::shippingAllocations()` groups items by `shipping_profile_id` so small products such as stickers can share one profile-level shipping charge across multiple different artworks.

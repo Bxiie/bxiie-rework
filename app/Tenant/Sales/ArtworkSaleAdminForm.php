@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace App\Tenant\Sales;
 
 use PDO;
+use App\Tenant\Sales\ShippingProfileService;
 
 final class ArtworkSaleAdminForm
 {
@@ -36,6 +37,8 @@ final class ArtworkSaleAdminForm
         $optionSchema = (string) $config['option_schema'];
         $genderSchema = (string) $config['gender_schema'];
         $shippingMode = (string) $config['shipping_mode'];
+        $shippingProfileId = (int) ($config['shipping_profile_id'] ?? 0);
+        $shippingProfileOptions = $this->shippingProfileOptions($tenantId, $shippingProfileId);
         $checkoutChecked = (int) $config['checkout_enabled'] === 1 ? ' checked' : '';
         $shippingRequiredChecked = (int) $config['require_shipping_address'] === 1 ? ' checked' : '';
         $price = htmlspecialchars($this->moneyFromCents($config['base_price_cents'], (string) ($artwork['price'] ?? '')), ENT_QUOTES, 'UTF-8');
@@ -87,6 +90,7 @@ final class ArtworkSaleAdminForm
                 <label>Sizing/options<br><select name="option_schema">{$optionOptions}</select></label>
                 <label>Gender / fit<br><select name="gender_schema">{$genderOptions}</select></label>
                 <label>Shipping mode<br><select name="shipping_mode">{$shippingOptions}</select></label>
+                <label>Shipping profile<br><select name="shipping_profile_id">{$shippingProfileOptions}</select><small>Profiles group similar items, so several sticker products can share one flat shipping charge.</small></label>
                 <label>Shipping charge<br><input type="text" name="shipping_price" value="{$shippingPrice}" placeholder="0.00"></label>
                 <label>Additional item shipping<br><input type="text" name="shipping_additional_item" value="{$shippingAdditional}" placeholder="0.00"></label>
                 <label>Default inventory quantity<br><input type="number" name="inventory_quantity" min="1" step="1" value="{$simpleInventory}"></label>
@@ -134,6 +138,7 @@ HTML;
         $optionSchema = $this->allowed((string) ($post['option_schema'] ?? 'none'), ['none', 'size_alpha', 'size_numeric', 'custom'], 'none');
         $genderSchema = $this->allowed((string) ($post['gender_schema'] ?? 'none'), ['none', 'mens', 'womens', 'unisex', 'selectable'], 'none');
         $shippingMode = $this->allowed((string) ($post['shipping_mode'] ?? 'none'), ['none', 'flat_per_item', 'flat_per_order', 'variant'], 'none');
+        $shippingProfileId = max(0, (int) ($post['shipping_profile_id'] ?? 0));
         $basePriceCents = $this->parseMoneyToCents((string) ($post['price'] ?? ''));
         $shippingPriceCents = $this->parseMoneyToCents((string) ($post['shipping_price'] ?? '')) ?? 0;
         $shippingAdditionalCents = $this->parseMoneyToCents((string) ($post['shipping_additional_item'] ?? '')) ?? 0;
@@ -145,11 +150,11 @@ HTML;
             $config = $this->pdo->prepare(
                 "INSERT INTO artwork_sale_config (
                     tenant_id, artwork_id, sale_kind, option_schema, gender_schema, base_price_cents,
-                    currency, shipping_mode, shipping_price_cents, shipping_additional_item_cents,
+                    currency, shipping_mode, shipping_profile_id, shipping_price_cents, shipping_additional_item_cents,
                     checkout_enabled, require_shipping_address, created_at, updated_at
                  ) VALUES (
                     :tenant_id, :artwork_id, :sale_kind, :option_schema, :gender_schema, :base_price_cents,
-                    'usd', :shipping_mode, :shipping_price_cents, :shipping_additional_item_cents,
+                    'usd', :shipping_mode, :shipping_profile_id, :shipping_price_cents, :shipping_additional_item_cents,
                     :checkout_enabled, :require_shipping_address, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                  )
                  ON DUPLICATE KEY UPDATE
@@ -158,6 +163,7 @@ HTML;
                     gender_schema = VALUES(gender_schema),
                     base_price_cents = VALUES(base_price_cents),
                     shipping_mode = VALUES(shipping_mode),
+                    shipping_profile_id = VALUES(shipping_profile_id),
                     shipping_price_cents = VALUES(shipping_price_cents),
                     shipping_additional_item_cents = VALUES(shipping_additional_item_cents),
                     checkout_enabled = VALUES(checkout_enabled),
@@ -172,6 +178,7 @@ HTML;
                 'gender_schema' => $genderSchema,
                 'base_price_cents' => $basePriceCents,
                 'shipping_mode' => $shippingMode,
+                'shipping_profile_id' => $shippingProfileId > 0 ? $shippingProfileId : null,
                 'shipping_price_cents' => $shippingPriceCents,
                 'shipping_additional_item_cents' => $shippingAdditionalCents,
                 'checkout_enabled' => $checkoutEnabled,
@@ -181,7 +188,7 @@ HTML;
             if ($saleKind === 'variant_inventory') {
                 $this->saveVariantRows($tenantId, $artworkId, $post);
             } else {
-                $this->saveDefaultVariant($tenantId, $artworkId, $post, $saleKind, $basePriceCents, $shippingPriceCents, $shippingAdditionalCents, $checkoutEnabled);
+                $this->saveDefaultVariant($tenantId, $artworkId, $post, $saleKind, $basePriceCents, $shippingPriceCents, $shippingAdditionalCents, $checkoutEnabled, $shippingProfileId);
             }
 
             $this->pdo->commit();
@@ -239,6 +246,7 @@ HTML;
             'gender_schema' => 'none',
             'base_price_cents' => $this->parseMoneyToCents((string) ($artwork['price'] ?? '')),
             'shipping_mode' => 'none',
+            'shipping_profile_id' => null,
             'shipping_price_cents' => 0,
             'shipping_additional_item_cents' => 0,
             'checkout_enabled' => (string) ($artwork['sale_status'] ?? 'nfs') === 'for_sale' ? 1 : 0,
@@ -337,7 +345,7 @@ HTML;
     /**
      * @param array<string,mixed> $post
      */
-    private function saveDefaultVariant(int $tenantId, int $artworkId, array $post, string $saleKind, ?int $basePriceCents, int $shippingPriceCents, int $shippingAdditionalCents, int $checkoutEnabled): void
+    private function saveDefaultVariant(int $tenantId, int $artworkId, array $post, string $saleKind, ?int $basePriceCents, int $shippingPriceCents, int $shippingAdditionalCents, int $checkoutEnabled, int $shippingProfileId = 0): void
     {
         $this->pdo->prepare('UPDATE artwork_sale_variants SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND artwork_id = :artwork_id')
             ->execute(['tenant_id' => $tenantId, 'artwork_id' => $artworkId]);
@@ -357,6 +365,7 @@ HTML;
                      variant_label = 'Default',
                      size_value = NULL,
                      gender_value = 'not_applicable',
+                     shipping_profile_id = :shipping_profile_id,
                      price_cents = :price_cents,
                      shipping_price_cents = :shipping_price_cents,
                      shipping_additional_item_cents = :shipping_additional_item_cents,
@@ -368,6 +377,7 @@ HTML;
             );
             $update->execute([
                 'sku' => $sku,
+                'shipping_profile_id' => $shippingProfileId > 0 ? $shippingProfileId : null,
                 'price_cents' => $basePriceCents,
                 'shipping_price_cents' => $shippingPriceCents,
                 'shipping_additional_item_cents' => $shippingAdditionalCents,
@@ -382,11 +392,11 @@ HTML;
 
         $insert = $this->pdo->prepare(
             "INSERT INTO artwork_sale_variants (
-                tenant_id, artwork_id, sku, variant_label, size_value, gender_value, price_cents,
+                tenant_id, artwork_id, sku, variant_label, size_value, gender_value, shipping_profile_id, price_cents,
                 shipping_price_cents, shipping_additional_item_cents, inventory_quantity, sort_order, is_active,
                 created_at, updated_at
              ) VALUES (
-                :tenant_id, :artwork_id, :sku, 'Default', NULL, 'not_applicable', :price_cents,
+                :tenant_id, :artwork_id, :sku, 'Default', NULL, 'not_applicable', :shipping_profile_id, :price_cents,
                 :shipping_price_cents, :shipping_additional_item_cents, :inventory_quantity, 100, :is_active,
                 CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
              )"

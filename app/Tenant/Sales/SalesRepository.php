@@ -156,16 +156,22 @@ final class SalesRepository
         $stmt = $this->pdo->prepare(
             'INSERT INTO sales_cart_items (
                 cart_id, artwork_id, variant_id, quantity, unit_price_cents,
-                shipping_price_cents, shipping_additional_item_cents,
+                shipping_profile_id, shipping_profile_name_snapshot, shipping_profile_mode_snapshot,
+                shipping_price_cents, shipping_additional_item_cents, shipping_profile_max_cents,
                 title_snapshot, variant_label_snapshot, size_value_snapshot, gender_value_snapshot, media_uuid_snapshot
              ) VALUES (
                 :cart_id, :artwork_id, :variant_id, :quantity, :unit_price_cents,
-                :shipping_price_cents, :shipping_additional_item_cents,
+                :shipping_profile_id, :shipping_profile_name, :shipping_profile_mode,
+                :shipping_price_cents, :shipping_additional_item_cents, :shipping_profile_max_cents,
                 :title, :variant_label, :size_value, :gender_value, :media_uuid
              )
              ON DUPLICATE KEY UPDATE
                 quantity = LEAST(quantity + VALUES(quantity), :max_quantity),
                 unit_price_cents = VALUES(unit_price_cents),
+                shipping_profile_id = VALUES(shipping_profile_id),
+                shipping_profile_name_snapshot = VALUES(shipping_profile_name_snapshot),
+                shipping_profile_mode_snapshot = VALUES(shipping_profile_mode_snapshot),
+                shipping_profile_max_cents = VALUES(shipping_profile_max_cents),
                 shipping_price_cents = VALUES(shipping_price_cents),
                 shipping_additional_item_cents = VALUES(shipping_additional_item_cents),
                 title_snapshot = VALUES(title_snapshot),
@@ -182,6 +188,10 @@ final class SalesRepository
             'quantity' => min($quantity, $maxQuantity),
             'max_quantity' => $maxQuantity,
             'unit_price_cents' => $unitPriceCents,
+            'shipping_profile_id' => isset($shipping['shipping_profile_id']) ? (int) $shipping['shipping_profile_id'] : null,
+            'shipping_profile_name' => $shipping['shipping_profile_name'] ?? null,
+            'shipping_profile_mode' => $shipping['shipping_profile_mode'] ?? null,
+            'shipping_profile_max_cents' => isset($shipping['shipping_profile_max_cents']) ? (int) $shipping['shipping_profile_max_cents'] : null,
             'shipping_price_cents' => max(0, (int) $shipping['shipping_price_cents']),
             'shipping_additional_item_cents' => max(0, (int) $shipping['shipping_additional_item_cents']),
             'title' => (string) $artwork['title'],
@@ -210,8 +220,8 @@ final class SalesRepository
             $quantity = max(1, (int) ($item['quantity'] ?? 1));
             $itemCount += $quantity;
             $subtotal += $quantity * (int) ($item['unit_price_cents'] ?? 0);
-            $shipping += max(0, (int) ($item['shipping_price_cents'] ?? 0)) + max(0, $quantity - 1) * max(0, (int) ($item['shipping_additional_item_cents'] ?? 0));
         }
+        $shipping = array_sum($this->shippingAllocations($items));
 
         return [
             'item_count' => $itemCount,
@@ -229,12 +239,12 @@ final class SalesRepository
         }
 
         $subtotal = 0;
-        $shippingTotal = 0;
         foreach ($items as $item) {
             $quantity = max(1, (int) $item['quantity']);
             $subtotal += $quantity * (int) $item['unit_price_cents'];
-            $shippingTotal += $this->lineShippingCents($item);
         }
+        $shippingAllocations = $this->shippingAllocations($items);
+        $shippingTotal = array_sum($shippingAllocations);
         $total = $subtotal + $shippingTotal;
         $orderNumber = 'AF-' . date('Ymd') . '-' . strtoupper(bin2hex(random_bytes(4)));
 
@@ -348,9 +358,9 @@ final class SalesRepository
 
             $itemStmt = $this->pdo->prepare(
                 'INSERT INTO sales_order_items
-                    (order_id, artwork_id, variant_id, title_snapshot, variant_label_snapshot, size_value_snapshot, gender_value_snapshot, media_uuid_snapshot, quantity, unit_price_cents, shipping_price_cents, line_total_cents, shipping_total_cents)
+                    (order_id, artwork_id, variant_id, title_snapshot, variant_label_snapshot, size_value_snapshot, gender_value_snapshot, shipping_profile_id, shipping_profile_name_snapshot, shipping_profile_mode_snapshot, media_uuid_snapshot, quantity, unit_price_cents, shipping_price_cents, shipping_profile_max_cents, line_total_cents, shipping_total_cents)
                  VALUES
-                    (:order_id, :artwork_id, :variant_id, :title, :variant_label, :size_value, :gender_value, :media_uuid, :quantity, :unit_price, :shipping_price, :line_total, :shipping_total)'
+                    (:order_id, :artwork_id, :variant_id, :title, :variant_label, :size_value, :gender_value, :shipping_profile_id, :shipping_profile_name, :shipping_profile_mode, :media_uuid, :quantity, :unit_price, :shipping_price, :shipping_profile_max_cents, :line_total, :shipping_total)'
             );
             $reservationStmt = $this->pdo->prepare(
                 'INSERT INTO sales_inventory_reservations
@@ -362,7 +372,7 @@ final class SalesRepository
                 $locked = $lockedItems[(int) $item['id']];
                 $quantity = (int) $locked['quantity'];
                 $lineTotal = $quantity * (int) $item['unit_price_cents'];
-                $lineShipping = $this->lineShippingCents(['quantity' => $quantity] + $item);
+                $lineShipping = (int) ($shippingAllocations[(int) $item['id']] ?? $this->lineShippingCents(['quantity' => $quantity] + $item));
                 $itemStmt->execute([
                     'order_id' => $orderId,
                     'artwork_id' => (int) $locked['artwork_id'],
@@ -371,10 +381,14 @@ final class SalesRepository
                     'variant_label' => $item['variant_label_snapshot'] ?? null,
                     'size_value' => $item['size_value_snapshot'] ?? null,
                     'gender_value' => $item['gender_value_snapshot'] ?? null,
+                    'shipping_profile_id' => isset($item['shipping_profile_id']) ? (int) $item['shipping_profile_id'] : null,
+                    'shipping_profile_name' => $item['shipping_profile_name_snapshot'] ?? null,
+                    'shipping_profile_mode' => $item['shipping_profile_mode_snapshot'] ?? null,
                     'media_uuid' => $item['media_uuid_snapshot'] ?? null,
                     'quantity' => $quantity,
                     'unit_price' => (int) $item['unit_price_cents'],
                     'shipping_price' => max(0, (int) ($item['shipping_price_cents'] ?? 0)),
+                    'shipping_profile_max_cents' => isset($item['shipping_profile_max_cents']) ? (int) $item['shipping_profile_max_cents'] : null,
                     'line_total' => $lineTotal,
                     'shipping_total' => $lineShipping,
                 ]);
@@ -784,6 +798,82 @@ final class SalesRepository
     {
         $stmt = $this->pdo->query('SELECT o.*, t.name AS tenant_name, t.slug AS tenant_slug FROM sales_orders o JOIN tenants t ON t.id = o.tenant_id ORDER BY o.created_at DESC LIMIT ' . max(1, $limit));
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    /**
+     * Allocate shipping by shipping profile across the whole cart/order.
+     *
+     * Items sharing a profile receive one profile-level base charge, optional
+     * additional item charges, and an optional cap. This is what lets ten
+     * different sticker products ship for one $5 small-flat charge.
+     *
+     * @param list<array<string,mixed>> $items
+     * @return array<int,int> map of cart item id to allocated shipping cents
+     */
+    private function shippingAllocations(array $items): array
+    {
+        $allocations = [];
+        $groups = [];
+        foreach ($items as $item) {
+            $id = (int) ($item['id'] ?? 0);
+            if ($id <= 0) {
+                continue;
+            }
+            $profileId = (int) ($item['shipping_profile_id'] ?? 0);
+            $mode = (string) ($item['shipping_profile_mode_snapshot'] ?? '');
+            $key = $profileId > 0 ? 'profile-' . $profileId : 'legacy-' . $id;
+            $groups[$key][] = $item + ['__cart_item_id' => $id, '__shipping_mode' => $mode];
+        }
+
+        foreach ($groups as $group) {
+            $remaining = $this->profileShippingTotal($group);
+            foreach ($group as $index => $item) {
+                $id = (int) $item['__cart_item_id'];
+                if ($index === array_key_last($group)) {
+                    $allocations[$id] = max(0, $remaining);
+                    break;
+                }
+                $line = min(max(0, $remaining), $this->lineShippingCents($item));
+                $allocations[$id] = $line;
+                $remaining -= $line;
+            }
+        }
+
+        return $allocations;
+    }
+
+    /** @param list<array<string,mixed>> $items */
+    private function profileShippingTotal(array $items): int
+    {
+        if ($items === []) {
+            return 0;
+        }
+        $first = $items[0];
+        $mode = (string) ($first['shipping_profile_mode_snapshot'] ?? $first['__shipping_mode'] ?? '');
+        if ($mode === 'free') {
+            return 0;
+        }
+        if ($mode === 'quote') {
+            throw new RuntimeException('This cart contains an item that requires a shipping quote before checkout.');
+        }
+
+        $quantity = 0;
+        foreach ($items as $item) {
+            $quantity += max(1, (int) ($item['quantity'] ?? 1));
+        }
+        if ($quantity <= 0) {
+            return 0;
+        }
+
+        $base = max(0, (int) ($first['shipping_price_cents'] ?? 0));
+        $additional = max(0, (int) ($first['shipping_additional_item_cents'] ?? 0));
+        $total = $base + max(0, $quantity - 1) * $additional;
+        if (array_key_exists('shipping_profile_max_cents', $first) && $first['shipping_profile_max_cents'] !== null && $first['shipping_profile_max_cents'] !== '') {
+            $total = min($total, max(0, (int) $first['shipping_profile_max_cents']));
+        }
+
+        return $total;
     }
 
     /** @param array<string,mixed> $item */

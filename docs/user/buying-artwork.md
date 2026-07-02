@@ -35,3 +35,8 @@ If the artist uses both an ArtsFolio address and a custom domain, your cart foll
 If you enter your email on the cart page and leave before checkout, ArtsFolio may send a saved cart reminder. The reminder link can restore your cart even if the artist uses both an ArtsFolio subdomain and a custom domain.
 
 A saved cart reminder does not reserve the artwork forever. Originals, sizes, prints, and other limited items may sell out before you return. The cart page will show the current state before checkout.
+
+
+## Shared shipping profiles
+
+Some products share shipping. For example, several stickers or small prints may travel together in one envelope, so checkout can charge one shared shipping amount instead of one shipping charge per item. The cart shows the total shipping calculated by the artist's selected shipping profile.

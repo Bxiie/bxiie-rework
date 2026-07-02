@@ -100,3 +100,15 @@ php scripts/email/queue_abandoned_cart_emails.php
 ```
 
 The script queues rows in `email_outbox`; it does not connect to SMTP directly.
+
+
+## Shipping profiles
+
+Migration `0059_tenant_shipping_profiles.sql` adds `tenant_shipping_profiles` and profile snapshot columns on cart and order items. Cart shipping is grouped by `sales_cart_items.shipping_profile_id` and calculated once per profile, not once per artwork. This lets multiple small products share one base charge.
+
+Runtime flow:
+
+1. Tenant admin selects `artwork_sale_config.shipping_profile_id`.
+2. Add-to-cart snapshots profile id, profile name, mode, base/additional cents, and optional max cents onto `sales_cart_items`.
+3. `SalesRepository::shippingAllocations()` groups cart items by profile and allocates the profile total across order items.
+4. Stripe still receives one computed inline shipping total through the existing Phase 4 checkout service.
