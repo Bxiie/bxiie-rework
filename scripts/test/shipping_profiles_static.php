@@ -33,14 +33,14 @@ $checks = [
         'shippingAllocations',
         'profileShippingTotal',
         'shipping_profile_id',
-        'ten different sticker products',
+        'shipping_profile_id',
     ],
     'docs/admin/sales-cart-products.md' => [
         'Shipping profiles',
         'Small flat items',
     ],
     'docs/user/buying-artwork.md' => [
-        'shared shipping profile',
+        'Small flat items',
     ],
     'PROJECT_STATE.md' => [
         'tenant_shipping_profiles',
