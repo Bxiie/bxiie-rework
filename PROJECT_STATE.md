@@ -2373,3 +2373,4 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 # End of file.
 - 2026-07-02: Repaired the NFS artwork sales-panel static test so PHP markers containing `$artwork['sale_status']` are checked with nowdoc strings instead of invalid interpolated strings.
 - 2026-07-02: Repaired NFS artwork sales-panel static coverage to check the actual HomeController::artworkSalesPanel method name instead of the obsolete salesPanel marker.
+- 2026-07-02: Forced the public HomeController::artworkSalesPanel runtime guard so artwork whose `sale_status` is not `for_sale` cannot render the Sales panel or direct-artist sales notes.

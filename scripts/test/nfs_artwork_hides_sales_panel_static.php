@@ -14,27 +14,20 @@ if (!is_file($homePath)) {
     $failures[] = 'Missing app/Http/Controllers/Tenant/HomeController.php';
 } else {
     $home = file_get_contents($homePath) ?: '';
-
-    $methodName = null;
-    foreach (['function artworkSalesPanel', 'function salesPanel'] as $candidate) {
-        if (str_contains($home, $candidate)) {
-            $methodName = $candidate;
-            break;
-        }
-    }
-    if ($methodName === null) {
-        $failures[] = 'HomeController missing artworkSalesPanel sales panel method';
+    $methodPosition = strpos($home, 'function artworkSalesPanel');
+    if ($methodPosition === false) {
+        $failures[] = 'HomeController missing artworkSalesPanel method';
     }
 
     foreach ([
+        <<<'NEEDLE'
+NFS artwork never renders the Sales panel
+NEEDLE,
         <<<'NEEDLE'
 (string) ($artwork['sale_status'] ?? '') !== 'for_sale'
 NEEDLE,
         <<<'NEEDLE'
 return '';
-NEEDLE,
-        <<<'NEEDLE'
-NFS artwork never renders the Sales panel
 NEEDLE,
     ] as $needle) {
         if (!str_contains($home, $needle)) {
@@ -42,19 +35,18 @@ NEEDLE,
         }
     }
 
-    if ($methodName !== null) {
-        $methodPosition = strpos($home, $methodName);
-        $saleStatusPosition = strpos($home, "(string) (\$artwork['sale_status'] ?? '') !== 'for_sale'", $methodPosition ?: 0);
-        $salesHeaderPosition = strpos($home, '<h2>Sales</h2>', $methodPosition ?: 0);
-        $directSalesCopyPosition = strpos($home, 'Sales are handled directly by the artist', $methodPosition ?: 0);
+    if ($methodPosition !== false) {
+        $guardPosition = strpos($home, "(string) (\$artwork['sale_status'] ?? '') !== 'for_sale'", $methodPosition);
+        $salesHeaderPosition = strpos($home, '<h2>Sales</h2>', $methodPosition);
+        $directSalesCopyPosition = strpos($home, 'Sales are handled directly by the artist', $methodPosition);
 
-        if ($saleStatusPosition === false) {
-            $failures[] = 'HomeController sale-status guard must be inside the sales panel method.';
+        if ($guardPosition === false) {
+            $failures[] = 'HomeController sale-status guard must be inside artworkSalesPanel.';
         }
-        if ($saleStatusPosition !== false && $salesHeaderPosition !== false && $saleStatusPosition > $salesHeaderPosition) {
+        if ($guardPosition !== false && $salesHeaderPosition !== false && $guardPosition > $salesHeaderPosition) {
             $failures[] = 'HomeController sale-status guard appears after the Sales header render.';
         }
-        if ($saleStatusPosition !== false && $directSalesCopyPosition !== false && $saleStatusPosition > $directSalesCopyPosition) {
+        if ($guardPosition !== false && $directSalesCopyPosition !== false && $guardPosition > $directSalesCopyPosition) {
             $failures[] = 'HomeController sale-status guard appears after direct-sales copy render.';
         }
     }

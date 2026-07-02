@@ -234,7 +234,7 @@ HTML;
         $medium = $this->escape((string) ($artwork['medium'] ?? ''));
         $dimensions = $this->escape((string) ($artwork['dimensions'] ?? ''));
         $year = $this->escape((string) ($artwork['year_created'] ?? ''));
-        $pricePanel = $this->artworkSalesPanel($tenant, $artwork);
+        $pricePanel = ((string) ($artwork['sale_status'] ?? '') === 'for_sale' ? $this->artworkSalesPanel($tenant, $artwork) : '');
         $contactLink = '/contact?artwork=' . rawurlencode((string) $artwork['slug']);
 
         $body = "<h1>{$title}</h1>\n";
@@ -383,6 +383,11 @@ HTML
      */
     private function artworkSalesPanel(TenantContext $tenant, array $artwork): string
     {
+        // NFS artwork never renders the Sales panel or direct-artist sales notes.
+        if ((string) ($artwork['sale_status'] ?? '') !== 'for_sale') {
+            return '';
+        }
+
         $priceLine = $this->publicPriceLine($artwork);
         $salesNotes = trim((string) $this->settings->get($tenant, 'sales_notes', ''));
         $config = $this->saleConfigForPublicArtwork($tenant, (int) ($artwork['id'] ?? 0));
