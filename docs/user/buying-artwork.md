@@ -40,3 +40,13 @@ A saved cart reminder does not reserve the artwork forever. Originals, sizes, pr
 ## Shared shipping profiles
 
 Some products share shipping. For example, several stickers or small prints may travel together in one envelope, so checkout can charge one shared shipping amount instead of one shipping charge per item. The cart shows the total shipping calculated by the artist's selected shipping profile.
+
+## Shipping profiles
+
+Some small products share shipping. For example, stickers, postcards, patches, and other light items may use the **Small flat items** shipping profile. When several products in the cart use the same shared shipping profile, ArtsFolio groups them together for shipping instead of charging a separate shipping fee for every product.
+
+Example: if ten different sticker products each cost $2.99 and all use **Small flat items**, the cart can charge one $5.00 shipping amount for that profile instead of $5.00 per sticker.
+
+Large, fragile, installed, or freight-shipped artwork may use a quoted-shipping profile. Those items may require contacting the studio before checkout can be completed.
+
+# End of file.

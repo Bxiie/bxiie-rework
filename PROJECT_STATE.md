@@ -2281,15 +2281,18 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - The committed route inventory snapshot includes the tenant `GET /cart/bridge` and `GET /cart/bridge-pixel` routes added for cross-domain cart continuity between tenant subdomains and custom domains.
 - `scripts/test/phase8_routing_static.php` remains the guard for intentional route changes; refresh `scripts/test/fixtures/route_inventory.json` whenever routes are deliberately added, removed, or changed.
 
+- 2026-07-02: Added user documentation for the Small flat items shipping profile so buyers understand shared shipping for stickers and other small products.
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 
 - Shopping cart public product availability repair is applied: tenant public artwork pages now read `artwork_sale_config` and active `artwork_sale_variants` for buyer-facing availability and add-to-cart rendering, while falling back to legacy artwork inventory only as a display guard. Sales plan gating now uses `plans.allow_sales` instead of `monthly_price_cents > 0`, so complimentary/manual sales-enabled tenants can use checkout. Migration `0058_repair_cart_product_public_availability.sql` backfills missing/disabled default sale variants for for-sale configured products.
 - Shopping cart repair 2026-06-30: migration 0058 no longer uses MariaDB REGEXP for legacy price detection, and the tenant public HomeController keeps the `site-cart-link` cart chrome helper while rendering product add-to-cart forms.
 
+- 2026-07-02: Added user documentation for the Small flat items shipping profile so buyers understand shared shipping for stickers and other small products.
 # End of file.
 - Shopping cart repair 2026-06-30: public artwork sales notes are now direct-artist copy only. Artwork configured for platform checkout suppresses the tenant `sales_notes` direct-sales message and renders cart/checkout-specific messaging instead.
 
+- 2026-07-02: Added user documentation for the Small flat items shipping profile so buyers understand shared shipping for stickers and other small products.
 # End of file.
 
 ## Shopping cart add-to-cart PDO placeholder repair - 2026-06-30
@@ -2344,3 +2347,6 @@ Tenant public pages now render a Cart navigation link consistently through HomeC
 
 
 - Shipping profiles are implemented through `tenant_shipping_profiles`. Artwork sale configs and variants can point to a profile, and cart/order items snapshot the selected profile. `SalesRepository::shippingAllocations()` groups items by `shipping_profile_id` so small products such as stickers can share one profile-level shipping charge across multiple different artworks.
+## Shipping profile static test repair
+
+The shipping-profile static coverage now checks durable implementation markers instead of exact prose. `scripts/test/shipping_profiles_static.php` verifies profile-backed cart behavior through `shipping_profile_id` and the seeded `Small flat items` profile, while `scripts/test/shipping_profiles_admin_edit_static.php` verifies that the artwork edit form does not hard-fail during a shipping-profile deploy or migration gap.
