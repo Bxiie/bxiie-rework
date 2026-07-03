@@ -27,8 +27,8 @@ foreach (['notes_html', 'ALTER TABLE artworks', 'TEXT NULL'] as $needle) {
 $admin = file_get_contents($root . '/app/Http/Controllers/Tenant/Admin/ArtworksController.php') ?: '';
 $adminNeedles = [
     'notes_html',
-    'Artwork notes',
-    'Notes HTML',
+    'Public notes',
+    'Public notes HTML',
     'name="notes_html"',
     'textarea',
 ];

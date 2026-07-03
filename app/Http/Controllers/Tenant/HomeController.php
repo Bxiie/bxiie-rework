@@ -251,8 +251,10 @@ $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublish
         $body .= "<p><strong>Dimensions:</strong> {$dimensions}</p>\n";
         $body .= "<p><strong>Year:</strong> {$year}</p>\n";
         $body .= "<div>{$description}</div>\n";
+        $body .= $notesHtml;
         $body .= $pricePanel;
-        $body .= $this->curation?->form($tenant->tenantId, (int) $artwork['id'], '/artwork/' . (string) $artwork['slug'], $this->currentUser) ?? '';
+        $curationControls = $this->curation?->form($tenant->tenantId, (int) $artwork['id'], '/artwork/' . (string) $artwork['slug'], $this->currentUser) ?? '';
+        $body .= $this->collapsibleCurationControls($curationControls);
         $body .= '<p><a class="button artwork-inquiry-link" href="' . $contactLink . '">Contact the artist about this artwork</a></p>' . "\n";
 
         return $this->tenantPageResponse($this->layout(
@@ -441,7 +443,6 @@ HTML
         $cartHtml = $this->cartForm($tenant, $artwork, $config, $variants);
 
         return <<<HTML
-{$notesPanel}
     <section class="artwork-sales-panel">
     <h2>Sales</h2>
     {$priceLine}
