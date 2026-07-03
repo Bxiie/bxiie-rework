@@ -321,6 +321,7 @@ return static function (Router $router, array $context): void {
         $router->get('/cart/bridge', fn (Request $request): Response => $tenantSalesController->bridge($request, $tenant));
         $router->post('/cart/add', fn (Request $request): Response => $tenantSalesController->add($request, $tenant));
         $router->post('/cart/update', fn (Request $request): Response => $tenantSalesController->update($request, $tenant));
+        $router->post('/cart/remove', fn (Request $request): Response => $tenantSalesController->remove($request, $tenant));
         $router->post('/cart/checkout', fn (Request $request): Response => $tenantSalesController->checkout($request, $tenant));
         $router->get('/checkout/success', fn (Request $request): Response => $tenantSalesController->success($request, $tenant));
         $router->get('/api/me', fn (Request $request): Response => (new TenantMeController(tenantRoles: new RequireTenantRole(new MembershipRepository($pdo)), auditLog: new AuditLogRepository($pdo)))->show($request, $bearerToken, $tenant));

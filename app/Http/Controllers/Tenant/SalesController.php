@@ -109,7 +109,9 @@ final class SalesController
             $subtotal += $line;
             $shippingTotal += $shipping;
             $details = $this->cartItemDetails($item);
-            $rows .= '<tr><td>' . $this->e((string) $item['title_snapshot']) . $details . '</td><td><input type="number" name="quantity[' . (int) $item['id'] . ']" min="0" value="' . (int) $item['quantity'] . '"></td><td>' . $this->money((int) $item['unit_price_cents']) . '</td><td>' . $this->money($shipping) . '</td><td>' . $this->money($line + $shipping) . '</td></tr>';
+            $itemId = (int) $item['id'];
+            $removeLabel = 'Remove ' . (string) $item['title_snapshot'] . ' from cart';
+            $rows .= '<tr><td>' . $this->e((string) $item['title_snapshot']) . $details . '</td><td><input type="number" name="quantity[' . $itemId . ']" min="0" value="' . (int) $item['quantity'] . '"></td><td>' . $this->money((int) $item['unit_price_cents']) . '</td><td>' . $this->money($shipping) . '</td><td>' . $this->money($line + $shipping) . '</td><td><button type="submit" class="cart-line-remove" name="remove_item_id" value="' . $itemId . '" formaction="/cart/remove" formmethod="post" formnovalidate aria-label="' . $this->e($removeLabel) . '" title="Remove item">🗑</button></td></tr>';
         }
 
         $customerEmail = $cart ? $this->e((string) (($cart['contact_email'] ?? '') ?: ($cart['customer_email'] ?? ''))) : '';
@@ -118,8 +120,8 @@ final class SalesController
         $total = $subtotal + $shippingTotal;
         $feeDisclosure = $items === [] ? '' : '<div class="sales-fee-disclosure"><p><strong>Seller payout disclosure:</strong> the artist receives sale amount minus ArtsFolio commission and credit card charges.</p><p>On this cart: platform commission ' . $this->money($fees['commission_cents']) . ', estimated credit card charges ' . $this->money($fees['credit_card_fee_cents']) . ', estimated artist proceeds ' . $this->money($fees['seller_net_cents']) . '.</p></div>';
         $customerFields = '<fieldset class="tenant-form"><legend>Cart contact</legend><label>Name<input name="customer_name" value="' . $customerName . '" autocomplete="name"></label><label>Email<input type="email" name="customer_email" value="' . $customerEmail . '" autocomplete="email" required></label><p class="muted">Email lets ArtsFolio send checkout reminders for abandoned carts.</p></fieldset>';
-        $checkout = $items === [] ? '<p>Your cart is empty.</p>' : $customerFields . '<div class="cart-totals"><p><strong>Subtotal:</strong> ' . $this->money($subtotal) . '</p><p><strong>Shipping:</strong> ' . $this->money($shippingTotal) . '</p><p><strong>Total:</strong> ' . $this->money($total) . '</p></div>' . $feeDisclosure . '<button type="submit" formaction="/cart/update">Update cart</button> <button type="submit" formaction="/cart/checkout">Checkout with Stripe</button>';
-        $content = '<h1>Shopping cart</h1><form class="plan-edit-form cart-review-form" method="post"><input type="hidden" name="csrf_token" value="' . $csrf . '"><table class="admin-table cart-review-table"><thead><tr><th>Artwork</th><th>Qty</th><th>Unit</th><th>Shipping</th><th>Total</th></tr></thead><tbody>' . $rows . '</tbody></table>' . $checkout . '</form><p><a href="/portfolio">Continue browsing</a></p>';
+        $checkout = $items === [] ? '<p>Your cart is empty.</p>' : $customerFields . '<div class="cart-totals"><p><strong>Subtotal:</strong> ' . $this->money($subtotal) . '</p><p><strong>Shipping:</strong> ' . $this->money($shippingTotal) . '</p><p><strong>Total:</strong> ' . $this->money($total) . '</p></div>' . $feeDisclosure . '<button type="submit" formaction="/cart/update" formnovalidate>Update cart</button> <button type="submit" formaction="/cart/checkout">Checkout with Stripe</button>';
+        $content = '<h1>Shopping cart</h1><form class="plan-edit-form cart-review-form" method="post"><input type="hidden" name="csrf_token" value="' . $csrf . '"><table class="admin-table cart-review-table"><thead><tr><th>Artwork</th><th>Qty</th><th>Unit</th><th>Shipping</th><th>Total</th><th>Remove</th></tr></thead><tbody>' . $rows . '</tbody></table>' . $checkout . '</form><p><a href="/portfolio">Continue browsing</a></p>';
 
         return $this->tenantPageResponse($tenant, 'Shopping cart', $content, 200, $resolved['set_cookie'] ? ['Set-Cookie' => (string) $resolved['set_cookie']] : []);
     }
@@ -133,11 +135,28 @@ final class SalesController
         $resolved = $identity->resolveCartForRequest($tenant, $request, false);
         $cart = is_array($resolved['cart']) ? $resolved['cart'] : null;
         if ($cart) {
-            $this->saveCartContact((int) $cart['id']);
             foreach ((array) ($_POST['quantity'] ?? []) as $itemId => $qty) {
                 $this->sales->updateQuantity((int) $cart['id'], (int) $itemId, (int) $qty);
             }
         }
+        return new Response('', 303, ['Location' => '/cart']);
+    }
+
+    public function remove(Request $request, TenantContext $tenant): Response
+    {
+        if (!$this->verifyCsrf()) {
+            return new Response('', 303, ['Location' => '/cart?error=security']);
+        }
+
+        $identity = new CartIdentityService($this->pdo);
+        $resolved = $identity->resolveCartForRequest($tenant, $request, false);
+        $cart = is_array($resolved['cart']) ? $resolved['cart'] : null;
+        $itemId = (int) ($_POST['remove_item_id'] ?? 0);
+
+        if ($cart && $itemId > 0) {
+            $this->sales->updateQuantity((int) $cart['id'], $itemId, 0);
+        }
+
         return new Response('', 303, ['Location' => '/cart']);
     }
 
