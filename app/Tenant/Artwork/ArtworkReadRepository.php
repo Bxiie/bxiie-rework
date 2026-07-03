@@ -17,7 +17,9 @@ final class ArtworkReadRepository
     public function findPublishedBySlug(TenantContext $tenant, string $slug, bool $includeUnpublished = false): ?array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT a.id, a.uuid, a.title, a.slug, a.description, a.medium, a.dimensions, a.year_created, a.status,
+            "SELECT a.id, a.uuid, a.title, a.slug, a.description,
+                    a.notes_html,
+a.medium, a.dimensions, a.year_created, a.status,
                     a.sale_status, a.price,
                     COALESCE(a.is_one_off, 1) AS is_one_off,
                     COALESCE(a.inventory_quantity, 1) AS inventory_quantity,
