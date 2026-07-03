@@ -1,0 +1,2 @@
+ALTER TABLE artworks
+    ADD COLUMN IF NOT EXISTS notes_html LONGTEXT NULL;

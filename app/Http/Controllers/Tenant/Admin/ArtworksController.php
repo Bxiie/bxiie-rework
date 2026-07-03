@@ -317,7 +317,14 @@ HTML;
         }
 
         $selected = fn (string $a, string $b): string => $a === $b ? ' selected' : '';
-        $saleFieldset = (new ArtworkSaleAdminForm($this->pdo))->render($tenant->tenantId, $artwork);
+        $saleFieldset = '';
+        try {
+            $saleFieldset = (new ArtworkSaleAdminForm($this->pdo))->render($tenant->tenantId, $artwork);
+        $notesHtmlValue = htmlspecialchars((string) ($artwork['notes_html'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        } catch (\Throwable $exception) {
+            $this->logAdminArtworkEditFailure($tenant->tenantId, (int) ($artwork['id'] ?? 0), 'ArtworkSaleAdminForm render failed', $exception);
+            $saleFieldset = '<fieldset class="admin-card admin-warning"><legend>Sales &amp; checkout</legend><p>Sales settings could not be loaded. The rest of the artwork form is still available. Check <code>storage/logs/admin_artwork_edit.log</code>.</p></fieldset>';
+        }
 
         $body = <<<HTML
 <main>
@@ -360,6 +367,12 @@ HTML;
             <p>Choose where this artwork appears.</p>
             {$sectionOptions}
         </fieldset>
+
+        <section class="admin-card artwork-notes-editor">
+            <h2>Artwork notes</h2>
+            <label>Notes HTML<br><textarea name="notes_html" rows="8" class="admin-textarea-wide">{$notesHtmlValue}</textarea></label>
+            <p class="form-help">Shown on the public artwork detail page. Multiline HTML is allowed for trusted tenant-admin-authored notes.</p>
+        </section>
         {$saleFieldset}
         <button type="submit">Save artwork</button>
     </form>
@@ -392,6 +405,7 @@ HTML;
         $status = in_array(($_POST['status'] ?? 'draft'), ['draft', 'published', 'archived'], true) ? (string) $_POST['status'] : 'draft';
         $saleStatus = in_array(($_POST['sale_status'] ?? 'nfs'), ['nfs', 'for_sale', 'sold'], true) ? (string) $_POST['sale_status'] : 'nfs';
         $price = $saleStatus === 'nfs' ? null : trim((string) ($_POST['price'] ?? ''));
+        $notesHtml = (string) ($_POST['notes_html'] ?? '');
         $legacySalesInventory = (new ArtworkSaleAdminForm($this->pdo))->legacyInventoryFromPost($_POST);
         $isOneOff = $legacySalesInventory['is_one_off'];
         $inventoryQuantity = $legacySalesInventory['inventory_quantity'];
@@ -404,7 +418,7 @@ HTML;
                  description = :description,
                  status = :status,
                  sale_status = :sale_status,
-                 price = :price,
+                 price = :price, notes_html = :notes_html,
                  is_one_off = :is_one_off,
                  inventory_quantity = :inventory_quantity,
                  updated_at = CURRENT_TIMESTAMP
@@ -419,6 +433,7 @@ HTML;
             'description' => trim((string) ($_POST['description'] ?? '')) ?: null,
             'status' => $status,
             'sale_status' => $saleStatus,
+            'notes_html' => $notesHtml,
             'price' => $price !== '' ? $price : null,
             'is_one_off' => $isOneOff,
             'inventory_quantity' => $inventoryQuantity,
@@ -846,6 +861,31 @@ HTML;
         $row = $stmt->fetch();
 
         return $row ?: null;
+    }
+
+    private function logAdminArtworkEditFailure(int $tenantId, int $artworkId, string $message, \Throwable $exception): void
+    {
+        $payload = [
+            'tenant_id' => $tenantId,
+            'artwork_id' => $artworkId,
+            'message' => $message,
+            'exception' => get_class($exception),
+            'exception_message' => $exception->getMessage(),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+        ];
+        $line = '[ArtsFolio admin artwork edit] ' . json_encode($payload, JSON_UNESCAPED_SLASHES) . PHP_EOL;
+        error_log(rtrim($line));
+
+        $root = dirname(__DIR__, 5);
+        $logDir = $root . '/storage/logs';
+        if (is_dir($logDir) || @mkdir($logDir, 0775, true)) {
+            if (@file_put_contents($logDir . '/admin_artwork_edit.log', $line, FILE_APPEND | LOCK_EX) !== false) {
+                return;
+            }
+        }
+
+        @file_put_contents('/tmp/artsfolio_admin_artwork_edit.log', $line, FILE_APPEND | LOCK_EX);
     }
 
 }

@@ -203,7 +203,7 @@ HTML;
             $emails = $this->limitLabel($plan['allowed_email_addresses'] ?? null, 'email addresses');
             $customDomain = ((int) $plan['custom_domain_included']) === 1 ? 'Admin users: Custom domain included' : 'ArtsFolio subdomain included';
             $sales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Online checkout available' : 'Online checkout unavailable';
-            $workflow = ((int) ($plan['curation_workflow_included'] ?? 0)) === 1
+            $workflow = ((int) (($plan['curation_workflow_included'] ?? 0) ?? 0)) === 1
                 ? 'Curation workflow included'
                 : 'Curation workflow not included';
             $fees = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? '<li>Sales fee disclosure: ArtsFolio commission plus ' . $this->cardFeesLabel($plan) . ' credit card charges</li>' : '';
@@ -239,7 +239,7 @@ HTML;
             $domains .= '<td>' . (((int) $plan['custom_domain_included']) === 1 ? 'Included' : '-') . '</td>';
             $notice .= '<td>' . (((string) $plan['slug']) === 'free' ? 'Included' : '-') . '</td>';
             $sales .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Included' : '-') . '</td>';
-            $workflow .= '<td>' . (((int) ($plan['curation_workflow_included'] ?? 0)) === 1 ? 'Included' : '-') . '</td>';
+            $workflow .= '<td>' . (((int) (($plan['curation_workflow_included'] ?? 0) ?? 0)) === 1 ? 'Included' : '-') . '</td>';
             $cardFees .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? $this->cardFeesLabel($plan) : '-') . '</td>';
         }
         return '<table class="admin-table"><thead><tr><th>Feature</th>' . $heads . '</tr></thead><tbody>' . $price . '</tr>' . $artworks . '</tr>' . $emails . '</tr>' . $domains . '</tr>' . $notice . '</tr>' . $sales . '</tr>' . $workflow . '</tr>' . $cardFees . '</tr></tbody></table>';

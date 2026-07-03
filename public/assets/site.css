@@ -1856,3 +1856,44 @@ body article.pricing-card.featured h3 {
     background: color-mix(in srgb, var(--bg, #fff), white 72%);
 }
 /* End of file. */
+
+.artwork-notes {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.artwork-notes h2 {
+    margin-top: 0;
+}
+
+.artwork-notes-body > :first-child {
+    margin-top: 0;
+}
+
+.artwork-notes-body > :last-child {
+    margin-bottom: 0;
+}
+
+/* End of artwork notes public styles. */
+
+.tenant-curation-controls-toggle {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.74);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.tenant-curation-controls-toggle summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.tenant-curation-controls-body {
+    margin-top: 0.85rem;
+}
+
+/* End of tenant curation control toggle styles. */
+
