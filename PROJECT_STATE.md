@@ -2374,3 +2374,26 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 - 2026-07-02: Repaired the NFS artwork sales-panel static test so PHP markers containing `$artwork['sale_status']` are checked with nowdoc strings instead of invalid interpolated strings.
 - 2026-07-02: Repaired NFS artwork sales-panel static coverage to check the actual HomeController::artworkSalesPanel method name instead of the obsolete salesPanel marker.
 - 2026-07-02: Forced the public HomeController::artworkSalesPanel runtime guard so artwork whose `sale_status` is not `for_sale` cannot render the Sales panel or direct-artist sales notes.
+
+- 2026-07-02: Added `artworks.notes_html` for tenant-admin Artwork notes HTML. The artwork edit page stores multiline HTML notes and the public artwork detail page renders them below the main artwork details. This field is intended for trusted tenant-admin-authored notes, not buyer-submitted content.
+- 2026-07-02: `scripts/test/artwork_notes_static.php` was repaired to use nowdoc literals for artwork note markers, avoiding PHP interpolation parse errors around `$artwork['notes_html']`.
+- 2026-07-02: Public artwork detail pages can wrap tenant-admin curation controls in a collapsed `tenant-curation-controls-toggle` details element so the controls are available but hidden by default.
+- 2026-07-02: Repaired artwork notes static coverage to avoid PHP string interpolation parse errors and normalized accidental duplicate access modifiers in `HomeController.php` after the curation-toggle patch.
+- 2026-07-02: Repaired HomeController parse failure caused by duplicate PHP access modifiers before helper method declarations; added static coverage for this syntax regression.
+
+- HomeController duplicate access-modifier parse repairs now catch multiline and static/final duplicate visibility declarations.
+- Repaired HomeController parse failure caused by a stray standalone `private /* ... */` line before `collapsibleCurationControls()`; added static coverage for this specific access-modifier pattern.
+
+## 2026-07-02 Artwork notes home-page scope repair
+- Artwork notes rendering is detail-page scoped. `HomeController::home()` must not call `artworkNotesHtml($artwork)` because tenant home pages do not have an artwork row; doing so caused tenant home HTTP 500 errors in smoke tests.
+- Platform pricing now uses null-safe access for `curation_workflow_included` to avoid smoke-test warnings when older plan rows lack that key.
+
+## 2026-07-02 Artwork notes home-scope static parse repair
+- Rewrote `scripts/test/artwork_notes_home_scope_static.php` with PHP-safe literals so snippets containing `$artwork['notes_html']` do not get interpolated by PHP during parse checks.
+
+## 2026-07-02 Artwork notes home-scope static parse force repair
+- Rewrote `scripts/test/artwork_notes_home_scope_static.php` with single-quoted PHP literals so `$artwork['notes_html']` markers cannot be interpolated by PHP during static-test parsing.
+
+## 2026-07-02 Artwork notes detail render force repair
+- Repaired artwork notes rendering so `artworkNotesHtml($artwork)` is scoped to the artwork detail renderer and not `HomeController::home()`.
+- Rewrote the home-scope static test to verify the detail-page call while preventing the tenant home undefined `$artwork` regression.

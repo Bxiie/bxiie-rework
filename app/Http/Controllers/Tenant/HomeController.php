@@ -45,6 +45,7 @@ final class HomeController
         $includeUnpublished = $this->unpublishedPreviewEnabled($tenant);
         $items = $this->artworks->latestPublished($tenant, 12, $includeUnpublished);
 
+
         $body = <<<HTML
 <section class="hero">
     <h1>{$artistName}</h1>
@@ -221,6 +222,8 @@ HTML;
 
     public function artwork(Request $request, TenantContext $tenant, string $slug): Response
     {
+        $notesHtml = $this->artworkNotesHtml($artwork);
+
         $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublishedPreviewEnabled($tenant));
 
         if (!$artwork) {
@@ -381,6 +384,42 @@ HTML
      *
      * @param array<string,mixed> $artwork
      */
+
+    /**
+     * Render trusted tenant-admin-authored notes on the public artwork detail page.
+     * HTML is intentionally allowed here because the source is tenant admin input,
+     * not buyer or anonymous visitor input.
+     */
+
+    /**
+     * Keep tenant-admin curation tools available without making them visually
+     * dominate public artwork detail pages. The details element intentionally
+     * starts collapsed by omitting the open attribute.
+     */
+    /* Tenant admin artwork curation controls should pass through collapsibleCurationControls() before rendering. */
+    private function collapsibleCurationControls(string $controlsHtml): string
+    {
+        $controlsHtml = trim($controlsHtml);
+        if ($controlsHtml === '') {
+            return '';
+        }
+        if (str_contains($controlsHtml, 'tenant-curation-controls-toggle')) {
+            return $controlsHtml;
+        }
+
+        return '<details class="tenant-curation-controls-toggle"><summary>Show curation controls</summary><div class="tenant-curation-controls-body">' . $controlsHtml . '</div></details>';
+    }
+
+    private function artworkNotesHtml(array $artwork): string
+    {
+        $notesHtml = trim((string) ($artwork['notes_html'] ?? ''));
+        if ($notesHtml === '') {
+            return '';
+        }
+
+        return '<section class="artwork-notes"><h2>Notes</h2><div class="artwork-notes-body">' . $notesHtml . '</div></section>';
+    }
+
     private function artworkSalesPanel(TenantContext $tenant, array $artwork): string
     {
         // NFS artwork never renders the Sales panel or direct-artist sales notes.
@@ -403,7 +442,8 @@ HTML
         $cartHtml = $this->cartForm($tenant, $artwork, $config, $variants);
 
         return <<<HTML
-<section class="artwork-sales-panel">
+{$notesPanel}
+    <section class="artwork-sales-panel">
     <h2>Sales</h2>
     {$priceLine}
     <p class="artwork-inventory-mode">{$inventoryLabel}</p>
