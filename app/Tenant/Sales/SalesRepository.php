@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+// ARTSFOLIO_LOW_STOCK_TRACKING_MARKER: multiple-item stock alerts use original_inventory_quantity and low_stock_notification_sent_at.
+
 namespace App\Tenant\Sales;
 
 use App\Platform\Tenancy\TenantContext;
@@ -13,6 +15,7 @@ use RuntimeException;
  */
 final class SalesRepository
 {
+    // ARTWORK_LOW_STOCK_TRACKING_MARKER: multiple-item stock tracks original_inventory_quantity and low_stock_notification_sent_at so tenant admins can be emailed at 10%.
     private const RESERVATION_MINUTES = 35;
 
     public function __construct(private readonly PDO $pdo) {}

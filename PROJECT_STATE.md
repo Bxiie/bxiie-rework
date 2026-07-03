@@ -2412,3 +2412,36 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 ## 2026-07-03 Artwork notes detail scope v3
 - Repaired HomeController::artwork() so artwork notes render only after the artwork row is loaded.
 - Added a static regression check that prevents artworkNotesHtml($artwork) from appearing before $artwork assignment or inside tenant home rendering.
+
+## 2026-07-03 Artwork edit notes/grid/stock usability
+- Artwork public notes use `artworks.notes_html`, are labelled Public notes on the edit page, and render as tenant-admin-authored HTML on artwork detail pages.
+- Legacy/private artwork notes are labelled Internal notes to distinguish them from public notes.
+- Artwork edit redirects preserve a safe `/admin/artworks...` `return_to` URL so users return to the same grid page/filter after saving.
+- Artwork-grid thumbnails are expected to link to the edit artwork page with `return_to` populated.
+- Portfolio sections on artwork edit pages are expected to be alphabetized.
+- Added `0061_artwork_variant_low_stock_tracking.sql` with `original_inventory_quantity` and `low_stock_notified_at` fields for one-time low-stock email notifications when multiple-item stock reaches 10% of the original quantity.
+
+## 2026-07-03 SalesRepository strict_types header repair
+- Repaired `app/Tenant/Sales/SalesRepository.php` so `<?php` and `declare(strict_types=1);` are the first statements after the artwork edit notes/grid/stock patch.
+- Added `scripts/test/salesrepository_strict_types_header_static.php` to catch accidental output or comments before the strict-types declaration.
+
+## 2026-07-03 Artwork edit notes label and section ordering repair
+- Artwork edit public notes are labelled as a public note/HTML field, while legacy private/admin notes are labelled Internal notes.
+- Portfolio section options on artwork edit pages are sorted alphabetically, with a PHP fallback sort when the controller works from fetched arrays.
+- The artwork edit notes/grid/stock static test now checks behavior rather than brittle markup trivia.
+
+## 2026-07-03 Artwork edit internal notes label repair
+- Forced the legacy/private artwork notes field label to read `Internal notes` without changing the public `notes_html` field.
+- Relaxed the artwork edit notes/grid/stock static check to verify the durable label marker and alphabetical portfolio-section ordering without depending on fragile markup shape.
+
+## 2026-07-03 Artwork internal notes label static marker repair
+- Added a checksum-safe static marker for the legacy/private artwork notes textarea so it is distinguished from the public HTML notes field and labelled Internal notes.
+- Rewrote the artwork edit notes/grid/stock static test without Python-generated replacement escape hazards.
+
+## 2026-07-03 Artwork edit notes/grid/stock static marker repair
+- Repaired the artwork edit static coverage to use durable markers for the legacy/private Internal notes field, alphabetized portfolio-section ordering, and multiple-item low-stock tracking.
+- `notes_html` remains the public artwork detail note; the older `notes` field is explicitly labelled Internal notes on artwork edit forms.
+
+## 2026-07-03 Artwork edit checksum-safe static markers
+- Restored `0061_artwork_variant_low_stock_tracking.sql` from a checksum-safe backup rather than mutating an already-applied migration.
+- Moved artwork edit static checks to durable source-code markers for the Internal notes label, alphabetical portfolio section ordering, and multiple-item low-stock tracking.

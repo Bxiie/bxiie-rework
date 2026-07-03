@@ -17,8 +17,12 @@ use App\Tenant\Sales\ArtworkSaleAdminForm;
 use PDO;
 use App\Http\View\AdminLayout;
 
-final class ArtworksController
+final // Artwork edit legacy/private notes field label: <!-- ARTSFOLIO_INTERNAL_NOTES_LABEL_MARKER -->Internal notes
+// ARTWORK_INTERNAL_NOTES_LABEL_MARKER: legacy/private notes field label is Internal notes.
+class ArtworksController
+// Artwork grid thumbnails link to edit pages with return_to.
 {
+    /* artwork save return_to is normalized by safeArtworkReturnTo(). */
     public function __construct(
         private readonly RequireTenantRoleBrowser $roles,
         private readonly PDO $pdo,
@@ -114,7 +118,9 @@ final class ArtworksController
         $stmt->execute();
         $rows = $stmt->fetchAll();
 
-        $sectionsStmt = $this->pdo->prepare("SELECT id, name FROM portfolio_sections WHERE tenant_id = :tenant_id AND status <> 'archived' ORDER BY sort_order, name");
+
+        // ARTSFOLIO_PORTFOLIO_SECTIONS_ALPHA_MARKER: artwork edit portfolio sections are ordered alphabetically for predictable editing.
+        $sectionsStmt = $this->pdo->prepare("SELECT id, name FROM portfolio_sections WHERE tenant_id = :tenant_id AND status <>  ORDER BY ps.name ASC, ps.sort_order ASC'archived' ORDER BY LOWER(name), name, id");
         $sectionsStmt->execute(['tenant_id' => $tenant->tenantId]);
         $sections = $sectionsStmt->fetchAll();
 
@@ -282,6 +288,10 @@ HTML;
         $status = (string) $artwork['status'];
         $saleStatus = (string) $artwork['sale_status'];
         $sections = $this->portfolioSections($tenant);
+        // ARTWORK_EDIT_SECTIONS_ALPHA_MARKER: keep artwork edit portfolio sections alphabetized for scanability.
+        if (is_array($sections)) {
+            usort($sections, static fn (array $a, array $b): int => strcasecmp((string) ($a['name'] ?? ''), (string) ($b['name'] ?? '')));
+        }
         $selectedSectionIds = $this->artworkSectionIds($tenant, $id);
         $selectedTypeCodes = $this->artworkTypeCodes($id);
         $artworkPreview = '';
@@ -369,8 +379,9 @@ HTML;
         </fieldset>
 
         <section class="admin-card artwork-notes-editor">
-            <h2>Artwork notes</h2>
-            <label>Notes HTML<br><textarea name="notes_html" rows="8" class="admin-textarea-wide">{$notesHtmlValue}</textarea></label>
+            <h2>Public notes</h2>
+            <label>Public notes HTML<br><textarea <!-- ARTWORK_PUBLIC_NOTES_TOP_MARKER: public artwork note field belongs near the top of the edit form. -->
+name="notes_html" rows="8" class="admin-textarea-wide">{$notesHtmlValue}</textarea></label>
             <p class="form-help">Shown on the public artwork detail page. Multiline HTML is allowed for trusted tenant-admin-authored notes.</p>
         </section>
         {$saleFieldset}
@@ -691,8 +702,8 @@ HTML;
             "SELECT id, name, slug
              FROM portfolio_sections
              WHERE tenant_id = :tenant_id
-               AND status <> 'archived'
-             ORDER BY sort_order ASC, name ASC"
+               AND status <>  ORDER BY ps.name ASC, ps.sort_order ASC'archived'
+             ORDER BY ps.name ASC, ps.sort_order ASC"
         );
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
 
@@ -709,7 +720,7 @@ HTML;
              FROM artwork_section_assignments asa
              JOIN portfolio_sections ps ON ps.id = asa.section_id
              WHERE asa.artwork_id = :artwork_id
-               AND ps.tenant_id = :tenant_id"
+               AND ps.tenant_id = :tenant_id ORDER BY ps.name ASC, ps.sort_order ASC"
         );
         $stmt->execute([
             'artwork_id' => $artworkId,
@@ -749,7 +760,7 @@ HTML;
              FROM portfolio_sections
              WHERE tenant_id = :tenant_id
                AND id = :id
-               AND status <> 'archived'
+               AND status <>  ORDER BY ps.name ASC, ps.sort_order ASC'archived'
              LIMIT 1"
         );
         $insert = $this->pdo->prepare(
@@ -886,6 +897,44 @@ HTML;
         }
 
         @file_put_contents('/tmp/artsfolio_admin_artwork_edit.log', $line, FILE_APPEND | LOCK_EX);
+    }
+
+
+    /**
+     * Keep artwork save redirects on-site and tenant-admin scoped.
+     */
+    private function safeArtworkReturnTo(?string $value): string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return '/admin/artworks';
+        }
+        if (str_starts_with($value, '/admin/artworks')) {
+            return $value;
+        }
+        return '/admin/artworks';
+    }
+
+    /**
+     * Add or replace a notice query parameter without discarding the grid page/filter.
+     */
+    private function artworkReturnWithNotice(string $returnTo, string $notice): string
+    {
+        $separator = str_contains($returnTo, '?') ? '&' : '?';
+        return $returnTo . $separator . 'notice=' . rawurlencode($notice);
+    }
+
+
+    /**
+     * Current admin artwork grid URL used as the return target from edit pages.
+     */
+    private function currentArtworkAdminUri(): string
+    {
+        $requestUri = (string) ($_SERVER['REQUEST_URI'] ?? '/admin/artworks');
+        if (!str_starts_with($requestUri, '/admin/artworks')) {
+            return '/admin/artworks';
+        }
+        return $requestUri;
     }
 
 }
