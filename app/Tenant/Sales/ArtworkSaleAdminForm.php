@@ -407,6 +407,7 @@ HTML;
             'tenant_id' => $tenantId,
             'artwork_id' => $artworkId,
             'sku' => $sku,
+            'shipping_profile_id' => $shippingProfileId > 0 ? $shippingProfileId : null,
             'price_cents' => $basePriceCents,
             'shipping_price_cents' => $shippingPriceCents,
             'shipping_additional_item_cents' => $shippingAdditionalCents,
