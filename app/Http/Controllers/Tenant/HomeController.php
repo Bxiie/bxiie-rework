@@ -222,14 +222,13 @@ HTML;
 
     public function artwork(Request $request, TenantContext $tenant, string $slug): Response
     {
-        $notesHtml = $this->artworkNotesHtml($artwork);
-
-        $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublishedPreviewEnabled($tenant));
+$artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublishedPreviewEnabled($tenant));
 
         if (!$artwork) {
             return Response::notFound("Artwork not found: {$slug}");
         }
 
+        $notesHtml = $this->artworkNotesHtml($artwork);
         $this->track($request, $tenant, 'image_view', 'artwork', (int) $artwork['id']);
 
         $title = $this->escape((string) $artwork['title']);

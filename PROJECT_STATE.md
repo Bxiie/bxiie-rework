@@ -2408,3 +2408,7 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 ## 2026-07-03 Artwork notes migration checksum-safe static test
 - Repaired `scripts/test/artwork_notes_migration_static.php` so it verifies the durable `0060_artwork_notes_html.sql` behavior without requiring cosmetic column placement text such as `AFTER description`.
 - This preserves migration checksum integrity after local/prod application while still checking that `artworks.notes_html` is created for multiline trusted tenant-admin HTML notes.
+
+## 2026-07-03 Artwork notes detail scope v3
+- Repaired HomeController::artwork() so artwork notes render only after the artwork row is loaded.
+- Added a static regression check that prevents artworkNotesHtml($artwork) from appearing before $artwork assignment or inside tenant home rendering.
