@@ -2397,3 +2397,14 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 ## 2026-07-02 Artwork notes detail render force repair
 - Repaired artwork notes rendering so `artworkNotesHtml($artwork)` is scoped to the artwork detail renderer and not `HomeController::home()`.
 - Rewrote the home-scope static test to verify the detail-page call while preventing the tenant home undefined `$artwork` regression.
+
+## 2026-07-03 Artwork notes migration repair
+- Ensured `database/migrations/0060_artwork_notes_html.sql` exists and idempotently adds `artworks.notes_html` as nullable `MEDIUMTEXT` for tenant-admin-authored multiline HTML notes shown on artwork detail pages.
+- Added `scripts/test/artwork_notes_migration_static.php` so future deploys catch code/schema drift when the artwork notes renderer is present but the schema migration is missing.
+## 2026-07-03 Artwork notes migration checksum restore
+- Restored `database/migrations/0060_artwork_notes_html.sql` to the already-applied checksum instead of rewriting an applied migration. Applied migrations are immutable; any future notes schema changes should use a new numbered migration.
+- Added/kept `scripts/test/artwork_notes_migration_static.php` so the durable artwork notes migration remains present for production deploys that have not applied 0060 yet.
+
+## 2026-07-03 Artwork notes migration checksum-safe static test
+- Repaired `scripts/test/artwork_notes_migration_static.php` so it verifies the durable `0060_artwork_notes_html.sql` behavior without requiring cosmetic column placement text such as `AFTER description`.
+- This preserves migration checksum integrity after local/prod application while still checking that `artworks.notes_html` is created for multiline trusted tenant-admin HTML notes.
