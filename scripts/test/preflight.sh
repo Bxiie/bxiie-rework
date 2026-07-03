@@ -391,3 +391,4 @@ php scripts/test/oauth_lifecycle_tenant_nav_static.php
 # End of file.
 run_php scripts/test/platform_user_status_auth_static.php
 run_php scripts/test/platform_operations_timezone_static.php
+php scripts/test/artwork_edit_notes_grid_stock_static.php

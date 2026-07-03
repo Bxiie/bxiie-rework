@@ -4178,3 +4178,16 @@ form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact"
     }
 }
 /* End of file. */
+
+/* Artwork edit notes and grid usability. */
+.artwork-public-notes-field textarea,
+.admin-public-notes textarea {
+    min-height: 8rem;
+}
+.artwork-thumb-edit-link {
+    display: inline-block;
+    text-decoration: none;
+}
+.artwork-thumb-edit-link img {
+    display: block;
+}

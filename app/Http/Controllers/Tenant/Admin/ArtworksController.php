@@ -17,10 +17,7 @@ use App\Tenant\Sales\ArtworkSaleAdminForm;
 use PDO;
 use App\Http\View\AdminLayout;
 
-final // Artwork edit legacy/private notes field label: <!-- ARTSFOLIO_INTERNAL_NOTES_LABEL_MARKER -->Internal notes
-// ARTWORK_INTERNAL_NOTES_LABEL_MARKER: legacy/private notes field label is Internal notes.
-class ArtworksController
-// Artwork grid thumbnails link to edit pages with return_to.
+final class ArtworksController
 {
     /* artwork save return_to is normalized by safeArtworkReturnTo(). */
     public function __construct(
@@ -120,7 +117,10 @@ class ArtworksController
 
 
         // ARTSFOLIO_PORTFOLIO_SECTIONS_ALPHA_MARKER: artwork edit portfolio sections are ordered alphabetically for predictable editing.
-        $sectionsStmt = $this->pdo->prepare("SELECT id, name FROM portfolio_sections WHERE tenant_id = :tenant_id AND status <>  ORDER BY ps.name ASC, ps.sort_order ASC'archived' ORDER BY LOWER(name), name, id");
+        $sectionsStmt = $this->pdo->prepare("SELECT id, name FROM portfolio_sections
+             WHERE tenant_id = :tenant_id
+               AND status <> 'archived'
+             ORDER BY LOWER(name), name, id");
         $sectionsStmt->execute(['tenant_id' => $tenant->tenantId]);
         $sections = $sectionsStmt->fetchAll();
 
@@ -330,6 +330,7 @@ HTML;
         $saleFieldset = '';
         try {
             $saleFieldset = (new ArtworkSaleAdminForm($this->pdo))->render($tenant->tenantId, $artwork);
+        $notesValue = htmlspecialchars((string) ($artwork['notes'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $notesHtmlValue = htmlspecialchars((string) ($artwork['notes_html'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         } catch (\Throwable $exception) {
             $this->logAdminArtworkEditFailure($tenant->tenantId, (int) ($artwork['id'] ?? 0), 'ArtworkSaleAdminForm render failed', $exception);
@@ -380,12 +381,18 @@ HTML;
 
         <section class="admin-card artwork-notes-editor">
             <h2>Public notes</h2>
-            <label>Public notes HTML<br><textarea <!-- ARTWORK_PUBLIC_NOTES_TOP_MARKER: public artwork note field belongs near the top of the edit form. -->
-name="notes_html" rows="8" class="admin-textarea-wide">{$notesHtmlValue}</textarea></label>
+            <label>
+Public notes HTML
+<textarea name="notes_html" rows="8" class="admin-textarea-wide">{$notesHtmlValue}</textarea></label>
             <p class="form-help">Shown on the public artwork detail page. Multiline HTML is allowed for trusted tenant-admin-authored notes.</p>
         </section>
         {$saleFieldset}
-        <button type="submit">Save artwork</button>
+        
+<label>
+Internal notes
+<textarea name="notes" rows="5" class="admin-textarea-wide">{$notesValue}</textarea></label>
+
+<button type="submit">Save artwork</button>
     </form>
 </main>
 
@@ -416,6 +423,7 @@ HTML;
         $status = in_array(($_POST['status'] ?? 'draft'), ['draft', 'published', 'archived'], true) ? (string) $_POST['status'] : 'draft';
         $saleStatus = in_array(($_POST['sale_status'] ?? 'nfs'), ['nfs', 'for_sale', 'sold'], true) ? (string) $_POST['sale_status'] : 'nfs';
         $price = $saleStatus === 'nfs' ? null : trim((string) ($_POST['price'] ?? ''));
+        $notes = (string) ($_POST['notes'] ?? '');
         $notesHtml = (string) ($_POST['notes_html'] ?? '');
         $legacySalesInventory = (new ArtworkSaleAdminForm($this->pdo))->legacyInventoryFromPost($_POST);
         $isOneOff = $legacySalesInventory['is_one_off'];
@@ -429,7 +437,7 @@ HTML;
                  description = :description,
                  status = :status,
                  sale_status = :sale_status,
-                 price = :price, notes_html = :notes_html,
+                 price = :price, notes = :notes, notes_html = :notes_html,
                  is_one_off = :is_one_off,
                  inventory_quantity = :inventory_quantity,
                  updated_at = CURRENT_TIMESTAMP
@@ -444,6 +452,7 @@ HTML;
             'description' => trim((string) ($_POST['description'] ?? '')) ?: null,
             'status' => $status,
             'sale_status' => $saleStatus,
+            'notes' => $notes,
             'notes_html' => $notesHtml,
             'price' => $price !== '' ? $price : null,
             'is_one_off' => $isOneOff,
@@ -702,8 +711,8 @@ HTML;
             "SELECT id, name, slug
              FROM portfolio_sections
              WHERE tenant_id = :tenant_id
-               AND status <>  ORDER BY ps.name ASC, ps.sort_order ASC'archived'
-             ORDER BY ps.name ASC, ps.sort_order ASC"
+               AND status <> 'archived'
+             ORDER BY LOWER(name), name, id"
         );
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
 
@@ -720,7 +729,7 @@ HTML;
              FROM artwork_section_assignments asa
              JOIN portfolio_sections ps ON ps.id = asa.section_id
              WHERE asa.artwork_id = :artwork_id
-               AND ps.tenant_id = :tenant_id ORDER BY ps.name ASC, ps.sort_order ASC"
+               AND ps.tenant_id = :tenant_id ORDER BY LOWER(ps.name) ASC, ps.name ASC, ps.id ASC"
         );
         $stmt->execute([
             'artwork_id' => $artworkId,
@@ -760,7 +769,7 @@ HTML;
              FROM portfolio_sections
              WHERE tenant_id = :tenant_id
                AND id = :id
-               AND status <>  ORDER BY ps.name ASC, ps.sort_order ASC'archived'
+               AND status <> 'archived'
              LIMIT 1"
         );
         $insert = $this->pdo->prepare(
