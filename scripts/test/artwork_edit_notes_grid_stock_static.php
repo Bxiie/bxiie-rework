@@ -10,13 +10,12 @@ $failures = [];
 
 function labelBlockForField(string $source, string $fieldName): ?string
 {
-    $needle = 'name="' . $fieldName . '"';
-    $fieldPos = strpos($source, $needle);
-
-    if ($fieldPos === false) {
+    $pattern = '/name="' . preg_quote($fieldName, '/') . '"/';
+    if (preg_match($pattern, $source, $match, PREG_OFFSET_CAPTURE) !== 1) {
         return null;
     }
 
+    $fieldPos = (int) $match[0][1];
     $labelStart = strrpos(substr($source, 0, $fieldPos), '<label');
     $labelEnd = strpos($source, '</label>', $fieldPos);
 
