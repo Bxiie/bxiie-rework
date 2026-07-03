@@ -117,10 +117,7 @@ final class ArtworksController
 
 
         // ARTSFOLIO_PORTFOLIO_SECTIONS_ALPHA_MARKER: artwork edit portfolio sections are ordered alphabetically for predictable editing.
-        $sectionsStmt = $this->pdo->prepare("SELECT id, name FROM portfolio_sections
-             WHERE tenant_id = :tenant_id
-               AND status <> 'archived'
-             ORDER BY LOWER(name), name, id");
+        $sectionsStmt = $this->pdo->prepare("SELECT id, name FROM portfolio_sections WHERE tenant_id = :tenant_id AND status <> 'archived' ORDER BY LOWER(name), name, id");
         $sectionsStmt->execute(['tenant_id' => $tenant->tenantId]);
         $sections = $sectionsStmt->fetchAll();
 
@@ -167,7 +164,7 @@ final class ArtworksController
             }
             $items .= <<<HTML
 <tr id="artwork-{$row['id']}">
-    <td>{$image}</td><td><strong>{$title}</strong><br><small>ID {$row['id']} · {$created}</small></td>
+    <td><a class="artwork-grid-thumbnail-link" href="/admin/artworks/edit?id={$artworkId}&return_to={$returnToValue}#artwork-{$artworkId}">{$image}</a></td><td><strong>{$title}</strong><br><small>ID {$row['id']} · {$created}</small></td>
     <td>{$year}</td><td>{$medium}</td><td class="js-artwork-status">{$status}<br>{$typeBadges}</td>
     <td>{$saleStatus}</td><td>{$price}</td><td>{$notes}</td>
     <td><form method="post" action="/admin/artworks/directory-thumbnail"><input type="hidden" name="id" value="{$artworkId}"><input type="hidden" name="return_to" value="{$returnToValue}"><label><input type="checkbox" name="directory_thumbnail" value="1"{$directoryChecked}{$directoryDisabled} onchange="this.form.submit()"> Directory thumbnail</label><br><small>{$directoryHelp}</small></form></td>
@@ -332,6 +329,11 @@ HTML;
             $saleFieldset = (new ArtworkSaleAdminForm($this->pdo))->render($tenant->tenantId, $artwork);
         $notesValue = htmlspecialchars((string) ($artwork['notes'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $notesHtmlValue = htmlspecialchars((string) ($artwork['notes_html'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $returnTo = (string) ($_GET['return_to'] ?? '/admin/artworks');
+        if ($returnTo === '' || $returnTo[0] !== '/' || str_starts_with($returnTo, '//')) {
+            $returnTo = '/admin/artworks';
+        }
+        $returnToValue = htmlspecialchars($returnTo, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         } catch (\Throwable $exception) {
             $this->logAdminArtworkEditFailure($tenant->tenantId, (int) ($artwork['id'] ?? 0), 'ArtworkSaleAdminForm render failed', $exception);
             $saleFieldset = '<fieldset class="admin-card admin-warning"><legend>Sales &amp; checkout</legend><p>Sales settings could not be loaded. The rest of the artwork form is still available. Check <code>storage/logs/admin_artwork_edit.log</code>.</p></fieldset>';
@@ -344,7 +346,17 @@ HTML;
     <!-- Sales &amp; checkout controls are rendered by ArtworkSaleAdminForm. -->
     {$artworkPreview}
     <form method="post" action="/admin/artworks/edit">
+        <input type="hidden" name="return_to" value="{$returnToValue}">
         <input type="hidden" name="id" value="{$id}">
+
+        <section class="admin-card artwork-notes-editor">
+            <h2>Public notes</h2>
+            <p class="form-help">Shown on the public artwork detail page. Multiline HTML is allowed for trusted tenant-admin-authored notes.</p>
+            <!-- ARTWORK_PUBLIC_NOTES_TOP_MARKER: public artwork note field belongs near the top of the edit form. -->
+            <label>Public notes HTML
+<textarea name="notes_html" rows="8" class="admin-textarea-wide">{$notesHtmlValue}</textarea></label>
+        </section>
+
         <p><label>Title<br><input type="text" name="title" value="{$title}" required></label></p>
         <p><label>Date / year<br><input type="text" name="year_created" value="{$year}"></label></p>
         <p><label>Medium<br><input type="text" name="medium" value="{$medium}"></label></p>
@@ -379,18 +391,16 @@ HTML;
             {$sectionOptions}
         </fieldset>
 
-        <section class="admin-card artwork-notes-editor">
-            <h2>Public notes</h2>
-            <label>
-Public notes HTML
-<textarea name="notes_html" rows="8" class="admin-textarea-wide">{$notesHtmlValue}</textarea></label>
-            <p class="form-help">Shown on the public artwork detail page. Multiline HTML is allowed for trusted tenant-admin-authored notes.</p>
-        </section>
-        {$saleFieldset}
+{$saleFieldset}
         
-<label>
-Internal notes
+
+
+<section class="admin-card artwork-internal-notes-editor">
+            <h2>Internal notes</h2>
+            <p class="form-help">Private administrative notes. These are not shown on the public artwork page.</p>
+            <label>Internal notes
 <textarea name="notes" rows="5" class="admin-textarea-wide">{$notesValue}</textarea></label>
+        </section>
 
 <button type="submit">Save artwork</button>
     </form>
@@ -465,7 +475,12 @@ HTML;
         $this->replaceArtworkSections($tenant, $id, $_POST['section_ids'] ?? []);
         (new ArtworkSaleAdminForm($this->pdo))->saveFromPost($tenant->tenantId, $id, $_POST, $saleStatus);
 
-        return new Response('', 303, ['Location' => '/admin/artworks?notice=artwork-saved#artwork-' . $id]);
+        $returnTo = (string) ($_POST['return_to'] ?? '/admin/artworks');
+        if ($returnTo === '' || $returnTo[0] !== '/' || str_starts_with($returnTo, '//')) {
+            $returnTo = '/admin/artworks';
+        }
+        $separator = str_contains($returnTo, '?') ? '&' : '?';
+        return new Response('', 303, ['Location' => $returnTo . $separator . 'notice=artwork-saved#artwork-' . $id]);
     }
 
 
@@ -709,10 +724,7 @@ HTML;
     {
         $stmt = $this->pdo->prepare(
             "SELECT id, name, slug
-             FROM portfolio_sections
-             WHERE tenant_id = :tenant_id
-               AND status <> 'archived'
-             ORDER BY LOWER(name), name, id"
+             FROM portfolio_sections WHERE tenant_id = :tenant_id AND status <> 'archived' ORDER BY LOWER(name), name, id"
         );
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
 

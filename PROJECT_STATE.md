@@ -2504,3 +2504,9 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 ## 2026-07-03 artwork edit static stabilization
 - Repaired artwork edit notes static coverage to inspect exact label blocks for `name="notes"` and `name="notes_html"`, preventing the public notes field from being mistaken for the internal notes field.
 - Kept low-stock static coverage checksum-safe by using source markers rather than mutating applied migrations.
+
+## 2026-07-03 Artwork edit usability stabilizer
+- Public artwork notes HTML is edited near the top of the tenant artwork edit page and renders separately from private notes.
+- The legacy private artwork `notes` field remains `name="notes"` and is labelled Internal notes.
+- Artwork edit portfolio section options are alphabetized by name.
+- Artwork grid thumbnails link to the edit page while preserving `return_to`, and saving returns to the originating grid with an edited-artwork anchor.

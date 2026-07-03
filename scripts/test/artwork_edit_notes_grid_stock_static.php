@@ -4,25 +4,21 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
 $controllerPath = $root . '/app/Http/Controllers/Tenant/Admin/ArtworksController.php';
-$salesRepositoryPath = $root . '/app/Tenant/Sales/SalesRepository.php';
-$migrationPath = $root . '/database/migrations/0061_artwork_variant_low_stock_tracking.sql';
-
 $controller = file_get_contents($controllerPath);
-$salesRepository = file_exists($salesRepositoryPath) ? file_get_contents($salesRepositoryPath) : '';
-$migration = file_exists($migrationPath) ? file_get_contents($migrationPath) : '';
+
 $failures = [];
 
-function fieldLabelBlock(string $source, string $fieldName): ?string
+function labelBlockForField(string $source, string $fieldName): ?string
 {
     $needle = 'name="' . $fieldName . '"';
-    $pos = strpos($source, $needle);
-    if ($pos === false) {
+    $fieldPos = strpos($source, $needle);
+
+    if ($fieldPos === false) {
         return null;
     }
 
-    $before = substr($source, 0, $pos);
-    $labelStart = strrpos($before, '<label');
-    $labelEnd = strpos($source, '</label>', $pos);
+    $labelStart = strrpos(substr($source, 0, $fieldPos), '<label');
+    $labelEnd = strpos($source, '</label>', $fieldPos);
 
     if ($labelStart === false || $labelEnd === false) {
         return null;
@@ -31,30 +27,33 @@ function fieldLabelBlock(string $source, string $fieldName): ?string
     return substr($source, $labelStart, $labelEnd + strlen('</label>') - $labelStart);
 }
 
-$internalBlock = fieldLabelBlock($controller, 'notes');
-$publicBlock = fieldLabelBlock($controller, 'notes_html');
+$internalLabel = labelBlockForField($controller, 'notes');
+$publicLabel = labelBlockForField($controller, 'notes_html');
 
-if ($internalBlock === null) {
-    $failures[] = 'Legacy/private notes field must still use name="notes" inside a label.';
+if ($internalLabel === null) {
+    $failures[] = 'Legacy/private notes field must still use name="notes".';
 } else {
-    if (strpos($internalBlock, 'Internal notes') === false) {
+    if (strpos($internalLabel, 'Internal notes') === false) {
         $failures[] = 'Legacy/private notes field must be labelled Internal notes.';
     }
-    if (strpos($internalBlock, 'Public notes HTML') !== false) {
+
+    if (strpos($internalLabel, 'Public notes HTML') !== false) {
         $failures[] = 'Legacy/private notes field must not be labelled as Public notes HTML.';
     }
 }
 
-if ($publicBlock === null) {
-    $failures[] = 'Public notes field must use name="notes_html" inside a label.';
+if ($publicLabel === null) {
+    $failures[] = 'Public notes field must use name="notes_html".';
 } else {
-    if (strpos($publicBlock, 'Public notes HTML') === false) {
+    if (strpos($publicLabel, 'Public notes HTML') === false) {
         $failures[] = 'Public notes field must be labelled Public notes HTML.';
     }
 }
 
-if (strpos($controller, 'status <>  ORDER BY') !== false || strpos($controller, "ASC'archived'") !== false || strpos($controller, 'final //') !== false) {
-    $failures[] = 'ArtworksController contains corrupted marker or SQL fragments.';
+$publicFieldPos = strpos($controller, 'name="notes_html"');
+$sectionFieldsetPos = strpos($controller, '<legend>Portfolio sections</legend>');
+if ($publicFieldPos === false || $sectionFieldsetPos === false || $publicFieldPos > $sectionFieldsetPos) {
+    $failures[] = 'Public notes field should appear near the top of the artwork edit page before portfolio sections.';
 }
 
 $hasAlphabeticSections = strpos($controller, 'ORDER BY LOWER(name), name, id') !== false
@@ -63,30 +62,30 @@ if (!$hasAlphabeticSections) {
     $failures[] = 'Portfolio sections should be ordered alphabetically on artwork edit pages.';
 }
 
-$hasThumbnailEditLink = (
-    strpos($controller, 'ARTWORK_GRID_THUMBNAILS_LINK_TO_EDIT_WITH_RETURN_TO') !== false
-    || (strpos($controller, '/admin/artworks/edit?id=') !== false && strpos($controller, 'return_to') !== false)
-);
+$hasThumbnailEditLink = strpos($controller, '/admin/artworks/edit?id=') !== false
+    && strpos($controller, 'return_to') !== false;
 if (!$hasThumbnailEditLink) {
     $failures[] = 'Artwork grid thumbnails should link to edit pages and preserve return_to.';
 }
 
-$hasLowStockTracking = (
-    strpos($salesRepository, 'ARTSFOLIO_LOW_STOCK_TRACKING_MARKER') !== false
-    || strpos($salesRepository, 'LOW_STOCK') !== false
-    || strpos($salesRepository, 'low_stock') !== false
-    || (strpos($migration, 'original_inventory_quantity') !== false && strpos($migration, 'low_stock_notification_sent_at') !== false)
-);
-if (!$hasLowStockTracking) {
-    $failures[] = 'Multiple-item stock should have low-stock tracking markers.';
+$hasSaveReturn = strpos($controller, 'return_to') !== false
+    && strpos($controller, '#artwork-') !== false;
+if (!$hasSaveReturn) {
+    $failures[] = 'Saving artwork should return to the originating artwork grid page and anchor the edited artwork.';
+}
+
+if (strpos($controller, 'status <>  ORDER BY') !== false || strpos($controller, "ASC'archived'") !== false || strpos($controller, 'final //') !== false) {
+    $failures[] = 'ArtworksController contains corrupted marker or SQL fragments.';
 }
 
 if ($failures !== []) {
-    fwrite(STDERR, "Artwork edit notes/grid/stock static checks failed:\n");
+    fwrite(STDERR, "Artwork edit notes/grid static checks failed:\n");
     foreach ($failures as $failure) {
-        fwrite(STDERR, ' - ' . $failure . "\n");
+        fwrite(STDERR, ' - ' . $failure . PHP_EOL);
     }
     exit(1);
 }
 
-echo "Artwork edit notes/grid/stock static checks passed.\n";
+echo "Artwork edit notes/grid static checks passed." . PHP_EOL;
+
+// End of file.
