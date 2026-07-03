@@ -42,7 +42,7 @@ $home = file_get_contents($root . '/app/Http/Controllers/Tenant/HomeController.p
 $homeNeedles = [
     'notes_html',
     'artwork-notes',
-    '<h2>Notes</h2>',
+    'artwork-notes-body',
     <<<'MARKER'
 $artwork['notes_html']
 MARKER,

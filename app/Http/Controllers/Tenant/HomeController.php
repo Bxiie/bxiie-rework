@@ -408,7 +408,7 @@ HTML
             return $controlsHtml;
         }
 
-        return '<details class="tenant-curation-controls-toggle"><summary>Show curation controls</summary><div class="tenant-curation-controls-body">' . $controlsHtml . '</div></details>';
+        return '<details class="tenant-curation-controls-toggle" style="margin-top:2rem;"><summary>Show curation controls</summary><div class="tenant-curation-controls-body">' . $controlsHtml . '</div></details>';
     }
 
     private function artworkNotesHtml(array $artwork): string
@@ -418,7 +418,7 @@ HTML
             return '';
         }
 
-        return '<section class="artwork-notes"><h2>Notes</h2><div class="artwork-notes-body">' . $notesHtml . '</div></section>';
+        return '<section class="artwork-notes" style="font-size:1.2rem;line-height:1.65;margin:1.5rem 0 2.75rem;"><div class="artwork-notes-body">' . $notesHtml . '</div></section>';
     }
 
     private function artworkSalesPanel(TenantContext $tenant, array $artwork): string
