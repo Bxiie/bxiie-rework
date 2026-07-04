@@ -6,14 +6,18 @@ $controller = file_get_contents(__DIR__ . '/../../app/Http/Controllers/Tenant/Ad
 
 $required = [
     'tenant_admin_artworks_return_to',
+    'public function __construct',
+    '$this->rememberArtworkGridReturnUrl();',
     'rememberArtworkGridReturnUrl',
     'artworkGridReturnUrl',
     'normalizeArtworkGridReturnUrl',
     'HTTP_REFERER',
     '$_POST[\'return_to\']',
-    'parse_url($url)',
-    '$path !== \'/admin/artworks\'',
-    'Response::redirect($this->artworkGridReturnUrl())',
+    '$_GET[\'return_to\']',
+    '$_SESSION[\'tenant_admin_artworks_return_to\']',
+    'artworkGridCurrentReturnParam',
+    'rawurlencode($current)',
+    '$this->artworkGridReturnUrl()',
 ];
 
 $forbidden = [

@@ -26,6 +26,8 @@ final class ArtworksController
         private readonly PDO $pdo,
         private readonly AuditLogRepository $auditLog,
     ) {
+        $this->rememberArtworkGridReturnUrl();
+
     }
 
     public function index(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -991,22 +993,32 @@ HTML;
 
     private function rememberArtworkGridReturnUrl(): void
     {
-        $requestUri = (string) ($_SERVER['REQUEST_URI'] ?? '');
-
-        $normalizedRequest = $this->normalizeArtworkGridReturnUrl($requestUri);
-
-        if ($normalizedRequest !== null) {
-            $_SESSION['tenant_admin_artworks_return_to'] = $normalizedRequest;
+        if (!isset($_SESSION) || !is_array($_SESSION)) {
             return;
         }
 
-        $referer = (string) ($_SERVER['HTTP_REFERER'] ?? '');
-        $normalizedReferer = $this->normalizeArtworkGridReturnUrl($referer);
+        $candidates = [
+            $_POST['return_to'] ?? null,
+            $_GET['return_to'] ?? null,
+            $_SERVER['REQUEST_URI'] ?? null,
+            $_SERVER['HTTP_REFERER'] ?? null,
+        ];
 
-        if ($normalizedReferer !== null) {
-            $_SESSION['tenant_admin_artworks_return_to'] = $normalizedReferer;
+        foreach ($candidates as $candidate) {
+            if (!is_string($candidate)) {
+                continue;
+            }
+
+            $normalized = $this->normalizeArtworkGridReturnUrl($candidate);
+
+            if ($normalized !== null) {
+                $_SESSION['tenant_admin_artworks_return_to'] = $normalized;
+                return;
+            }
         }
     }
+
+
 
     private function artworkGridReturnUrl(): string
     {
@@ -1031,6 +1043,8 @@ HTML;
 
         return '/admin/artworks';
     }
+
+
 
     private function normalizeArtworkGridReturnUrl(string $url): ?string
     {
@@ -1065,6 +1079,22 @@ HTML;
         }
 
         return $normalized;
+    }
+
+    private function artworkGridCurrentReturnParam(): string
+    {
+        $current = $this->artworkGridReturnUrl();
+
+        if ($current === '/admin/artworks') {
+            $requestUri = (string) ($_SERVER['REQUEST_URI'] ?? '');
+            $normalized = $this->normalizeArtworkGridReturnUrl($requestUri);
+
+            if ($normalized !== null) {
+                $current = $normalized;
+            }
+        }
+
+        return rawurlencode($current);
     }
 
 }
