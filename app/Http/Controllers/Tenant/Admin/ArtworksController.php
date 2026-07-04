@@ -16,6 +16,7 @@ use App\Support\Pagination\Pagination;
 use App\Tenant\Sales\ArtworkSaleAdminForm;
 use PDO;
 use App\Http\View\AdminLayout;
+use Throwable;
 
 final class ArtworksController
 {
@@ -455,29 +456,37 @@ HTML;
                AND tenant_id = :tenant_id"
         );
 
-        $stmt->execute([
-            'title' => $title,
-            'year_created' => trim((string) ($_POST['year_created'] ?? '')) ?: null,
-            'medium' => trim((string) ($_POST['medium'] ?? '')) ?: null,
-            'description' => trim((string) ($_POST['description'] ?? '')) ?: null,
-            'status' => $status,
-            'sale_status' => $saleStatus,
-            'notes' => $notes,
-            'notes_html' => $notesHtml,
-            'price' => $price !== '' ? $price : null,
-            'is_one_off' => $isOneOff,
-            'inventory_quantity' => $inventoryQuantity,
-            'id' => $id,
-            'tenant_id' => $tenant->tenantId,
-        ]);
-
-        $this->replaceArtworkTypes($id, $_POST['artwork_types'] ?? []);
-        $this->replaceArtworkSections($tenant, $id, $_POST['section_ids'] ?? []);
         try {
-            (new ArtworkSaleAdminForm($this->pdo))->saveFromPost($tenant->tenantId, $id, $_POST, $saleStatus);
+            $stmt->execute([
+                'title' => $title,
+                'year_created' => trim((string) ($_POST['year_created'] ?? '')) ?: null,
+                'medium' => trim((string) ($_POST['medium'] ?? '')) ?: null,
+                'description' => trim((string) ($_POST['description'] ?? '')) ?: null,
+                'status' => $status,
+                'sale_status' => $saleStatus,
+                'notes' => $notes,
+                'notes_html' => $notesHtml,
+                'price' => $price !== '' ? $price : null,
+                'is_one_off' => $isOneOff,
+                'inventory_quantity' => $inventoryQuantity,
+                'id' => $id,
+                'tenant_id' => $tenant->tenantId,
+            ]);
+
+            $this->replaceArtworkTypes($id, $_POST['artwork_types'] ?? []);
+            $this->replaceArtworkSections($tenant, $id, $_POST['section_ids'] ?? []);
+            try {
+                (new ArtworkSaleAdminForm($this->pdo))->saveFromPost($tenant->tenantId, $id, $_POST, $saleStatus);
+            } catch (Throwable $e) {
+                error_log('ArtworkSaleAdminForm save failed: ' . $e->getMessage());
+                return Response::html(
+                    ErrorPage::render('Artwork sales settings could not be saved. Please try again.'),
+                    500
+                );
+            }
         } catch (\Throwable $exception) {
-            $this->logAdminArtworkEditFailure($tenant->tenantId, $id, 'ArtworkSaleAdminForm save failed', $exception);
-            return Response::html('<h1>Artwork sales settings could not be saved</h1><p>The artwork details were saved, but the sales/shipping settings failed. The exact error has been written to <code>storage/logs/admin_artwork_edit.log</code>.</p><p><a href="/admin/artworks/edit?id=' . $id . '">Return to artwork editor</a></p>', 500);
+            $this->logAdminArtworkEditFailure($tenant->tenantId, $id, 'Artwork admin update save failed', $exception);
+            return Response::html('<h1>Artwork could not be saved</h1><p>The artwork update failed. The exact error has been written to <code>storage/logs/admin_artwork_edit.log</code>.</p><p><a href="/admin/artworks/edit?id=' . $id . '">Return to artwork editor</a></p>', 500);
         }
 
         $returnTo = (string) ($_POST['return_to'] ?? '/admin/artworks');
