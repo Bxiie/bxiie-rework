@@ -476,7 +476,12 @@ HTML;
             $this->replaceArtworkTypes($id, $_POST['artwork_types'] ?? []);
             $this->replaceArtworkSections($tenant, $id, $_POST['section_ids'] ?? []);
             try {
-                (new ArtworkSaleAdminForm($this->pdo))->saveFromPost($tenant->tenantId, $id, $_POST, $saleStatus);
+                try {
+                    (new ArtworkSaleAdminForm($this->pdo))->saveFromPost($tenant->tenantId, $id, $_POST, $saleStatus);
+                } catch (Throwable $e) {
+                    error_log('ArtworkSaleAdminForm save failed: ' . $e->getMessage());
+                    error_log('Artwork sales settings could not be saved for artwork update.');
+                }
             } catch (Throwable $e) {
                 error_log('ArtworkSaleAdminForm save failed: ' . $e->getMessage());
                 return Response::html(
