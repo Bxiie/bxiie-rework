@@ -30,6 +30,7 @@ final class ArtworksController
 
     public function index(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
+        $this->rememberArtworkGridReturnUrl();
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
@@ -975,6 +976,54 @@ HTML;
             return '/admin/artworks';
         }
         return $requestUri;
+    }
+
+    private function rememberArtworkGridReturnUrl(): void
+    {
+        $uri = (string) ($_SERVER['REQUEST_URI'] ?? '/admin/artworks');
+
+        if ($this->isSafeArtworkGridReturnUrl($uri)) {
+            $_SESSION['tenant_admin_artworks_return_to'] = $uri;
+        }
+    }
+
+    private function artworkGridReturnUrl(): string
+    {
+        $candidate = (string) (
+            $_POST['return_to']
+            ?? $_GET['return_to']
+            ?? $_SESSION['tenant_admin_artworks_return_to']
+            ?? '/admin/artworks'
+        );
+
+        if ($this->isSafeArtworkGridReturnUrl($candidate)) {
+            return $candidate;
+        }
+
+        return '/admin/artworks';
+    }
+
+    private function isSafeArtworkGridReturnUrl(string $url): bool
+    {
+        if ($url === '') {
+            return false;
+        }
+
+        if (str_contains($url, "\r") || str_contains($url, "\n")) {
+            return false;
+        }
+
+        if (str_starts_with($url, '//')) {
+            return false;
+        }
+
+        $path = parse_url($url, PHP_URL_PATH);
+
+        if (!is_string($path)) {
+            return false;
+        }
+
+        return $path === '/admin/artworks';
     }
 
 }
