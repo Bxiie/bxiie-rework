@@ -473,7 +473,12 @@ HTML;
 
         $this->replaceArtworkTypes($id, $_POST['artwork_types'] ?? []);
         $this->replaceArtworkSections($tenant, $id, $_POST['section_ids'] ?? []);
-        (new ArtworkSaleAdminForm($this->pdo))->saveFromPost($tenant->tenantId, $id, $_POST, $saleStatus);
+        try {
+            (new ArtworkSaleAdminForm($this->pdo))->saveFromPost($tenant->tenantId, $id, $_POST, $saleStatus);
+        } catch (\Throwable $exception) {
+            $this->logAdminArtworkEditFailure($tenant->tenantId, $id, 'ArtworkSaleAdminForm save failed', $exception);
+            return Response::html('<h1>Artwork sales settings could not be saved</h1><p>The artwork details were saved, but the sales/shipping settings failed. The exact error has been written to <code>storage/logs/admin_artwork_edit.log</code>.</p><p><a href="/admin/artworks/edit?id=' . $id . '">Return to artwork editor</a></p>', 500);
+        }
 
         $returnTo = (string) ($_POST['return_to'] ?? '/admin/artworks');
         if ($returnTo === '' || $returnTo[0] !== '/' || str_starts_with($returnTo, '//')) {
