@@ -6,11 +6,15 @@ $controller = file_get_contents(__DIR__ . '/../../app/Http/Controllers/Tenant/Ad
 
 $required = [
     'tenant_admin_artworks_return_to',
-    'rememberArtworkGridReturnUrl',
+    'rememberArtworkGridReturnUrlFromRequestOrReferrer',
     'artworkGridReturnUrl',
-    'isSafeArtworkGridReturnUrl',
-    'parse_url($url, PHP_URL_PATH)',
-    'return $path === \'/admin/artworks\';',
+    'normalizeArtworkGridReturnUrl',
+    'HTTP_REFERER',
+    '$_POST[\'return_to\']',
+    'sessionStorage.setItem(key, path + search)',
+    'input.name = "return_to"',
+    'link.setAttribute("href", stored)',
+    'Response::redirect($this->artworkGridReturnUrl())',
 ];
 
 $missing = [];
