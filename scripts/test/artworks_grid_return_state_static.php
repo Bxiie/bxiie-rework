@@ -6,18 +6,24 @@ $controller = file_get_contents(__DIR__ . '/../../app/Http/Controllers/Tenant/Ad
 
 $required = [
     'tenant_admin_artworks_return_to',
-    'rememberArtworkGridReturnUrlFromRequestOrReferrer',
+    'rememberArtworkGridReturnUrl',
     'artworkGridReturnUrl',
     'normalizeArtworkGridReturnUrl',
     'HTTP_REFERER',
     '$_POST[\'return_to\']',
-    'sessionStorage.setItem(key, path + search)',
-    'input.name = "return_to"',
-    'link.setAttribute("href", stored)',
+    'parse_url($url)',
+    '$path !== \'/admin/artworks\'',
     'Response::redirect($this->artworkGridReturnUrl())',
 ];
 
+$forbidden = [
+    'rememberArtworkGridReturnUrlFromRequestOrReferrer',
+    'artworkGridReturnStateScript',
+    'sessionStorage.setItem',
+];
+
 $missing = [];
+$bad = [];
 
 foreach ($required as $needle) {
     if (!str_contains($controller, $needle)) {
@@ -25,11 +31,23 @@ foreach ($required as $needle) {
     }
 }
 
-if ($missing !== []) {
+foreach ($forbidden as $needle) {
+    if (str_contains($controller, $needle)) {
+        $bad[] = $needle;
+    }
+}
+
+if ($missing !== [] || $bad !== []) {
     fwrite(STDERR, "[FAIL] Artworks grid return-state static check failed:\n");
+
     foreach ($missing as $needle) {
         fwrite(STDERR, "[FAIL]  - Missing marker: {$needle}\n");
     }
+
+    foreach ($bad as $needle) {
+        fwrite(STDERR, "[FAIL]  - Forbidden marker still present: {$needle}\n");
+    }
+
     exit(1);
 }
 

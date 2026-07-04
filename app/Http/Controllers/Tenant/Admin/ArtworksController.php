@@ -30,9 +30,9 @@ final class ArtworksController
 
     public function index(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
-        $this->rememberArtworkGridReturnUrlFromRequestOrReferrer();
-
         $this->rememberArtworkGridReturnUrl();
+
+
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
@@ -270,7 +270,8 @@ HTML;
 
     public function edit(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
-        $this->rememberArtworkGridReturnUrlFromRequestOrReferrer();
+        $this->rememberArtworkGridReturnUrl();
+
 
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
@@ -420,7 +421,8 @@ HTML;
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
-        $this->rememberArtworkGridReturnUrlFromRequestOrReferrer();
+        $this->rememberArtworkGridReturnUrl();
+
 
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
@@ -513,7 +515,6 @@ HTML;
 
     public function updateDirectoryThumbnail(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
-        $this->rememberArtworkGridReturnUrlFromRequestOrReferrer();
 
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
@@ -546,7 +547,6 @@ HTML;
 
     public function updateStatus(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
-        $this->rememberArtworkGridReturnUrlFromRequestOrReferrer();
 
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
@@ -594,7 +594,6 @@ HTML;
 
     public function delete(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
-        $this->rememberArtworkGridReturnUrlFromRequestOrReferrer();
 
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
@@ -990,26 +989,22 @@ HTML;
         return $requestUri;
     }
 
-    private function rememberArtworkGridReturnUrlFromRequestOrReferrer(): void
+    private function rememberArtworkGridReturnUrl(): void
     {
-        $candidates = [
-            $_POST['return_to'] ?? null,
-            $_GET['return_to'] ?? null,
-            $_SERVER['REQUEST_URI'] ?? null,
-            $_SERVER['HTTP_REFERER'] ?? null,
-        ];
+        $requestUri = (string) ($_SERVER['REQUEST_URI'] ?? '');
 
-        foreach ($candidates as $candidate) {
-            if (!is_string($candidate)) {
-                continue;
-            }
+        $normalizedRequest = $this->normalizeArtworkGridReturnUrl($requestUri);
 
-            $normalized = $this->normalizeArtworkGridReturnUrl($candidate);
+        if ($normalizedRequest !== null) {
+            $_SESSION['tenant_admin_artworks_return_to'] = $normalizedRequest;
+            return;
+        }
 
-            if ($normalized !== null) {
-                $_SESSION['tenant_admin_artworks_return_to'] = $normalized;
-                return;
-            }
+        $referer = (string) ($_SERVER['HTTP_REFERER'] ?? '');
+        $normalizedReferer = $this->normalizeArtworkGridReturnUrl($referer);
+
+        if ($normalizedReferer !== null) {
+            $_SESSION['tenant_admin_artworks_return_to'] = $normalizedReferer;
         }
     }
 
@@ -1070,44 +1065,6 @@ HTML;
         }
 
         return $normalized;
-    }
-
-    private function artworkGridReturnStateScript(): string
-    {
-        return '<script>
-(function () {
-  try {
-    var path = window.location.pathname || "";
-    var search = window.location.search || "";
-    var key = "artsfolio_admin_artworks_return_to";
-
-    if (path === "/admin/artworks") {
-      window.sessionStorage.setItem(key, path + search);
-    }
-
-    if (path === "/admin/artworks/edit") {
-      var stored = window.sessionStorage.getItem(key) || "";
-      if (stored.indexOf("/admin/artworks") !== 0) {
-        return;
-      }
-
-      document.querySelectorAll("form").forEach(function (form) {
-        if (!form.querySelector("input[name=return_to]")) {
-          var input = document.createElement("input");
-          input.type = "hidden";
-          input.name = "return_to";
-          input.value = stored;
-          form.appendChild(input);
-        }
-      });
-
-      document.querySelectorAll("a[href=\"/admin/artworks\"], a[href^=\"/admin/artworks?\"]").forEach(function (link) {
-        link.setAttribute("href", stored);
-      });
-    }
-  } catch (e) {}
-})();
-</script>';
     }
 
 }
