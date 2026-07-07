@@ -2552,3 +2552,9 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 - Diagnostic log path: `storage/logs/checkout_success.log`, with `/tmp/artsfolio_checkout_success.log` as fallback if the storage log directory cannot be created.
 
 <!-- End of file. -->
+
+## 2026-07-07 paid Stripe reconciliation inventory hardening
+
+Paid Stripe Checkout Session reconciliation now treats Stripe payment confirmation as authoritative for payment state. When a paid session maps to a local order but inventory reservations are missing, expired, released, completed, or cannot be decremented, the order is still marked `paid`, the source cart is marked `checked_out`, and a manual inventory-review note is appended to `sales_orders.notes`. This prevents paid buyers from being stranded on `checkout_pending` after earlier stale-session recovery released local reservations.
+
+# End of file.

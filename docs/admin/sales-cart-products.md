@@ -113,3 +113,9 @@ When a cart has a `checkout_pending` order, ArtsFolio now asks Stripe for the li
 The `/checkout/success` route is buyer-safe around Stripe reconciliation. If the Stripe API lookup, local order lookup, order item lookup, cart-cookie expiration, or order-summary rendering fails, the route logs the exception with marker `[ArtsFolio checkout/success]` in `storage/logs/checkout_success.log` and still shows the best local order state available. Buyers are told not to pay again when Stripe may already have completed the payment.
 
 <!-- End of file. -->
+
+## Paid Stripe reconciliation and inventory review
+
+Paid Stripe sessions are authoritative for order payment status. If Stripe confirms a Checkout Session as paid but ArtsFolio finds that the original inventory reservation was already released, expired, completed, or missing, ArtsFolio now marks the order paid, checks out the source cart, and records an inventory-review note on the order instead of leaving the buyer on a pending checkout page. Administrators should review the order notes and adjust artwork or variant inventory manually when a paid reconciliation inventory note appears.
+
+# End of file.

@@ -521,11 +521,21 @@ final class SalesRepository
                 $this->pdo->commit();
                 return;
             }
+
+            $cartId = (int) ($order['cart_id'] ?? 0);
             if (in_array((string) $order['payment_status'], ['paid', 'complete', 'succeeded'], true)) {
+                // Idempotent webhook/success retries still consume the cart.
+                // Older code could mark an order paid while leaving the cart
+                // visible if cookie expiration failed during the browser round trip.
+                if ($cartId > 0) {
+                    $cart = $this->pdo->prepare('UPDATE sales_carts SET status = "checked_out", updated_at = CURRENT_TIMESTAMP WHERE id = :cart_id AND status = "active"');
+                    $cart->execute(['cart_id' => $cartId]);
+                }
                 $this->pdo->commit();
                 return;
             }
 
+            $manualReviewNotes = [];
             $reservationStmt = $this->pdo->prepare(
                 'SELECT * FROM sales_inventory_reservations
                  WHERE order_id = :order_id
@@ -535,20 +545,25 @@ final class SalesRepository
             $reservationStmt->execute(['order_id' => (int) $order['id']]);
             $reservations = $reservationStmt->fetchAll(PDO::FETCH_ASSOC);
             if ($reservations === []) {
-                throw new RuntimeException('Paid order has no inventory reservations. Manual review is required.');
+                $manualReviewNotes[] = 'Stripe reported this order paid, but no inventory reservations were found. Inventory was not decremented automatically.';
             }
 
             $touchedArtworks = [];
             foreach ($reservations as $reservation) {
-                if ((string) $reservation['status'] === 'completed') {
+                $reservationId = (int) ($reservation['id'] ?? 0);
+                $reservationStatus = (string) ($reservation['status'] ?? '');
+                if ($reservationStatus === 'completed') {
                     continue;
                 }
-                if ((string) $reservation['status'] !== 'reserved') {
-                    throw new RuntimeException('Paid order reservation is no longer active. Manual review is required.');
+                if ($reservationStatus !== 'reserved') {
+                    $manualReviewNotes[] = 'Stripe reported this order paid, but reservation #' . $reservationId . ' was already ' . $reservationStatus . '. Inventory was not decremented for that reservation.';
+                    continue;
                 }
+
                 $variantId = (int) ($reservation['variant_id'] ?? 0);
                 if ($variantId <= 0) {
-                    throw new RuntimeException('Paid order reservation is missing its sale variant. Manual review is required.');
+                    $manualReviewNotes[] = 'Stripe reported this order paid, but reservation #' . $reservationId . ' is missing its sale variant. Inventory was not decremented for that reservation.';
+                    continue;
                 }
 
                 $decrement = $this->pdo->prepare(
@@ -568,7 +583,8 @@ final class SalesRepository
                     'tenant_id' => (int) $reservation['tenant_id'],
                 ]);
                 if ($decrement->rowCount() !== 1) {
-                    throw new RuntimeException('Reserved variant inventory could not be consumed. Manual review is required.');
+                    $manualReviewNotes[] = 'Stripe reported this order paid, but reserved variant inventory could not be decremented for reservation #' . $reservationId . '. Manual inventory review is required.';
+                    continue;
                 }
 
                 $completeReservation = $this->pdo->prepare(
@@ -576,7 +592,7 @@ final class SalesRepository
                      SET status = "completed", completed_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP()
                      WHERE id = :id AND status = "reserved"'
                 );
-                $completeReservation->execute(['id' => (int) $reservation['id']]);
+                $completeReservation->execute(['id' => $reservationId]);
                 $touchedArtworks[(int) $reservation['tenant_id'] . ':' . (int) $reservation['artwork_id']] = [(int) $reservation['tenant_id'], (int) $reservation['artwork_id']];
             }
 
@@ -584,12 +600,37 @@ final class SalesRepository
                 $this->syncLegacyArtworkInventoryFromVariants($tenantId, $artworkId);
             }
 
-            $update = $this->pdo->prepare('UPDATE sales_orders SET payment_status = "paid", stripe_payment_intent_id = :payment_intent, customer_email = :email, customer_name = :name, shipping_address_json = :shipping, updated_at = CURRENT_TIMESTAMP WHERE id = :id');
-            $update->execute(['id' => (int) $order['id'], 'payment_intent' => $paymentIntentId, 'email' => $customerEmail, 'name' => $customerName, 'shipping' => $shippingAddress ? json_encode($shippingAddress, JSON_THROW_ON_ERROR) : null]);
+            $shippingJson = $shippingAddress ? json_encode($shippingAddress, JSON_THROW_ON_ERROR) : null;
+            $notes = (string) ($order['notes'] ?? '');
+            if ($manualReviewNotes !== []) {
+                $notes = trim($notes);
+                $notes .= ($notes !== '' ? "\n\n" : '')
+                    . '[' . gmdate('Y-m-d H:i:s') . ' UTC] Stripe paid reconciliation inventory review: '
+                    . implode(' ', $manualReviewNotes);
+            }
+
+            $update = $this->pdo->prepare(
+                'UPDATE sales_orders
+                    SET payment_status = "paid",
+                        stripe_payment_intent_id = :payment_intent,
+                        customer_email = COALESCE(:email, customer_email),
+                        customer_name = COALESCE(:name, customer_name),
+                        shipping_address_json = COALESCE(:shipping, shipping_address_json),
+                        notes = :notes,
+                        updated_at = CURRENT_TIMESTAMP
+                  WHERE id = :id'
+            );
+            $update->execute([
+                'id' => (int) $order['id'],
+                'payment_intent' => $paymentIntentId,
+                'email' => $customerEmail,
+                'name' => $customerName,
+                'shipping' => $shippingJson,
+                'notes' => $notes !== '' ? $notes : null,
+            ]);
 
             // A paid order consumes the source cart. Leaving the cart active
             // makes bought items reappear after Stripe returns the buyer.
-            $cartId = (int) ($order['cart_id'] ?? 0);
             if ($cartId > 0) {
                 $cart = $this->pdo->prepare('UPDATE sales_carts SET status = "checked_out", updated_at = CURRENT_TIMESTAMP WHERE id = :cart_id AND status = "active"');
                 $cart->execute(['cart_id' => $cartId]);
