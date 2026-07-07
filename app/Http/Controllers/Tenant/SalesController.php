@@ -226,7 +226,7 @@ final class SalesController
                 $cancelUrl,
                 trim((string) $this->tenantSettings->get($tenant, 'stripe_connected_account_id', '')) ?: null,
                 $commissionCents + (int) $fees['credit_card_fee_cents'],
-                (int) $fees['shipping_cents'],
+                (int) ($order['shipping_cents'] ?? $fees['shipping_cents']),
                 $customerEmail !== '' ? $customerEmail : null,
             );
             $this->sales->attachCheckoutSession((int) $order['id'], (string) $session['id'], (string) $session['url']);
@@ -533,20 +533,31 @@ HTML;
         return $parts === [] ? '' : '<br><small>' . implode(' · ', array_unique($parts)) . '</small>';
     }
 
+    /**
+     * Calculate buyer total and seller economics from grouped cart shipping.
+     *
+     * This must match SalesRepository::createOrderFromCart() and the cart page.
+     * Stripe Checkout receives this value, so per-line shipping here would make
+     * two sticker products charge $10 in Stripe while the cart correctly shows $5.
+     *
+     * @param list<array<string,mixed>> $items
+     * @return array<string,int>
+     */
     private function saleEconomics(TenantContext $tenant, array $items): array
     {
         $subtotal = 0;
-        $shipping = 0;
         foreach ($items as $item) {
             $quantity = max(1, (int) ($item['quantity'] ?? 1));
             $subtotal += $quantity * (int) $item['unit_price_cents'];
-            $shipping += $this->lineShippingCents($item);
         }
+
+        $shipping = array_sum($this->sales->cartShippingAllocations($items));
         $total = $subtotal + $shipping;
         $commissionBasisPoints = max(0, min(10000, (int) $this->platformSettings->get('platform_sales_commission_basis_points', '500')));
         $planFees = $this->planPaymentFees($tenant);
         $commission = (int) round($subtotal * ($commissionBasisPoints / 10000));
         $creditCardFee = (int) round($total * (((int) $planFees['credit_card_fee_basis_points']) / 10000)) + (int) $planFees['credit_card_fixed_fee_cents'];
+
         return [
             'subtotal_cents' => $subtotal,
             'shipping_cents' => $shipping,
@@ -556,6 +567,7 @@ HTML;
             'seller_net_cents' => max(0, $total - $commission - $creditCardFee),
         ];
     }
+
 
     private function planPaymentFees(TenantContext $tenant): array
     {

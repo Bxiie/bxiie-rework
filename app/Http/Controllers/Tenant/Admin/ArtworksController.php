@@ -138,6 +138,7 @@ final class ArtworksController
         ], static fn ($value): bool => $value !== '');
         $returnTo = '/admin/artworks?' . http_build_query(array_merge($baseQuery, ['page' => $page]));
         $returnToValue = htmlspecialchars($returnTo, ENT_QUOTES, 'UTF-8');
+        $returnToParam = rawurlencode($returnTo);
         $items = '';
 
         foreach ($rows as $row) {
@@ -170,11 +171,11 @@ final class ArtworksController
             }
             $items .= <<<HTML
 <tr id="artwork-{$row['id']}">
-    <td><a class="artwork-grid-thumbnail-link" href="/admin/artworks/edit?id={$artworkId}&return_to={$returnToValue}#artwork-{$artworkId}">{$image}</a></td><td><strong>{$title}</strong><br><small>ID {$row['id']} · {$created}</small></td>
+    <td><a class="artwork-grid-thumbnail-link" href="/admin/artworks/edit?id={$artworkId}&return_to={$returnToParam}">{$image}</a></td><td><strong>{$title}</strong><br><small>ID {$row['id']} · {$created}</small></td>
     <td>{$year}</td><td>{$medium}</td><td class="js-artwork-status">{$status}<br>{$typeBadges}</td>
     <td>{$saleStatus}</td><td>{$price}</td><td>{$notes}</td>
     <td><form method="post" action="/admin/artworks/directory-thumbnail"><input type="hidden" name="id" value="{$artworkId}"><input type="hidden" name="return_to" value="{$returnToValue}"><label><input type="checkbox" name="directory_thumbnail" value="1"{$directoryChecked}{$directoryDisabled} onchange="this.form.submit()"> Directory thumbnail</label><br><small>{$directoryHelp}</small></form></td>
-    <td><a class="admin-button" href="/admin/artworks/edit?id={$row['id']}&return_to={$returnToValue}#artwork-{$artworkId}">Edit</a> {$this->statusActionButton($row, $returnToValue)} <form method="post" action="/admin/artworks/delete" class="js-artwork-action" style="display:inline" onsubmit="return confirm('Archive this artwork?');"><input type="hidden" name="id" value="{$row['id']}"><input type="hidden" name="return_to" value="{$returnToValue}"><button type="submit">Archive</button></form></td>
+    <td><a class="admin-button" href="/admin/artworks/edit?id={$artworkId}&return_to={$returnToParam}">Edit</a> {$this->statusActionButton($row, $returnToValue)} <form method="post" action="/admin/artworks/delete" class="js-artwork-action" style="display:inline" onsubmit="return confirm('Archive this artwork?');"><input type="hidden" name="id" value="{$row['id']}"><input type="hidden" name="return_to" value="{$returnToValue}"><button type="submit">Archive</button></form></td>
 </tr>
 HTML;
         }
@@ -338,10 +339,7 @@ HTML;
             $saleFieldset = (new ArtworkSaleAdminForm($this->pdo))->render($tenant->tenantId, $artwork);
         $notesValue = htmlspecialchars((string) ($artwork['notes'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $notesHtmlValue = htmlspecialchars((string) ($artwork['notes_html'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-        $returnTo = (string) ($_GET['return_to'] ?? '/admin/artworks');
-        if ($returnTo === '' || $returnTo[0] !== '/' || str_starts_with($returnTo, '//')) {
-            $returnTo = '/admin/artworks';
-        }
+        $returnTo = $this->safeArtworkReturnTo((string) ($_GET['return_to'] ?? $this->artworkGridReturnUrl()));
         $returnToValue = htmlspecialchars($returnTo, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         } catch (\Throwable $exception) {
             $this->logAdminArtworkEditFailure($tenant->tenantId, (int) ($artwork['id'] ?? 0), 'ArtworkSaleAdminForm render failed', $exception);
@@ -505,12 +503,8 @@ HTML;
             return Response::html('<h1>Artwork could not be saved</h1><p>The artwork update failed. The exact error has been written to <code>storage/logs/admin_artwork_edit.log</code>.</p><p><a href="/admin/artworks/edit?id=' . $id . '">Return to artwork editor</a></p>', 500);
         }
 
-        $returnTo = (string) ($_POST['return_to'] ?? '/admin/artworks');
-        if ($returnTo === '' || $returnTo[0] !== '/' || str_starts_with($returnTo, '//')) {
-            $returnTo = '/admin/artworks';
-        }
-        $separator = str_contains($returnTo, '?') ? '&' : '?';
-        return new Response('', 303, ['Location' => $returnTo . $separator . 'notice=artwork-saved#artwork-' . $id]);
+        $returnTo = $this->safeArtworkReturnTo((string) ($_POST['return_to'] ?? $this->artworkGridReturnUrl()));
+        return new Response('', 303, ['Location' => $this->artworkReturnWithNotice($returnTo, 'artwork-saved') . '#artwork-' . $id]);
     }
 
 

@@ -2523,3 +2523,9 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 - Artwork grid row edit buttons and edit-page back links preserve `return_to`, including selected filters, sort, page size, and page number.
 
 <!-- End of file. -->
+
+## 2026-07-07 Stripe shipping and artwork return-state follow-up
+
+- Stripe Checkout now receives the grouped shipping total from `sales_orders.shipping_cents`, matching the cart display and order creation path.
+- Artwork grid edit links URL-encode the nested `return_to` parameter so selected filters and page number survive edit/save/back navigation.
+

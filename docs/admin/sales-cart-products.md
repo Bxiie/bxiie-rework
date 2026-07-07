@@ -29,8 +29,6 @@ Phase 4 activates the stored sales settings during checkout. When a buyer starts
 
 Payment completion decrements the purchased variant inventory. If all active variants are sold out, the artwork is marked sold. Administrators should continue editing inventory from the artwork sale configuration panel rather than editing Stripe products.
 
-<!-- End of file. -->
-<!-- End of file. -->
 
 ## Phase 2 admin controls
 
@@ -52,7 +50,6 @@ The artwork-level shipping controls define the default shipping behavior for the
 
 Phase 2 only stores the configuration. Public variant selection, variant-aware cart rows, Stripe shipping options, and payment-time inventory deduction arrive in later phases.
 
-<!-- End of file. -->
 
 ## Phase 3 public buyer behavior
 
@@ -85,5 +82,11 @@ On the artwork definition page, select the profile that best fits the item. Use 
 ## 2026-07-07 cart display fix
 
 The cart review page uses the same shipping-profile grouping as checkout and order creation. Multiple products assigned to the same **Small flat items** profile show one shared shipping total instead of a separate flat charge per row.
+
+
+
+## Stripe checkout shipping consistency
+
+The buyer cart, sales economics calculation, order creation, and Stripe Checkout session all use grouped shipping-profile allocation. Flat profile products that share a profile, such as stickers, should produce one profile-level shipping amount in the cart and the same shipping amount in Stripe. The order row's `shipping_cents` is the final source of truth passed to Stripe Checkout.
 
 <!-- End of file. -->
