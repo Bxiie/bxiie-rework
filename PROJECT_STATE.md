@@ -2558,3 +2558,11 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 Paid Stripe Checkout Session reconciliation now treats Stripe payment confirmation as authoritative for payment state. When a paid session maps to a local order but inventory reservations are missing, expired, released, completed, or cannot be decremented, the order is still marked `paid`, the source cart is marked `checked_out`, and a manual inventory-review note is appended to `sales_orders.notes`. This prevents paid buyers from being stranded on `checkout_pending` after earlier stale-session recovery released local reservations.
 
 # End of file.
+
+## Stripe paid-order reconciliation legacy inventory sync repair
+- Added the missing `SalesRepository::syncLegacyArtworkInventoryFromVariants()` helper used by paid Stripe reconciliation after variant inventory is consumed.
+- The helper keeps legacy `artworks.is_one_off` and `artworks.inventory_quantity` synchronized from active `artwork_sale_variants` so older admin/dashboard/public fallback paths do not drift.
+- This prevents `/checkout/success` from leaving Stripe-paid orders in `checkout_pending` because of an undefined helper after Stripe return or webhook reconciliation.
+
+
+<!-- End of file. -->

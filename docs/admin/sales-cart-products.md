@@ -89,14 +89,12 @@ The cart review page uses the same shipping-profile grouping as checkout and ord
 
 The buyer cart, sales economics calculation, order creation, and Stripe Checkout session all use grouped shipping-profile allocation. Flat profile products that share a profile, such as stickers, should produce one profile-level shipping amount in the cart and the same shipping amount in Stripe. The order row's `shipping_cents` is the final source of truth passed to Stripe Checkout.
 
-<!-- End of file. -->
 
 
 ## Stripe success return and cart completion
 
 After Stripe Checkout returns to `/checkout/success`, ArtsFolio verifies the Checkout Session directly with Stripe. If Stripe reports `payment_status=paid` and the session metadata matches the local order, ArtsFolio marks the order paid, consumes inventory reservations, marks the source cart `checked_out`, expires the current cart cookie, and shows the buyer an itemized order summary. Stripe webhooks remain supported and idempotent; the success return path is a safety net for delayed or misconfigured webhook delivery.
 
-<!-- End of file. -->
 
 ## Stripe pending checkout recovery
 
@@ -112,10 +110,15 @@ When a cart has a `checkout_pending` order, ArtsFolio now asks Stripe for the li
 
 The `/checkout/success` route is buyer-safe around Stripe reconciliation. If the Stripe API lookup, local order lookup, order item lookup, cart-cookie expiration, or order-summary rendering fails, the route logs the exception with marker `[ArtsFolio checkout/success]` in `storage/logs/checkout_success.log` and still shows the best local order state available. Buyers are told not to pay again when Stripe may already have completed the payment.
 
-<!-- End of file. -->
 
 ## Paid Stripe reconciliation and inventory review
 
 Paid Stripe sessions are authoritative for order payment status. If Stripe confirms a Checkout Session as paid but ArtsFolio finds that the original inventory reservation was already released, expired, completed, or missing, ArtsFolio now marks the order paid, checks out the source cart, and records an inventory-review note on the order instead of leaving the buyer on a pending checkout page. Administrators should review the order notes and adjust artwork or variant inventory manually when a paid reconciliation inventory note appears.
 
 # End of file.
+
+## Stripe reconciliation and legacy inventory sync
+
+When Stripe reports a Checkout Session as paid, ArtsFolio marks the order paid, checks out the source cart, consumes any reserved variant inventory that can still be consumed, and then synchronizes the legacy artwork inventory fields from active sale variants. If inventory reservations drift because a buyer returns late or a session is reconciled after expiry, the order should still be recorded as paid and flagged for manual inventory review instead of remaining in checkout_pending.
+
+<!-- End of file. -->

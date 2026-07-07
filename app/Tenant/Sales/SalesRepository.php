@@ -912,6 +912,60 @@ final class SalesRepository
      * @param list<array<string,mixed>> $items
      * @return array<int,int> map of cart item id to allocated shipping cents
      */
+
+    /**
+     * Keep the legacy artwork inventory columns in sync with sale variants.
+     *
+     * Variant inventory is now the checkout source of truth, but older admin
+     * screens, dashboard counts, and public fallback queries still read the
+     * artwork-level is_one_off and inventory_quantity columns. Paid Stripe
+     * reconciliation calls this after consuming variant reservations, so the
+     * helper must exist and must be safe to rerun.
+     */
+    private function syncLegacyArtworkInventoryFromVariants(int $tenantId, int $artworkId): void
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT
+                    COALESCE(c.sale_kind, "one_off") AS sale_kind,
+                    COALESCE(SUM(CASE WHEN v.is_active = 1 THEN GREATEST(v.inventory_quantity, 0) ELSE 0 END), 0) AS active_inventory
+               FROM artwork_sale_config c
+               LEFT JOIN artwork_sale_variants v
+                 ON v.tenant_id = c.tenant_id
+                AND v.artwork_id = c.artwork_id
+              WHERE c.tenant_id = :tenant_id
+                AND c.artwork_id = :artwork_id
+              GROUP BY c.sale_kind
+              LIMIT 1'
+        );
+        $stmt->execute([
+            'tenant_id' => $tenantId,
+            'artwork_id' => $artworkId,
+        ]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            return;
+        }
+
+        $saleKind = (string) ($row['sale_kind'] ?? 'one_off');
+        $activeInventory = max(0, (int) ($row['active_inventory'] ?? 0));
+        $isOneOff = $saleKind === 'one_off' ? 1 : 0;
+
+        $update = $this->pdo->prepare(
+            'UPDATE artworks
+                SET is_one_off = :is_one_off,
+                    inventory_quantity = :inventory_quantity,
+                    updated_at = CURRENT_TIMESTAMP
+              WHERE tenant_id = :tenant_id
+                AND id = :artwork_id'
+        );
+        $update->execute([
+            'is_one_off' => $isOneOff,
+            'inventory_quantity' => $activeInventory,
+            'tenant_id' => $tenantId,
+            'artwork_id' => $artworkId,
+        ]);
+    }
+
     private function shippingAllocations(array $items): array
     {
         $allocations = [];
