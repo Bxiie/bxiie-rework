@@ -15,8 +15,8 @@ MARKER,
     'checkout service reused' => <<<'MARKER'
 $checkoutService = new StripeCheckoutService();
 MARKER,
-    'existing open Stripe checkout redirects' => <<<'MARKER'
-if ($sessionStatus === 'open' && $checkoutUrl !== '')
+    'existing open Stripe checkout uses live Stripe URL' => <<<'MARKER'
+$liveCheckoutUrl = trim((string) ($session['url'] ?? $checkoutUrl));
 MARKER,
     'paid pending checkout reconciles' => <<<'MARKER'
 $this->refreshPaidStripeCheckout($tenant, $sessionId);
@@ -26,6 +26,9 @@ MARKER,
 MARKER,
     'orphaned pending checkout releases reservations' => <<<'MARKER'
 $this->sales->releaseReservationsForOrder($orderId, 'checkout_abandoned');
+MARKER,
+    'lookup-failed pending checkout releases reservations' => <<<'MARKER'
+$this->sales->releaseReservationsForOrder($orderId, 'checkout_lookup_failed');
 MARKER,
 ];
 

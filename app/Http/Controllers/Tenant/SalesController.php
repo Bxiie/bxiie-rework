@@ -304,7 +304,8 @@ final class SalesController
             error_log('[ArtsFolio checkout/success] Stripe session did not match local order for ' . $sessionId);
             return;
         }
-        if ((string) ($session['payment_status'] ?? '') !== 'paid') {
+        $paymentStatus = (string) ($session['payment_status'] ?? '');
+        if (!in_array($paymentStatus, ['paid', 'no_payment_required'], true)) {
             return;
         }
 
@@ -518,29 +519,35 @@ HTML;
                 ]);
             }
 
-            if ($sessionStatus === 'open' && $checkoutUrl !== '') {
-                return new Response('', 303, ['Location' => $checkoutUrl]);
+            if ($sessionStatus === 'open') {
+                $liveCheckoutUrl = trim((string) ($session['url'] ?? $checkoutUrl));
+                if ($liveCheckoutUrl !== '') {
+                    return new Response('', 303, ['Location' => $liveCheckoutUrl]);
+                }
             }
 
-            if (in_array($sessionStatus, ['complete', 'expired'], true)) {
-                $this->sales->releaseReservationsForOrder($orderId, $sessionStatus === 'expired' ? 'checkout_expired' : 'checkout_unpaid');
+            if (in_array($sessionStatus, ['complete', 'expired', 'canceled'], true)) {
+                $releaseStatus = match ($sessionStatus) {
+                    'expired' => 'checkout_expired',
+                    'complete' => 'checkout_unpaid',
+                    default => 'checkout_abandoned',
+                };
+                $this->sales->releaseReservationsForOrder($orderId, $releaseStatus);
                 return null;
             }
-        } catch (Throwable) {
-            // If Stripe lookup is temporarily unavailable but we have a hosted
-            // Checkout URL, prefer resuming the buyer over making the cart
-            // unusable. Without a URL, clear the orphaned local attempt.
-            if ($checkoutUrl !== '') {
-                return new Response('', 303, ['Location' => $checkoutUrl]);
-            }
-            $this->sales->releaseReservationsForOrder($orderId, 'checkout_abandoned');
+        } catch (Throwable $e) {
+            // Do not redirect to a saved Stripe Checkout URL unless Stripe has
+            // just confirmed that the Session is still open. Saved hosted URLs
+            // for completed or expired Sessions produce Stripe's "You're all
+            // done here" page and leave the local cart stranded. Release this
+            // local attempt so the buyer can start a fresh checkout instead.
+            error_log('[ArtsFolio checkout/resume] Stripe lookup failed for pending order ' . $orderId . ' session ' . $sessionId . ': ' . $e->getMessage());
+            $this->sales->releaseReservationsForOrder($orderId, 'checkout_lookup_failed');
             return null;
         }
 
-        if ($checkoutUrl !== '') {
-            return new Response('', 303, ['Location' => $checkoutUrl]);
-        }
-
+        // Unknown or terminal Stripe state: clear the local pending order. A
+        // fresh checkout is safer than sending the buyer to a stale hosted URL.
         $this->sales->releaseReservationsForOrder($orderId, 'checkout_abandoned');
         return null;
     }

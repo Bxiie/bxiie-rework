@@ -103,3 +103,9 @@ After Stripe Checkout returns to `/checkout/success`, ArtsFolio verifies the Che
 When a buyer clicks Checkout and returns before the webhook/success reconciliation finishes, ArtsFolio may already have a `checkout_pending` order for the active cart. The checkout action now checks for that pending order before creating a replacement order. If Stripe still reports the hosted Checkout Session as open, the buyer is redirected back to that same Stripe URL. If Stripe reports the Session as paid, ArtsFolio finalizes the order, consumes inventory reservations, marks the cart checked out, and expires the cart cookie. If the Session is expired, complete but unpaid, or missing because an earlier request failed midway, ArtsFolio releases the local reservations and starts a fresh checkout attempt.
 
 # End of file.
+
+## Stripe checkout resume recovery
+
+When a cart has a `checkout_pending` order, ArtsFolio now asks Stripe for the live Checkout Session state before reusing the saved hosted checkout URL. Paid sessions are finalized locally, genuinely open sessions are resumed using Stripe's freshly returned URL, and expired, complete-but-unpaid, canceled, orphaned, or lookup-failed attempts are released so the buyer can start a fresh checkout. This prevents buyers from being sent back to Stripe's terminal “You're all done here” page while the local cart remains stuck in `checkout_pending`.
+
+<!-- End of file. -->

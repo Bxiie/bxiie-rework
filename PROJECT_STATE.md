@@ -2538,3 +2538,11 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 - No schema change.
 
 # End of file.
+
+## 2026-07-07 Stripe checkout resume recovery
+
+- Stripe checkout resume now reuses a hosted Checkout URL only after Stripe confirms the Session is still `open`.
+- Completed, expired, canceled, orphaned, or Stripe-lookup-failed pending checkout attempts are released locally so buyers can start a fresh checkout instead of landing on Stripe's terminal “You're all done here” page.
+- Paid success-return sessions continue to finalize the order, mark the cart checked out, and expire the cart cookie.
+
+<!-- End of file. -->
