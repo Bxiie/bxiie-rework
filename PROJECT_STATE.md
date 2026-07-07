@@ -2566,3 +2566,9 @@ Paid Stripe Checkout Session reconciliation now treats Stripe payment confirmati
 
 
 <!-- End of file. -->
+
+## 2026-07-07 Stripe refund administration and duplicate checkout guard
+- Tenant Admin → Sales can review order totals, items, customer details, Stripe Checkout Session, PaymentIntent, and local refund history.
+- Tenant admins can create Stripe refunds from ArtsFolio; refunds are stored in `sales_order_refunds` with Stripe refund id, amount, reason, status, actor, raw response, and optional inventory-restoration timestamp.
+- Full refunds can restore completed order inventory once, then resync legacy artwork inventory fields from active variants.
+- `/cart/checkout` now refuses to create another Stripe Checkout for a cart that already has a paid order; it checks out the cart, expires the cart cookie, and redirects to the existing success page.

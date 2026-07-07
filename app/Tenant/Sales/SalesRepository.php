@@ -643,6 +643,201 @@ final class SalesRepository
         }
     }
 
+
+    /**
+     * Returns an already-paid order for a cart so checkout cannot charge it again.
+     */
+    public function paidOrderForCart(TenantContext $tenant, int $cartId): ?array
+    {
+        if ($cartId <= 0) {
+            return null;
+        }
+        $stmt = $this->pdo->prepare(
+            'SELECT *
+             FROM sales_orders
+             WHERE tenant_id = :tenant_id
+               AND cart_id = :cart_id
+               AND payment_status IN ("paid", "complete", "succeeded", "partially_refunded")
+             ORDER BY updated_at DESC, id DESC
+             LIMIT 1'
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'cart_id' => $cartId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
+
+    /**
+     * Returns Stripe refunds recorded for an order.
+     *
+     * @return list<array<string,mixed>>
+     */
+    public function orderRefunds(int $orderId): array
+    {
+        if (!$this->tableExists('sales_order_refunds')) {
+            return [];
+        }
+        $stmt = $this->pdo->prepare('SELECT * FROM sales_order_refunds WHERE order_id = :order_id ORDER BY created_at DESC, id DESC');
+        $stmt->execute(['order_id' => $orderId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Returns the total amount already refunded for an order.
+     */
+    public function orderRefundTotal(int $orderId): int
+    {
+        if (!$this->tableExists('sales_order_refunds')) {
+            return 0;
+        }
+        $stmt = $this->pdo->prepare('SELECT COALESCE(SUM(amount_cents), 0) FROM sales_order_refunds WHERE order_id = :order_id AND status NOT IN ("failed", "canceled")');
+        $stmt->execute(['order_id' => $orderId]);
+
+        return max(0, (int) $stmt->fetchColumn());
+    }
+
+    /**
+     * Records a Stripe refund and updates local order/refund workflow state.
+     *
+     * @param array<string,mixed> $rawRefund
+     */
+    public function recordStripeRefund(TenantContext $tenant, int $orderId, string $stripeRefundId, string $paymentIntentId, int $amountCents, string $reason, string $status, array $rawRefund, ?int $createdByUserId, bool $restockInventory): void
+    {
+        if (!$this->tableExists('sales_order_refunds')) {
+            throw new RuntimeException('The sales_order_refunds table is missing. Run database migrations before refunding.');
+        }
+        if ($amountCents <= 0) {
+            throw new RuntimeException('Refund amount must be greater than zero.');
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $orderStmt = $this->pdo->prepare('SELECT * FROM sales_orders WHERE tenant_id = :tenant_id AND id = :id LIMIT 1 FOR UPDATE');
+            $orderStmt->execute(['tenant_id' => $tenant->tenantId, 'id' => $orderId]);
+            $order = $orderStmt->fetch(PDO::FETCH_ASSOC);
+            if (!$order) {
+                throw new RuntimeException('Order was not found for this tenant.');
+            }
+
+            $alreadyRefunded = $this->orderRefundTotal($orderId);
+            $remaining = max(0, (int) $order['total_cents'] - $alreadyRefunded);
+            if ($amountCents > $remaining) {
+                throw new RuntimeException('Refund exceeds the remaining refundable amount.');
+            }
+
+            $restoreAt = null;
+            if ($restockInventory && $amountCents === $remaining && !$this->orderAlreadyHadInventoryRestored($orderId)) {
+                $this->restoreCompletedReservationInventory($orderId);
+                $restoreAt = gmdate('Y-m-d H:i:s');
+            }
+
+            $insert = $this->pdo->prepare(
+                'INSERT INTO sales_order_refunds
+                    (tenant_id, order_id, stripe_refund_id, stripe_payment_intent_id, amount_cents, reason, status, restock_inventory, inventory_restored_at, raw_json, created_by_user_id, created_at)
+                 VALUES
+                    (:tenant_id, :order_id, :stripe_refund_id, :stripe_payment_intent_id, :amount_cents, :reason, :status, :restock_inventory, :inventory_restored_at, :raw_json, :created_by_user_id, UTC_TIMESTAMP())
+                 ON DUPLICATE KEY UPDATE status = VALUES(status), raw_json = VALUES(raw_json)'
+            );
+            $insert->execute([
+                'tenant_id' => $tenant->tenantId,
+                'order_id' => $orderId,
+                'stripe_refund_id' => $stripeRefundId,
+                'stripe_payment_intent_id' => $paymentIntentId,
+                'amount_cents' => $amountCents,
+                'reason' => $reason,
+                'status' => $status,
+                'restock_inventory' => $restockInventory ? 1 : 0,
+                'inventory_restored_at' => $restoreAt,
+                'raw_json' => json_encode($rawRefund, JSON_THROW_ON_ERROR),
+                'created_by_user_id' => $createdByUserId,
+            ]);
+
+            $newRefunded = $alreadyRefunded + $amountCents;
+            $fullRefund = $newRefunded >= (int) $order['total_cents'];
+            $note = 'Stripe refund ' . $stripeRefundId . ' recorded for $' . number_format($amountCents / 100, 2) . '.';
+            if ($restoreAt !== null) {
+                $note .= ' Completed reservation inventory was returned to available stock.';
+            }
+            $update = $this->pdo->prepare(
+                'UPDATE sales_orders
+                 SET payment_status = :payment_status,
+                     workflow_status = CASE WHEN :full_refund = 1 THEN "refunded" ELSE workflow_status END,
+                     notes = CONCAT(COALESCE(notes, ""), CASE WHEN COALESCE(notes, "") = "" THEN "" ELSE "\n\n" END, :note),
+                     updated_at = CURRENT_TIMESTAMP
+                 WHERE id = :order_id AND tenant_id = :tenant_id'
+            );
+            $update->execute([
+                'payment_status' => $fullRefund ? 'refunded' : 'partially_refunded',
+                'full_refund' => $fullRefund ? 1 : 0,
+                'note' => $note,
+                'order_id' => $orderId,
+                'tenant_id' => $tenant->tenantId,
+            ]);
+
+            $this->pdo->commit();
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    private function tableExists(string $table): bool
+    {
+        $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = :table');
+        $stmt->execute(['table' => $table]);
+
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    private function orderAlreadyHadInventoryRestored(int $orderId): bool
+    {
+        if (!$this->tableExists('sales_order_refunds')) {
+            return false;
+        }
+        $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM sales_order_refunds WHERE order_id = :order_id AND inventory_restored_at IS NOT NULL');
+        $stmt->execute(['order_id' => $orderId]);
+
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    private function restoreCompletedReservationInventory(int $orderId): void
+    {
+        $reservations = $this->pdo->prepare(
+            'SELECT * FROM sales_inventory_reservations
+             WHERE order_id = :order_id AND status = "completed"
+             ORDER BY id
+             FOR UPDATE'
+        );
+        $reservations->execute(['order_id' => $orderId]);
+        $touched = [];
+        foreach ($reservations->fetchAll(PDO::FETCH_ASSOC) as $reservation) {
+            $variantId = (int) ($reservation['variant_id'] ?? 0);
+            if ($variantId <= 0) {
+                continue;
+            }
+            $increment = $this->pdo->prepare(
+                'UPDATE artwork_sale_variants
+                 SET inventory_quantity = inventory_quantity + :quantity,
+                     updated_at = CURRENT_TIMESTAMP
+                 WHERE id = :variant_id
+                   AND tenant_id = :tenant_id
+                   AND artwork_id = :artwork_id'
+            );
+            $increment->execute([
+                'quantity' => max(1, (int) $reservation['quantity']),
+                'variant_id' => $variantId,
+                'tenant_id' => (int) $reservation['tenant_id'],
+                'artwork_id' => (int) $reservation['artwork_id'],
+            ]);
+            $touched[(int) $reservation['tenant_id'] . ':' . (int) $reservation['artwork_id']] = [(int) $reservation['tenant_id'], (int) $reservation['artwork_id']];
+        }
+
+        foreach ($touched as [$tenantId, $artworkId]) {
+            $this->syncLegacyArtworkInventoryFromVariants($tenantId, $artworkId);
+        }
+    }
+
     public function releaseReservationsForOrder(int $orderId, string $paymentStatus = 'checkout_failed'): int
     {
         $this->pdo->beginTransaction();

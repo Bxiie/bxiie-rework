@@ -122,3 +122,13 @@ Paid Stripe sessions are authoritative for order payment status. If Stripe confi
 When Stripe reports a Checkout Session as paid, ArtsFolio marks the order paid, checks out the source cart, consumes any reserved variant inventory that can still be consumed, and then synchronizes the legacy artwork inventory fields from active sale variants. If inventory reservations drift because a buyer returns late or a session is reconciled after expiry, the order should still be recorded as paid and flagged for manual inventory review instead of remaining in checkout_pending.
 
 <!-- End of file. -->
+
+## Stripe refunds and duplicate checkout protection
+
+Tenant admins can open **Admin → Sales**, select an order, review the Stripe Checkout Session, PaymentIntent, items, totals, customer details, and recorded refunds, then create a Stripe refund directly from ArtsFolio. The refund action immediately calls Stripe; ArtsFolio records the Stripe refund id, amount, reason, status, actor, and raw Stripe response in `sales_order_refunds`.
+
+For full refunds, the admin can choose to return completed order inventory to available variant stock. ArtsFolio records that restoration timestamp so the same order cannot be restocked twice from repeated refund records.
+
+Checkout now guards against duplicate charges for the same cart. If a cart already has a paid order, `/cart/checkout` marks the cart checked out, expires the cart cookie, and redirects to the existing success page instead of creating or resuming another Stripe Checkout Session.
+
+# End of file.

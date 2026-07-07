@@ -199,10 +199,20 @@ final class SalesController
             return $this->tenantPageResponse($tenant, 'Checkout unavailable', '<h1>Checkout unavailable</h1><p>Online sales are not enabled for this artist plan.</p><p><a href="/cart">Return to cart</a></p>', 403);
         }
 
-        $resolved = (new CartIdentityService($this->pdo))->resolveCartForRequest($tenant, $request, false);
+        $identity = new CartIdentityService($this->pdo);
+        $resolved = $identity->resolveCartForRequest($tenant, $request, false);
         $cart = is_array($resolved['cart']) ? $resolved['cart'] : null;
         if (!$cart) {
             return new Response('', 303, ['Location' => '/cart']);
+        }
+
+        $paidOrder = $this->sales->paidOrderForCart($tenant, (int) $cart['id']);
+        if ($paidOrder) {
+            $this->sales->markCartCheckedOut((int) $cart['id']);
+            $sessionId = trim((string) ($paidOrder['stripe_checkout_session_id'] ?? ''));
+            $location = $sessionId !== '' ? '/checkout/success?session_id=' . rawurlencode($sessionId) : '/cart?checkout=already_paid';
+
+            return new Response('', 303, ['Location' => $location, 'Set-Cookie' => $identity->expireCartCookie()]);
         }
 
         $this->saveCartContact((int) $cart['id']);
