@@ -977,6 +977,11 @@
     {
         "scope": "tenant",
         "method": "POST",
+        "path": "/admin/sales/refund"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/admin/sales/update"
     },
     {
