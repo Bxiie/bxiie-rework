@@ -553,6 +553,15 @@ final class SalesRepository
 
             $update = $this->pdo->prepare('UPDATE sales_orders SET payment_status = "paid", stripe_payment_intent_id = :payment_intent, customer_email = :email, customer_name = :name, shipping_address_json = :shipping, updated_at = CURRENT_TIMESTAMP WHERE id = :id');
             $update->execute(['id' => (int) $order['id'], 'payment_intent' => $paymentIntentId, 'email' => $customerEmail, 'name' => $customerName, 'shipping' => $shippingAddress ? json_encode($shippingAddress, JSON_THROW_ON_ERROR) : null]);
+
+            // A paid order consumes the source cart. Leaving the cart active
+            // makes bought items reappear after Stripe returns the buyer.
+            $cartId = (int) ($order['cart_id'] ?? 0);
+            if ($cartId > 0) {
+                $cart = $this->pdo->prepare('UPDATE sales_carts SET status = "checked_out", updated_at = CURRENT_TIMESTAMP WHERE id = :cart_id AND status = "active"');
+                $cart->execute(['cart_id' => $cartId]);
+            }
+
             $this->pdo->commit();
         } catch (\Throwable $e) {
             $this->pdo->rollBack();

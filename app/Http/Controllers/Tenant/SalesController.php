@@ -107,7 +107,7 @@ final class SalesController
         foreach ($items as $item) {
             $line = (int) $item['quantity'] * (int) $item['unit_price_cents'];
             $itemId = (int) $item['id'];
-            $shipping = (int) ($shippingAllocations[$itemId] ?? $this->lineShippingCents($item));
+            $shipping = (int) ($shippingAllocations[(int) $item['id']] ?? $this->lineShippingCents($item));
             $subtotal += $line;
             $details = $this->cartItemDetails($item);
             $removeLabel = 'Remove ' . (string) $item['title_snapshot'] . ' from cart';
@@ -117,7 +117,7 @@ final class SalesController
         $customerEmail = $cart ? $this->e((string) (($cart['contact_email'] ?? '') ?: ($cart['customer_email'] ?? ''))) : '';
         $customerName = $cart ? $this->e((string) ($cart['customer_name'] ?? '')) : '';
         $fees = $this->saleEconomics($tenant, $items);
-        $total = $subtotal + $shippingTotal;
+        $total = (int) $fees['total_cents'];
         $feeDisclosure = $items === [] ? '' : '<div class="sales-fee-disclosure"><p><strong>Seller payout disclosure:</strong> the artist receives sale amount minus ArtsFolio commission and credit card charges.</p><p>On this cart: platform commission ' . $this->money($fees['commission_cents']) . ', estimated credit card charges ' . $this->money($fees['credit_card_fee_cents']) . ', estimated artist proceeds ' . $this->money($fees['seller_net_cents']) . '.</p></div>';
         $customerFields = '<fieldset class="tenant-form"><legend>Cart contact</legend><label>Name<input name="customer_name" value="' . $customerName . '" autocomplete="name"></label><label>Email<input type="email" name="customer_email" value="' . $customerEmail . '" autocomplete="email" required></label><p class="muted">Email lets ArtsFolio send checkout reminders for abandoned carts.</p></fieldset>';
         $checkout = $items === [] ? '<p>Your cart is empty.</p>' : $customerFields . '<div class="cart-totals"><p><strong>Subtotal:</strong> ' . $this->money($subtotal) . '</p><p><strong>Shipping:</strong> ' . $this->money($shippingTotal) . '</p><p><strong>Total:</strong> ' . $this->money($total) . '</p></div>' . $feeDisclosure . '<button type="submit" formaction="/cart/update" formnovalidate>Update cart</button> <button type="submit" formaction="/cart/checkout">Checkout with Stripe</button>';
@@ -246,9 +246,114 @@ final class SalesController
     public function success(Request $request, TenantContext $tenant): Response
     {
         $sessionId = trim((string) ($_GET['session_id'] ?? ''));
+        if ($sessionId !== '') {
+            $this->refreshPaidStripeCheckout($tenant, $sessionId);
+        }
+
         $order = $sessionId !== '' ? $this->sales->orderBySession($tenant, $sessionId) : null;
-        $number = $order ? $this->e((string) $order['order_number']) : 'your order';
-        return $this->tenantPageResponse($tenant, 'Order received', '<h1>Order received</h1><p>Thank you. We received ' . $number . ' and the artist will follow up as it moves through the sales workflow.</p><p><a href="/portfolio">Return to portfolio</a></p>');
+        if (!$order) {
+            return $this->tenantPageResponse($tenant, 'Order received', '<h1>Order received</h1><p>Stripe returned you to ArtsFolio, but this checkout session could not be matched to an order. Please contact the artist if Stripe shows a completed payment.</p><p><a href="/portfolio">Return to portfolio</a></p>', 404);
+        }
+
+        $items = $this->sales->orderItems((int) $order['id']);
+        $number = $this->e((string) $order['order_number']);
+        $paid = (string) ($order['payment_status'] ?? '') === 'paid';
+        $statusMessage = $paid
+            ? '<p>Your payment has been confirmed. The artist will follow up as the order moves through the sales workflow.</p>'
+            : '<p>Stripe returned you to ArtsFolio, but payment confirmation is still pending. The order is recorded and will update automatically when Stripe confirmation arrives.</p>';
+        $headers = $paid ? ['Set-Cookie' => (new CartIdentityService($this->pdo))->expireCartCookie()] : [];
+
+        return $this->tenantPageResponse(
+            $tenant,
+            'Order received',
+            '<h1>Order received</h1><p>Thank you. We received ' . $number . '.</p>' . $statusMessage . $this->orderSummaryHtml($order, $items) . '<p><a href="/portfolio">Return to portfolio</a></p>',
+            200,
+            $headers,
+        );
+    }
+
+    /**
+     * Finalize a paid Stripe Checkout Session when the buyer returns before the webhook arrives.
+     */
+    private function refreshPaidStripeCheckout(TenantContext $tenant, string $sessionId): void
+    {
+        $order = $this->sales->orderBySession($tenant, $sessionId);
+        if (!$order || (string) ($order['payment_status'] ?? '') === 'paid') {
+            return;
+        }
+
+        try {
+            $session = (new StripeCheckoutService())->retrieveSession((string) $this->platformSettings->get('stripe_secret_key', ''), $sessionId);
+        } catch (Throwable $e) {
+            error_log('[ArtsFolio checkout/success] Stripe session refresh failed for ' . $sessionId . ': ' . $e->getMessage());
+            return;
+        }
+
+        if (!$this->stripeSessionMatchesOrder($session, $order)) {
+            error_log('[ArtsFolio checkout/success] Stripe session did not match local order for ' . $sessionId);
+            return;
+        }
+        if ((string) ($session['payment_status'] ?? '') !== 'paid') {
+            return;
+        }
+
+        $customer = is_array($session['customer_details'] ?? null) ? $session['customer_details'] : [];
+        $shippingAddress = $this->stripeSessionShippingAddress($session);
+        $this->sales->markPaidByStripeSession(
+            $sessionId,
+            isset($session['payment_intent']) ? (string) $session['payment_intent'] : null,
+            isset($customer['email']) ? (string) $customer['email'] : null,
+            isset($customer['name']) ? (string) $customer['name'] : null,
+            $shippingAddress,
+        );
+    }
+
+    /** @param array<string,mixed> $session @param array<string,mixed> $order */
+    private function stripeSessionMatchesOrder(array $session, array $order): bool
+    {
+        $metadata = is_array($session['metadata'] ?? null) ? $session['metadata'] : [];
+        $metadataOrderId = (int) ($metadata['artsfolio_order_id'] ?? 0);
+        if ($metadataOrderId > 0 && $metadataOrderId === (int) $order['id']) {
+            return true;
+        }
+
+        return (string) ($session['client_reference_id'] ?? '') === (string) ($order['order_number'] ?? '');
+    }
+
+    /** @param array<string,mixed> $session @return array<string,mixed>|null */
+    private function stripeSessionShippingAddress(array $session): ?array
+    {
+        $shipping = $session['shipping_details'] ?? null;
+        if (is_array($shipping) && is_array($shipping['address'] ?? null)) {
+            return $shipping['address'];
+        }
+
+        $customer = $session['customer_details'] ?? null;
+        if (is_array($customer) && is_array($customer['address'] ?? null)) {
+            return $customer['address'];
+        }
+
+        return null;
+    }
+
+    /** @param array<string,mixed> $order @param list<array<string,mixed>> $items */
+    private function orderSummaryHtml(array $order, array $items): string
+    {
+        $rows = '';
+        foreach ($items as $item) {
+            $title = $this->e((string) ($item['title_snapshot'] ?? 'Artwork'));
+            $details = $this->cartItemDetails($item);
+            $quantity = max(1, (int) ($item['quantity'] ?? 1));
+            $unit = (int) ($item['unit_price_cents'] ?? 0);
+            $line = (int) ($item['line_total_cents'] ?? ($quantity * $unit));
+            $shipping = (int) ($item['shipping_total_cents'] ?? 0);
+            $rows .= '<tr><td>' . $title . $details . '</td><td>' . $quantity . '</td><td>' . $this->money($unit) . '</td><td>' . $this->money($shipping) . '</td><td>' . $this->money($line + $shipping) . '</td></tr>';
+        }
+        if ($rows === '') {
+            $rows = '<tr><td colspan="5">No line items were found for this order.</td></tr>';
+        }
+
+        return '<section class="order-summary"><h2>Order details</h2><table class="admin-table cart-review-table"><thead><tr><th>Artwork</th><th>Qty</th><th>Unit</th><th>Shipping</th><th>Total</th></tr></thead><tbody>' . $rows . '</tbody></table><div class="cart-totals"><p><strong>Subtotal:</strong> ' . $this->money((int) ($order['subtotal_cents'] ?? 0)) . '</p><p><strong>Shipping:</strong> ' . $this->money((int) ($order['shipping_cents'] ?? 0)) . '</p><p><strong>Total:</strong> ' . $this->money((int) ($order['total_cents'] ?? 0)) . '</p></div></section>';
     }
 
 

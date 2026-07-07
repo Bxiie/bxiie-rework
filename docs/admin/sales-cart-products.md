@@ -90,3 +90,10 @@ The cart review page uses the same shipping-profile grouping as checkout and ord
 The buyer cart, sales economics calculation, order creation, and Stripe Checkout session all use grouped shipping-profile allocation. Flat profile products that share a profile, such as stickers, should produce one profile-level shipping amount in the cart and the same shipping amount in Stripe. The order row's `shipping_cents` is the final source of truth passed to Stripe Checkout.
 
 <!-- End of file. -->
+
+
+## Stripe success return and cart completion
+
+After Stripe Checkout returns to `/checkout/success`, ArtsFolio verifies the Checkout Session directly with Stripe. If Stripe reports `payment_status=paid` and the session metadata matches the local order, ArtsFolio marks the order paid, consumes inventory reservations, marks the source cart `checked_out`, expires the current cart cookie, and shows the buyer an itemized order summary. Stripe webhooks remain supported and idempotent; the success return path is a safety net for delayed or misconfigured webhook delivery.
+
+<!-- End of file. -->

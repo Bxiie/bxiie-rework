@@ -2529,3 +2529,4 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 - Stripe Checkout now receives the grouped shipping total from `sales_orders.shipping_cents`, matching the cart display and order creation path.
 - Artwork grid edit links URL-encode the nested `return_to` parameter so selected filters and page number survive edit/save/back navigation.
 
+- 2026-07-07: Stripe sales checkout success return now verifies paid sessions directly with Stripe, finalizes matching orders when webhooks lag, marks paid source carts checked_out, expires the buyer cart cookie, and shows itemized order details on the success page.

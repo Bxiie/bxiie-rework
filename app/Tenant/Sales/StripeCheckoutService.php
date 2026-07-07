@@ -119,6 +119,54 @@ final class StripeCheckoutService
         return $decoded;
     }
 
+    /**
+     * Retrieves a Checkout Session directly from Stripe for success-return reconciliation.
+     *
+     * Webhooks remain the preferred source of truth, but the browser success
+     * return can safely verify a paid Session with Stripe and finalize the
+     * matching local order when webhook delivery is delayed or misconfigured.
+     *
+     * @return array<string,mixed>
+     */
+    public function retrieveSession(string $secretKey, string $sessionId): array
+    {
+        if (trim($secretKey) === '') {
+            throw new RuntimeException('Stripe secret key is not configured in platform admin settings.');
+        }
+        if (trim($sessionId) === '') {
+            throw new RuntimeException('Stripe checkout session ID is required.');
+        }
+
+        $url = 'https://api.stripe.com/v1/checkout/sessions/' . rawurlencode($sessionId);
+        $headers = [
+            'Authorization: Bearer ' . $secretKey,
+        ];
+
+        if (function_exists('curl_init')) {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [CURLOPT_HTTPGET => true, CURLOPT_HTTPHEADER => $headers, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 20]);
+            $raw = curl_exec($ch);
+            $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if ($raw === false) {
+                throw new RuntimeException('Stripe session lookup failed: ' . curl_error($ch));
+            }
+            curl_close($ch);
+        } else {
+            $context = stream_context_create(['http' => ['method' => 'GET', 'header' => implode("\r\n", $headers), 'timeout' => 20, 'ignore_errors' => true]]);
+            $raw = file_get_contents($url, false, $context);
+            $statusLine = $http_response_header[0] ?? '';
+            preg_match('/\s(\d{3})\s/', $statusLine, $match);
+            $status = isset($match[1]) ? (int) $match[1] : 0;
+        }
+
+        $decoded = json_decode((string) $raw, true);
+        if ($status < 200 || $status >= 300 || !is_array($decoded)) {
+            throw new RuntimeException('Stripe session lookup failed: ' . substr((string) $raw, 0, 500));
+        }
+
+        return $decoded;
+    }
+
     /** @param array<string,mixed> $item */
     private function variantDescription(array $item): string
     {
