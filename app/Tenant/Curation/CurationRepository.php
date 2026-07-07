@@ -51,7 +51,7 @@ final class CurationRepository
     public function queue(int $tenantId,int $editorUserId,bool $allCentral): array
     {
         $extra=$allCentral ? "cl.is_central=1" : "(cl.is_central=1 OR cl.editor_user_id=:editor_id)";
-        $stmt=$this->pdo->prepare("SELECT ci.id,ci.note,ci.status,ci.created_at,a.id artwork_id,a.title,a.slug,a.status artwork_status,u.display_name submitter_name,u.email submitter_email,cl.name list_name FROM curation_items ci JOIN curation_lists cl ON cl.id=ci.list_id JOIN artworks a ON a.id=ci.artwork_id JOIN users u ON u.id=ci.submitted_by_user_id WHERE ci.tenant_id=:tenant_id AND ci.status IN ('queued','reviewing') AND {$extra} ORDER BY ci.created_at");
+        $stmt=$this->pdo->prepare("SELECT ci.id,ci.note,ci.status,ci.created_at,a.id artwork_id,a.title,a.slug,a.status artwork_status,m.uuid primary_media_uuid,u.display_name submitter_name,u.email submitter_email,cl.name list_name FROM curation_items ci JOIN curation_lists cl ON cl.id=ci.list_id JOIN artworks a ON a.id=ci.artwork_id LEFT JOIN media_assets m ON m.id=a.primary_media_id JOIN users u ON u.id=ci.submitted_by_user_id WHERE ci.tenant_id=:tenant_id AND ci.status IN ('queued','reviewing') AND {$extra} ORDER BY ci.created_at");
         $params=['tenant_id'=>$tenantId]; if(!$allCentral)$params['editor_id']=$editorUserId;
         $stmt->execute($params); return $stmt->fetchAll();
     }

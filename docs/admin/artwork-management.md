@@ -38,3 +38,9 @@ The Portfolio Sections page presents its three primary workflows as prominent ac
 - **Add portfolio section** creates a new public artwork grouping.
 - **Order artwork in sections and home page** controls the display order inside each destination.
 - **Artwork placement matrix** assigns many artworks to sections in one view.
+
+## 2026-07-07 artwork grid return state
+
+Artwork grid edit links and the edit-page back link preserve the current grid URL, including filters, page number, sorting, and page size. Saving continues to return to the filtered grid and anchors to the edited artwork.
+
+<!-- End of file. -->

@@ -81,3 +81,9 @@ Default profiles seeded by the platform:
 - **Large artwork / quoted shipping**: checkout disabled until the artist quotes shipping.
 
 On the artwork definition page, select the profile that best fits the item. Use **Small flat items** for sticker-style products where many different items can travel in the same envelope.
+
+## 2026-07-07 cart display fix
+
+The cart review page uses the same shipping-profile grouping as checkout and order creation. Multiple products assigned to the same **Small flat items** profile show one shared shipping total instead of a separate flat charge per row.
+
+<!-- End of file. -->

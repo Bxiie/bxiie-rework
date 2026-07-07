@@ -2515,3 +2515,11 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 - Tenant and platform analytics now filter obvious automated traffic before inserting rows into `analytics_events`: blank user agents, command-line clients, crawler/fetcher/scanner user agents, admin/login/logout routes, assets, media, robots.txt, sitemap.xml, and favicon requests.
 - Added static regression coverage at `scripts/test/analytics_bot_filter_static.php` and wired it into preflight.
 - Documented analytics filtering for admins and developers in `docs/admin/analytics-filtering.md` and `docs/dev/analytics-filtering.md`.
+
+## 2026-07-07 cart, curation, and artwork grid return fixes
+
+- Cart display now uses `SalesRepository::cartShippingAllocations()` so buyer-visible cart totals match checkout/order grouped shipping-profile totals. Small flat sticker-style products sharing a profile show one shared shipping charge.
+- Curation queue rows now fetch primary media UUIDs, show thumbnails when available, and include an edit link back to the artwork editor with `/admin/curation` as the return target.
+- Artwork grid row edit buttons and edit-page back links preserve `return_to`, including selected filters, sort, page size, and page number.
+
+<!-- End of file. -->

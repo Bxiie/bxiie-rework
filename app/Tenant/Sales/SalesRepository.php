@@ -805,6 +805,21 @@ final class SalesRepository
 
 
     /**
+     * Return buyer-visible shipping allocations for a full cart.
+     *
+     * Cart and checkout screens must use the same grouped profile logic, or
+     * two small products using the same flat profile will display as two
+     * separate shipping charges even though checkout groups them correctly.
+     *
+     * @param list<array<string,mixed>> $items
+     * @return array<int,int> map of cart item id to allocated shipping cents
+     */
+    public function cartShippingAllocations(array $items): array
+    {
+        return $this->shippingAllocations($items);
+    }
+
+    /**
      * Allocate shipping by shipping profile across the whole cart/order.
      *
      * Items sharing a profile receive one profile-level base charge, optional

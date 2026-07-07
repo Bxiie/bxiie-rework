@@ -5,3 +5,9 @@ Tenant owners invite people as **Tenant admin**, **Editor**, or **User**. Users 
 Unpublished artwork and empty advance-planning portfolio sections remain hidden from visitors. Any logged-in tenant member can see them with an **Unpublished** marker.
 
 <!-- End of file. -->
+
+## 2026-07-07 curation review thumbnails
+
+The tenant admin curation queue shows each submitted artwork's primary-image thumbnail when available and includes an **Edit artwork** button that opens the normal artwork editor with a return target back to `/admin/curation`.
+
+<!-- End of file. -->

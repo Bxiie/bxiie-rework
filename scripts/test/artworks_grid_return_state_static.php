@@ -18,6 +18,8 @@ $required = [
     'artworkGridCurrentReturnParam',
     'rawurlencode($current)',
     '$this->artworkGridReturnUrl()',
+    'href="/admin/artworks/edit?id={$row[\'id\']}&return_to={$returnToValue}#artwork-{$artworkId}"',
+    '<p><a href="{$returnToValue}">&larr; Artworks</a></p>',
 ];
 
 $forbidden = [

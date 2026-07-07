@@ -102,14 +102,14 @@ final class SalesController
         $csrf = $this->e($this->csrf->getOrCreate());
         $rows = '';
         $subtotal = 0;
-        $shippingTotal = 0;
+        $shippingAllocations = $this->sales->cartShippingAllocations($items);
+        $shippingTotal = array_sum($shippingAllocations);
         foreach ($items as $item) {
             $line = (int) $item['quantity'] * (int) $item['unit_price_cents'];
-            $shipping = $this->lineShippingCents($item);
-            $subtotal += $line;
-            $shippingTotal += $shipping;
-            $details = $this->cartItemDetails($item);
             $itemId = (int) $item['id'];
+            $shipping = (int) ($shippingAllocations[$itemId] ?? $this->lineShippingCents($item));
+            $subtotal += $line;
+            $details = $this->cartItemDetails($item);
             $removeLabel = 'Remove ' . (string) $item['title_snapshot'] . ' from cart';
             $rows .= '<tr><td>' . $this->e((string) $item['title_snapshot']) . $details . '</td><td><input type="number" name="quantity[' . $itemId . ']" min="0" value="' . (int) $item['quantity'] . '"></td><td>' . $this->money((int) $item['unit_price_cents']) . '</td><td>' . $this->money($shipping) . '</td><td>' . $this->money($line + $shipping) . '</td><td><button type="submit" class="cart-line-remove" name="remove_item_id" value="' . $itemId . '" formaction="/cart/remove" formmethod="post" formnovalidate aria-label="' . $this->e($removeLabel) . '" title="Remove item">🗑</button></td></tr>';
         }
