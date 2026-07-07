@@ -2545,4 +2545,10 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 - Completed, expired, canceled, orphaned, or Stripe-lookup-failed pending checkout attempts are released locally so buyers can start a fresh checkout instead of landing on Stripe's terminal “You're all done here” page.
 - Paid success-return sessions continue to finalize the order, mark the cart checked out, and expire the cart cookie.
 
+## 2026-07-07 checkout success 500 guard
+
+- `/checkout/success` now catches and logs Stripe/local reconciliation failures with marker `[ArtsFolio checkout/success]` instead of showing the generic browser-facing 500 page.
+- The route continues to show the local order, payment status, and totals where possible, and warns buyers not to pay again when Stripe may already have completed payment.
+- Diagnostic log path: `storage/logs/checkout_success.log`, with `/tmp/artsfolio_checkout_success.log` as fallback if the storage log directory cannot be created.
+
 <!-- End of file. -->

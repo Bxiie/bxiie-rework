@@ -108,4 +108,8 @@ When a buyer clicks Checkout and returns before the webhook/success reconciliati
 
 When a cart has a `checkout_pending` order, ArtsFolio now asks Stripe for the live Checkout Session state before reusing the saved hosted checkout URL. Paid sessions are finalized locally, genuinely open sessions are resumed using Stripe's freshly returned URL, and expired, complete-but-unpaid, canceled, orphaned, or lookup-failed attempts are released so the buyer can start a fresh checkout. This prevents buyers from being sent back to Stripe's terminal “You're all done here” page while the local cart remains stuck in `checkout_pending`.
 
+## Checkout success 500 guard
+
+The `/checkout/success` route is buyer-safe around Stripe reconciliation. If the Stripe API lookup, local order lookup, order item lookup, cart-cookie expiration, or order-summary rendering fails, the route logs the exception with marker `[ArtsFolio checkout/success]` in `storage/logs/checkout_success.log` and still shows the best local order state available. Buyers are told not to pay again when Stripe may already have completed the payment.
+
 <!-- End of file. -->

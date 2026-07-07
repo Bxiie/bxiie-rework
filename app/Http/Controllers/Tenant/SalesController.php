@@ -257,27 +257,75 @@ final class SalesController
     public function success(Request $request, TenantContext $tenant): Response
     {
         $sessionId = trim((string) ($_GET['session_id'] ?? ''));
+        $refreshWarning = null;
+
         if ($sessionId !== '') {
-            $this->refreshPaidStripeCheckout($tenant, $sessionId);
+            try {
+                $this->refreshPaidStripeCheckout($tenant, $sessionId);
+            } catch (Throwable $e) {
+                // The success page must remain buyer-safe even if Stripe
+                // reconciliation fails. Log the details and show the local
+                // order state rather than falling through to the generic 500.
+                $refreshWarning = $e->getMessage();
+                $this->logCheckoutSuccessFailure($tenant, $sessionId, $e);
+            }
         }
 
-        $order = $sessionId !== '' ? $this->sales->orderBySession($tenant, $sessionId) : null;
+        try {
+            $order = $sessionId !== '' ? $this->sales->orderBySession($tenant, $sessionId) : null;
+        } catch (Throwable $e) {
+            $this->logCheckoutSuccessFailure($tenant, $sessionId, $e);
+            return $this->tenantPageResponse(
+                $tenant,
+                'Order status unavailable',
+                '<h1>Order status unavailable</h1><p>Stripe returned you to ArtsFolio, but the local order lookup failed. The issue has been logged with marker <code>[ArtsFolio checkout/success]</code>. If Stripe shows a completed payment, do not pay again until the order is reconciled.</p><p><a href="/portfolio">Return to portfolio</a></p>',
+                200,
+            );
+        }
+
         if (!$order) {
             return $this->tenantPageResponse($tenant, 'Order received', '<h1>Order received</h1><p>Stripe returned you to ArtsFolio, but this checkout session could not be matched to an order. Please contact the artist if Stripe shows a completed payment.</p><p><a href="/portfolio">Return to portfolio</a></p>', 404);
         }
 
-        $items = $this->sales->orderItems((int) $order['id']);
+        $items = [];
+        try {
+            $items = $this->sales->orderItems((int) $order['id']);
+        } catch (Throwable $e) {
+            // Missing line-item details should not convert a successful checkout
+            // return into a 500. The order totals still give the buyer and admin
+            // enough context while the log captures the repair target.
+            $this->logCheckoutSuccessFailure($tenant, $sessionId, $e);
+        }
+
         $number = $this->e((string) $order['order_number']);
         $paid = (string) ($order['payment_status'] ?? '') === 'paid';
         $statusMessage = $paid
             ? '<p>Your payment has been confirmed. The artist will follow up as the order moves through the sales workflow.</p>'
             : '<p>Stripe returned you to ArtsFolio, but payment confirmation is still pending. The order is recorded and will update automatically when Stripe confirmation arrives.</p>';
-        $headers = $paid ? ['Set-Cookie' => (new CartIdentityService($this->pdo))->expireCartCookie()] : [];
+        if ($refreshWarning !== null && !$paid) {
+            $statusMessage .= '<p class="muted">Stripe reconciliation could not be completed during this page load. The issue has been logged, and the order can still be reconciled from Stripe.</p>';
+        }
+
+        $headers = [];
+        if ($paid) {
+            try {
+                $headers['Set-Cookie'] = (new CartIdentityService($this->pdo))->expireCartCookie();
+            } catch (Throwable $e) {
+                $this->logCheckoutSuccessFailure($tenant, $sessionId, $e);
+            }
+        }
+
+        try {
+            $summary = $this->orderSummaryHtml($order, $items);
+        } catch (Throwable $e) {
+            $this->logCheckoutSuccessFailure($tenant, $sessionId, $e);
+            $summary = '<section class="order-summary"><h2>Order details</h2><p>Order detail rendering failed, but the order was found locally. Check <code>storage/logs/checkout_success.log</code>.</p><div class="cart-totals"><p><strong>Subtotal:</strong> ' . $this->money((int) ($order['subtotal_cents'] ?? 0)) . '</p><p><strong>Shipping:</strong> ' . $this->money((int) ($order['shipping_cents'] ?? 0)) . '</p><p><strong>Total:</strong> ' . $this->money((int) ($order['total_cents'] ?? 0)) . '</p></div></section>';
+        }
 
         return $this->tenantPageResponse(
             $tenant,
             'Order received',
-            '<h1>Order received</h1><p>Thank you. We received ' . $number . '.</p>' . $statusMessage . $this->orderSummaryHtml($order, $items) . '<p><a href="/portfolio">Return to portfolio</a></p>',
+            '<h1>Order received</h1><p>Thank you. We received ' . $number . '.</p>' . $statusMessage . $summary . '<p><a href="/portfolio">Return to portfolio</a></p>',
             200,
             $headers,
         );
@@ -420,6 +468,32 @@ final class SalesController
      *
      * @param array<string,string> $headers
      */
+    private function logCheckoutSuccessFailure(TenantContext $tenant, string $sessionId, Throwable $e): void
+    {
+        $line = sprintf(
+            "[%s] [ArtsFolio checkout/success] tenant_id=%d host=%s session_id=%s error=%s in %s:%d\n%s\n",
+            gmdate('c'),
+            $tenant->tenantId,
+            (string) ($_SERVER['HTTP_HOST'] ?? ''),
+            $sessionId,
+            $e->getMessage(),
+            $e->getFile(),
+            $e->getLine(),
+            $e->getTraceAsString(),
+        );
+
+        error_log(rtrim($line));
+
+        $root = dirname(__DIR__, 4);
+        $logDir = $root . '/storage/logs';
+        if (is_dir($logDir) || @mkdir($logDir, 0775, true)) {
+            @file_put_contents($logDir . '/checkout_success.log', $line, FILE_APPEND | LOCK_EX);
+            return;
+        }
+
+        @file_put_contents('/tmp/artsfolio_checkout_success.log', $line, FILE_APPEND | LOCK_EX);
+    }
+
     private function tenantPageResponse(TenantContext $tenant, string $title, string $body, int $status = 200, array $headers = []): Response
     {
         $baseHeaders = [
