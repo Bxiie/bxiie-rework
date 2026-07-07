@@ -2530,3 +2530,11 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 - Artwork grid edit links URL-encode the nested `return_to` parameter so selected filters and page number survive edit/save/back navigation.
 
 - 2026-07-07: Stripe sales checkout success return now verifies paid sessions directly with Stripe, finalizes matching orders when webhooks lag, marks paid source carts checked_out, expires the buyer cart cookie, and shows itemized order details on the success page.
+
+## 2026-07-07 - Stripe pending checkout resume
+
+- Checkout now resumes an existing `checkout_pending` Stripe Checkout Session for the active cart instead of failing with "Checkout is already in progress for this cart."
+- Paid pending Sessions are reconciled on retry, stale or orphaned local checkout attempts are released, and open Sessions redirect back to Stripe.
+- No schema change.
+
+# End of file.

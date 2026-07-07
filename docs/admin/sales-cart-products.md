@@ -97,3 +97,9 @@ The buyer cart, sales economics calculation, order creation, and Stripe Checkout
 After Stripe Checkout returns to `/checkout/success`, ArtsFolio verifies the Checkout Session directly with Stripe. If Stripe reports `payment_status=paid` and the session metadata matches the local order, ArtsFolio marks the order paid, consumes inventory reservations, marks the source cart `checked_out`, expires the current cart cookie, and shows the buyer an itemized order summary. Stripe webhooks remain supported and idempotent; the success return path is a safety net for delayed or misconfigured webhook delivery.
 
 <!-- End of file. -->
+
+## Stripe pending checkout recovery
+
+When a buyer clicks Checkout and returns before the webhook/success reconciliation finishes, ArtsFolio may already have a `checkout_pending` order for the active cart. The checkout action now checks for that pending order before creating a replacement order. If Stripe still reports the hosted Checkout Session as open, the buyer is redirected back to that same Stripe URL. If Stripe reports the Session as paid, ArtsFolio finalizes the order, consumes inventory reservations, marks the cart checked out, and expires the cart cookie. If the Session is expired, complete but unpaid, or missing because an earlier request failed midway, ArtsFolio releases the local reservations and starts a fresh checkout attempt.
+
+# End of file.

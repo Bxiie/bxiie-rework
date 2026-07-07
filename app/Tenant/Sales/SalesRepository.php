@@ -433,6 +433,39 @@ final class SalesRepository
         $stmt->execute(['id' => $cartId]);
     }
 
+    /**
+     * Return the newest active Stripe checkout attempt for a cart.
+     *
+     * A cart can have only one useful checkout_pending order at a time. This
+     * lookup lets the browser checkout action resume the hosted Stripe Session
+     * instead of throwing a dead-end "already in progress" error.
+     *
+     * @return array<string,mixed>|null
+     */
+    public function pendingCheckoutForCart(TenantContext $tenant, int $cartId): ?array
+    {
+        if ($cartId <= 0) {
+            return null;
+        }
+
+        $stmt = $this->pdo->prepare(
+            'SELECT *
+               FROM sales_orders
+              WHERE tenant_id = :tenant_id
+                AND cart_id = :cart_id
+                AND payment_status = "checkout_pending"
+              ORDER BY id DESC
+              LIMIT 1'
+        );
+        $stmt->execute([
+            'tenant_id' => $tenant->tenantId,
+            'cart_id' => $cartId,
+        ]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
+
     public function order(TenantContext $tenant, int $orderId): ?array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM sales_orders WHERE tenant_id = :tenant_id AND id = :id LIMIT 1');

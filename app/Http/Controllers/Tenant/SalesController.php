@@ -213,13 +213,24 @@ final class SalesController
         $host = $request->host();
         $successUrl = $scheme . '://' . $host . '/checkout/success?session_id={CHECKOUT_SESSION_ID}';
         $order = null;
+        $stripeSecretKey = (string) $this->platformSettings->get('stripe_secret_key', '');
+        $checkoutService = new StripeCheckoutService();
+
+        // A previous browser round trip can leave the cart with a pending order
+        // while Stripe still has an open hosted Checkout Session. Resume that
+        // Session, reconcile it if already paid, or release stale reservations
+        // before creating another local order for the same cart.
+        $pendingResponse = $this->resumePendingCheckout($tenant, (int) $cart['id'], $stripeSecretKey);
+        if ($pendingResponse !== null) {
+            return $pendingResponse;
+        }
 
         try {
             $order = $this->sales->createOrderFromCart($tenant, $cart, $items, $commissionCents, (int) $fees['credit_card_fee_cents'], (int) $fees['seller_net_cents']);
             $cancelUrl = $scheme . '://' . $host . '/cart?checkout=cancelled&order_id=' . (int) $order['id'];
             $customerEmail = strtolower(trim((string) ($_POST['customer_email'] ?? (($cart['contact_email'] ?? '') ?: ($cart['customer_email'] ?? '')))));
-            $session = (new StripeCheckoutService())->createSession(
-                (string) $this->platformSettings->get('stripe_secret_key', ''),
+            $session = $checkoutService->createSession(
+                $stripeSecretKey,
                 $order,
                 $items,
                 $successUrl,
@@ -463,6 +474,75 @@ final class SalesController
 </body>
 </html>
 HTML;
+    }
+
+    /**
+     * Resume or clear the current cart's existing checkout_pending order.
+     *
+     * This avoids trapping buyers on "Checkout is already in progress for this
+     * cart." If Stripe still has an open hosted Checkout Session, the buyer is
+     * sent back to it. If Stripe says the Session was paid, the order is
+     * reconciled and the cart is consumed. If the Session is expired, complete
+     * but unpaid, or never attached because an earlier request failed midway,
+     * the local reservations are released so a fresh checkout can be created.
+     */
+    private function resumePendingCheckout(TenantContext $tenant, int $cartId, string $stripeSecretKey): ?Response
+    {
+        $pending = $this->sales->pendingCheckoutForCart($tenant, $cartId);
+        if (!$pending) {
+            return null;
+        }
+
+        $orderId = (int) ($pending['id'] ?? 0);
+        $sessionId = trim((string) ($pending['stripe_checkout_session_id'] ?? ''));
+        $checkoutUrl = trim((string) ($pending['stripe_checkout_url'] ?? ''));
+        if ($orderId <= 0) {
+            return null;
+        }
+
+        if ($sessionId === '') {
+            $this->sales->releaseReservationsForOrder($orderId, 'checkout_abandoned');
+            return null;
+        }
+
+        try {
+            $session = (new StripeCheckoutService())->retrieveSession($stripeSecretKey, $sessionId);
+            $paymentStatus = (string) ($session['payment_status'] ?? '');
+            $sessionStatus = (string) ($session['status'] ?? '');
+
+            if (in_array($paymentStatus, ['paid', 'no_payment_required'], true)) {
+                $this->refreshPaidStripeCheckout($tenant, $sessionId);
+                return new Response('', 303, [
+                    'Location' => '/checkout/success?session_id=' . rawurlencode($sessionId),
+                    'Set-Cookie' => (new CartIdentityService($this->pdo))->expireCartCookie(),
+                ]);
+            }
+
+            if ($sessionStatus === 'open' && $checkoutUrl !== '') {
+                return new Response('', 303, ['Location' => $checkoutUrl]);
+            }
+
+            if (in_array($sessionStatus, ['complete', 'expired'], true)) {
+                $this->sales->releaseReservationsForOrder($orderId, $sessionStatus === 'expired' ? 'checkout_expired' : 'checkout_unpaid');
+                return null;
+            }
+        } catch (Throwable) {
+            // If Stripe lookup is temporarily unavailable but we have a hosted
+            // Checkout URL, prefer resuming the buyer over making the cart
+            // unusable. Without a URL, clear the orphaned local attempt.
+            if ($checkoutUrl !== '') {
+                return new Response('', 303, ['Location' => $checkoutUrl]);
+            }
+            $this->sales->releaseReservationsForOrder($orderId, 'checkout_abandoned');
+            return null;
+        }
+
+        if ($checkoutUrl !== '') {
+            return new Response('', 303, ['Location' => $checkoutUrl]);
+        }
+
+        $this->sales->releaseReservationsForOrder($orderId, 'checkout_abandoned');
+        return null;
     }
 
     /**
