@@ -2510,3 +2510,8 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 - The legacy private artwork `notes` field remains `name="notes"` and is labelled Internal notes.
 - Artwork edit portfolio section options are alphabetized by name.
 - Artwork grid thumbnails link to the edit page while preserving `return_to`, and saving returns to the originating grid with an edited-artwork anchor.
+
+## 2026-07-06 Analytics bot/noise filtering
+- Tenant and platform analytics now filter obvious automated traffic before inserting rows into `analytics_events`: blank user agents, command-line clients, crawler/fetcher/scanner user agents, admin/login/logout routes, assets, media, robots.txt, sitemap.xml, and favicon requests.
+- Added static regression coverage at `scripts/test/analytics_bot_filter_static.php` and wired it into preflight.
+- Documented analytics filtering for admins and developers in `docs/admin/analytics-filtering.md` and `docs/dev/analytics-filtering.md`.
