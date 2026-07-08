@@ -373,10 +373,171 @@ HTML;
     {
         $name = trim((string) ($order['customer_name'] ?? ''));
         $email = trim((string) ($order['customer_email'] ?? ''));
-        $shipping = trim((string) ($order['shipping_address_json'] ?? ''));
-        $shippingHtml = $shipping !== '' ? '<br><strong>Shipping:</strong><br><code>' . $this->e($shipping) . '</code>' : '';
+        $shippingHtml = $this->shippingAddressHtml($order);
 
-        return '<div><h3>Customer</h3><p><strong>Name:</strong> ' . $this->e($name !== '' ? $name : 'not recorded') . '<br><strong>Email:</strong> ' . $this->e($email !== '' ? $email : 'not recorded') . $shippingHtml . '</p></div>';
+        return '<div><h3>Customer</h3><p><strong>Name:</strong> '
+            . $this->e($name !== '' ? $name : 'not recorded')
+            . '<br><strong>Email:</strong> '
+            . $this->e($email !== '' ? $email : 'not recorded')
+            . $shippingHtml
+            . '</p></div>';
+    }
+
+
+    /**
+     * Renders the buyer shipping address without exposing raw Stripe JSON.
+     *
+     * Stripe Checkout stores shipping details as a nested JSON object. Older
+     * order screens printed that blob directly, which was hard to read and made
+     * the dedicated review page disagree with the legacy inline panel. This
+     * method keeps all order pages on one normalized display path.
+     */
+    private function shippingAddressHtml(array $order): string
+    {
+        $address = $this->normalizedShippingAddress($order);
+        if ($address === []) {
+            return '<br><strong>Shipping address:</strong><br><span class="admin-muted">No shipping address recorded.</span>';
+        }
+
+        if (isset($address['raw'])) {
+            return '<br><strong>Shipping address:</strong><br><div class="admin-shipping-address">'
+                . nl2br($this->e((string) $address['raw']), false)
+                . '</div>';
+        }
+
+        $lines = [];
+        foreach (['name', 'line1', 'line2'] as $key) {
+            $value = trim((string) ($address[$key] ?? ''));
+            if ($value !== '') {
+                $lines[] = $value;
+            }
+        }
+
+        $city = trim((string) ($address['city'] ?? ''));
+        $state = trim((string) ($address['state'] ?? ''));
+        $postal = trim((string) ($address['postal_code'] ?? ''));
+        $localityParts = array_values(array_filter([$city, $state, $postal], static fn (string $part): bool => $part !== ''));
+        if ($localityParts !== []) {
+            $lines[] = implode(' ', $localityParts);
+        }
+
+        $country = trim((string) ($address['country'] ?? ''));
+        if ($country !== '') {
+            $lines[] = $country;
+        }
+
+        $phone = trim((string) ($address['phone'] ?? ''));
+        if ($phone !== '') {
+            $lines[] = 'Phone: ' . $phone;
+        }
+
+        if ($lines === []) {
+            return '<br><strong>Shipping address:</strong><br><span class="admin-muted">No shipping address recorded.</span>';
+        }
+
+        $htmlLines = array_map(fn (string $line): string => $this->e($line), $lines);
+
+        return '<br><strong>Shipping address:</strong><br><address class="admin-shipping-address">'
+            . implode('<br>', $htmlLines)
+            . '</address>';
+    }
+
+    /**
+     * Normalizes known Stripe and legacy shipping payload shapes.
+     *
+     * @return array<string,string>
+     */
+    private function normalizedShippingAddress(array $order): array
+    {
+        $raw = null;
+        foreach (['shipping_address_json', 'shipping_details_json', 'shipping_address', 'shipping_details'] as $field) {
+            if (!array_key_exists($field, $order)) {
+                continue;
+            }
+            if (is_array($order[$field])) {
+                $raw = $order[$field];
+                break;
+            }
+            $candidate = trim((string) ($order[$field] ?? ''));
+            if ($candidate !== '') {
+                $raw = $candidate;
+                break;
+            }
+        }
+
+        if ($raw === null || $raw === '') {
+            return [];
+        }
+
+        if (is_array($raw)) {
+            $data = $raw;
+        } else {
+            $data = json_decode((string) $raw, true);
+            if (is_string($data)) {
+                $data = json_decode($data, true);
+            }
+            if (!is_array($data)) {
+                return ['raw' => (string) $raw];
+            }
+        }
+
+        if (isset($data['shipping']) && is_array($data['shipping'])) {
+            $data = $data['shipping'];
+        }
+        if (isset($data['shipping_details']) && is_array($data['shipping_details'])) {
+            $data = $data['shipping_details'];
+        }
+
+        $address = isset($data['address']) && is_array($data['address']) ? $data['address'] : $data;
+        $normalized = [];
+
+        foreach (['name', 'phone', 'email'] as $key) {
+            $value = $this->valueFromFirstKey($data, [$key]);
+            if ($value === '' && $address !== $data) {
+                $value = $this->valueFromFirstKey($address, [$key]);
+            }
+            if ($value !== '') {
+                $normalized[$key] = $value;
+            }
+        }
+
+        $fieldMap = [
+            'line1' => ['line1', 'address_line1', 'street', 'street1'],
+            'line2' => ['line2', 'address_line2', 'street2'],
+            'city' => ['city', 'locality'],
+            'state' => ['state', 'region', 'province'],
+            'postal_code' => ['postal_code', 'postal', 'zip', 'zip_code'],
+            'country' => ['country', 'country_code'],
+        ];
+        foreach ($fieldMap as $target => $keys) {
+            $value = $this->valueFromFirstKey($address, $keys);
+            if ($value !== '') {
+                $normalized[$target] = $value;
+            }
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Returns the first non-empty scalar value from a candidate key list.
+     *
+     * @param array<string,mixed> $data
+     * @param list<string> $keys
+     */
+    private function valueFromFirstKey(array $data, array $keys): string
+    {
+        foreach ($keys as $key) {
+            if (!array_key_exists($key, $data) || is_array($data[$key])) {
+                continue;
+            }
+            $value = trim((string) $data[$key]);
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return '';
     }
 
     private function itemVariantSummary(array $item): string

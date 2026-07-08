@@ -10,3 +10,9 @@ Shipping notifications are queued through `EmailOutboxRepository` with `template
 Refunds use `StripeCheckoutService::refundPaymentIntent()` and persist local audit rows in `sales_order_refunds`. The tenant route `/admin/sales/refund` must stay in `scripts/test/fixtures/route_inventory.json` whenever route inventory is regenerated.
 
 # End of file.
+
+## Shipping address rendering
+
+`App\Http\Controllers\Tenant\Admin\SalesController` normalizes `sales_orders.shipping_address_json` through `shippingAddressHtml()` and `normalizedShippingAddress()` before rendering the order review page. Do not print the raw Stripe JSON blob in admin UI paths.
+
+<!-- End of sales shipping display update. -->

@@ -141,3 +141,9 @@ Open an order to move it through **Ordered**, **Acknowledged**, **Packed**, **Sh
 Use **Create Stripe refund** from the order review panel for ordinary paid-order refunds. The action immediately creates the Stripe refund, records the Stripe refund id in `sales_order_refunds`, and can return inventory to stock for full refunds.
 
 # End of file.
+
+## Sales order shipping display
+
+Tenant-admin order review pages render buyer shipping addresses from the stored Stripe shipping JSON as readable address lines. If no shipping address was collected or saved, the order review shows an explicit `No shipping address recorded.` message instead of hiding the section.
+
+<!-- End of sales shipping display update. -->

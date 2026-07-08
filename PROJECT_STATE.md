@@ -2582,3 +2582,10 @@ Paid Stripe Checkout Session reconciliation now treats Stripe payment confirmati
 - Stripe refunds are initiated from tenant order review via `POST /admin/sales/refund` and recorded in `sales_order_refunds`.
 
 # End of file.
+
+<!-- sales-shipping-display-20260708 -->
+## Sales order shipping address display
+
+Tenant-admin sales order review pages render `sales_orders.shipping_address_json` as a human-readable shipping address through `SalesController::shippingAddressHtml()`. Raw Stripe JSON should not be displayed in sales order UI paths.
+
+<!-- End of sales shipping display state update. -->
