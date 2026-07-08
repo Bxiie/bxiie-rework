@@ -14,7 +14,7 @@ $failures = [];
 
 $requiredMarkers = [
     "'new-admin-tour' => ['/help/new-admin-tour', 'New admin setup tour']",
-    "'tenant-admin-functions' => ['/help/tenant-admin-functions', 'Tenant function index']",
+    "'tenant-admin-functions' => ['/help/tenant-admin-functions', 'Your admin tools']",
     "'training-videos' => ['/help/training-videos', 'Training videos']",
     '$slug = $this->normalizeArticleSlug((string) $slug);',
     "'new-admin-setup-tour' => 'new-admin-tour'",
@@ -29,7 +29,7 @@ foreach ($requiredMarkers as $marker) {
 
 $badMarkers = [
     "['New admin setup tour', '/help/new-admin-tour']",
-    "['Tenant function index', '/help/tenant-admin-functions']",
+    "['Your admin tools', '/help/tenant-admin-functions']",
     "['Training videos', '/help/training-videos']",
 ];
 
