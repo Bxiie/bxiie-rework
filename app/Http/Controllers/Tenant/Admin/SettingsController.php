@@ -269,8 +269,14 @@ HTML;
             <legend>Sales notes</legend>
             <label>Public sales explanation<textarea name="sales_notes" rows="5">{$salesNotes}</textarea></label>
             <p class="admin-help">Shown on artwork detail pages beside price/contact actions. Use this for shipping, pickup, installation, and timing details.</p>
-            <label>Stripe connected account ID<input name="stripe_connected_account_id" value="{$stripeConnectedAccountId}" placeholder="acct_..."></label>
-            <p class="admin-help">Required for direct Stripe Connect payouts. Leave blank only during platform testing.</p>
+            <div class="admin-callout stripe-connect-panel">
+                <h4>How you get paid</h4>
+                <p>ArtsFolio uses Stripe Connect for artwork sales. When Stripe is connected, buyers pay through Stripe Checkout, Stripe routes the payment to your connected Stripe account, and Stripe pays out to the bank account you have set up in Stripe.</p>
+                <p><a class="button" href="https://dashboard.stripe.com/settings/payouts" target="_blank" rel="noopener">Open Stripe payout settings</a></p>
+                <p class="admin-help">Before taking live sales, make sure Stripe has your identity, tax, bank, and payout information. Stripe controls payout timing and may hold payouts while account review is incomplete.</p>
+            </div>
+            <label>Stripe connected account ID <span class="admin-muted">manual setup</span><input name="stripe_connected_account_id" value="{$stripeConnectedAccountId}" placeholder="acct_..."></label>
+            <p class="admin-help">Required for direct Stripe Connect payouts. Paste your <code>acct_...</code> ID here after your Stripe account is connected. Leave blank only during platform testing.</p>
         </fieldset>
         <fieldset>
             <legend>New artwork defaults</legend>

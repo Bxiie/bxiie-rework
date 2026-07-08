@@ -65,7 +65,66 @@ HTML,
             'sales' => [
                 'title' => 'Sales, checkout, orders, analytics, and refunds',
                 'body' => <<<'HTML'
-<p>Sales connects artwork availability to carts, Stripe checkout, order review, fulfillment workflow, analytics, and refunds. Check every sale setting before taking real payments.</p><h2>Before enabling sales on artwork</h2><ul class="link-list"><li><strong>Publication.</strong> The artwork must be publicly visible.</li><li><strong>Sale status.</strong> It must indicate the work is available for purchase.</li><li><strong>Price.</strong> The price should be final and consistent.</li><li><strong>Inventory.</strong> Quantity should match reality. For one-off work, inventory and one-off settings should prevent duplicate sales.</li><li><strong>Shipping.</strong> Confirm item/profile assumptions before real payments.</li><li><strong>Stripe setup.</strong> Checkout depends on valid Stripe configuration.</li></ul><h2>How a visitor sale works</h2><ol class="flow-list compact"><li><strong>Visitor views sale-ready artwork.</strong><span>Purchase controls appear only when record and tenant setup allow it.</span></li><li><strong>Visitor adds item to cart.</strong><span>The tenant-scoped cart tracks selected artwork and quantities.</span></li><li><strong>Visitor checks out through Stripe.</strong><span>ArtsFolio records Stripe checkout session/payment identifiers with the order.</span></li><li><strong>Order appears in Sales.</strong><span>Use <strong>Sales</strong> in the sidebar to review payment status, workflow status, totals, customer email, and Stripe IDs.</span></li><li><strong>Admin fulfills the order.</strong><span>Use workflow status for handling, shipping, pickup, completion, cancellation, or other states.</span></li></ol><h2>Review orders</h2><ul class="link-list"><li><strong>Order number.</strong> Use for internal reference and customer communication.</li><li><strong>Payment status.</strong> Confirms whether payment succeeded, failed, was refunded, or requires review.</li><li><strong>Workflow status.</strong> Tracks fulfillment separately from payment.</li><li><strong>Totals.</strong> Compare subtotal, shipping, and total against cart and Stripe if anything differs.</li><li><strong>Stripe identifiers.</strong> Use checkout session ID and payment intent ID to cross-check Stripe.</li><li><strong>Customer email.</strong> Use for fulfillment communication and protect personal data.</li></ul><h2>Refund guardrails</h2><ul class="link-list"><li><strong>Verify before refunding.</strong> Confirm the order in ArtsFolio and Stripe.</li><li><strong>Do not retry blindly.</strong> A failed refund message is a stop sign. Check the exact failure, Stripe state, and logs first.</li><li><strong>Keep payment and workflow separate.</strong> Record operational status clearly.</li><li><strong>Use Stripe as source of truth.</strong> ArtsFolio should reflect Stripe money movement.</li></ul><h2>Sales Analytics</h2><ul class="link-list"><li><strong>Revenue and order volume.</strong> Review totals to see whether sales pages are working.</li><li><strong>Conversion clues.</strong> Compare traffic, cart activity, and completed orders when available.</li><li><strong>Operational review.</strong> Spot stale inventory, confusing pricing, or checkout drop-off.</li></ul><h2>Sales QA checklist</h2><ul class="link-list"><li>Sale-ready artwork has sale status, price, inventory, one-off behavior, and shipping checked.</li><li>Checkout is tested before launch.</li><li>Admins know where Stripe IDs appear.</li><li>Refunds are verified in Stripe before and after action.</li><li>Failed refund messages stop further refund attempts until investigated.</li></ul>
+<p>Sales connects your artwork availability to carts, Stripe checkout, order review, fulfillment, analytics, and refunds. Check every sale setting before taking real payments.</p>
+<h2>Before enabling sales on your artwork</h2>
+<ul class="link-list">
+<li><strong>Publication.</strong> The artwork must be publicly visible.</li>
+<li><strong>Sale status.</strong> Mark the work as available for purchase only when you are ready to sell it.</li>
+<li><strong>Price.</strong> Confirm the price is final and matches any studio, gallery, or edition records you keep elsewhere.</li>
+<li><strong>Inventory.</strong> Quantity should match reality. For unique work, inventory and one-off settings should prevent duplicate sales.</li>
+<li><strong>Shipping.</strong> Confirm your shipping, pickup, installation, and timing notes before real payments.</li>
+<li><strong>Stripe setup.</strong> Stripe must be connected before you rely on automatic payouts.</li>
+</ul>
+<h2>How you get paid</h2>
+<p>ArtsFolio uses Stripe Connect for artwork payments. The buyer pays through Stripe Checkout. Stripe then routes the sale to your connected Stripe account and pays out to the bank account you have set up in Stripe.</p>
+<ol class="flow-list compact">
+<li><strong>Connect Stripe in Settings.</strong><span>Click <strong>Settings</strong> in the sidebar, then find the sales and payout area. Follow the Stripe guidance there and save your connected account details.</span></li>
+<li><strong>Make sure your Stripe account is ready for payouts.</strong><span>In Stripe, finish identity, business, tax, bank, and payout setup. Stripe may pause payouts until those checks are complete.</span></li>
+<li><strong>Sell through checkout.</strong><span>When a buyer completes checkout, Stripe records the payment and ArtsFolio records the order.</span></li>
+<li><strong>Review the order in Sales.</strong><span>Click <strong>Sales</strong> in the sidebar to confirm the payment status, customer email, total, and Stripe identifiers.</span></li>
+<li><strong>Watch Stripe for payout timing.</strong><span>Stripe sends money to your bank according to your Stripe payout schedule. New or recently changed Stripe accounts may have longer first-payout timing.</span></li>
+</ol>
+<p class="admin-help">Important: if Stripe is not connected, do not assume the money will automatically reach you. Check Settings before taking live sales, and use Stripe as the source of truth for actual money movement.</p>
+<h2>How a visitor sale works</h2>
+<ol class="flow-list compact">
+<li><strong>Visitor views sale-ready artwork.</strong><span>Purchase controls appear only when the artwork and your sales setup allow it.</span></li>
+<li><strong>Visitor adds the item to the cart.</strong><span>Your site keeps the cart tied to the current site and selected quantities.</span></li>
+<li><strong>Visitor checks out through Stripe.</strong><span>ArtsFolio sends the cart to Stripe Checkout and records Stripe checkout/session identifiers with the order.</span></li>
+<li><strong>Order appears in Sales.</strong><span>Click <strong>Sales</strong> in the sidebar to review payment status, workflow status, totals, customer email, and Stripe IDs.</span></li>
+<li><strong>You fulfill the order.</strong><span>Use workflow status for handling, shipping, pickup, completion, cancellation, or other real-world steps.</span></li>
+</ol>
+<h2>Review orders</h2>
+<ul class="link-list">
+<li><strong>Order number.</strong> Use this for internal reference and customer communication.</li>
+<li><strong>Payment status.</strong> Confirms whether payment succeeded, failed, was refunded, or needs review.</li>
+<li><strong>Workflow status.</strong> Tracks fulfillment separately from payment.</li>
+<li><strong>Totals.</strong> Compare subtotal, shipping, and total against the cart and Stripe if anything differs.</li>
+<li><strong>Stripe identifiers.</strong> Use the checkout session ID and payment intent ID to cross-check Stripe.</li>
+<li><strong>Customer email.</strong> Use it for fulfillment communication and protect personal data.</li>
+</ul>
+<h2>Refund guardrails</h2>
+<ul class="link-list">
+<li><strong>Verify before refunding.</strong> Confirm the order in ArtsFolio and Stripe.</li>
+<li><strong>Do not retry blindly.</strong> A failed refund message is a stop sign. Check the exact failure, Stripe state, and logs first.</li>
+<li><strong>Keep payment and workflow separate.</strong> Record operational status clearly.</li>
+<li><strong>Use Stripe as source of truth.</strong> ArtsFolio should reflect Stripe money movement.</li>
+</ul>
+<h2>Sales Analytics</h2>
+<ul class="link-list">
+<li><strong>Revenue and order volume.</strong> Review totals to see whether sales pages are working.</li>
+<li><strong>Conversion clues.</strong> Compare traffic, cart activity, and completed orders when available.</li>
+<li><strong>Operational review.</strong> Spot stale inventory, confusing pricing, or checkout drop-off.</li>
+</ul>
+<h2>Sales QA checklist</h2>
+<ul class="link-list">
+<li>Stripe is connected before you take live sales.</li>
+<li>Your Stripe account has complete identity, bank, tax, and payout information.</li>
+<li>Sale-ready artwork has sale status, price, inventory, one-off behavior, and shipping checked.</li>
+<li>Checkout is tested before launch.</li>
+<li>You know where Stripe IDs appear in Sales.</li>
+<li>Refunds are verified in Stripe before and after action.</li>
+<li>Failed refund messages stop further refund attempts until investigated.</li>
+</ul>
 HTML,
             ],
             'messages-email' => [
