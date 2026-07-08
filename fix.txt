@@ -557,3 +557,4 @@ Too few arguments to function App\Http\Controllers\Platform\HelpController::inde
 # later
 
 ## End of file.
+2026-07-08: Fixed direct GET /admin/sales/refund to redirect safely instead of invoking refund handling or 500ing.
