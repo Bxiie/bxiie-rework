@@ -86,7 +86,7 @@ run_command "PHP syntax checks" bash -c '
   set -euo pipefail
   while IFS= read -r -d "" file; do
     php -l "$file" >/dev/null
-  done < <(find app public scripts -name "*.php" -print0 | sort -z)
+  done < <(find app public scripts -name "*.php" ! -name "._*" -print0 | sort -z)
 '
 
 section '== Shell syntax checks =='
@@ -95,7 +95,7 @@ run_command "Shell syntax checks" bash -c '
   set -euo pipefail
   while IFS= read -r -d "" file; do
     bash -n "$file"
-  done < <(find scripts -name "*.sh" -print0 | sort -z)
+  done < <(find scripts -name "*.sh" ! -name "._*" -print0 | sort -z)
 '
 
 section '== Migration discipline and schema health =='
@@ -226,6 +226,8 @@ run_php scripts/test/platform_help_copyright_static.php
 run_php scripts/test/smtp_reserved_recipient_guard_static.php
 
 run_php scripts/test/platform_operations_run_detail_static.php
+
+run_php scripts/test/platform_job_detail_route_params_static.php
 
 section '== Auth cookie header regression =='
 
@@ -396,3 +398,5 @@ run_php scripts/test/analytics_bot_filter_static.php
 
 # Sales checkout shipping-contact regression.
 php scripts/test/sales_shipping_contact_collection_static.php
+
+# End of file.

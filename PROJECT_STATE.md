@@ -1,3 +1,11 @@
+## 2026-07-08 Go-live hardening pass
+- Repaired `/platform/admin/jobs/{id}` so it accepts the router parameter array and reads `$params['id']`, avoiding a runtime TypeError on platform job detail pages.
+- Added `scripts/test/platform_job_detail_route_params_static.php` and included it in `scripts/test/preflight.sh`.
+- Updated preflight syntax scans to ignore macOS AppleDouble `._*` files so Finder metadata does not become part of application validation.
+- Added `ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env` to `scripts/systemd/artsfolio-billing-scheduler.service` so billing scheduler runs with the same production environment convention as the other services.
+- Added go-live, commerce, Stripe Connect, billing/payout, and artist launch readiness documentation.
+- Moved deploy debris such as AppleDouble files, `.patch-backups`, root `.docx` exports, and known `.bak` controller copies into this run's `.update-backups` folder instead of deleting them outright.
+
 ## 2026-07-03 Artwork internal notes v5 stabilization
 - Repaired artwork admin edit labels so the legacy/private `notes` field is labelled `Internal notes` and the public HTML field remains `Public notes HTML`.
 - Rewrote the artwork edit notes/grid/stock static test to inspect the real `name="notes"` and `name="notes_html"` field windows without PHP string interpolation.

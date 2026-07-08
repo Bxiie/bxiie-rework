@@ -8,6 +8,7 @@ Type=oneshot
 User=artsfolio
 Group=www-data
 WorkingDirectory=/var/www/artsfolio
+Environment=ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env
 ExecStart=/usr/bin/php /var/www/artsfolio/scripts/billing/apply_pending_subscription_changes.php --limit=250
 Nice=5
 

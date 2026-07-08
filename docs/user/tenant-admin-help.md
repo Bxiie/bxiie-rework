@@ -35,4 +35,15 @@ To get paid for artwork sales, click **Settings** in the sidebar and find **How 
 
 Online checkout is paused until Stripe confirms that your account can accept charges and receive payouts. This protects you from buyers paying into the platform account without the sale routing to your connected account.
 
+## Launch readiness checklist
+
+Before sharing your site widely, confirm these pieces are ready:
+
+1. Your logo and site images display without stretching.
+2. Your About and Contact pages are filled in.
+3. Your public artworks are published and grouped into the right sections.
+4. Your sale-ready artworks have prices, inventory, shipping, and Stripe payout setup complete.
+5. You have sent yourself a test contact message and joined your own email list.
+6. Your custom domain opens over HTTPS if you are using one.
+
 <!-- End of file. -->
