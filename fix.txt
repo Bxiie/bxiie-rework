@@ -566,3 +566,4 @@ sales-notes-word-wrap-20260708
 - Added wrapping CSS so long notes preserve line breaks without overflowing the order review panel.
 - Added scripts/test/sales_notes_word_wrap_static.php.
 # End of file.
+2026-07-08: Reviewed platform/tenant logo rendering paths and added aspect-ratio CSS guards plus cache-busting for platform, tenant admin, auth, and error pages.

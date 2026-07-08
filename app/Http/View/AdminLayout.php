@@ -64,9 +64,9 @@ final class AdminLayout
     <title>{$safeTitle} | ArtsFolio Platform Admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/assets/site.css">
-    <link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools">
+    <link rel="stylesheet" href="/assets/platform.css?v=20260708-logo-aspect">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-page-grid-v25&logo=20260623">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260708-logo-aspect">
     <script defer src="/assets/admin-color-fields.js?v=20260620-palette-contrast"></script>
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css?v=20260623-email-outbox-containment">
     <script defer src="/assets/admin-typography-fields.js?v=20260620-typography-live"></script>

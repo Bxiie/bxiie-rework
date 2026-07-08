@@ -159,3 +159,11 @@ The cart collects the buyer shipping address and phone number before redirecting
 
 Sales order review notes preserve line breaks and wrap long words or pasted text within the admin panel. This prevents long notes from forcing horizontal scrolling or breaking the order review layout.
 <!-- End of file. -->
+
+
+## Admin logo rendering note
+
+Tenant admin pages share header CSS with the broader ArtsFolio shell. Logo images
+are guarded with intrinsic aspect-ratio rules so admin navigation, order pages,
+and sales tools do not distort the ArtsFolio mark.
+<!-- End of file. -->

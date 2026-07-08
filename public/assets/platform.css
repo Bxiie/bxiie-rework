@@ -831,4 +831,47 @@ body article.pricing-card.featured h3 {
     font-size: .9rem;
 }
 
+/* ArtsFolio logo aspect-ratio guard.
+   Platform marketing, help, pricing, directory, and admin headers reuse the
+   same illustrated logo at several sizes. Keep dimensions intrinsic so the
+   browser scales the image instead of squeezing the cats into a banner goblin. */
+.logo-brand img,
+.compact-logo img,
+.platform-logo img,
+.platform-brand.logo-brand img,
+.platform-admin-logo img,
+.platform-help-logo img,
+.platform-header .logo-brand img,
+.platform-help-header .logo-brand img,
+.platform-admin-header .platform-admin-logo img {
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: min(285px, 56vw) !important;
+    max-height: 82px !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    aspect-ratio: auto !important;
+    flex: 0 0 auto !important;
+}
+
+.platform-hero .logo-brand img,
+.platform-home .logo-brand img {
+    max-width: min(420px, 74vw) !important;
+    max-height: 150px !important;
+}
+
+@media (max-width: 720px) {
+    .logo-brand img,
+    .compact-logo img,
+    .platform-logo img,
+    .platform-brand.logo-brand img,
+    .platform-admin-logo img,
+    .platform-help-logo img {
+        max-width: min(230px, 70vw) !important;
+        max-height: 68px !important;
+    }
+}
+/* End ArtsFolio logo aspect-ratio guard. */
+
 /* End of file. */

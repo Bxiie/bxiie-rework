@@ -342,9 +342,9 @@ HTML;
     <title>{$title}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="ArtsFolio pricing for artist portfolio and sales platform plans.">
-    <link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools">
+    <link rel="stylesheet" href="/assets/platform.css?v=20260708-logo-aspect">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-page-grid-v25">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260708-logo-aspect">
 </head>
 <body>
 <header class="platform-header"><a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>{$canonicalNav}</header>

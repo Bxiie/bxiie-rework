@@ -648,7 +648,7 @@ HTML;
     <title>{$this->escape($title)}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="ArtsFolio is an artist portfolio and sales platform for working artists.">
-    <link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools">
+    <link rel="stylesheet" href="/assets/platform.css?v=20260708-logo-aspect">
     <link rel="stylesheet" href="/assets/platform-custom.css">
     {$turnstileScript}
 </head>

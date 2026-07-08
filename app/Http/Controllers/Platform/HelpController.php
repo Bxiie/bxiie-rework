@@ -229,9 +229,9 @@ HTML;
     <meta charset="utf-8">
     <title>{$safeTitle} | ArtsFolio Help</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/assets/platform.css?v=20260623-logo-list-tools">
+    <link rel="stylesheet" href="/assets/platform.css?v=20260708-logo-aspect">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260630-content-page-grid-v25">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260708-logo-aspect">
 </head>
 <body class="tenant-admin-page platform-help-page">
 <header class="platform-header platform-help-header">

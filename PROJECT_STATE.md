@@ -2604,3 +2604,6 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - 2026-07-08: Tenant sales refunds are POST-only, direct GET refund loads redirect to the order UI, and Stripe refund creation uses a stable idempotency key per tenant/order/payment-intent/amount/reason to prevent duplicate refunds after browser retries or local persistence errors.
 
 # End of file.
+
+- Logo rendering: platform, auth, error, tenant admin, and shared public headers preserve logo aspect ratio using auto dimensions, max constraints, and object-fit containment.
+<!-- End of file. -->

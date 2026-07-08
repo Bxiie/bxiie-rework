@@ -1897,3 +1897,21 @@ body article.pricing-card.featured h3 {
 
 /* End of tenant curation control toggle styles. */
 
+/* ArtsFolio logo aspect-ratio guard for shared public-site headers. */
+.site-header img[src$="/assets/logo_2.png"],
+.site-header img[src$="/assets/logo.png"],
+.site-header .logo-brand img,
+.site-header .brand img {
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: min(285px, 56vw) !important;
+    max-height: 82px !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    aspect-ratio: auto !important;
+    flex: 0 0 auto !important;
+}
+/* End ArtsFolio logo aspect-ratio guard. */
+
+/* End of file. */

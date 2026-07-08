@@ -208,7 +208,7 @@ final class ErrorPage
     <meta charset="utf-8">
     <title>{$safeTitle} | {$safeBrand}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/assets/error.css">
+    <link rel="stylesheet" href="/assets/error.css?v=20260708-logo-aspect">
 </head>
 <body class="{$safeBodyClass}">
 <main class="error-page">

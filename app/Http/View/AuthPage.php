@@ -125,7 +125,7 @@ HTML);
         $safeBrand = self::escape($brandName);
         $safeHome = self::escape($homeUrl);
         return <<<HTML
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>{$safeTitle} | {$safeBrand}</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/auth.css?v=20260623-logo-list-tools"></head>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>{$safeTitle} | {$safeBrand}</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/auth.css?v=20260708-logo-aspect"></head>
 <body><main class="auth-page"><section class="auth-card"><a href="{$safeHome}" class="auth-logo-link"><img src="/assets/logo_2.png" alt="ArtsFolio" class="auth-logo"></a>{$body}</section></main></body></html>
 HTML;
     }

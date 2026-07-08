@@ -361,4 +361,24 @@ form[action*="plans"] input[name*="currency"] {
     word-break: break-word;
 }
 
+/* ArtsFolio logo aspect-ratio guard.
+   This file loads after the platform and tenant CSS on admin pages, so it must
+   repeat the guard and override older fixed-height admin logo rules. */
+.platform-header .logo-brand img,
+.platform-admin-logo img,
+.tenant-admin-page .logo-brand img,
+.tenant-admin-public-header img,
+.compact-logo img {
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: min(285px, 56vw) !important;
+    max-height: 82px !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    aspect-ratio: auto !important;
+    flex: 0 0 auto !important;
+}
+/* End ArtsFolio logo aspect-ratio guard. */
+
 /* End of file. */
