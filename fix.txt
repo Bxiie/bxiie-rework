@@ -1,8 +1,23 @@
 ## Now
 
+- Make sure the tenant welcome email includes a link to the admin page.
+- Rework the help section.  Expand to cover all functionality for the tenant admin.  List all functionality and create in-depth descriptions of how to use all functionality.
+- Create a tour that leads a new admin though setting up a new site.
+- Create a list of all functions and link that to the help site.
+- Create a list of proposed training videos to help admin set up a new site and understand the more complex functionalities.  Create scripts for these videos.  Create a directory for the videos and place that in the help site - links to be added later after video creation.  Export the video scripts as a word document.
+
+
+
+##
+
+- collect shipping address and phone number for orders.
+
+##
+
 - There needs to be a mechanism for sales workflow - ordered, shipped.  There needs to be a way to send the shipping details to the buyer.
 - There is still no way to refund the buyer's payment if need be.
 - Sales analytics and sales pages need to be able to filter out no sales rows.
+- 
 
 ##
 
@@ -557,13 +572,3 @@ Too few arguments to function App\Http\Controllers\Platform\HelpController::inde
 # later
 
 ## End of file.
-2026-07-08: Fixed direct GET /admin/sales/refund to redirect safely instead of invoking refund handling or 500ing.
-2026-07-08: Fixed tenant admin sales refund/update CSRF validation to call CsrfTokenService::validate() instead of nonexistent verify(); added regression test.
-2026-07-08: Repaired sales refund CSRF regression test quoting so embedded $_POST markers are checked as source text, not parsed as PHP.
-
-sales-notes-word-wrap-20260708
-- Added a dedicated sales-order-notes CSS hook to tenant admin order notes.
-- Added wrapping CSS so long notes preserve line breaks without overflowing the order review panel.
-- Added scripts/test/sales_notes_word_wrap_static.php.
-# End of file.
-2026-07-08: Reviewed platform/tenant logo rendering paths and added aspect-ratio CSS guards plus cache-busting for platform, tenant admin, auth, and error pages.

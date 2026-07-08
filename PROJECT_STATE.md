@@ -2287,6 +2287,14 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - `scripts/test/phase8_routing_static.php` remains the guard for intentional route changes; refresh `scripts/test/fixtures/route_inventory.json` whenever routes are deliberately added, removed, or changed.
 
 - 2026-07-02: Added user documentation for the Small flat items shipping profile so buyers understand shared shipping for stickers and other small products.
+
+## Tenant admin help and onboarding, 2026-07-08
+
+- Tenant lifecycle welcome emails include direct links to the tenant admin page, tenant setup tour, platform help, tenant function index, and training video directory.
+- Platform help includes expanded tenant admin documentation, a new-admin setup tour, a tenant function index, and a training video directory placeholder at `/help/training-videos`.
+- Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
+- Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
+
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 
@@ -2294,10 +2302,26 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Shopping cart repair 2026-06-30: migration 0058 no longer uses MariaDB REGEXP for legacy price detection, and the tenant public HomeController keeps the `site-cart-link` cart chrome helper while rendering product add-to-cart forms.
 
 - 2026-07-02: Added user documentation for the Small flat items shipping profile so buyers understand shared shipping for stickers and other small products.
+
+## Tenant admin help and onboarding, 2026-07-08
+
+- Tenant lifecycle welcome emails include direct links to the tenant admin page, tenant setup tour, platform help, tenant function index, and training video directory.
+- Platform help includes expanded tenant admin documentation, a new-admin setup tour, a tenant function index, and a training video directory placeholder at `/help/training-videos`.
+- Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
+- Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
+
 # End of file.
 - Shopping cart repair 2026-06-30: public artwork sales notes are now direct-artist copy only. Artwork configured for platform checkout suppresses the tenant `sales_notes` direct-sales message and renders cart/checkout-specific messaging instead.
 
 - 2026-07-02: Added user documentation for the Small flat items shipping profile so buyers understand shared shipping for stickers and other small products.
+
+## Tenant admin help and onboarding, 2026-07-08
+
+- Tenant lifecycle welcome emails include direct links to the tenant admin page, tenant setup tour, platform help, tenant function index, and training video directory.
+- Platform help includes expanded tenant admin documentation, a new-admin setup tour, a tenant function index, and a training video directory placeholder at `/help/training-videos`.
+- Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
+- Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
+
 # End of file.
 
 ## Shopping cart add-to-cart PDO placeholder repair - 2026-06-30
@@ -2356,6 +2380,14 @@ Tenant public pages now render a Cart navigation link consistently through HomeC
 
 The shipping-profile static coverage now checks durable implementation markers instead of exact prose. `scripts/test/shipping_profiles_static.php` verifies profile-backed cart behavior through `shipping_profile_id` and the seeded `Small flat items` profile, while `scripts/test/shipping_profiles_admin_edit_static.php` verifies that the artwork edit form does not hard-fail during a shipping-profile deploy or migration gap.
 - Tenant admin artwork edit now guards `ArtworkSaleAdminForm::render()` and logs sales/shipping-profile form failures to `storage/logs/admin_artwork_edit.log` with marker `[ArtsFolio admin artwork edit]`, while still rendering the rest of the artwork edit page.
+
+## Tenant admin help and onboarding, 2026-07-08
+
+- Tenant lifecycle welcome emails include direct links to the tenant admin page, tenant setup tour, platform help, tenant function index, and training video directory.
+- Platform help includes expanded tenant admin documentation, a new-admin setup tour, a tenant function index, and a training video directory placeholder at `/help/training-videos`.
+- Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
+- Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
+
 # End of file.
 - Shipping profile admin artwork forms now guard profile loading with table/class checks and write `[ArtsFolio admin artwork edit]` diagnostics to `storage/logs/admin_artwork_edit.log` with a `/tmp/artsfolio_admin_artwork_edit.log` fallback.
 
@@ -2363,17 +2395,49 @@ The shipping-profile static coverage now checks durable implementation markers i
 
 The tenant artwork Sales & checkout section now uses a compact product-type select instead of large radio rows and removes the obsolete hidden legacy inventory controls. Shipping profiles are the primary shipping control. Legacy shipping amount/mode fields remain available only inside an advanced disclosure for older records that still need compatibility values.
 
+
+## Tenant admin help and onboarding, 2026-07-08
+
+- Tenant lifecycle welcome emails include direct links to the tenant admin page, tenant setup tour, platform help, tenant function index, and training video directory.
+- Platform help includes expanded tenant admin documentation, a new-admin setup tour, a tenant function index, and a training video directory placeholder at `/help/training-videos`.
+- Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
+- Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
+
 # End of file.
 
 ## 2026-07-02 - Artwork variant rows collapsed by default
 
 The tenant-admin artwork Sales & checkout form now starts the “Variant rows for sizes, fits, editions, and inventory” disclosure collapsed. The variant editor remains available for sized products, editions, and advanced inventory, but the default artwork edit view is simpler for one-off and simple quantity products.
 
+
+## Tenant admin help and onboarding, 2026-07-08
+
+- Tenant lifecycle welcome emails include direct links to the tenant admin page, tenant setup tour, platform help, tenant function index, and training video directory.
+- Platform help includes expanded tenant admin documentation, a new-admin setup tour, a tenant function index, and a training video directory placeholder at `/help/training-videos`.
+- Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
+- Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
+
 # End of file.
 - Shopping cart/public artwork repair 2026-07-02: artwork detail pages no longer render the Sales panel, inventory mode, or direct-artist sales notes for artwork whose `sale_status` is not `for_sale`; not-for-sale artwork stays informational only.
 
+
+## Tenant admin help and onboarding, 2026-07-08
+
+- Tenant lifecycle welcome emails include direct links to the tenant admin page, tenant setup tour, platform help, tenant function index, and training video directory.
+- Platform help includes expanded tenant admin documentation, a new-admin setup tour, a tenant function index, and a training video directory placeholder at `/help/training-videos`.
+- Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
+- Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
+
 # End of file.
 - Test repair 2026-07-02: `scripts/test/nfs_artwork_hides_sales_panel_static.php` now uses single-quoted literal markers so PHP does not interpolate `$artwork` while checking the not-for-sale artwork sales-panel guard.
+
+
+## Tenant admin help and onboarding, 2026-07-08
+
+- Tenant lifecycle welcome emails include direct links to the tenant admin page, tenant setup tour, platform help, tenant function index, and training video directory.
+- Platform help includes expanded tenant admin documentation, a new-admin setup tour, a tenant function index, and a training video directory placeholder at `/help/training-videos`.
+- Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
+- Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
 
 # End of file.
 - 2026-07-02: Repaired the NFS artwork sales-panel static test so PHP markers containing `$artwork['sale_status']` are checked with nowdoc strings instead of invalid interpolated strings.
@@ -2537,6 +2601,14 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 - Paid pending Sessions are reconciled on retry, stale or orphaned local checkout attempts are released, and open Sessions redirect back to Stripe.
 - No schema change.
 
+
+## Tenant admin help and onboarding, 2026-07-08
+
+- Tenant lifecycle welcome emails include direct links to the tenant admin page, tenant setup tour, platform help, tenant function index, and training video directory.
+- Platform help includes expanded tenant admin documentation, a new-admin setup tour, a tenant function index, and a training video directory placeholder at `/help/training-videos`.
+- Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
+- Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
+
 # End of file.
 
 ## 2026-07-07 Stripe checkout resume recovery
@@ -2556,6 +2628,14 @@ The tenant-admin artwork Sales & checkout form now starts the “Variant rows fo
 ## 2026-07-07 paid Stripe reconciliation inventory hardening
 
 Paid Stripe Checkout Session reconciliation now treats Stripe payment confirmation as authoritative for payment state. When a paid session maps to a local order but inventory reservations are missing, expired, released, completed, or cannot be decremented, the order is still marked `paid`, the source cart is marked `checked_out`, and a manual inventory-review note is appended to `sales_orders.notes`. This prevents paid buyers from being stranded on `checkout_pending` after earlier stale-session recovery released local reservations.
+
+
+## Tenant admin help and onboarding, 2026-07-08
+
+- Tenant lifecycle welcome emails include direct links to the tenant admin page, tenant setup tour, platform help, tenant function index, and training video directory.
+- Platform help includes expanded tenant admin documentation, a new-admin setup tour, a tenant function index, and a training video directory placeholder at `/help/training-videos`.
+- Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
+- Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
 
 # End of file.
 
@@ -2581,6 +2661,14 @@ Paid Stripe Checkout Session reconciliation now treats Stripe payment confirmati
 - Shipping notification audit columns are `sales_orders.shipping_email_sent_at` and `sales_orders.shipping_email_outbox_id`, introduced by `database/migrations/0063_sales_workflow_shipping_email.sql`.
 - Stripe refunds are initiated from tenant order review via `POST /admin/sales/refund` and recorded in `sales_order_refunds`.
 
+
+## Tenant admin help and onboarding, 2026-07-08
+
+- Tenant lifecycle welcome emails include direct links to the tenant admin page, tenant setup tour, platform help, tenant function index, and training video directory.
+- Platform help includes expanded tenant admin documentation, a new-admin setup tour, a tenant function index, and a training video directory placeholder at `/help/training-videos`.
+- Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
+- Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
+
 # End of file.
 
 <!-- sales-shipping-display-20260708 -->
@@ -2602,6 +2690,14 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - 2026-07-08: Sales Checkout now pre-fills Stripe Checkout shipping by creating a Stripe Customer from the ArtsFolio cart/order shipping contact, passing that Customer to Checkout, and attaching PaymentIntent shipping details so buyers do not re-enter shipping data.
 - 2026-07-08: Tenant `GET /admin/sales/refund` is a safe redirect to the sales list or order review page; live Stripe refund creation remains restricted to `POST /admin/sales/refund`.
 - 2026-07-08: Tenant sales refunds are POST-only, direct GET refund loads redirect to the order UI, and Stripe refund creation uses a stable idempotency key per tenant/order/payment-intent/amount/reason to prevent duplicate refunds after browser retries or local persistence errors.
+
+
+## Tenant admin help and onboarding, 2026-07-08
+
+- Tenant lifecycle welcome emails include direct links to the tenant admin page, tenant setup tour, platform help, tenant function index, and training video directory.
+- Platform help includes expanded tenant admin documentation, a new-admin setup tour, a tenant function index, and a training video directory placeholder at `/help/training-videos`.
+- Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
+- Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
 
 # End of file.
 

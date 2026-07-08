@@ -1,16 +1,20 @@
 Subject: Welcome to ArtsFolio
 
-Welcome to ArtsFolio.
+Welcome to ArtsFolio, {{ recipient_name }}.
 
-Your tenant has been created and is ready for setup.
+Your tenant admin page is here:
+{{ admin_url }}
 
-Next steps:
-1. Sign in at your domain/login URL.
-2. Review site settings.
-3. Add portfolio sections.
-4. Upload artwork and metadata.
-5. Test contact and signup forms.
+Start with the guided setup tour:
+{{ tour_url }}
 
-Need help? Reply to this message or contact platform support.
+Help index:
+{{ help_url }}
+
+Tenant function index:
+{{ functions_url }}
+
+Training video directory:
+{{ videos_url }}
 
 # End of file.

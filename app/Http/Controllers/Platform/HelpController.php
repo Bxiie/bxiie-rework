@@ -25,31 +25,81 @@ final class HelpController
         $this->articles = [
             'getting-started' => [
                 'title' => 'Getting started',
-                'body' => '<p>ArtsFolio turns an artist site into a managed portfolio, contact, event, sales-readiness, and discovery platform. Start by signing in, opening the tenant admin, setting branding, and publishing a first artwork.</p><ol class="flow-list compact"><li><strong>Open admin</strong><span>Use the Admin link after login.</span></li><li><strong>Brand the site</strong><span>Set artist name, public labels, colors, images, and CSS.</span></li><li><strong>Add artwork</strong><span>Upload artwork and assign portfolio sections.</span></li><li><strong>Turn on discovery</strong><span>Use Admin → Directory when the artist is ready to appear publicly.</span></li></ol>',
+                'body' => <<<'HTML'
+<p>ArtsFolio turns an artist site into a managed portfolio, contact, events, sales, analytics, and discovery workspace. Start by signing in, opening tenant admin, completing the setup tour, and publishing a small complete site.</p><ol class="flow-list compact"><li><strong>Open admin.</strong><span>Use <code>/admin</code> on the tenant domain.</span></li><li><strong>Run the setup tour.</strong><span>Follow the recommended setup order.</span></li><li><strong>Set branding and content.</strong><span>Confirm identity, colors, About, Contact, and navigation.</span></li><li><strong>Add artwork and sections.</strong><span>Create sections, upload work, and curate the public site.</span></li><li><strong>Test launch paths.</strong><span>Check contact, email signup, cart, stats, and mobile layout.</span></li></ol><p><a class="button" href="/help/new-admin-tour">Open the new-admin setup tour</a> <a class="button" href="/help/tenant-admin-functions">Open the tenant function index</a></p>
+HTML,
+            ],
+            'new-admin-tour' => [
+                'title' => 'New admin setup tour',
+                'body' => <<<'HTML'
+<p>This tour is the recommended path for turning a new tenant into a credible public site.</p><ol class="flow-list compact"><li><strong>Dashboard.</strong><span>Open <code>/admin</code> and review activity, messages, sales, and shortcuts.</span></li><li><strong>Settings.</strong><span>Set site name, metadata, labels, palette, typography, logo, watermark defaults, directory summary, and visibility.</span></li><li><strong>Content.</strong><span>Add About copy, Contact copy, contact instructions, and selected site images.</span></li><li><strong>Portfolio Sections.</strong><span>Create public groupings and sort them into visitor order.</span></li><li><strong>Upload Artwork.</strong><span>Use <code>/admin/artwork/upload</code> and fill image, title, year, medium, dimensions, description, notes, sale status, price, inventory, and sections.</span></li><li><strong>Curation.</strong><span>Choose featured work and public ordering.</span></li><li><strong>Events.</strong><span>Add exhibitions, openings, residencies, talks, fairs, dates, locations, and links.</span></li><li><strong>Engagement.</strong><span>Test contact and email signup, then review Messages and Email Signups.</span></li><li><strong>Sales.</strong><span>Prepare prices, inventory, checkout, orders, analytics, and refund guardrails.</span></li><li><strong>Users, Domains, Billing.</strong><span>Invite helpers, verify DNS, and confirm plan state.</span></li><li><strong>Launch verification.</strong><span>Review Stats, Audit Log, Tenant Routes, public pages, phone layout, contact, cart, and directory listing.</span></li></ol><p><a class="button" href="/help/training-videos">View proposed training videos</a></p>
+HTML,
+            ],
+            'tenant-admin-functions' => [
+                'title' => 'Tenant admin function index',
+                'body' => <<<'HTML'
+<p>This index lists every tenant admin function and links each one to the relevant help topic.</p><ul class="link-list"><li><strong>Dashboard</strong> <code>/admin</code>: setup overview, recent messages, sales status, and operational shortcuts. See <a href="/help/new-admin-tour">new-admin setup tour</a>.</li><li><strong>Upload Artwork</strong> <code>/admin/artwork/upload</code>: direct upload entry point. See <a href="/help/artworks">artwork management</a>.</li><li><strong>Settings</strong> <code>/admin/settings</code>: identity, branding, labels, palette, typography, visibility, and tenant configuration. See <a href="/help/branding">branding</a>.</li><li><strong>Content</strong> <code>/admin/content</code>: About, Contact, site images, and public static content. See <a href="/help/branding">branding</a>.</li><li><strong>Artworks</strong> <code>/admin/artworks</code>: grid, filters, edit workflow, publication, image metadata, sale fields, inventory, and section placement. See <a href="/help/artworks">artwork management</a>.</li><li><strong>Curation</strong> <code>/admin/curation</code>: homepage and portfolio ordering. See <a href="/help/artworks">artwork management</a>.</li><li><strong>Portfolio Sections</strong> <code>/admin/portfolio-sections</code>: create, edit, sort, and publish artwork groups. See <a href="/help/artworks">artwork management</a>.</li><li><strong>Events</strong> <code>/admin/events</code>: exhibitions, fairs, talks, residencies, public dates, locations, and history. See <a href="/help/events">events</a>.</li><li><strong>Messages</strong> <code>/admin/contact-messages</code>: review visitor contact submissions. See <a href="/help/messages-email">messages and email signups</a>.</li><li><strong>Email Signups</strong> <code>/admin/email-signups</code>: review interested visitor email addresses. See <a href="/help/messages-email">messages and email signups</a>.</li><li><strong>Domains</strong> <code>/admin/domains</code>: custom hostname and DNS verification workflow. See <a href="/help/users-domains-billing">users, domains, and billing</a>.</li><li><strong>Billing</strong> <code>/admin/billing</code>: plan, billing status, checkout requirements, and subscription state. See <a href="/help/users-domains-billing">users, domains, and billing</a>.</li><li><strong>Sales</strong> <code>/admin/sales</code>: orders, payment status, workflow status, customer information, Stripe identifiers, and refunds. See <a href="/help/sales">sales and refunds</a>.</li><li><strong>Sales Analytics</strong> <code>/admin/sales/analytics</code>: order totals, conversion clues, and reporting. See <a href="/help/sales">sales and refunds</a>.</li><li><strong>Users</strong> <code>/admin/users</code>: invite, review, and remove tenant admins and helpers. See <a href="/help/users-domains-billing">users, domains, and billing</a>.</li><li><strong>Stats</strong> <code>/admin/stats</code>: tenant traffic and content engagement. See <a href="/help/stats">stats</a>.</li><li><strong>Audit Log</strong> <code>/admin/audit-log</code>: login, security, and admin change records. See <a href="/help/audit">audit log</a>.</li><li><strong>Tenant Routes</strong> <code>/admin/routes</code>: host and route diagnostics. See <a href="/help/audit">audit and diagnostics</a>.</li><li><strong>Getting Started</strong> <code>/admin/getting-started</code>: tenant-local setup checklist. See <a href="/help/new-admin-tour">new-admin setup tour</a>.</li></ul>
+HTML,
             ],
             'branding' => [
-                'title' => 'Branding and CSS',
-                'body' => '<p>Tenant admins manage artist-site colors, copy, page labels, CSS, logos, and navigation from tenant admin. Platform admins manage the public ArtsFolio look and feel separately from tenant branding.</p>',
+                'title' => 'Branding, settings, and content',
+                'body' => <<<'HTML'
+<p>Settings and Content control public identity. Use Settings for site name, metadata, labels, palette, typography, logo, watermark defaults, directory text, custom CSS, and visibility. Use Content for About copy, Contact copy, selected site images, and static page details. Save one group of changes at a time and review the public site on desktop and mobile.</p>
+HTML,
             ],
             'artworks' => [
-                'title' => 'Artwork management',
-                'body' => '<p>Use Artworks to upload images, add title, medium, dimensions, price/status notes, and assign portfolio sections. Published artwork appears on public tenant pages and may be eligible for directory features when the tenant opts in.</p>',
+                'title' => 'Artwork, sections, and curation',
+                'body' => <<<'HTML'
+<p>Use Upload Artwork for new records. Add image, title, year, medium, dimensions, description, publication status, sale status, price, inventory, and section placement.</p><p>Use the Artworks grid to search, filter, sort, edit, publish, unpublish, price, and place work. Use Portfolio Sections for public groups and Curation for featured work and ordering.</p>
+HTML,
             ],
             'events' => [
                 'title' => 'Events and exhibitions',
-                'body' => '<p>Use Events for exhibitions, fairs, talks, residencies, open studios, and other date-based history. Filtering and ordering keep long CV-style histories readable.</p>',
+                'body' => <<<'HTML'
+<p>Events record exhibitions, fairs, talks, residencies, open studios, installations, deadlines, and dated activity. Add title, dates, location, optional URL, description, and public status.</p>
+HTML,
+            ],
+            'sales' => [
+                'title' => 'Sales, checkout, orders, analytics, and refunds',
+                'body' => <<<'HTML'
+<p>Sales connects artwork availability to carts, Stripe checkout, order review, fulfillment workflow, analytics, and refunds.</p><p>Before selling, confirm publication, price, inventory, one-off behavior, shipping, and Stripe setup. In Sales, review order number, payment status, workflow status, totals, customer email, Stripe identifiers, and refund eligibility. Failed refund messages are stop signs. Verify Stripe before any further refund attempt.</p><p>Sales Analytics summarizes order volume, revenue, and conversion clues.</p>
+HTML,
+            ],
+            'messages-email' => [
+                'title' => 'Messages and email signups',
+                'body' => <<<'HTML'
+<p>Messages shows contact form submissions. Email Signups shows visitors who requested updates. Review sender, body, timestamp, and context before replying or exporting addresses.</p>
+HTML,
+            ],
+            'users-domains-billing' => [
+                'title' => 'Users, domains, and billing',
+                'body' => <<<'HTML'
+<p>Users manages tenant admins and helpers. Give the minimum role needed and remove stale access promptly.</p><p>Domains tracks custom hostnames, DNS verification, certificate state, and primary-domain behavior. Billing shows plan state, payment requirements, limits, and account standing.</p>
+HTML,
             ],
             'directory' => [
                 'title' => 'Artist directory',
-                'body' => '<p>The directory has two gates. Platform admins enable the directory globally. Tenant admins opt the individual artist into the directory from <strong>Admin → Directory</strong>. Tenants stay hidden until both gates are open.</p><ol class="flow-list compact"><li><strong>Tenant admin</strong><span>Go to /admin/directory on the tenant domain.</span></li><li><strong>Enable listing</strong><span>Check “Show this tenant in the public ArtsFolio directory.”</span></li><li><strong>Add summary</strong><span>Write a short public description for directory cards.</span></li><li><strong>Save</strong><span>The artist can then appear on artsfol.io/directory when the platform directory is enabled.</span></li></ol>',
+                'body' => <<<'HTML'
+<p>The directory has two gates: platform-wide enablement and tenant opt-in. Before opting in, confirm the public site has a strong image, useful summary, current contact path, and published artwork.</p>
+HTML,
             ],
             'stats' => [
                 'title' => 'Stats',
-                'body' => '<p>Tenant stats show tenant traffic and content engagement. Platform stats show platform-wide traffic and operational totals. Empty stats usually mean analytics events are not being written or the route is being reached through the wrong host.</p>',
+                'body' => <<<'HTML'
+<p>Stats show tenant traffic and engagement. Empty stats usually require checking host, analytics writes, bot filtering, and date ranges.</p>
+HTML,
             ],
             'audit' => [
-                'title' => 'Audit log',
-                'body' => '<p>Audit entries record login, security, and administrative changes. Tenant audit pages should show tenant-scoped admin actions. Platform audit pages show platform administration and authentication events.</p>',
+                'title' => 'Audit log and tenant diagnostics',
+                'body' => <<<'HTML'
+<p>Audit Log records login, security, and administrative changes. Tenant Routes helps diagnose host and route behavior when a domain reaches the wrong page or behaves differently across environments.</p>
+HTML,
+            ],
+            'training-videos' => [
+                'title' => 'Training video directory',
+                'body' => <<<'HTML'
+<p>This directory lists proposed ArtsFolio tenant-admin training videos. Video links will be added later after recording and publishing.</p><ul class="link-list"><li><strong>01. Tenant admin orientation.</strong> Dashboard, navigation, help, tour, and safe first steps. <span>Video link pending.</span></li><li><strong>02. Site identity, branding, and content.</strong> Settings, Content, logo, palette, About, and Contact. <span>Video link pending.</span></li><li><strong>03. Artwork upload and portfolio structure.</strong> Upload, edit, sections, publication, filtering, and curation. <span>Video link pending.</span></li><li><strong>04. Events and public history.</strong> Exhibitions, dates, locations, and public event hygiene. <span>Video link pending.</span></li><li><strong>05. Messages and email signups.</strong> Contact submissions, email capture, and follow-up workflow. <span>Video link pending.</span></li><li><strong>06. Sales, orders, analytics, and refunds.</strong> Sale status, Stripe checkout, order review, and refund guardrails. <span>Video link pending.</span></li><li><strong>07. Users, domains, billing, and diagnostics.</strong> Team access, custom domains, plan state, audit log, and tenant routes. <span>Video link pending.</span></li></ul><p>The full scripts are exported in <code>ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx</code>.</p>
+HTML,
             ],
         ];
     }
@@ -256,13 +306,19 @@ HTML;
     private function nav(string $active, bool $loggedIn): string
     {
         $items = [
-            'getting-started' => ['/help', 'Getting started'],
-            'branding' => ['/help/branding', 'Branding and CSS'],
-            'artworks' => ['/help/artworks', 'Artwork management'],
-            'events' => ['/help/events', 'Events'],
-            'directory' => ['/help/directory', 'Artist directory'],
-            'stats' => ['/help/stats', 'Stats'],
-            'audit' => ['/help/audit', 'Audit log'],
+            ['Getting started', '/help'],
+            ['New admin setup tour', '/help/new-admin-tour'],
+            ['Tenant function index', '/help/tenant-admin-functions'],
+            ['Branding and content', '/help/branding'],
+            ['Artwork and curation', '/help/artworks'],
+            ['Events and exhibitions', '/help/events'],
+            ['Sales and refunds', '/help/sales'],
+            ['Messages and email signups', '/help/messages-email'],
+            ['Users, domains, and billing', '/help/users-domains-billing'],
+            ['Artist directory', '/help/directory'],
+            ['Stats', '/help/stats'],
+            ['Audit and diagnostics', '/help/audit'],
+            ['Training videos', '/help/training-videos'],
         ];
 
         if ($loggedIn) {

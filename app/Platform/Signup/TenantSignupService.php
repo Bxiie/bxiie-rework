@@ -497,19 +497,38 @@ final class TenantSignupService
         }
     }
 
+    /**
+     * Queues tenant lifecycle emails with direct admin, help, tour, and training links.
+     */
     private function queueLifecycleEmail(int $tenantId, int $userId, string $email, string $name, string $slug): void
     {
         if (!$this->tableExists('email_outbox')) {
             return;
         }
 
+        $platformUrl = rtrim((string) (getenv('ARTSFOLIO_PUBLIC_URL') ?: 'https://artsfol.io'), '/');
+        $tenantHost = (string) preg_replace('/[^a-z0-9-]/', '', strtolower($slug));
+        $tenantBaseUrl = 'https://' . $tenantHost . '.artsfol.io';
+        $adminUrl = $tenantBaseUrl . '/admin';
+        $tourUrl = $tenantBaseUrl . '/admin/getting-started';
+        $helpUrl = $platformUrl . '/help';
+        $functionsUrl = $platformUrl . '/help/tenant-admin-functions';
+        $videosUrl = $platformUrl . '/help/training-videos';
+        $safeName = htmlspecialchars($name !== '' ? $name : 'there', ENT_QUOTES, 'UTF-8');
+        $safeSlug = htmlspecialchars($slug, ENT_QUOTES, 'UTF-8');
+        $safeAdminUrl = htmlspecialchars($adminUrl, ENT_QUOTES, 'UTF-8');
+        $safeTourUrl = htmlspecialchars($tourUrl, ENT_QUOTES, 'UTF-8');
+        $safeHelpUrl = htmlspecialchars($helpUrl, ENT_QUOTES, 'UTF-8');
+        $safeFunctionsUrl = htmlspecialchars($functionsUrl, ENT_QUOTES, 'UTF-8');
+        $safeVideosUrl = htmlspecialchars($videosUrl, ENT_QUOTES, 'UTF-8');
+
         $schedule = [
-            ['tenant_admin_welcome_6h', 'Welcome to ArtsFolio', 21600],
-            ['tenant_admin_feature_deep_dive_1d', 'ArtsFolio setup deep dive', 86400],
-            ['tenant_admin_weekly_checkin', 'ArtsFolio weekly check-in', 604800],
+            ['tenant_admin_welcome_6h', 'Welcome to ArtsFolio', 21600, "Welcome to ArtsFolio, {$name}.\n\nOpen tenant admin:\n{$adminUrl}\n\nStart the guided setup tour:\n{$tourUrl}\n\nHelp: {$helpUrl}\nFunction index: {$functionsUrl}\nTraining videos: {$videosUrl}\n", "<p>Welcome to ArtsFolio, {$safeName}.</p><p>Your tenant <strong>{$safeSlug}</strong> is ready.</p><p><a href=\"{$safeAdminUrl}\">Open tenant admin</a></p><p><a href=\"{$safeTourUrl}\">Start the guided setup tour</a></p><ul><li><a href=\"{$safeHelpUrl}\">Help index</a></li><li><a href=\"{$safeFunctionsUrl}\">Tenant function index</a></li><li><a href=\"{$safeVideosUrl}\">Training video directory</a></li></ul>"],
+            ['tenant_admin_feature_deep_dive_1d', 'ArtsFolio setup deep dive', 86400, "Your ArtsFolio tenant admin is here:\n{$adminUrl}\n\nTour: {$tourUrl}\nFunction index: {$functionsUrl}\nTraining videos: {$videosUrl}\n", "<p>Your tenant admin is here: <a href=\"{$safeAdminUrl}\">{$safeAdminUrl}</a></p><p>Work through the <a href=\"{$safeTourUrl}\">setup tour</a>, the <a href=\"{$safeFunctionsUrl}\">tenant function index</a>, and the <a href=\"{$safeVideosUrl}\">training video directory</a>.</p>"],
+            ['tenant_admin_weekly_checkin', 'ArtsFolio weekly check-in', 604800, "Weekly ArtsFolio check-in.\n\nAdmin: {$adminUrl}\nHelp: {$helpUrl}\nTraining videos: {$videosUrl}\n", "<p>Weekly ArtsFolio check-in.</p><ul><li><a href=\"{$safeAdminUrl}\">Open tenant admin</a></li><li><a href=\"{$safeHelpUrl}\">Open help</a></li><li><a href=\"{$safeVideosUrl}\">Open training video directory</a></li></ul>"],
         ];
 
-        foreach ($schedule as [$templateKey, $subject, $delaySeconds]) {
+        foreach ($schedule as [$templateKey, $subject, $delaySeconds, $bodyText, $bodyHtml]) {
             if ($this->lifecycleEmailExists($tenantId, $userId, $templateKey)) {
                 continue;
             }
@@ -520,8 +539,8 @@ final class TenantSignupService
                 'recipient_email' => $email,
                 'recipient_name' => $name,
                 'subject' => $subject,
-                'body_text' => "ArtsFolio {$templateKey} for tenant {$slug}.",
-                'body_html' => "<p>ArtsFolio {$templateKey} for tenant <strong>" . htmlspecialchars($slug, ENT_QUOTES, 'UTF-8') . "</strong>.</p>",
+                'body_text' => $bodyText,
+                'body_html' => $bodyHtml,
                 'template_key' => $templateKey,
                 'status' => 'queued',
                 'available_at' => gmdate('Y-m-d H:i:s', time() + $delaySeconds),
