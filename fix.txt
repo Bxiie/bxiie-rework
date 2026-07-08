@@ -1,5 +1,10 @@
 ## Now
 
+- Stripe description should include 'ArtsFolio: '
+
+
+##
+
 - Make sure the tenant welcome email includes a link to the admin page.
 - Rework the help section.  Expand to cover all functionality for the tenant admin.  List all functionality and create in-depth descriptions of how to use all functionality.
 - Create a tour that leads a new admin though setting up a new site.

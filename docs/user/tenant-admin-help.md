@@ -1,62 +1,41 @@
 # ArtsFolio tenant admin help
 
-This guide explains tenant admin functionality for artists, assistants, gallery staff, and site managers.
+The public help section at `/help` is the canonical tenant-admin user guide. It now includes complete articles for setup, branding, artwork, events, sales, messages, users, domains, billing, directory, stats, audit/diagnostics, and training videos.
+
+## Pages
+
+- `/help` explains the first setup sequence and links to the tour and function index.
+- `/help/new-admin-tour` walks a new admin from sign-in through launch review.
+- `/help/tenant-admin-functions` lists every tenant admin function with practical usage notes.
+- `/help/branding` explains Settings, Content, logo, palette, typography, About, Contact, site images, watermark defaults, and custom CSS.
+- `/help/artworks` explains upload, edit, publication, portfolio sections, curation, sale fields, inventory, and artwork QA.
+- `/help/events` explains exhibitions, open studios, fairs, talks, residencies, dates, locations, URLs, and event QA.
+- `/help/sales` explains sale-ready artwork, carts, Stripe checkout, orders, workflow status, analytics, and refund guardrails.
+- `/help/messages-email` explains contact-message handling, email signup handling, testing, privacy, and follow-up workflow.
+- `/help/users-domains-billing` explains tenant users, helper access, custom domains, DNS verification, HTTPS review, billing state, and plan checks.
+- `/help/directory` explains directory opt-in, summary writing, thumbnail selection, listing review, and directory troubleshooting.
+- `/help/stats` explains reading traffic, engagement, date ranges, bot/admin noise, and decision-making from stats.
+- `/help/audit` explains audit log usage, tenant route diagnostics, troubleshooting workflow, and escalation notes.
+- `/help/training-videos` lists proposed video lessons and the matching written help pages.
 
 ## Dashboard
-The Dashboard is the tenant admin landing page at `/admin`. Use it to orient yourself, review setup status, jump to common tasks, and notice recent activity.
 
-## Upload Artwork
-Use `/admin/artwork/upload` to create artwork records quickly. Add image, title, year, medium, dimensions, description, publication status, sale status, price, inventory, and section placement.
-
-## Settings
-Settings controls tenant identity, labels, palette, typography, logo behavior, custom CSS, visibility, and directory summary text.
-
-## Content
-Content manages About page text, Contact page text, selected site images, and static copy.
-
-## Artworks
-Artworks provides the management grid for searching, filtering, editing, publishing, unpublishing, pricing, and placing artwork records.
-
-## Curation
-Curation controls featured work, public ordering, and presentation choices.
-
-## Portfolio Sections
-Portfolio Sections are public groupings for artwork.
-
-## Events
-Events records exhibitions, fairs, talks, residencies, open studios, and dated public history.
-
-## Messages
-Messages shows contact form submissions.
-
-## Email Signups
-Email Signups records visitors who asked for updates.
-
-## Domains
-Domains tracks tenant hostnames, custom domain verification, DNS status, certificate state, and primary-domain behavior.
-
-## Billing
-Billing shows plan state, payment requirements, and account standing.
-
-## Sales
-Sales shows orders, payment status, workflow status, totals, customer details, Stripe identifiers, and refund actions.
+Use `/admin` as the tenant operational home base. The dashboard orients the admin, links to the major editing areas, and helps the admin notice messages, sales, stats, and setup tasks.
 
 ## Sales Analytics
-Sales Analytics summarizes order and revenue activity.
 
-## Users
-Users manages tenant admins and helpers.
-
-## Stats
-Stats shows tenant traffic and engagement.
+Use `/admin/sales/analytics` to review order volume, revenue, and sales behavior. Compare sales analytics with artwork availability, public traffic, cart behavior, and checkout readiness.
 
 ## Audit Log
-Audit Log records login, security, and administrative changes.
+
+Use `/admin/audit-log` to investigate sign-ins, security events, domain actions, and administrative changes. Review time, actor, action, target, and detail fields when a setting or record changes unexpectedly.
 
 ## Tenant Routes
-Tenant Routes helps diagnose host and route behavior.
 
-## Getting Started
-Getting Started is the tenant-local setup checklist at `/admin/getting-started`.
+Use `/admin/routes` to diagnose hostname and route behavior, especially for custom domains, public pages that 404, and admin routes that redirect unexpectedly.
 
-# End of file.
+## Editing standard
+
+Help articles should be detailed enough that a tenant admin can perform the task without asking for a separate walkthrough. Each major feature should explain what the page is for, how to use it, what to verify after saving, and common mistakes or troubleshooting notes.
+
+<!-- End of file. -->
