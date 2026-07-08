@@ -27,7 +27,7 @@ final class HelpController
                 'title' => 'Getting started',
                 'body' => <<<'HTML'
 <p>ArtsFolio gives you one place to build and operate your artist website: public pages, portfolio records, events, contact messages, email signups, sales, analytics, directory discovery, users, domains, and billing. The safest first goal is a small, complete, believable site that can be reviewed on a phone and shared with a collector.</p>
-<h2>Before you start</h2><ul class="link-list"><li><strong>Start from your own site.</strong> Use the admin link from your welcome email or sign-in flow. Platform-wide administration is not used for normal site editing.</li><li><strong>Save in small batches.</strong> Change one area, save it, open the public page, and confirm the result before moving on.</li><li><strong>Keep a launch checklist.</strong> A site is ready to share when it has identity, About, Contact, at least one section, several published artworks, mobile review, contact testing, and stats visibility.</li></ul>
+<h2>Before you start</h2><ul class="link-list"><li><strong>Start from your own site.</strong> Use the admin link from your welcome email or sign-in flow.</li><li><strong>Save in small batches.</strong> Change one area, save it, open the public page, and confirm the result before moving on.</li><li><strong>Keep a launch checklist.</strong> A site is ready to share when it has identity, About, Contact, at least one section, several published artworks, mobile review, contact testing, and stats visibility.</li></ul>
 <h2>Recommended first build</h2><ol class="flow-list compact"><li><strong>Open your admin.</strong><span>Sign in, then click <strong>Dashboard</strong> in the sidebar. The dashboard points to messages, sales, stats, settings, artwork, events, and setup help.</span></li><li><strong>Set site identity.</strong><span>Click <strong>Settings</strong> in the sidebar. Confirm site name, public labels, titles, typography, palette, logo, watermark behavior, and visibility.</span></li><li><strong>Write About and Contact.</strong><span>Click <strong>Content</strong> in the sidebar. Add a clear About statement, practical Contact text, and selected site images.</span></li><li><strong>Create sections.</strong><span>Click <strong>Portfolio Sections</strong> in the sidebar. Create broad visitor-friendly groups such as Sculpture, Paintings, Installations, Available Work, or Archive.</span></li><li><strong>Add artwork.</strong><span>Click <strong>Upload Artwork</strong> in the sidebar. Add image, title, year, medium, dimensions, description, status, sale status, price, inventory, and sections.</span></li><li><strong>Curate the public experience.</strong><span>Click <strong>Curation</strong> in the sidebar and use the Artworks grid to decide what appears first.</span></li><li><strong>Add events.</strong><span>Click <strong>Events</strong> in the sidebar for exhibitions, open studios, fairs, talks, installations, residencies, and public history.</span></li><li><strong>Test visitor paths.</strong><span>Open homepage, portfolio, artwork details, About, Contact, email signup, cart if enabled, and mobile layout.</span></li><li><strong>Review operations.</strong><span>Click <strong>Messages</strong>, <strong>Email Signups</strong>, <strong>Stats</strong>, <strong>Audit Log</strong>, and <strong>Routes</strong> in the sidebar to review operations.</span></li></ol>
 <h2>Where to go next</h2><p>Use the setup tour for the guided launch sequence, or use the function index when you know what you want to change and need the right admin page.</p><p><a class="button" href="/help/new-admin-tour">Open the new-admin setup tour</a> <a class="button" href="/help/tenant-admin-functions">Open your admin tools</a></p>
 HTML,
@@ -267,6 +267,10 @@ HTML;
         $nav = $this->nav($active, $currentUser !== null);
         $platformAdminLink = \App\Http\View\PlatformChrome::platformAdminLink();
         $canonicalNav = \App\Http\View\PlatformChrome::topNavigation('help');
+        $tenantHelpAdminTopLink = $this->tenantHelpAdminTopLink($currentUser, $canonicalNav);
+        if ($tenantHelpAdminTopLink !== '') {
+            $canonicalNav = str_replace('</nav>', $tenantHelpAdminTopLink . '</nav>', $canonicalNav);
+        }
         $platformCopyright = \App\Http\View\PlatformChrome::copyrightLine();
         $auth = $currentUser
             ? '<form class="plan-edit-form" method="post" action="/logout" class="inline-form"><button type="submit">Log out</button></form>'
@@ -301,6 +305,31 @@ HTML;
 </body>
 </html>
 HTML;
+    }
+
+
+    /**
+     * Adds a signed-in Admin link on tenant help pages.
+     *
+     * PlatformChrome::topNavigation() only adds Admin for platform-role users.
+     * Artists reading help on their own site still need a visible way back to
+     * their site admin, so tenant-host help pages add a local /admin link.
+     */
+    private function tenantHelpAdminTopLink(?array $currentUser, string $canonicalNav): string
+    {
+        if (!$currentUser || str_contains($canonicalNav, 'platform-admin-top-link')) {
+            return '';
+        }
+
+        $host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+        $host = preg_replace('/:\\d+$/', '', $host) ?: $host;
+        $platformHosts = ['artsfol.io', 'www.artsfol.io'];
+
+        if (in_array($host, $platformHosts, true)) {
+            return '';
+        }
+
+        return '<a class="platform-admin-top-link" href="/admin">Admin</a>';
     }
 
     /**
