@@ -560,3 +560,9 @@ Too few arguments to function App\Http\Controllers\Platform\HelpController::inde
 2026-07-08: Fixed direct GET /admin/sales/refund to redirect safely instead of invoking refund handling or 500ing.
 2026-07-08: Fixed tenant admin sales refund/update CSRF validation to call CsrfTokenService::validate() instead of nonexistent verify(); added regression test.
 2026-07-08: Repaired sales refund CSRF regression test quoting so embedded $_POST markers are checked as source text, not parsed as PHP.
+
+sales-notes-word-wrap-20260708
+- Added a dedicated sales-order-notes CSS hook to tenant admin order notes.
+- Added wrapping CSS so long notes preserve line breaks without overflowing the order review panel.
+- Added scripts/test/sales_notes_word_wrap_static.php.
+# End of file.

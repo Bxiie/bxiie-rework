@@ -249,7 +249,7 @@ HTML;
         $customer = $this->customerHtml($order);
         $shippingEmailHtml = $this->shippingEmailControls($order);
         $includeHidden = $includeNoSales ? '<input type="hidden" name="include_no_sales" value="1">' : '';
-        $notes = trim((string) ($order['notes'] ?? '')) !== '' ? '<h3>Notes</h3><pre class="admin-code-block">' . $this->e((string) $order['notes']) . '</pre>' : '';
+        $notes = trim((string) ($order['notes'] ?? '')) !== '' ? '<h3>Notes</h3><pre class="admin-code-block sales-order-notes">' . $this->e((string) $order['notes']) . '</pre>' : '';
 
         return '<section class="admin-panel"><h2>Review ' . $this->e((string) $order['order_number']) . '</h2>'
             . '<div class="admin-form-grid three"><div><h3>Totals</h3><p><strong>Subtotal:</strong> ' . $this->money((int) $order['subtotal_cents']) . '<br><strong>Shipping:</strong> ' . $this->money((int) ($order['shipping_cents'] ?? 0)) . '<br><strong>Total:</strong> ' . $this->money((int) $order['total_cents']) . '<br><strong>Payment:</strong> ' . $this->statusBadge((string) $order['payment_status']) . '<br><strong>Workflow:</strong> ' . $this->statusBadge((string) $order['workflow_status']) . '</p></div>' . $customer . $stripe . '</div>'

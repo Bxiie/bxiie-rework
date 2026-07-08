@@ -3,7 +3,6 @@
 
 When an artist marks an order as shipped, they can send shipping details to the buyer from ArtsFolio. The buyer receives an email with the order number, carrier, tracking number, tracking URL, and a summary of the purchased items. Buyers should reply to the email or contact the artist if the carrier or tracking number is missing.
 
-# End of file.
 
 ## Viewing buyer shipping details
 
@@ -22,3 +21,7 @@ When an order includes shipping, the cart asks the buyer for a phone number and 
 
 When an order requires shipping, ArtsFolio asks for the shipping address and phone number before opening Stripe Checkout. Those details are passed to Stripe so the hosted payment page can reuse them instead of asking for the same shipping address again.
 
+### Order notes display
+
+Order notes in the tenant sales review page are displayed as readable wrapped text. Long pasted notes, tracking notes, and customer-service details should stay inside the page layout.
+<!-- End of file. -->

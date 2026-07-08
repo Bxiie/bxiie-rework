@@ -100,7 +100,6 @@ After Stripe Checkout returns to `/checkout/success`, ArtsFolio verifies the Che
 
 When a buyer clicks Checkout and returns before the webhook/success reconciliation finishes, ArtsFolio may already have a `checkout_pending` order for the active cart. The checkout action now checks for that pending order before creating a replacement order. If Stripe still reports the hosted Checkout Session as open, the buyer is redirected back to that same Stripe URL. If Stripe reports the Session as paid, ArtsFolio finalizes the order, consumes inventory reservations, marks the cart checked out, and expires the cart cookie. If the Session is expired, complete but unpaid, or missing because an earlier request failed midway, ArtsFolio releases the local reservations and starts a fresh checkout attempt.
 
-# End of file.
 
 ## Stripe checkout resume recovery
 
@@ -115,13 +114,11 @@ The `/checkout/success` route is buyer-safe around Stripe reconciliation. If the
 
 Paid Stripe sessions are authoritative for order payment status. If Stripe confirms a Checkout Session as paid but ArtsFolio finds that the original inventory reservation was already released, expired, completed, or missing, ArtsFolio now marks the order paid, checks out the source cart, and records an inventory-review note on the order instead of leaving the buyer on a pending checkout page. Administrators should review the order notes and adjust artwork or variant inventory manually when a paid reconciliation inventory note appears.
 
-# End of file.
 
 ## Stripe reconciliation and legacy inventory sync
 
 When Stripe reports a Checkout Session as paid, ArtsFolio marks the order paid, checks out the source cart, consumes any reserved variant inventory that can still be consumed, and then synchronizes the legacy artwork inventory fields from active sale variants. If inventory reservations drift because a buyer returns late or a session is reconciled after expiry, the order should still be recorded as paid and flagged for manual inventory review instead of remaining in checkout_pending.
 
-<!-- End of file. -->
 
 ## Stripe refunds and duplicate checkout protection
 
@@ -140,7 +137,6 @@ Open an order to move it through **Ordered**, **Acknowledged**, **Packed**, **Sh
 
 Use **Create Stripe refund** from the order review panel for ordinary paid-order refunds. The action immediately creates the Stripe refund, records the Stripe refund id in `sales_order_refunds`, and can return inventory to stock for full refunds.
 
-# End of file.
 
 ## Sales order shipping display
 
@@ -159,3 +155,7 @@ ArtsFolio checkout collects buyer email, buyer name, ship-to name, phone number,
 
 The cart collects the buyer shipping address and phone number before redirecting to Stripe. ArtsFolio sends those details to Stripe as prefilled Customer and PaymentIntent shipping data, so the buyer should not need to enter the same shipping details twice. Admin order review remains the local source for fulfillment and shipping-notification emails.
 
+### Sales order notes word wrapping
+
+Sales order review notes preserve line breaks and wrap long words or pasted text within the admin panel. This prevents long notes from forcing horizontal scrolling or breaking the order review layout.
+<!-- End of file. -->
