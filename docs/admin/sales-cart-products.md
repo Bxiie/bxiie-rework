@@ -131,4 +131,13 @@ For full refunds, the admin can choose to return completed order inventory to av
 
 Checkout now guards against duplicate charges for the same cart. If a cart already has a paid order, `/cart/checkout` marks the cart checked out, expires the cart cookie, and redirects to the existing success page instead of creating or resuming another Stripe Checkout Session.
 
+
+## Sales workflow fulfillment, refunds, and no-sale filters
+
+Tenant admins use `/admin/sales` for the order desk. Paid Stripe orders are shown by default; enable **Show no-sale checkout rows** only when investigating unpaid, abandoned, canceled, or support-only checkout records.
+
+Open an order to move it through **Ordered**, **Acknowledged**, **Packed**, **Shipped**, or **Refunded**. When saving a **Shipped** order, check **Email shipping details to buyer** to queue an email with the order number, carrier, tracking number, tracking URL, and item summary. ArtsFolio records `shipping_email_sent_at` and `shipping_email_outbox_id` on `sales_orders` so staff can see when the buyer notification was queued.
+
+Use **Create Stripe refund** from the order review panel for ordinary paid-order refunds. The action immediately creates the Stripe refund, records the Stripe refund id in `sales_order_refunds`, and can return inventory to stock for full refunds.
+
 # End of file.

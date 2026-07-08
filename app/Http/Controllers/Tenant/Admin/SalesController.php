@@ -9,6 +9,7 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Http\View\AdminLayout;
 use App\Platform\Audit\AuditLogRepository;
+use App\Platform\Email\EmailOutboxRepository;
 use App\Platform\Settings\PlatformSettingsRepository;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Security\CsrfTokenService;
@@ -19,9 +20,9 @@ use Throwable;
 /**
  * Tenant-admin sales workflow screen.
  *
- * This controller is deliberately explicit about Stripe refunds: clicking the
- * refund button sends a live Stripe Refund request immediately, then records the
- * returned refund id locally for review and audit history.
+ * Paid orders are shown by default so abandoned, unpaid, and zero-sale checkout
+ * rows do not muddy the sales desk. The optional include_no_sales filter keeps
+ * support visibility available when someone needs to investigate a checkout.
  */
 final class SalesController
 {
@@ -31,6 +32,7 @@ final class SalesController
         private readonly CsrfTokenService $csrf,
         private readonly ?AuditLogRepository $auditLog = null,
         private readonly ?PlatformSettingsRepository $platformSettings = null,
+        private readonly ?EmailOutboxRepository $outbox = null,
     ) {}
 
     public function index(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -39,9 +41,11 @@ final class SalesController
             return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
         }
 
+        $includeNoSales = $this->includeNoSales();
         $notice = $this->notice((string) ($_GET['notice'] ?? ''));
+        $filterHtml = $this->filterHtml($includeNoSales);
         $rows = '';
-        foreach ($this->sales->orders($tenant) as $order) {
+        foreach ($this->sales->orders($tenant, 100, $includeNoSales) as $order) {
             $id = (int) $order['id'];
             $items = $this->sales->orderItems($id);
             $itemList = '<ul>';
@@ -54,10 +58,12 @@ final class SalesController
             $workflowStatus = (string) $order['workflow_status'];
             $stripeRef = trim((string) ($order['stripe_payment_intent_id'] ?? ''));
             $stripeLine = $stripeRef !== '' ? '<br><small>PI: ' . $this->e($stripeRef) . '</small>' : '';
-            $rows .= '<tr><td><a href="/admin/sales?id=' . $id . '">' . $this->e((string) $order['order_number']) . '</a><br><small>' . $this->e((string) $order['created_at']) . '</small></td><td>' . $itemList . '</td><td>' . $this->statusBadge($paymentStatus) . $stripeLine . '</td><td>' . $this->statusBadge($workflowStatus) . '</td><td>' . $this->money((int) $order['total_cents']) . '</td><td>' . $this->money((int) ($order['commission_cents'] ?? 0)) . '</td><td>' . $this->money((int) ($order['credit_card_fee_cents'] ?? 0)) . '</td><td>' . $this->money((int) ($order['seller_net_cents'] ?? max(0, (int) $order['total_cents'] - (int) ($order['commission_cents'] ?? 0) - (int) ($order['credit_card_fee_cents'] ?? 0)))) . '</td></tr>';
+            $shippingEmail = trim((string) ($order['shipping_email_sent_at'] ?? ''));
+            $shippingLine = $shippingEmail !== '' ? '<br><small>Buyer emailed: ' . $this->e($shippingEmail) . '</small>' : '';
+            $rows .= '<tr><td><a href="/admin/sales?id=' . $id . $this->includeNoSalesQuery($includeNoSales) . '">' . $this->e((string) $order['order_number']) . '</a><br><small>' . $this->e((string) $order['created_at']) . '</small></td><td>' . $itemList . '</td><td>' . $this->statusBadge($paymentStatus) . $stripeLine . '</td><td>' . $this->statusBadge($workflowStatus) . $shippingLine . '</td><td>' . $this->money((int) $order['total_cents']) . '</td><td>' . $this->money((int) ($order['commission_cents'] ?? 0)) . '</td><td>' . $this->money((int) ($order['credit_card_fee_cents'] ?? 0)) . '</td><td>' . $this->money((int) ($order['seller_net_cents'] ?? max(0, (int) $order['total_cents'] - (int) ($order['commission_cents'] ?? 0) - (int) ($order['credit_card_fee_cents'] ?? 0)))) . '</td></tr>';
         }
         if ($rows === '') {
-            $rows = '<tr><td colspan="8">No sales yet.</td></tr>';
+            $rows = '<tr><td colspan="8">No paid sales yet. Use “Show no-sale checkout rows” to inspect abandoned or unpaid checkout records.</td></tr>';
         }
 
         $detail = '';
@@ -66,13 +72,14 @@ final class SalesController
             $order = $this->sales->order($tenant, $selectedId);
             if ($order) {
                 $csrf = $this->e($this->csrf->getOrCreate());
-                $detail = $this->detailForm($order, $csrf);
+                $detail = $this->detailForm($order, $csrf, $includeNoSales);
             }
         }
 
         $body = <<<HTML
 {$notice}
-<p class="admin-muted">Track orders from Stripe checkout through ordered, acknowledged, packed, shipped, and refunded. Open an order to review Stripe references, item detail, refund history, and refund actions.</p>
+<p class="admin-muted">Track paid orders from Stripe checkout through ordered, acknowledged, packed, shipped, and refunded. Open an order to review Stripe references, item detail, refund history, refund actions, and buyer shipping email controls.</p>
+{$filterHtml}
 <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Order</th><th>Items</th><th>Payment</th><th>Workflow</th><th>Total</th><th>Commission</th><th>CC fees</th><th>Seller net</th></tr></thead><tbody>{$rows}</tbody></table></div>
 {$detail}
 HTML;
@@ -87,6 +94,12 @@ HTML;
         }
 
         $orderId = (int) ($_POST['order_id'] ?? 0);
+        $includeNoSales = isset($_POST['include_no_sales']);
+        $order = $this->sales->order($tenant, $orderId);
+        if (!$order) {
+            return new Response('', 303, ['Location' => '/admin/sales?notice=missing' . $this->includeNoSalesQuery($includeNoSales)]);
+        }
+
         $status = (string) ($_POST['workflow_status'] ?? 'ordered');
         $shipping = [
             'carrier' => trim((string) ($_POST['shipping_carrier'] ?? '')) ?: null,
@@ -94,9 +107,30 @@ HTML;
             'url' => trim((string) ($_POST['shipping_tracking_url'] ?? '')) ?: null,
         ];
         $this->sales->updateWorkflow($tenant, $orderId, $status, $shipping);
-        $this->auditLog?->record('tenant.sales.workflow_updated', $tenant->tenantId, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, 'sales_order', (string) $orderId, ['workflow_status' => $status], $request->server('REMOTE_ADDR'));
 
-        return new Response('', 303, ['Location' => '/admin/sales?id=' . $orderId . '&notice=saved']);
+        $notice = 'saved';
+        $emailOutboxId = null;
+        if (isset($_POST['send_shipping_email'])) {
+            $emailOutboxId = $this->queueShippingNotification($tenant, $order + ['workflow_status' => $status], $status, $shipping);
+            if ($emailOutboxId !== null) {
+                $this->sales->markShippingEmailQueued($tenant, $orderId, $emailOutboxId);
+                $notice = 'saved_shipping_email';
+            } else {
+                $notice = 'saved_shipping_email_unavailable';
+            }
+        }
+
+        $this->auditLog?->record(
+            'tenant.sales.workflow_updated',
+            $tenant->tenantId,
+            isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
+            'sales_order',
+            (string) $orderId,
+            ['workflow_status' => $status, 'shipping_email_outbox_id' => $emailOutboxId],
+            $request->server('REMOTE_ADDR'),
+        );
+
+        return new Response('', 303, ['Location' => '/admin/sales?id=' . $orderId . '&notice=' . $notice . $this->includeNoSalesQuery($includeNoSales)]);
     }
 
     public function refund(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -106,9 +140,10 @@ HTML;
         }
 
         $orderId = (int) ($_POST['order_id'] ?? 0);
+        $includeNoSales = isset($_POST['include_no_sales']);
         $order = $this->sales->order($tenant, $orderId);
         if (!$order) {
-            return new Response('', 303, ['Location' => '/admin/sales?notice=missing']);
+            return new Response('', 303, ['Location' => '/admin/sales?notice=missing' . $this->includeNoSalesQuery($includeNoSales)]);
         }
 
         $remainingCents = max(0, (int) $order['total_cents'] - $this->sales->orderRefundTotal($orderId));
@@ -119,13 +154,13 @@ HTML;
         $paymentIntentId = trim((string) ($order['stripe_payment_intent_id'] ?? ''));
 
         if (!in_array((string) $order['payment_status'], ['paid', 'complete', 'succeeded', 'partially_refunded'], true)) {
-            return $this->errorPage('Refund unavailable', 'Only paid orders can be refunded from ArtsFolio.', $orderId);
+            return $this->errorPage('Refund unavailable', 'Only paid orders can be refunded from ArtsFolio.', $orderId, $includeNoSales);
         }
         if ($paymentIntentId === '') {
-            return $this->errorPage('Refund unavailable', 'This order does not have a Stripe PaymentIntent id recorded.', $orderId);
+            return $this->errorPage('Refund unavailable', 'This order does not have a Stripe PaymentIntent id recorded.', $orderId, $includeNoSales);
         }
         if ($amountCents <= 0 || $amountCents > $remainingCents) {
-            return $this->errorPage('Refund unavailable', 'The refund amount must be greater than zero and no more than the remaining captured amount.', $orderId);
+            return $this->errorPage('Refund unavailable', 'The refund amount must be greater than zero and no more than the remaining captured amount.', $orderId, $includeNoSales);
         }
 
         try {
@@ -145,22 +180,24 @@ HTML;
             );
             $this->auditLog?->record('tenant.sales.refund_created', $tenant->tenantId, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, 'sales_order', (string) $orderId, ['stripe_refund_id' => (string) $refund['id'], 'amount_cents' => $amountCents, 'reason' => $reason, 'restock_inventory' => $restockInventory], $request->server('REMOTE_ADDR'));
         } catch (Throwable $e) {
-            return $this->errorPage('Stripe refund failed', $e->getMessage(), $orderId);
+            return $this->errorPage('Stripe refund failed', $e->getMessage(), $orderId, $includeNoSales);
         }
 
-        return new Response('', 303, ['Location' => '/admin/sales?id=' . $orderId . '&notice=refund_sent']);
+        return new Response('', 303, ['Location' => '/admin/sales?id=' . $orderId . '&notice=refund_sent' . $this->includeNoSalesQuery($includeNoSales)]);
     }
 
-    private function detailForm(array $order, string $csrf): string
+    private function detailForm(array $order, string $csrf, bool $includeNoSales): string
     {
         $id = (int) $order['id'];
         $status = (string) $order['workflow_status'];
         $option = fn (string $value, string $label): string => '<option value="' . $this->e($value) . '"' . ($status === $value ? ' selected' : '') . '>' . $this->e($label) . '</option>';
         $itemsHtml = $this->orderItemsHtml($id);
         $refundsHtml = $this->refundsHtml($id);
-        $refundForm = $this->refundForm($order, $csrf);
+        $refundForm = $this->refundForm($order, $csrf, $includeNoSales);
         $stripe = $this->stripeReviewHtml($order);
         $customer = $this->customerHtml($order);
+        $shippingEmailHtml = $this->shippingEmailControls($order);
+        $includeHidden = $includeNoSales ? '<input type="hidden" name="include_no_sales" value="1">' : '';
         $notes = trim((string) ($order['notes'] ?? '')) !== '' ? '<h3>Notes</h3><pre class="admin-code-block">' . $this->e((string) $order['notes']) . '</pre>' : '';
 
         return '<section class="admin-panel"><h2>Review ' . $this->e((string) $order['order_number']) . '</h2>'
@@ -168,7 +205,7 @@ HTML;
             . $itemsHtml
             . $refundsHtml
             . $refundForm
-            . '<h3>Sales workflow</h3><form method="post" action="/admin/sales/update"><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="order_id" value="' . $id . '"><label>Workflow status<select name="workflow_status">' . $option('ordered', 'Ordered') . $option('acknowledged', 'Acknowledged') . $option('packed', 'Packed') . $option('shipped', 'Shipped') . $option('refunded', 'Refunded') . '</select></label><label>Shipping carrier<input name="shipping_carrier" value="' . $this->e((string) ($order['shipping_carrier'] ?? '')) . '"></label><label>Tracking number<input name="shipping_tracking_number" value="' . $this->e((string) ($order['shipping_tracking_number'] ?? '')) . '"></label><label>Tracking URL<input name="shipping_tracking_url" value="' . $this->e((string) ($order['shipping_tracking_url'] ?? '')) . '"></label><button type="submit">Save sales workflow</button></form>'
+            . '<h3>Sales workflow</h3><form method="post" action="/admin/sales/update"><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="order_id" value="' . $id . '">' . $includeHidden . '<label>Workflow status<select name="workflow_status">' . $option('ordered', 'Ordered') . $option('acknowledged', 'Acknowledged') . $option('packed', 'Packed') . $option('shipped', 'Shipped') . $option('refunded', 'Refunded') . '</select></label><label>Shipping carrier<input name="shipping_carrier" value="' . $this->e((string) ($order['shipping_carrier'] ?? '')) . '"></label><label>Tracking number<input name="shipping_tracking_number" value="' . $this->e((string) ($order['shipping_tracking_number'] ?? '')) . '"></label><label>Tracking URL<input name="shipping_tracking_url" value="' . $this->e((string) ($order['shipping_tracking_url'] ?? '')) . '"></label>' . $shippingEmailHtml . '<button type="submit">Save sales workflow</button></form>'
             . $notes
             . '</section>';
     }
@@ -200,7 +237,7 @@ HTML;
         return '<h3>Refund history</h3><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Date</th><th>Amount</th><th>Reason</th><th>Status</th><th>Stripe refund</th></tr></thead><tbody>' . $rows . '</tbody></table></div>';
     }
 
-    private function refundForm(array $order, string $csrf): string
+    private function refundForm(array $order, string $csrf, bool $includeNoSales): string
     {
         $orderId = (int) $order['id'];
         $refunded = $this->sales->orderRefundTotal($orderId);
@@ -211,7 +248,86 @@ HTML;
             return '<h3>Refund from Stripe</h3><p class="admin-muted">Refund is unavailable because the order is not paid, lacks a Stripe PaymentIntent, or has already been fully refunded.</p>';
         }
 
-        return '<h3>Refund from Stripe</h3><form method="post" action="/admin/sales/refund" onsubmit="return confirm(\'This will create a live Stripe refund immediately. Continue?\');"><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="order_id" value="' . $orderId . '"><p class="admin-muted">Remaining refundable amount: <strong>' . $this->money($remaining) . '</strong>. Use Stripe Dashboard for unusual disputes or chargeback workflows.</p><label>Refund amount<select name="refund_scope"><option value="full">Full remaining amount (' . $this->money($remaining) . ')</option><option value="custom">Custom amount below</option></select></label><label>Custom refund amount in dollars<input name="refund_amount" inputmode="decimal" placeholder="0.00"></label><label>Stripe reason<select name="refund_reason"><option value="requested_by_customer">Requested by customer</option><option value="duplicate">Duplicate charge/order</option><option value="fraudulent">Fraudulent</option></select></label><label><input type="checkbox" name="restock_inventory" value="1" checked> Return completed order inventory to available stock for a full refund</label><button type="submit">Create Stripe refund</button></form>';
+        $includeHidden = $includeNoSales ? '<input type="hidden" name="include_no_sales" value="1">' : '';
+        return '<h3>Refund from Stripe</h3><form method="post" action="/admin/sales/refund" onsubmit="return confirm(\'This will create a live Stripe refund immediately. Continue?\');"><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="order_id" value="' . $orderId . '">' . $includeHidden . '<p class="admin-muted">Remaining refundable amount: <strong>' . $this->money($remaining) . '</strong>. Use Stripe Dashboard for unusual disputes or chargeback workflows.</p><label>Refund amount<select name="refund_scope"><option value="full">Full remaining amount (' . $this->money($remaining) . ')</option><option value="custom">Custom amount below</option></select></label><label>Custom refund amount in dollars<input name="refund_amount" inputmode="decimal" placeholder="0.00"></label><label>Stripe reason<select name="refund_reason"><option value="requested_by_customer">Requested by customer</option><option value="duplicate">Duplicate charge/order</option><option value="fraudulent">Fraudulent</option></select></label><label><input type="checkbox" name="restock_inventory" value="1" checked> Return completed order inventory to available stock for a full refund</label><button type="submit">Create Stripe refund</button></form>';
+    }
+
+    private function shippingEmailControls(array $order): string
+    {
+        $email = trim((string) ($order['customer_email'] ?? ''));
+        $sentAt = trim((string) ($order['shipping_email_sent_at'] ?? ''));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return '<p class="admin-muted">Buyer shipping email unavailable because this order has no valid buyer email.</p>';
+        }
+
+        $sent = $sentAt !== '' ? '<br><small>Last queued: ' . $this->e($sentAt) . '</small>' : '';
+        return '<label><input type="checkbox" name="send_shipping_email" value="1"> Email shipping details to ' . $this->e($email) . '</label><p class="admin-muted">The email is queued only when the workflow status is Shipped. It includes the carrier, tracking number, tracking URL, order number, and item summary.' . $sent . '</p>';
+    }
+
+    private function queueShippingNotification(TenantContext $tenant, array $order, string $status, array $shipping): ?int
+    {
+        if ($this->outbox === null || $status !== 'shipped') {
+            return null;
+        }
+
+        $recipientEmail = strtolower(trim((string) ($order['customer_email'] ?? '')));
+        if ($recipientEmail === '' || !filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+            return null;
+        }
+
+        $recipientName = trim((string) ($order['customer_name'] ?? '')) ?: null;
+        $orderNumber = (string) ($order['order_number'] ?? ('#' . (int) ($order['id'] ?? 0)));
+        $carrier = trim((string) ($shipping['carrier'] ?? '')) ?: 'Carrier not provided';
+        $tracking = trim((string) ($shipping['tracking'] ?? '')) ?: 'Tracking number not provided';
+        $trackingUrl = trim((string) ($shipping['url'] ?? '')) ?: 'Tracking URL not provided';
+        $itemLines = [];
+        foreach ($this->sales->orderItems((int) $order['id']) as $item) {
+            $itemLines[] = '- ' . (int) $item['quantity'] . ' × ' . (string) $item['title_snapshot'] . $this->plainVariantSummary($item);
+        }
+        if ($itemLines === []) {
+            $itemLines[] = '- Order item details are not available in ArtsFolio.';
+        }
+
+        $subject = 'Shipping details for ArtsFolio order ' . $orderNumber;
+        $body = implode("\n", [
+            $recipientName ? 'Hello ' . $recipientName . ',' : 'Hello,',
+            '',
+            'Your ArtsFolio order ' . $orderNumber . ' from ' . $tenant->name . ' has shipped.',
+            '',
+            'Shipping details:',
+            'Carrier: ' . $carrier,
+            'Tracking number: ' . $tracking,
+            'Tracking URL: ' . $trackingUrl,
+            '',
+            'Order items:',
+            implode("\n", $itemLines),
+            '',
+            'Questions? Reply to this email and the artist can help.',
+            '',
+            'ArtsFolio',
+        ]);
+
+        return $this->outbox->queue(
+            recipientEmail: $recipientEmail,
+            subject: $subject,
+            bodyText: $body,
+            recipientName: $recipientName,
+            tenantId: $tenant->tenantId,
+            templateKey: 'sales.shipping_notification',
+        );
+    }
+
+    private function plainVariantSummary(array $item): string
+    {
+        $parts = [];
+        foreach (['variant_label_snapshot', 'size_value_snapshot', 'gender_value_snapshot'] as $key) {
+            $value = trim((string) ($item[$key] ?? ''));
+            if ($value !== '' && $value !== 'Default' && $value !== 'not_applicable') {
+                $parts[] = $value;
+            }
+        }
+
+        return $parts === [] ? '' : ' (' . implode(' / ', array_unique($parts)) . ')';
     }
 
     private function stripeReviewHtml(array $order): string
@@ -245,6 +361,22 @@ HTML;
         return $parts === [] ? '' : '<br><small>' . implode(' · ', array_unique($parts)) . '</small>';
     }
 
+    private function filterHtml(bool $includeNoSales): string
+    {
+        $checked = $includeNoSales ? ' checked' : '';
+        return '<form class="admin-filter-bar" method="get" action="/admin/sales"><label><input type="checkbox" name="include_no_sales" value="1"' . $checked . '> Show no-sale checkout rows</label><button type="submit">Apply filter</button><a href="/admin/sales">Paid sales only</a></form>';
+    }
+
+    private function includeNoSales(): bool
+    {
+        return isset($_GET['include_no_sales']) && (string) $_GET['include_no_sales'] === '1';
+    }
+
+    private function includeNoSalesQuery(bool $includeNoSales): string
+    {
+        return $includeNoSales ? '&include_no_sales=1' : '';
+    }
+
     private function dollarsToCents(string $value): int
     {
         $normalized = preg_replace('/[^0-9.]/', '', $value) ?? '';
@@ -260,17 +392,20 @@ HTML;
         return in_array($reason, ['duplicate', 'fraudulent', 'requested_by_customer'], true) ? $reason : 'requested_by_customer';
     }
 
-    private function errorPage(string $title, string $message, int $orderId): Response
+    private function errorPage(string $title, string $message, int $orderId, bool $includeNoSales = false): Response
     {
-        return Response::html(AdminLayout::render($title, '<section class="admin-panel"><h2>' . $this->e($title) . '</h2><p>' . $this->e($message) . '</p><p><a href="/admin/sales?id=' . $orderId . '">Return to order</a></p></section>', 'sales'), 422);
+        return Response::html(AdminLayout::render($title, '<section class="admin-panel"><h2>' . $this->e($title) . '</h2><p>' . $this->e($message) . '</p><p><a href="/admin/sales?id=' . $orderId . $this->includeNoSalesQuery($includeNoSales) . '">Return to order</a></p></section>', 'sales'), 422);
     }
 
     private function notice(string $notice): string
     {
         return match ($notice) {
             'refund_sent' => '<div class="admin-notice success">Stripe refund created and recorded.</div>',
+            'saved_shipping_email' => '<div class="admin-notice success">Sales workflow saved and buyer shipping email queued.</div>',
+            'saved_shipping_email_unavailable' => '<div class="admin-notice warning">Sales workflow saved. Buyer shipping email was not queued because the order is not shipped, no buyer email exists, or the mail queue is unavailable.</div>',
             'saved' => '<div class="admin-notice success">Sales workflow saved.</div>',
             'security' => '<div class="admin-notice error">Security check failed. Please try again.</div>',
+            'missing' => '<div class="admin-notice error">Order was not found.</div>',
             default => '',
         };
     }

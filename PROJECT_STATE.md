@@ -2572,3 +2572,13 @@ Paid Stripe Checkout Session reconciliation now treats Stripe payment confirmati
 - Tenant admins can create Stripe refunds from ArtsFolio; refunds are stored in `sales_order_refunds` with Stripe refund id, amount, reason, status, actor, raw response, and optional inventory-restoration timestamp.
 - Full refunds can restore completed order inventory once, then resync legacy artwork inventory fields from active variants.
 - `/cart/checkout` now refuses to create another Stripe Checkout for a cart that already has a paid order; it checks out the cart, expires the cart cookie, and redirects to the existing success page.
+
+## Sales workflow fulfillment
+
+- Tenant and platform sales pages default to paid/refunded Stripe order rows and hide no-sale checkout rows unless `include_no_sales=1` is supplied.
+- Tenant order review supports workflow statuses `ordered`, `acknowledged`, `packed`, `shipped`, and `refunded`.
+- Shipped orders can queue a buyer shipping notification through `email_outbox` with `template_key = sales.shipping_notification`.
+- Shipping notification audit columns are `sales_orders.shipping_email_sent_at` and `sales_orders.shipping_email_outbox_id`, introduced by `database/migrations/0063_sales_workflow_shipping_email.sql`.
+- Stripe refunds are initiated from tenant order review via `POST /admin/sales/refund` and recorded in `sales_order_refunds`.
+
+# End of file.

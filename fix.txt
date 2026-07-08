@@ -1,9 +1,26 @@
 ## Now
 
+- There needs to be a mechanism for sales workflow - ordered, shipped.  There needs to be a way to send the shipping details to the buyer.
+- There is still no way to refund the buyer's payment if need be.
+- Sales analytics and sales pages need to be able to filter out no sales rows.
+
+##
+
+- Flat shipping is not working across products.  Each product adds $5 for shipping.  Two different stickers should be $5 total shipping, not $10 for shipping.
+- Curation entries should show thumbnails.  Also, add an edit button to each curation entry to open the artwork edit page.
+- On the artowkrs page, the filetering options do not stick across pages.  For example, I select a section, press apply.  I then edit one of the artworks.  When I come back from the artwork edit page, the filter selection and current page number are lost.
+
+
+##
+
 - On edit artworks page, portfolio sections should be alphabetized
-- On edit artworks page, make 
+- On artwoirks grid, clicking on the thumbnail should open the edit artwork page
 - After saving artwork, the user should be returned to the same artwork grid page that contains the recently-editied artwork
-- email tenant admin when multipole item stock s 10% of original quantity
+- email tenant admin when multiple item stock is 10% of original quantity
+
+##
+
+I'm uncomfortable with the way shipping costs work.  As an example, suppose I am selling stickers.  A sticker is $2.99, shipping is $5.00.  If I buy 10 different stickers, it should still only be $5.00 because these items are so small and light.  Please make suggestions as to how this situation might be handled within the platform.
 
 ##
 

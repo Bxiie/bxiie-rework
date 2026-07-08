@@ -13,6 +13,7 @@ $missing = [];
 foreach ([
     'refund action route' => "post('/admin/sales/refund'",
     'controller refund method' => 'public function refund(Request $request, TenantContext $tenant, ?array $currentUser): Response',
+    'admin refund section' => 'Refund from Stripe',
     'admin refund form' => 'Create Stripe refund',
     'Stripe refund API method' => 'public function refundPaymentIntent(',
     'refund persistence method' => 'public function recordStripeRefund(',

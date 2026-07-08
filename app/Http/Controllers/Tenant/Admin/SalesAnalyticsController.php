@@ -28,11 +28,12 @@ final class SalesAnalyticsController
         }
 
         $days = max(7, min(365, (int) ($_GET['days'] ?? 30)));
-        $summary = $this->sales->tenantSalesSummary($tenant);
+        $includeNoSales = isset($_GET['include_no_sales']) && (string) $_GET['include_no_sales'] === '1';
+        $summary = $this->sales->tenantSalesSummary($tenant, $includeNoSales);
         $byDay = $this->sales->tenantSalesByDay($tenant, $days);
         $bestSellers = $this->sales->tenantBestSellers($tenant);
 
-        $dayRows = $this->dayRows($byDay, false);
+        $dayRows = $this->dayRows($byDay);
         $sellerRows = '';
         foreach ($bestSellers as $item) {
             $sellerRows .= '<tr><td>' . $this->e((string) $item['title_snapshot']) . '</td><td>' . (int) $item['units_sold'] . '</td><td>' . $this->money((int) $item['gross_cents']) . '</td></tr>';
@@ -41,8 +42,10 @@ final class SalesAnalyticsController
             $sellerRows = '<tr><td colspan="3">No paid sales yet.</td></tr>';
         }
 
+        $filter = $this->filterHtml($days, $includeNoSales);
         $workflow = $this->workflowList((array) $summary['workflow_counts']);
         $body = <<<HTML
+{$filter}
 <section class="admin-billing-summary af-sales-kpis">
   <div class="admin-panel"><p class="admin-muted">Paid orders</p><h2>{$this->e((string) $summary['order_count'])}</h2></div>
   <div class="admin-panel"><p class="admin-muted">Gross sales</p><h2>{$this->money((int) $summary['gross_cents'])}</h2></div>
@@ -53,6 +56,7 @@ final class SalesAnalyticsController
 </section>
 <section class="admin-panel">
   <h2>Workflow status</h2>
+  <p class="admin-muted">Default view hides abandoned, unpaid, and other no-sale checkout rows.</p>
   {$workflow}
 </section>
 <section class="admin-panel">
@@ -69,7 +73,7 @@ HTML;
         return Response::html(AdminLayout::render('Sales analytics', $body, 'sales_analytics'));
     }
 
-    private function dayRows(array $rows, bool $includeCommission): string
+    private function dayRows(array $rows): string
     {
         $html = '';
         foreach ($rows as $row) {
@@ -81,10 +85,16 @@ HTML;
     private function workflowList(array $counts): string
     {
         $items = '';
-        foreach (['ordered', 'acknowledged', 'packed', 'shipped'] as $status) {
+        foreach (['ordered', 'acknowledged', 'packed', 'shipped', 'refunded'] as $status) {
             $items .= '<li><strong>' . $this->e(ucfirst($status)) . ':</strong> ' . (int) ($counts[$status] ?? 0) . '</li>';
         }
         return '<ul class="af-sales-workflow-list">' . $items . '</ul>';
+    }
+
+    private function filterHtml(int $days, bool $includeNoSales): string
+    {
+        $checked = $includeNoSales ? ' checked' : '';
+        return '<form class="admin-filter-bar" method="get" action="/admin/sales/analytics"><label>Days <input type="number" min="7" max="365" name="days" value="' . $days . '"></label><label><input type="checkbox" name="include_no_sales" value="1"' . $checked . '> Include no-sale workflow rows</label><button type="submit">Apply filter</button><a href="/admin/sales/analytics?days=' . $days . '">Paid sales only</a></form>';
     }
 
     private function money(int $cents): string { return '$' . number_format($cents / 100, 2); }

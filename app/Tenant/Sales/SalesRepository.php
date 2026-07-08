@@ -482,9 +482,13 @@ final class SalesRepository
         return $row ?: null;
     }
 
-    public function orders(TenantContext $tenant, int $limit = 100): array
+    public function orders(TenantContext $tenant, int $limit = 100, bool $includeNoSales = false): array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM sales_orders WHERE tenant_id = :tenant_id ORDER BY created_at DESC LIMIT ' . max(1, $limit));
+        $where = 'tenant_id = :tenant_id';
+        if (!$includeNoSales) {
+            $where .= ' AND payment_status IN ("paid", "complete", "succeeded", "partially_refunded", "refunded")';
+        }
+        $stmt = $this->pdo->prepare('SELECT * FROM sales_orders WHERE ' . $where . ' ORDER BY created_at DESC LIMIT ' . max(1, $limit));
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -498,12 +502,21 @@ final class SalesRepository
 
     public function updateWorkflow(TenantContext $tenant, int $orderId, string $status, array $shipping): void
     {
-        $allowed = ['ordered', 'acknowledged', 'packed', 'shipped'];
+        $allowed = ['ordered', 'acknowledged', 'packed', 'shipped', 'refunded'];
         if (!in_array($status, $allowed, true)) {
             $status = 'ordered';
         }
         $stmt = $this->pdo->prepare('UPDATE sales_orders SET workflow_status = :status, shipping_carrier = :carrier, shipping_tracking_number = :tracking, shipping_tracking_url = :url, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND id = :id');
         $stmt->execute(['tenant_id' => $tenant->tenantId, 'id' => $orderId, 'status' => $status, 'carrier' => $shipping['carrier'] ?? null, 'tracking' => $shipping['tracking'] ?? null, 'url' => $shipping['url'] ?? null]);
+    }
+
+    /**
+     * Records that a shipped-order buyer notification has been queued.
+     */
+    public function markShippingEmailQueued(TenantContext $tenant, int $orderId, int $outboxId): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE sales_orders SET shipping_email_sent_at = UTC_TIMESTAMP(), shipping_email_outbox_id = :outbox_id, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND id = :id');
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'id' => $orderId, 'outbox_id' => $outboxId]);
     }
 
     /**
@@ -910,7 +923,7 @@ final class SalesRepository
     /**
      * Returns tenant-scoped aggregate sales metrics for dashboards and analytics.
      */
-    public function tenantSalesSummary(TenantContext $tenant): array
+    public function tenantSalesSummary(TenantContext $tenant, bool $includeNoSales = false): array
     {
         $stmt = $this->pdo->prepare(
             'SELECT COUNT(*) AS order_count,
@@ -925,10 +938,14 @@ final class SalesRepository
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
         $summary = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
+        $statusWhere = 'tenant_id = :tenant_id';
+        if (!$includeNoSales) {
+            $statusWhere .= ' AND payment_status IN ("paid", "complete", "succeeded", "partially_refunded", "refunded")';
+        }
         $status = $this->pdo->prepare(
             'SELECT workflow_status, COUNT(*) AS order_count
              FROM sales_orders
-             WHERE tenant_id = :tenant_id
+             WHERE ' . $statusWhere . '
              GROUP BY workflow_status
              ORDER BY workflow_status'
         );
@@ -995,7 +1012,7 @@ final class SalesRepository
     /**
      * Returns platform-wide aggregate sales metrics for operator dashboards.
      */
-    public function platformSalesSummary(): array
+    public function platformSalesSummary(bool $includeNoSales = false): array
     {
         $summary = $this->pdo->query(
             'SELECT COUNT(*) AS order_count,
@@ -1009,9 +1026,11 @@ final class SalesRepository
              WHERE payment_status IN ("paid", "complete", "succeeded")'
         )->fetch(PDO::FETCH_ASSOC) ?: [];
 
+        $statusWhere = $includeNoSales ? '1 = 1' : 'payment_status IN ("paid", "complete", "succeeded", "partially_refunded", "refunded")';
         $status = $this->pdo->query(
             'SELECT workflow_status, COUNT(*) AS order_count
              FROM sales_orders
+             WHERE ' . $statusWhere . '
              GROUP BY workflow_status
              ORDER BY workflow_status'
         );
@@ -1075,9 +1094,10 @@ final class SalesRepository
         return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
     }
 
-    public function platformOrders(int $limit = 200): array
+    public function platformOrders(int $limit = 200, bool $includeNoSales = false): array
     {
-        $stmt = $this->pdo->query('SELECT o.*, t.name AS tenant_name, t.slug AS tenant_slug FROM sales_orders o JOIN tenants t ON t.id = o.tenant_id ORDER BY o.created_at DESC LIMIT ' . max(1, $limit));
+        $where = $includeNoSales ? '1 = 1' : 'o.payment_status IN ("paid", "complete", "succeeded", "partially_refunded", "refunded")';
+        $stmt = $this->pdo->query('SELECT o.*, t.name AS tenant_name, t.slug AS tenant_slug FROM sales_orders o JOIN tenants t ON t.id = o.tenant_id WHERE ' . $where . ' ORDER BY o.created_at DESC LIMIT ' . max(1, $limit));
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
