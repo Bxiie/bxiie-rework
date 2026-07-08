@@ -120,10 +120,7 @@ HTML,
             $slug = (string) ($slug['article'] ?? $slug['topic'] ?? $slug['slug'] ?? 'getting-started');
         }
 
-        $slug = trim($slug, '/');
-        if ($slug === '') {
-            $slug = 'getting-started';
-        }
+        $slug = $this->normalizeArticleSlug((string) $slug);
 
         if ($slug === 'developer') {
             return $this->developer($request, $currentUser);
@@ -303,22 +300,29 @@ HTML;
 HTML;
     }
 
+    /**
+     * Builds the help sidebar with stable machine slugs as array keys.
+     *
+     * A previous update accidentally wrote numeric arrays as [label, href].
+     * The existing renderer expects slug => [href, label], so the browser saw
+     * labels as URLs and opened paths such as /help/New%20admin%20setup%20tour.
+     */
     private function nav(string $active, bool $loggedIn): string
     {
         $items = [
-            ['Getting started', '/help'],
-            ['New admin setup tour', '/help/new-admin-tour'],
-            ['Tenant function index', '/help/tenant-admin-functions'],
-            ['Branding and content', '/help/branding'],
-            ['Artwork and curation', '/help/artworks'],
-            ['Events and exhibitions', '/help/events'],
-            ['Sales and refunds', '/help/sales'],
-            ['Messages and email signups', '/help/messages-email'],
-            ['Users, domains, and billing', '/help/users-domains-billing'],
-            ['Artist directory', '/help/directory'],
-            ['Stats', '/help/stats'],
-            ['Audit and diagnostics', '/help/audit'],
-            ['Training videos', '/help/training-videos'],
+            'getting-started' => ['/help', 'Getting started'],
+            'new-admin-tour' => ['/help/new-admin-tour', 'New admin setup tour'],
+            'tenant-admin-functions' => ['/help/tenant-admin-functions', 'Tenant function index'],
+            'branding' => ['/help/branding', 'Branding and content'],
+            'artworks' => ['/help/artworks', 'Artwork and curation'],
+            'events' => ['/help/events', 'Events and exhibitions'],
+            'sales' => ['/help/sales', 'Sales and refunds'],
+            'messages-email' => ['/help/messages-email', 'Messages and email signups'],
+            'users-domains-billing' => ['/help/users-domains-billing', 'Users, domains, and billing'],
+            'directory' => ['/help/directory', 'Artist directory'],
+            'stats' => ['/help/stats', 'Stats'],
+            'audit' => ['/help/audit', 'Audit and diagnostics'],
+            'training-videos' => ['/help/training-videos', 'Training videos'],
         ];
 
         if ($loggedIn) {
@@ -333,6 +337,39 @@ HTML;
         $html .= '</nav><p class="admin-muted"><a href="/">← Back to ArtsFolio</a></p>';
 
         return $html;
+    }
+
+    /**
+     * Accepts canonical slugs and repairs label-shaped URLs created by the
+     * broken sidebar so existing pasted/bookmarked links still land correctly.
+     */
+    private function normalizeArticleSlug(string $slug): string
+    {
+        $slug = trim(rawurldecode($slug), '/');
+        if ($slug === '') {
+            return 'getting-started';
+        }
+
+        $canonical = strtolower(trim($slug));
+        $canonical = preg_replace('/[^a-z0-9]+/', '-', $canonical) ?: 'getting-started';
+        $canonical = trim($canonical, '-');
+
+        $aliases = [
+            'new-admin-setup-tour' => 'new-admin-tour',
+            'tenant-function-index' => 'tenant-admin-functions',
+            'branding-and-content' => 'branding',
+            'artwork-and-curation' => 'artworks',
+            'events-and-exhibitions' => 'events',
+            'sales-and-refunds' => 'sales',
+            'messages-and-email-signups' => 'messages-email',
+            'users-domains-and-billing' => 'users-domains-billing',
+            'artist-directory' => 'directory',
+            'audit-and-diagnostics' => 'audit',
+            'training-videos' => 'training-videos',
+            'getting-started' => 'getting-started',
+        ];
+
+        return $aliases[$canonical] ?? $canonical;
     }
 
     private static function escape(string $value): string
