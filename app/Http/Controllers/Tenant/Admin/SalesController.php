@@ -104,7 +104,7 @@ HTML;
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
-        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin']) || !$this->csrf->verify((string) ($_POST['csrf_token'] ?? ''))) {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin']) || !$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
             return new Response('', 303, ['Location' => '/admin/sales?notice=security']);
         }
 
@@ -187,7 +187,7 @@ HTML;
         $orderId = (int) ($_POST['order_id'] ?? 0);
 
         try {
-            if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin']) || !$this->csrf->verify((string) ($_POST['csrf_token'] ?? ''))) {
+            if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin']) || !$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
                 return new Response('', 303, ['Location' => '/admin/sales?notice=security']);
             }
 
