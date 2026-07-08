@@ -2589,3 +2589,14 @@ Paid Stripe Checkout Session reconciliation now treats Stripe payment confirmati
 Tenant-admin sales order review pages render `sales_orders.shipping_address_json` as a human-readable shipping address through `SalesController::shippingAddressHtml()`. Raw Stripe JSON should not be displayed in sales order UI paths.
 
 <!-- End of sales shipping display state update. -->
+
+<!-- sales-shipping-contact-20260708 -->
+## 2026-07-08 Sales checkout shipping contact capture
+
+- Checkout now collects ship-to name, phone number, and shipping address locally on the cart before creating a Stripe Checkout Session.
+- Orders with non-zero shipping require complete shipping contact details before payment can start.
+- `0064_sales_order_shipping_contact.sql` persists cart-side shipping contact details and an order-level `shipping_phone`.
+- Stripe Checkout phone-number collection is enabled, and Stripe success/webhook reconciliation can enrich order shipping details with Stripe-provided phone/name.
+
+<!-- End of sales shipping contact state update. -->
+- 2026-07-08: Sales Checkout now pre-fills Stripe Checkout shipping by creating a Stripe Customer from the ArtsFolio cart/order shipping contact, passing that Customer to Checkout, and attaching PaymentIntent shipping details so buyers do not re-enter shipping data.

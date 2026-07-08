@@ -340,11 +340,12 @@ final class SalesRepository
             }
 
             $sellerNetCents = $sellerNetCents > 0 ? $sellerNetCents : max(0, $total - $commissionCents - $creditCardFeeCents);
+            $cartShipping = $this->cartShippingContactForOrder($cart);
             $stmt = $this->pdo->prepare(
                 'INSERT INTO sales_orders
-                    (tenant_id, cart_id, order_number, workflow_status, payment_status, currency, subtotal_cents, shipping_cents, commission_cents, credit_card_fee_cents, seller_net_cents, total_cents)
+                    (tenant_id, cart_id, order_number, workflow_status, payment_status, currency, subtotal_cents, shipping_cents, commission_cents, credit_card_fee_cents, seller_net_cents, total_cents, customer_name, customer_email, shipping_name, shipping_phone, shipping_address_json)
                  VALUES
-                    (:tenant_id, :cart_id, :order_number, "ordered", "checkout_pending", "usd", :subtotal, :shipping, :commission, :credit_card_fee, :seller_net, :total)'
+                    (:tenant_id, :cart_id, :order_number, "ordered", "checkout_pending", "usd", :subtotal, :shipping, :commission, :credit_card_fee, :seller_net, :total, :customer_name, :customer_email, :shipping_name, :shipping_phone, :shipping_address_json)'
             );
             $stmt->execute([
                 'tenant_id' => $tenant->tenantId,
@@ -356,6 +357,11 @@ final class SalesRepository
                 'credit_card_fee' => $creditCardFeeCents,
                 'seller_net' => $sellerNetCents,
                 'total' => $total,
+                'customer_name' => trim((string) ($cart['customer_name'] ?? '')) ?: null,
+                'customer_email' => strtolower(trim((string) (($cart['contact_email'] ?? '') ?: ($cart['customer_email'] ?? '')))) ?: null,
+                'shipping_name' => $cartShipping['name'] ?? null,
+                'shipping_phone' => $cartShipping['phone'] ?? null,
+                'shipping_address_json' => $cartShipping !== null ? json_encode($cartShipping, JSON_THROW_ON_ERROR) : null,
             ]);
             $orderId = (int) $this->pdo->lastInsertId();
 
@@ -431,6 +437,39 @@ final class SalesRepository
     {
         $stmt = $this->pdo->prepare('UPDATE sales_carts SET status = "checked_out", updated_at = CURRENT_TIMESTAMP WHERE id = :id');
         $stmt->execute(['id' => $cartId]);
+    }
+
+
+    /** @param array<string,mixed> $cart @return array<string,string>|null */
+    private function cartShippingContactForOrder(array $cart): ?array
+    {
+        $raw = trim((string) ($cart['shipping_address_json'] ?? ''));
+        $decoded = [];
+        if ($raw !== '') {
+            $candidate = json_decode($raw, true);
+            if (is_array($candidate)) {
+                $decoded = $candidate;
+            }
+        }
+
+        $shipping = [
+            'name' => trim((string) ($decoded['name'] ?? ($cart['customer_name'] ?? ''))),
+            'phone' => trim((string) ($decoded['phone'] ?? ($cart['shipping_phone'] ?? ''))),
+            'line1' => trim((string) ($decoded['line1'] ?? '')),
+            'line2' => trim((string) ($decoded['line2'] ?? '')),
+            'city' => trim((string) ($decoded['city'] ?? '')),
+            'state' => trim((string) ($decoded['state'] ?? '')),
+            'postal_code' => trim((string) ($decoded['postal_code'] ?? '')),
+            'country' => trim((string) ($decoded['country'] ?? 'US')),
+        ];
+
+        foreach ($shipping as $value) {
+            if ($value !== '') {
+                return $shipping;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -614,6 +653,8 @@ final class SalesRepository
             }
 
             $shippingJson = $shippingAddress ? json_encode($shippingAddress, JSON_THROW_ON_ERROR) : null;
+            $shippingName = is_array($shippingAddress) ? trim((string) ($shippingAddress['name'] ?? '')) : '';
+            $shippingPhone = is_array($shippingAddress) ? trim((string) ($shippingAddress['phone'] ?? '')) : '';
             $notes = (string) ($order['notes'] ?? '');
             if ($manualReviewNotes !== []) {
                 $notes = trim($notes);
@@ -628,6 +669,8 @@ final class SalesRepository
                         stripe_payment_intent_id = :payment_intent,
                         customer_email = COALESCE(:email, customer_email),
                         customer_name = COALESCE(:name, customer_name),
+                        shipping_name = COALESCE(:shipping_name, shipping_name),
+                        shipping_phone = COALESCE(:shipping_phone, shipping_phone),
                         shipping_address_json = COALESCE(:shipping, shipping_address_json),
                         notes = :notes,
                         updated_at = CURRENT_TIMESTAMP
@@ -638,6 +681,8 @@ final class SalesRepository
                 'payment_intent' => $paymentIntentId,
                 'email' => $customerEmail,
                 'name' => $customerName,
+                'shipping_name' => $shippingName !== '' ? $shippingName : null,
+                'shipping_phone' => $shippingPhone !== '' ? $shippingPhone : null,
                 'shipping' => $shippingJson,
                 'notes' => $notes !== '' ? $notes : null,
             ]);

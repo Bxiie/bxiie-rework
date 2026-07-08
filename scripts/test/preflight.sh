@@ -393,3 +393,6 @@ run_php scripts/test/platform_user_status_auth_static.php
 run_php scripts/test/platform_operations_timezone_static.php
 php scripts/test/artwork_edit_notes_grid_stock_static.php
 run_php scripts/test/analytics_bot_filter_static.php
+
+# Sales checkout shipping-contact regression.
+php scripts/test/sales_shipping_contact_collection_static.php

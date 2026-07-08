@@ -51,6 +51,19 @@ final class StripeWebhookController
                 } else {
                     $customer = $object['customer_details'] ?? [];
                     $shipping = $object['shipping_details']['address'] ?? null;
+                    if (is_array($shipping)) {
+                        $shippingDetails = is_array($object['shipping_details'] ?? null) ? $object['shipping_details'] : [];
+                        if (isset($shippingDetails['name'])) {
+                            $shipping['name'] = (string) $shippingDetails['name'];
+                        } elseif (is_array($customer) && isset($customer['name'])) {
+                            $shipping['name'] = (string) $customer['name'];
+                        }
+                        if (isset($shippingDetails['phone'])) {
+                            $shipping['phone'] = (string) $shippingDetails['phone'];
+                        } elseif (is_array($customer) && isset($customer['phone'])) {
+                            $shipping['phone'] = (string) $customer['phone'];
+                        }
+                    }
                     $this->sales->markPaidByStripeSession(
                         (string) $object['id'],
                         isset($object['payment_intent']) ? (string) $object['payment_intent'] : null,

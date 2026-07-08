@@ -51,11 +51,25 @@ final class StripeCheckoutService
             'payment_intent_data[metadata][artsfolio_order_id]' => (string) $order['id'],
             'payment_intent_data[metadata][artsfolio_tenant_id]' => (string) $order['tenant_id'],
             'payment_intent_data[metadata][artsfolio_cart_id]' => (string) ($order['cart_id'] ?? ''),
+            'phone_number_collection[enabled]' => 'true',
             'shipping_address_collection[allowed_countries][0]' => 'US',
             'shipping_address_collection[allowed_countries][1]' => 'CA',
         ];
 
-        if ($customerEmail !== null && filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+        $shippingContact = $this->orderShippingContact($order);
+        $prefilledCustomerId = $shippingContact !== null
+            ? $this->createCheckoutCustomer($secretKey, $order, $shippingContact, $customerEmail)
+            : null;
+        if ($prefilledCustomerId !== null) {
+            // Stripe Checkout can prefill shipping details from an existing
+            // Customer object. The same data is also attached to the
+            // PaymentIntent so Stripe records match the ArtsFolio order.
+            $payload['customer'] = $prefilledCustomerId;
+            $payload['customer_update[name]'] = 'auto';
+            $payload['customer_update[address]'] = 'auto';
+            $payload['customer_update[shipping]'] = 'auto';
+            $this->attachPaymentIntentShipping($payload, $shippingContact);
+        } elseif ($customerEmail !== null && filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
             $payload['customer_email'] = $customerEmail;
         }
 
@@ -169,6 +183,112 @@ final class StripeCheckoutService
 
 
     /**
+     * Build a normalized shipping contact from the local order row.
+     *
+     * Stripe Checkout Sessions cannot accept arbitrary one-off shipping
+     * address fields for prefill. Passing a Customer with shipping details is
+     * the supported hosted-checkout path, so ArtsFolio derives that Customer
+     * from the order data collected before Stripe Checkout starts.
+     *
+     * @param array<string,mixed> $order
+     * @return array<string,string>|null
+     */
+    private function orderShippingContact(array $order): ?array
+    {
+        $decoded = [];
+        $raw = trim((string) ($order['shipping_address_json'] ?? ''));
+        if ($raw !== '') {
+            $candidate = json_decode($raw, true);
+            if (is_array($candidate)) {
+                $decoded = $candidate;
+            }
+        }
+
+        $country = strtoupper(trim((string) ($decoded['country'] ?? 'US')));
+        if (!preg_match('/^[A-Z]{2}$/', $country)) {
+            $country = 'US';
+        }
+
+        $shipping = [
+            'name' => trim((string) ($decoded['name'] ?? ($order['shipping_name'] ?? ($order['customer_name'] ?? '')))),
+            'phone' => trim((string) ($decoded['phone'] ?? ($order['shipping_phone'] ?? ''))),
+            'line1' => trim((string) ($decoded['line1'] ?? '')),
+            'line2' => trim((string) ($decoded['line2'] ?? '')),
+            'city' => trim((string) ($decoded['city'] ?? '')),
+            'state' => trim((string) ($decoded['state'] ?? '')),
+            'postal_code' => trim((string) ($decoded['postal_code'] ?? '')),
+            'country' => $country,
+        ];
+
+        foreach (['name', 'line1', 'city', 'state', 'postal_code', 'country'] as $key) {
+            if ($shipping[$key] === '') {
+                return null;
+            }
+        }
+
+        return $shipping;
+    }
+
+    /**
+     * Create a Stripe Customer used only to prefill the hosted Checkout page.
+     *
+     * @param array<string,mixed> $order
+     * @param array<string,string> $shipping
+     */
+    private function createCheckoutCustomer(string $secretKey, array $order, array $shipping, ?string $customerEmail): ?string
+    {
+        $payload = [
+            'name' => $shipping['name'],
+            'phone' => $shipping['phone'],
+            'address[line1]' => $shipping['line1'],
+            'address[city]' => $shipping['city'],
+            'address[state]' => $shipping['state'],
+            'address[postal_code]' => $shipping['postal_code'],
+            'address[country]' => $shipping['country'],
+            'shipping[name]' => $shipping['name'],
+            'shipping[phone]' => $shipping['phone'],
+            'shipping[address][line1]' => $shipping['line1'],
+            'shipping[address][city]' => $shipping['city'],
+            'shipping[address][state]' => $shipping['state'],
+            'shipping[address][postal_code]' => $shipping['postal_code'],
+            'shipping[address][country]' => $shipping['country'],
+            'metadata[artsfolio_order_id]' => (string) ($order['id'] ?? ''),
+            'metadata[artsfolio_tenant_id]' => (string) ($order['tenant_id'] ?? ''),
+            'metadata[artsfolio_order_number]' => (string) ($order['order_number'] ?? ''),
+            'metadata[artsfolio_checkout_prefill]' => 'true',
+        ];
+
+        if ($customerEmail !== null && filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+            $payload['email'] = $customerEmail;
+        } elseif (filter_var((string) ($order['customer_email'] ?? ''), FILTER_VALIDATE_EMAIL)) {
+            $payload['email'] = (string) $order['customer_email'];
+        }
+        if ($shipping['line2'] !== '') {
+            $payload['address[line2]'] = $shipping['line2'];
+            $payload['shipping[address][line2]'] = $shipping['line2'];
+        }
+
+        $customer = $this->stripePost('https://api.stripe.com/v1/customers', $secretKey, $payload, 'Stripe customer prefill request failed');
+
+        return isset($customer['id']) && is_string($customer['id']) && $customer['id'] !== '' ? $customer['id'] : null;
+    }
+
+    /** @param array<string,string> $shipping @param array<string,string> $payload */
+    private function attachPaymentIntentShipping(array &$payload, array $shipping): void
+    {
+        $payload['payment_intent_data[shipping][name]'] = $shipping['name'];
+        $payload['payment_intent_data[shipping][phone]'] = $shipping['phone'];
+        $payload['payment_intent_data[shipping][address][line1]'] = $shipping['line1'];
+        $payload['payment_intent_data[shipping][address][city]'] = $shipping['city'];
+        $payload['payment_intent_data[shipping][address][state]'] = $shipping['state'];
+        $payload['payment_intent_data[shipping][address][postal_code]'] = $shipping['postal_code'];
+        $payload['payment_intent_data[shipping][address][country]'] = $shipping['country'];
+        if ($shipping['line2'] !== '') {
+            $payload['payment_intent_data[shipping][address][line2]'] = $shipping['line2'];
+        }
+    }
+
+    /**
      * Creates a Stripe refund for an ArtsFolio sales PaymentIntent.
      *
      * Destination-charge refunds should reverse connected-account transfer and
@@ -214,7 +334,7 @@ final class StripeCheckoutService
      * @param array<string,string> $payload
      * @return array<string,mixed>
      */
-    private function stripePost(string $url, string $secretKey, array $payload): array
+    private function stripePost(string $url, string $secretKey, array $payload, string $failureMessage = 'Stripe refund request failed'): array
     {
         $body = http_build_query($payload);
         $headers = [
@@ -241,10 +361,10 @@ final class StripeCheckoutService
 
         $decoded = json_decode((string) $raw, true);
         if ($status < 200 || $status >= 300 || !is_array($decoded)) {
-            throw new RuntimeException('Stripe refund request failed: ' . substr((string) $raw, 0, 500));
+            throw new RuntimeException($failureMessage . ': ' . substr((string) $raw, 0, 500));
         }
         if (empty($decoded['id'])) {
-            throw new RuntimeException('Stripe refund response did not include a refund id.');
+            throw new RuntimeException($failureMessage . ': Stripe response did not include an id.');
         }
 
         return $decoded;

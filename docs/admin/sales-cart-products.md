@@ -147,3 +147,15 @@ Use **Create Stripe refund** from the order review panel for ordinary paid-order
 Tenant-admin order review pages render buyer shipping addresses from the stored Stripe shipping JSON as readable address lines. If no shipping address was collected or saved, the order review shows an explicit `No shipping address recorded.` message instead of hiding the section.
 
 <!-- End of sales shipping display update. -->
+
+<!-- sales-shipping-contact-20260708 -->
+## Buyer shipping contact collection
+
+ArtsFolio checkout collects buyer email, buyer name, ship-to name, phone number, and shipping address on the cart before Stripe Checkout starts. Orders with a non-zero shipping charge require the phone number and complete shipping address before the Stripe session is created. Stripe Checkout also has phone-number collection enabled as a secondary confirmation source.
+
+# End of sales shipping contact admin documentation.
+
+### Shipping details and Stripe Checkout
+
+The cart collects the buyer shipping address and phone number before redirecting to Stripe. ArtsFolio sends those details to Stripe as prefilled Customer and PaymentIntent shipping data, so the buyer should not need to enter the same shipping details twice. Admin order review remains the local source for fulfillment and shipping-notification emails.
+

@@ -116,10 +116,12 @@ final class SalesController
 
         $customerEmail = $cart ? $this->e((string) (($cart['contact_email'] ?? '') ?: ($cart['customer_email'] ?? ''))) : '';
         $customerName = $cart ? $this->e((string) ($cart['customer_name'] ?? '')) : '';
+        $shippingContact = $cart ? $this->cartShippingContact($cart) : [];
+        $shippingFields = $this->shippingContactFields($shippingContact, $shippingTotal > 0);
         $fees = $this->saleEconomics($tenant, $items);
         $total = (int) $fees['total_cents'];
         $feeDisclosure = $items === [] ? '' : '<div class="sales-fee-disclosure"><p><strong>Seller payout disclosure:</strong> the artist receives sale amount minus ArtsFolio commission and credit card charges.</p><p>On this cart: platform commission ' . $this->money($fees['commission_cents']) . ', estimated credit card charges ' . $this->money($fees['credit_card_fee_cents']) . ', estimated artist proceeds ' . $this->money($fees['seller_net_cents']) . '.</p></div>';
-        $customerFields = '<fieldset class="tenant-form"><legend>Cart contact</legend><label>Name<input name="customer_name" value="' . $customerName . '" autocomplete="name"></label><label>Email<input type="email" name="customer_email" value="' . $customerEmail . '" autocomplete="email" required></label><p class="muted">Email lets ArtsFolio send checkout reminders for abandoned carts.</p></fieldset>';
+        $customerFields = '<fieldset class="tenant-form"><legend>Buyer contact</legend><label>Name<input name="customer_name" value="' . $customerName . '" autocomplete="name" required></label><label>Email<input type="email" name="customer_email" value="' . $customerEmail . '" autocomplete="email" required></label><p class="muted">Email lets ArtsFolio send checkout reminders and order updates.</p></fieldset>' . $shippingFields;
         $checkout = $items === [] ? '<p>Your cart is empty.</p>' : $customerFields . '<div class="cart-totals"><p><strong>Subtotal:</strong> ' . $this->money($subtotal) . '</p><p><strong>Shipping:</strong> ' . $this->money($shippingTotal) . '</p><p><strong>Total:</strong> ' . $this->money($total) . '</p></div>' . $feeDisclosure . '<button type="submit" formaction="/cart/update" formnovalidate>Update cart</button> <button type="submit" formaction="/cart/checkout">Checkout with Stripe</button>';
         $content = '<h1>Shopping cart</h1><form class="plan-edit-form cart-review-form" method="post"><input type="hidden" name="csrf_token" value="' . $csrf . '"><table class="admin-table cart-review-table"><thead><tr><th>Artwork</th><th>Qty</th><th>Unit</th><th>Shipping</th><th>Total</th><th>Remove</th></tr></thead><tbody>' . $rows . '</tbody></table>' . $checkout . '</form><p><a href="/portfolio">Continue browsing</a></p>';
 
@@ -218,6 +220,9 @@ final class SalesController
         $this->saveCartContact((int) $cart['id']);
         $items = $this->sales->items($cart);
         $fees = $this->saleEconomics($tenant, $items);
+        if ((int) ($fees['shipping_cents'] ?? 0) > 0 && !$this->postedShippingContactIsComplete()) {
+            return $this->tenantPageResponse($tenant, 'Shipping details required', '<h1>Shipping details required</h1><p>Please enter the buyer phone number and complete shipping address before starting checkout.</p><p><a href="/cart">Return to cart</a></p>', 422);
+        }
         $commissionCents = (int) $fees['commission_cents'];
         $scheme = 'https';
         $host = $request->host();
@@ -395,12 +400,32 @@ final class SalesController
     {
         $shipping = $session['shipping_details'] ?? null;
         if (is_array($shipping) && is_array($shipping['address'] ?? null)) {
-            return $shipping['address'];
+            $address = $shipping['address'];
+            if (is_array($address)) {
+                if (isset($shipping['name'])) {
+                    $address['name'] = (string) $shipping['name'];
+                }
+                if (isset($shipping['phone'])) {
+                    $address['phone'] = (string) $shipping['phone'];
+                }
+
+                return $address;
+            }
         }
 
         $customer = $session['customer_details'] ?? null;
         if (is_array($customer) && is_array($customer['address'] ?? null)) {
-            return $customer['address'];
+            $address = $customer['address'];
+            if (is_array($address)) {
+                if (isset($customer['name'])) {
+                    $address['name'] = (string) $customer['name'];
+                }
+                if (isset($customer['phone'])) {
+                    $address['phone'] = (string) $customer['phone'];
+                }
+
+                return $address;
+            }
         }
 
         return null;
@@ -697,18 +722,111 @@ HTML;
         if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return;
         }
+
+        $shipping = $this->postedShippingContact();
+        $shippingJson = $shipping !== null ? json_encode($shipping, JSON_THROW_ON_ERROR) : null;
+        $shippingPhone = $shipping['phone'] ?? null;
+
         try {
-            $stmt = $this->pdo->prepare('UPDATE sales_carts SET customer_email = :customer_email, contact_email = :contact_email, customer_name = :name, updated_at = CURRENT_TIMESTAMP WHERE id = :id');
+            $stmt = $this->pdo->prepare('UPDATE sales_carts SET customer_email = :customer_email, contact_email = :contact_email, customer_name = :name, shipping_phone = :shipping_phone, shipping_address_json = :shipping_address_json, updated_at = CURRENT_TIMESTAMP WHERE id = :id');
             $stmt->execute([
                 'id' => $cartId,
                 'customer_email' => $email,
                 'contact_email' => $email,
                 'name' => $name !== '' ? $name : null,
+                'shipping_phone' => $shippingPhone,
+                'shipping_address_json' => $shippingJson,
             ]);
         } catch (Throwable) {
             $stmt = $this->pdo->prepare('UPDATE sales_carts SET customer_email = :email, customer_name = :name, updated_at = CURRENT_TIMESTAMP WHERE id = :id');
             $stmt->execute(['id' => $cartId, 'email' => $email, 'name' => $name !== '' ? $name : null]);
         }
+    }
+
+    /** @param array<string,mixed> $cart @return array<string,string> */
+    private function cartShippingContact(array $cart): array
+    {
+        $decoded = [];
+        $raw = trim((string) ($cart['shipping_address_json'] ?? ''));
+        if ($raw !== '') {
+            $candidate = json_decode($raw, true);
+            if (is_array($candidate)) {
+                $decoded = $candidate;
+            }
+        }
+
+        return [
+            'name' => trim((string) ($decoded['name'] ?? ($cart['customer_name'] ?? ''))),
+            'phone' => trim((string) ($decoded['phone'] ?? ($cart['shipping_phone'] ?? ''))),
+            'line1' => trim((string) ($decoded['line1'] ?? '')),
+            'line2' => trim((string) ($decoded['line2'] ?? '')),
+            'city' => trim((string) ($decoded['city'] ?? '')),
+            'state' => trim((string) ($decoded['state'] ?? '')),
+            'postal_code' => trim((string) ($decoded['postal_code'] ?? '')),
+            'country' => trim((string) ($decoded['country'] ?? 'US')),
+        ];
+    }
+
+    /** @param array<string,string> $shipping */
+    private function shippingContactFields(array $shipping, bool $required): string
+    {
+        $requiredAttr = $required ? ' required' : '';
+        $note = $required ? 'A phone number and shipping address are required for orders with shipping.' : 'Shipping details are saved with the order when shipping applies.';
+
+        return '<fieldset class="tenant-form"><legend>Shipping details</legend>'
+            . '<label>Ship-to name<input name="shipping_name" value="' . $this->e($shipping['name'] ?? '') . '" autocomplete="shipping name"' . $requiredAttr . '></label>'
+            . '<label>Phone<input type="tel" name="shipping_phone" value="' . $this->e($shipping['phone'] ?? '') . '" autocomplete="shipping tel"' . $requiredAttr . '></label>'
+            . '<label>Address line 1<input name="shipping_line1" value="' . $this->e($shipping['line1'] ?? '') . '" autocomplete="shipping address-line1"' . $requiredAttr . '></label>'
+            . '<label>Address line 2<input name="shipping_line2" value="' . $this->e($shipping['line2'] ?? '') . '" autocomplete="shipping address-line2"></label>'
+            . '<label>City<input name="shipping_city" value="' . $this->e($shipping['city'] ?? '') . '" autocomplete="shipping address-level2"' . $requiredAttr . '></label>'
+            . '<label>State / province<input name="shipping_state" value="' . $this->e($shipping['state'] ?? '') . '" autocomplete="shipping address-level1"' . $requiredAttr . '></label>'
+            . '<label>ZIP / postal code<input name="shipping_postal_code" value="' . $this->e($shipping['postal_code'] ?? '') . '" autocomplete="shipping postal-code"' . $requiredAttr . '></label>'
+            . '<label>Country<input name="shipping_country" value="' . $this->e(($shipping['country'] ?? '') !== '' ? ($shipping['country'] ?? '') : 'US') . '" autocomplete="shipping country"' . $requiredAttr . '></label>'
+            . '<p class="muted">' . $this->e($note) . '</p></fieldset>';
+    }
+
+    /** @return array<string,string>|null */
+    private function postedShippingContact(): ?array
+    {
+        $name = trim((string) ($_POST['shipping_name'] ?? ($_POST['customer_name'] ?? '')));
+        $phone = trim((string) ($_POST['shipping_phone'] ?? ''));
+        $line1 = trim((string) ($_POST['shipping_line1'] ?? ''));
+        $line2 = trim((string) ($_POST['shipping_line2'] ?? ''));
+        $city = trim((string) ($_POST['shipping_city'] ?? ''));
+        $state = trim((string) ($_POST['shipping_state'] ?? ''));
+        $postal = trim((string) ($_POST['shipping_postal_code'] ?? ''));
+        $country = strtoupper(trim((string) ($_POST['shipping_country'] ?? 'US')));
+
+        if ($name === '' && $phone === '' && $line1 === '' && $city === '' && $state === '' && $postal === '') {
+            return null;
+        }
+
+        return [
+            'name' => $name,
+            'phone' => $phone,
+            'line1' => $line1,
+            'line2' => $line2,
+            'city' => $city,
+            'state' => $state,
+            'postal_code' => $postal,
+            'country' => $country !== '' ? $country : 'US',
+        ];
+    }
+
+    private function postedShippingContactIsComplete(): bool
+    {
+        $shipping = $this->postedShippingContact();
+        if ($shipping === null) {
+            return false;
+        }
+
+        foreach (['name', 'phone', 'line1', 'city', 'state', 'postal_code', 'country'] as $key) {
+            if (trim((string) ($shipping[$key] ?? '')) === '') {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function salesEnabled(TenantContext $tenant): bool
