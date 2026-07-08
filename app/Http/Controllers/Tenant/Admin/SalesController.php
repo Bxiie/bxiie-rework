@@ -92,11 +92,12 @@ HTML;
             return new Response('', 303, ['Location' => '/admin/sales?notice=missing']);
         }
 
+        $includeNoSales = isset($_GET['include_no_sales']);
         $notice = $this->notice((string) ($_GET['notice'] ?? ''));
         $csrf = $this->e($this->csrf->getOrCreate());
         $body = $notice
-            . '<p><a class="admin-link" href="/admin/sales">← Back to sales</a></p>'
-            . $this->detailForm($order, $csrf);
+            . '<p><a class="admin-link" href="/admin/sales' . $this->includeNoSalesQuery($includeNoSales) . '">← Back to sales</a></p>'
+            . $this->detailForm($order, $csrf, $includeNoSales);
 
         return Response::html(AdminLayout::render('Review ' . (string) $order['order_number'], $body, 'sales'));
     }
