@@ -229,6 +229,10 @@ final class SalesController
         $successUrl = $scheme . '://' . $host . '/checkout/success?session_id={CHECKOUT_SESSION_ID}';
         $order = null;
         $stripeSecretKey = (string) $this->platformSettings->get('stripe_secret_key', '');
+        $connectedAccountId = $this->tenantStripeConnectedAccountId($tenant);
+        if ($connectedAccountId === null || !$this->tenantStripeAccountReady($tenant)) {
+            return $this->tenantPageResponse($tenant, 'Checkout is not ready yet', '<h1>Checkout is not ready yet</h1><p>This artist needs to finish connecting Stripe before online checkout can accept payment. Please contact the artist directly or try again later.</p><p><a href="/cart">Return to cart</a></p>', 503);
+        }
         $checkoutService = new StripeCheckoutService();
 
         // A previous browser round trip can leave the cart with a pending order
@@ -250,7 +254,7 @@ final class SalesController
                 $items,
                 $successUrl,
                 $cancelUrl,
-                trim((string) $this->tenantSettings->get($tenant, 'stripe_connected_account_id', '')) ?: null,
+                $connectedAccountId,
                 $commissionCents + (int) $fees['credit_card_fee_cents'],
                 (int) ($order['shipping_cents'] ?? $fees['shipping_cents']),
                 $customerEmail !== '' ? $customerEmail : null,
@@ -527,6 +531,30 @@ final class SalesController
         }
 
         @file_put_contents('/tmp/artsfolio_checkout_success.log', $line, FILE_APPEND | LOCK_EX);
+    }
+
+    /**
+     * Returns the connected Stripe account used for destination-charge checkout.
+     */
+    private function tenantStripeConnectedAccountId(TenantContext $tenant): ?string
+    {
+        $connectedAccountId = trim((string) $this->tenantSettings->get($tenant, 'stripe_connected_account_id', ''));
+
+        return $connectedAccountId !== '' ? $connectedAccountId : null;
+    }
+
+    /**
+     * Checkout must not create platform-only charges for artist sales.
+     *
+     * Stripe Connect onboarding stores these readiness flags when the artist
+     * returns from Stripe. If the flags are absent or false, checkout pauses
+     * until the artist completes onboarding in Settings.
+     */
+    private function tenantStripeAccountReady(TenantContext $tenant): bool
+    {
+        return (string) $this->tenantSettings->get($tenant, 'stripe_connect_charges_enabled', '0') === '1'
+            && (string) $this->tenantSettings->get($tenant, 'stripe_connect_payouts_enabled', '0') === '1'
+            && (string) $this->tenantSettings->get($tenant, 'stripe_connect_details_submitted', '0') === '1';
     }
 
     private function tenantPageResponse(TenantContext $tenant, string $title, string $body, int $status = 200, array $headers = []): Response

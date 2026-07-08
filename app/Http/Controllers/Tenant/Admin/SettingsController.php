@@ -10,8 +10,10 @@ use App\Http\Response;
 use App\Http\View\TenantAdminLayout;
 use App\Http\View\ErrorPage;
 use App\Platform\Audit\AuditLogRepository;
+use App\Platform\Settings\PlatformSettingsRepository;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Security\CsrfTokenService;
+use App\Tenant\Sales\StripeConnectService;
 use App\Tenant\Settings\TenantSettingsRepository;
 use PDO;
 
@@ -51,6 +53,7 @@ final class SettingsController
         $homeIntro = $this->setting($tenant, 'home_intro', 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.');
         $salesNotes = $this->setting($tenant, 'sales_notes', 'Sales are handled directly by the artist. Contact the studio for shipping, pickup, installation, and timing details.');
         $stripeConnectedAccountId = $this->setting($tenant, 'stripe_connected_account_id', '');
+        $stripeConnectPanel = $this->stripeConnectPanel($request, $tenant, $csrf);
         $homeTab = $this->setting($tenant, 'home_tab', 'Home');
         $portfolioTab = $this->setting($tenant, 'portfolio_tab', 'Portfolio');
         $aboutTab = $this->setting($tenant, 'about_tab', 'About');
@@ -275,8 +278,11 @@ HTML;
                 <p><a class="button" href="https://dashboard.stripe.com/settings/payouts" target="_blank" rel="noopener">Open Stripe payout settings</a></p>
                 <p class="admin-help">Before taking live sales, make sure Stripe has your identity, tax, bank, and payout information. Stripe controls payout timing and may hold payouts while account review is incomplete.</p>
             </div>
+            {$stripeConnectPanel}
+            <details class="stripe-connect-manual-setup"><summary>Manual connected account ID setup</summary>
             <label>Stripe connected account ID <span class="admin-muted">manual setup</span><input name="stripe_connected_account_id" value="{$stripeConnectedAccountId}" placeholder="acct_..."></label>
-            <p class="admin-help">Required for direct Stripe Connect payouts. Paste your <code>acct_...</code> ID here after your Stripe account is connected. Leave blank only during platform testing.</p>
+            <p class="admin-help">Required for direct Stripe Connect payouts. Paste your <code>acct_...</code> ID only when you are repairing or migrating an account manually. Most artists should use the Connect Stripe button above.</p>
+            </details>
         </fieldset>
         <fieldset>
             <legend>New artwork defaults</legend>
@@ -426,6 +432,116 @@ HTML;
         $this->auditAction($request, $tenant, $currentUser, ['before' => $before, 'after' => $after]);
 
         return new Response('', 303, ['Location' => '/admin/settings?section=' . rawurlencode($activeSection) . '&notice=saved']);
+    }
+
+    /**
+     * Starts Stripe-hosted onboarding for your payout account.
+     */
+    public function connectStripe(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::html('<h1>Invalid request</h1><p>Security check failed.</p>', 419);
+        }
+        if ($this->pdo === null) {
+            return new Response('', 303, ['Location' => '/admin/settings?section=miscellaneous&stripe_connect=missing-database']);
+        }
+
+        try {
+            $platformSettings = new PlatformSettingsRepository($this->pdo);
+            $secretKey = (string) $platformSettings->get('stripe_secret_key', '');
+            $connect = new StripeConnectService();
+            $connectedAccountId = trim((string) $this->settings->get($tenant, 'stripe_connected_account_id', ''));
+
+            if ($connectedAccountId === '') {
+                $account = $connect->createExpressAccount(
+                    $secretKey,
+                    $this->connectEmail($tenant),
+                    $this->connectBusinessName($tenant),
+                    $tenant->tenantId,
+                    $tenant->slug,
+                    (string) $platformSettings->get('stripe_connect_default_country', 'US'),
+                );
+                $connectedAccountId = (string) $account['id'];
+                $this->settings->set($tenant, 'stripe_connected_account_id', $connectedAccountId);
+                $this->storeStripeConnectStatus($tenant, $account);
+            }
+
+            $baseUrl = $this->requestBaseUrl($request);
+            $link = $connect->createOnboardingLink(
+                $secretKey,
+                $connectedAccountId,
+                $baseUrl . '/admin/settings/stripe/refresh',
+                $baseUrl . '/admin/settings/stripe/return',
+            );
+            $url = trim((string) ($link['url'] ?? ''));
+            if ($url === '') {
+                throw new \RuntimeException('Stripe did not return an onboarding URL.');
+            }
+
+            $this->auditStripeConnect($request, $tenant, $currentUser, 'stripe_connect.started', ['stripe_connected_account_id' => $connectedAccountId]);
+
+            return new Response('', 303, ['Location' => $url]);
+        } catch (\Throwable $e) {
+            $this->settings->set($tenant, 'stripe_connect_last_error', mb_substr($e->getMessage(), 0, 500));
+
+            return new Response('', 303, ['Location' => '/admin/settings?section=miscellaneous&stripe_connect=error']);
+        }
+    }
+
+    /**
+     * Stripe sends artists here after hosted onboarding. The account may still
+     * be restricted, so this refreshes and displays the current readiness flags.
+     */
+    public function stripeConnectReturn(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        return $this->refreshStripeConnectStatus($request, $tenant, $currentUser, 'return');
+    }
+
+    /**
+     * Stripe onboarding links are short-lived. If one expires, Stripe sends the
+     * artist here and ArtsFolio immediately creates a fresh hosted link.
+     */
+    public function stripeConnectRefresh(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+
+        $_POST['csrf_token'] = $this->csrf->getOrCreate();
+
+        return $this->connectStripe($request, $tenant, $currentUser);
+    }
+
+    private function refreshStripeConnectStatus(Request $request, TenantContext $tenant, ?array $currentUser, string $source): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+        if ($this->pdo === null) {
+            return new Response('', 303, ['Location' => '/admin/settings?section=miscellaneous&stripe_connect=missing-database']);
+        }
+
+        $connectedAccountId = trim((string) $this->settings->get($tenant, 'stripe_connected_account_id', ''));
+        if ($connectedAccountId === '') {
+            return new Response('', 303, ['Location' => '/admin/settings?section=miscellaneous&stripe_connect=missing-account']);
+        }
+
+        try {
+            $secretKey = (string) (new PlatformSettingsRepository($this->pdo))->get('stripe_secret_key', '');
+            $account = (new StripeConnectService())->retrieveAccount($secretKey, $connectedAccountId);
+            $this->storeStripeConnectStatus($tenant, $account);
+            $ready = !empty($account['charges_enabled']) && !empty($account['payouts_enabled']) && !empty($account['details_submitted']);
+            $this->auditStripeConnect($request, $tenant, $currentUser, 'stripe_connect.refreshed', ['source' => $source, 'ready' => $ready]);
+
+            return new Response('', 303, ['Location' => '/admin/settings?section=miscellaneous&stripe_connect=' . ($ready ? 'ready' : 'pending')]);
+        } catch (\Throwable $e) {
+            $this->settings->set($tenant, 'stripe_connect_last_error', mb_substr($e->getMessage(), 0, 500));
+
+            return new Response('', 303, ['Location' => '/admin/settings?section=miscellaneous&stripe_connect=error']);
+        }
     }
 
 
@@ -1504,6 +1620,101 @@ private function safeOpacity(string $value, string $default): string
         $value = trim($value, '-');
 
         return $value !== '' ? $value : $default;
+    }
+
+    /**
+     * Renders the artist-facing Stripe Connect status and action panel.
+     */
+    private function stripeConnectPanel(Request $request, TenantContext $tenant, string $csrf): string
+    {
+        $connectedAccountId = trim((string) $this->settings->get($tenant, 'stripe_connected_account_id', ''));
+        $chargesEnabled = (string) $this->settings->get($tenant, 'stripe_connect_charges_enabled', '0') === '1';
+        $payoutsEnabled = (string) $this->settings->get($tenant, 'stripe_connect_payouts_enabled', '0') === '1';
+        $detailsSubmitted = (string) $this->settings->get($tenant, 'stripe_connect_details_submitted', '0') === '1';
+        $lastError = $this->escape((string) $this->settings->get($tenant, 'stripe_connect_last_error', ''));
+        $notice = $this->escape((string) ($_GET['stripe_connect'] ?? ''));
+        $statusText = $connectedAccountId === ''
+            ? 'Not connected yet'
+            : (($chargesEnabled && $payoutsEnabled && $detailsSubmitted) ? 'Connected and ready for checkout' : 'Connected, but Stripe still needs more information');
+        $statusClass = $connectedAccountId === '' ? 'is-warning' : (($chargesEnabled && $payoutsEnabled && $detailsSubmitted) ? 'is-success' : 'is-warning');
+        $buttonText = $connectedAccountId === '' ? 'Connect Stripe' : 'Continue Stripe setup';
+        $accountHtml = $connectedAccountId !== '' ? '<p class="admin-help">Connected account: <code>' . $this->escape($connectedAccountId) . '</code></p>' : '';
+        $noticeHtml = match ($notice) {
+            'ready' => '<p class="admin-notice admin-notice-success">Stripe is connected. Buyers can check out online.</p>',
+            'pending' => '<p class="admin-notice admin-notice-warning">Stripe saved your progress, but the account is not ready yet. Continue setup to finish payout verification.</p>',
+            'error' => '<p class="admin-notice admin-notice-error">Stripe setup could not be completed. ' . ($lastError !== '' ? $lastError : 'Check platform Stripe settings and try again.') . '</p>',
+            default => '',
+        };
+
+        return <<<HTML
+            <div class="admin-callout stripe-connect-panel" data-stripe-connect-panel>
+                <h4>How you get paid</h4>
+                <p>ArtsFolio uses Stripe Connect for artwork sales. Buyers pay through Stripe Checkout, Stripe routes the artwork payment to your connected Stripe account, and Stripe pays out to the bank account you set up in Stripe.</p>
+                {$noticeHtml}
+                <p><strong>Status:</strong> <span class="stripe-connect-status {$statusClass}">{$statusText}</span></p>
+                {$accountHtml}
+                <ul class="admin-help-list">
+                    <li>Click the button below to set up or continue your Stripe payout account.</li>
+                    <li>Stripe will collect banking, identity, tax, and business details on its own secure pages.</li>
+                    <li>Come back here after Stripe redirects you, then confirm the status says connected and ready.</li>
+                </ul>
+                <form method="post" action="/admin/settings/stripe/connect" class="inline-admin-form">
+                    <input type="hidden" name="csrf_token" value="{$csrf}">
+                    <button type="submit">{$buttonText}</button>
+                </form>
+                <p class="admin-help">Online checkout is paused until Stripe says your account can accept charges and receive payouts.</p>
+            </div>
+HTML;
+    }
+
+    /**
+     * Stores non-secret Stripe connected-account readiness flags for admin UI
+     * and checkout gating. Stripe remains the source of truth.
+     *
+     * @param array<string,mixed> $account
+     */
+    private function storeStripeConnectStatus(TenantContext $tenant, array $account): void
+    {
+        $this->settings->set($tenant, 'stripe_connect_charges_enabled', !empty($account['charges_enabled']) ? '1' : '0');
+        $this->settings->set($tenant, 'stripe_connect_payouts_enabled', !empty($account['payouts_enabled']) ? '1' : '0');
+        $this->settings->set($tenant, 'stripe_connect_details_submitted', !empty($account['details_submitted']) ? '1' : '0');
+        $this->settings->set($tenant, 'stripe_connect_country', isset($account['country']) ? (string) $account['country'] : '');
+        $this->settings->set($tenant, 'stripe_connect_default_currency', isset($account['default_currency']) ? (string) $account['default_currency'] : '');
+        $this->settings->set($tenant, 'stripe_connect_dashboard_url', isset($account['login_links']['url']) ? (string) $account['login_links']['url'] : '');
+        $this->settings->set($tenant, 'stripe_connect_last_error', '');
+        $this->settings->set($tenant, 'stripe_connect_status_checked_at', gmdate('c'));
+    }
+
+    private function connectEmail(TenantContext $tenant): string
+    {
+        $email = trim((string) $this->settings->get($tenant, 'site_admin_email', ''));
+
+        return filter_var($email, FILTER_VALIDATE_EMAIL) ? strtolower($email) : '';
+    }
+
+    private function connectBusinessName(TenantContext $tenant): string
+    {
+        $name = trim((string) $this->settings->get($tenant, 'artist_name', $tenant->name));
+
+        return $name !== '' ? $name : $tenant->name;
+    }
+
+    private function requestBaseUrl(Request $request): string
+    {
+        $proto = strtolower((string) $request->server('HTTP_X_FORWARDED_PROTO', ''));
+        $scheme = in_array($proto, ['http', 'https'], true) ? $proto : 'https';
+        $host = trim($request->host());
+
+        return $scheme . '://' . $host;
+    }
+
+    /** @param array<string,mixed> $details */
+    private function auditStripeConnect(Request $request, TenantContext $tenant, ?array $currentUser, string $action, array $details = []): void
+    {
+        if (!$this->auditLog) {
+            return;
+        }
+        $this->auditLog->record($action, $tenant->tenantId, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, 'tenant_settings', (string) $tenant->tenantId, $details, $request->server('REMOTE_ADDR'));
     }
 
     private function setting(TenantContext $tenant, string $key, string $default = ''): string

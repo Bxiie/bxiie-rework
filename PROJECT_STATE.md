@@ -2703,3 +2703,12 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 
 - Logo rendering: platform, auth, error, tenant admin, and shared public headers preserve logo aspect ratio using auto dimensions, max constraints, and object-fit containment.
 <!-- End of file. -->
+
+## Stripe Connect onboarding for artist payouts
+
+- Tenant Settings now includes a Connect Stripe payout panel that creates Stripe Express connected accounts and redirects artists to Stripe-hosted onboarding.
+- Tenant routes added: POST `/admin/settings/stripe/connect`, GET `/admin/settings/stripe/return`, and GET `/admin/settings/stripe/refresh`.
+- Public checkout is paused unless the tenant has a connected Stripe account with `charges_enabled`, `payouts_enabled`, and `details_submitted` stored as true in tenant settings.
+- Stripe remains the source of truth for KYC, bank accounts, payout timing, restrictions, disputes, and chargebacks. ArtsFolio stores only non-secret connected-account IDs and readiness flags.
+
+<!-- End of file. -->

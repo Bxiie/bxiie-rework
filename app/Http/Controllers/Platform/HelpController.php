@@ -76,6 +76,10 @@ HTML,
 <li><strong>Stripe setup.</strong> Stripe must be connected before you rely on automatic payouts.</li>
 </ul>
 <h2>How you get paid</h2>
+<p>Before buyers can check out online, click <strong>Settings</strong> in your sidebar, open the sales and payout area, and click <strong>Connect Stripe</strong>. Stripe will guide you through identity, banking, tax, and payout details on Stripe-hosted pages.</p>
+<p>When you return to ArtsFolio, check the Stripe status box. Online checkout is enabled only when Stripe says your account can accept charges and receive payouts. This prevents your art sales from becoming platform-only charges that do not route to you.</p>
+<h3>Stripe payout setup</h3>
+<ol><li>Click <strong>Settings</strong> in the sidebar.</li><li>Find <strong>How you get paid</strong>.</li><li>Click <strong>Connect Stripe</strong> or <strong>Continue Stripe setup</strong>.</li><li>Complete the Stripe-hosted onboarding screens.</li><li>Return to ArtsFolio and confirm the status says connected and ready for checkout.</li></ol>
 <p>ArtsFolio uses Stripe Connect for artwork payments. The buyer pays through Stripe Checkout. Stripe then routes the sale to your connected Stripe account and pays out to the bank account you have set up in Stripe.</p>
 <ol class="flow-list compact">
 <li><strong>Connect Stripe in Settings.</strong><span>Click <strong>Settings</strong> in the sidebar, then find the sales and payout area. Follow the Stripe guidance there and save your connected account details.</span></li>

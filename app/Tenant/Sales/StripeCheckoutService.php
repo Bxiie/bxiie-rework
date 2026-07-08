@@ -334,7 +334,7 @@ final class StripeCheckoutService
      * @param array<string,string> $payload
      * @return array<string,mixed>
      */
-    private function stripePost(string $url, string $secretKey, array $payload, string $failureMessage = 'Stripe refund request failed'): array
+    private function stripePost(string $url, string $secretKey, array $payload, string $failureMessage = 'Stripe refund request failed', ?string $idempotencyKey = null): array
     {
         $body = http_build_query($payload);
         $headers = [

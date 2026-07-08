@@ -727,6 +727,16 @@
     {
         "scope": "tenant",
         "method": "GET",
+        "path": "/admin/settings/stripe/refresh"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
+        "path": "/admin/settings/stripe/return"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
         "path": "/admin/stats"
     },
     {
@@ -1008,6 +1018,11 @@
         "scope": "tenant",
         "method": "POST",
         "path": "/admin/settings"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/settings/stripe/connect"
     },
     {
         "scope": "tenant",

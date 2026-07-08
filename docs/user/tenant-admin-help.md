@@ -27,3 +27,12 @@ Help articles should speak to the artist directly. Prefer “you,” “your sit
 Keep each help page practical enough that you can complete the task with the article open beside the admin screen. Each major feature should explain what the page is for, how to use it, what to verify after saving, and common mistakes or troubleshooting notes.
 
 <!-- End of file. -->
+
+
+## Stripe payout setup
+
+To get paid for artwork sales, click **Settings** in the sidebar and find **How you get paid**. Click **Connect Stripe** to open Stripe-hosted onboarding. Stripe collects your banking, identity, tax, and business details directly. After Stripe sends you back to ArtsFolio, confirm that the status says your account is connected and ready for checkout.
+
+Online checkout is paused until Stripe confirms that your account can accept charges and receive payouts. This protects you from buyers paying into the platform account without the sale routing to your connected account.
+
+<!-- End of file. -->
