@@ -717,6 +717,11 @@
     {
         "scope": "tenant",
         "method": "GET",
+        "path": "/admin/sales/refund"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
         "path": "/admin/settings"
     },
     {

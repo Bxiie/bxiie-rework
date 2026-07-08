@@ -28,3 +28,8 @@ Refunds use `StripeCheckoutService::refundPaymentIntent()` and persist local aud
 
 ArtsFolio collects buyer contact and shipping details before creating a Stripe Checkout Session. When those details are present on the local `sales_orders` row, `App\Tenant\Sales\StripeCheckoutService` creates a Stripe Customer with the same email/name/phone/shipping address, passes that Customer to Checkout, sets `customer_update[name|address|shipping]=auto`, and attaches the same shipping fields to `payment_intent_data[shipping]`. This avoids asking the buyer to retype shipping details at Stripe while keeping Stripe's hosted Checkout flow as the payment surface.
 
+## Refund safety
+
+Tenant-admin refunds are created only by POSTing the order review form to `/admin/sales/refund`. Direct browser loads of that URL redirect back to the order UI and never call Stripe. Refund POSTs use a Stripe `Idempotency-Key` derived from tenant id, order id, PaymentIntent id, refund amount, and reason so a retry after a transient ArtsFolio error does not create a duplicate Stripe refund.
+
+# End of file.

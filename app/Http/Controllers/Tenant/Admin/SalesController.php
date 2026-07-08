@@ -164,39 +164,58 @@ HTML;
         return new Response('', 303, ['Location' => $target]);
     }
 
+    /**
+     * Redirect direct browser loads of the refund action back to the review UI.
+     * Refund creation must remain POST-only because it talks to live Stripe.
+     */
+    public function refundGet(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+        }
+
+        $orderId = (int) ($_GET['order_id'] ?? $_GET['id'] ?? 0);
+        $location = $orderId > 0
+            ? '/admin/sales/order?id=' . $orderId . '&notice=refund_direct'
+            : '/admin/sales?notice=refund_direct';
+
+        return new Response('', 303, ['Location' => $location]);
+    }
+
     public function refund(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
-        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin']) || !$this->csrf->verify((string) ($_POST['csrf_token'] ?? ''))) {
-            return new Response('', 303, ['Location' => '/admin/sales?notice=security']);
-        }
-
         $orderId = (int) ($_POST['order_id'] ?? 0);
-        $includeNoSales = isset($_POST['include_no_sales']);
-        $order = $this->sales->order($tenant, $orderId);
-        if (!$order) {
-            return new Response('', 303, ['Location' => '/admin/sales?notice=missing' . $this->includeNoSalesQuery($includeNoSales)]);
-        }
-
-        $remainingCents = max(0, (int) $order['total_cents'] - $this->sales->orderRefundTotal($orderId));
-        $scope = (string) ($_POST['refund_scope'] ?? 'full');
-        $amountCents = $scope === 'custom' ? $this->dollarsToCents((string) ($_POST['refund_amount'] ?? '0')) : $remainingCents;
-        $reason = $this->stripeReason((string) ($_POST['refund_reason'] ?? 'requested_by_customer'));
-        $restockInventory = isset($_POST['restock_inventory']) && $scope !== 'custom' && $amountCents === $remainingCents;
-        $paymentIntentId = trim((string) ($order['stripe_payment_intent_id'] ?? ''));
-
-        if (!in_array((string) $order['payment_status'], ['paid', 'complete', 'succeeded', 'partially_refunded'], true)) {
-            return $this->errorPage('Refund unavailable', 'Only paid orders can be refunded from ArtsFolio.', $orderId, $includeNoSales);
-        }
-        if ($paymentIntentId === '') {
-            return $this->errorPage('Refund unavailable', 'This order does not have a Stripe PaymentIntent id recorded.', $orderId, $includeNoSales);
-        }
-        if ($amountCents <= 0 || $amountCents > $remainingCents) {
-            return $this->errorPage('Refund unavailable', 'The refund amount must be greater than zero and no more than the remaining captured amount.', $orderId, $includeNoSales);
-        }
 
         try {
+            if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin']) || !$this->csrf->verify((string) ($_POST['csrf_token'] ?? ''))) {
+                return new Response('', 303, ['Location' => '/admin/sales?notice=security']);
+            }
+
+            $order = $this->sales->order($tenant, $orderId);
+            if (!$order) {
+                return new Response('', 303, ['Location' => '/admin/sales?notice=missing']);
+            }
+
+            $remainingCents = max(0, (int) $order['total_cents'] - $this->sales->orderRefundTotal($orderId));
+            $scope = (string) ($_POST['refund_scope'] ?? 'full');
+            $amountCents = $scope === 'custom' ? $this->dollarsToCents((string) ($_POST['refund_amount'] ?? '0')) : $remainingCents;
+            $reason = $this->stripeReason((string) ($_POST['refund_reason'] ?? 'requested_by_customer'));
+            $restockInventory = isset($_POST['restock_inventory']) && $scope !== 'custom' && $amountCents === $remainingCents;
+            $paymentIntentId = trim((string) ($order['stripe_payment_intent_id'] ?? ''));
+
+            if (!in_array((string) $order['payment_status'], ['paid', 'complete', 'succeeded', 'partially_refunded'], true)) {
+                return $this->refundProblemPage('Refund unavailable', 'Only paid orders can be refunded from ArtsFolio.', $orderId);
+            }
+            if ($paymentIntentId === '') {
+                return $this->refundProblemPage('Refund unavailable', 'This order does not have a Stripe PaymentIntent id recorded.', $orderId);
+            }
+            if ($amountCents <= 0 || $amountCents > $remainingCents) {
+                return $this->refundProblemPage('Refund unavailable', 'The refund amount must be greater than zero and no more than the remaining captured amount.', $orderId);
+            }
+
             $secretKey = (string) ($this->platformSettings?->get('stripe_secret_key', '') ?? '');
-            $refund = (new StripeCheckoutService())->refundPaymentIntent($secretKey, $paymentIntentId, $amountCents, $reason);
+            $idempotencyKey = $this->refundIdempotencyKey($tenant->tenantId, $orderId, $paymentIntentId, $amountCents, $reason);
+            $refund = (new StripeCheckoutService())->refundPaymentIntent($secretKey, $paymentIntentId, $amountCents, $reason, $idempotencyKey);
             $this->sales->recordStripeRefund(
                 $tenant,
                 $orderId,
@@ -209,12 +228,13 @@ HTML;
                 isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
                 $restockInventory,
             );
-            $this->auditLog?->record('tenant.sales.refund_created', $tenant->tenantId, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, 'sales_order', (string) $orderId, ['stripe_refund_id' => (string) $refund['id'], 'amount_cents' => $amountCents, 'reason' => $reason, 'restock_inventory' => $restockInventory], $request->server('REMOTE_ADDR'));
-        } catch (Throwable $e) {
-            return $this->errorPage('Stripe refund failed', $e->getMessage(), $orderId, $includeNoSales);
-        }
+            $this->auditLog?->record('tenant.sales.refund_created', $tenant->tenantId, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, 'sales_order', (string) $orderId, ['stripe_refund_id' => (string) $refund['id'], 'amount_cents' => $amountCents, 'reason' => $reason, 'restock_inventory' => $restockInventory, 'stripe_idempotency_key' => $idempotencyKey], $request->server('REMOTE_ADDR'));
 
-        return new Response('', 303, ['Location' => '/admin/sales/order?id=' . $orderId . '&notice=refund_sent' . $this->includeNoSalesQuery($includeNoSales)]);
+            return new Response('', 303, ['Location' => '/admin/sales/order?id=' . $orderId . '&notice=refund_sent']);
+        } catch (Throwable $e) {
+            error_log('ArtsFolio sales refund failed: order_id=' . $orderId . ' error=' . $e->getMessage());
+            return $this->refundProblemPage('Stripe refund failed', $e->getMessage(), $orderId);
+        }
     }
 
     private function detailForm(array $order, string $csrf, bool $includeNoSales): string
@@ -589,6 +609,33 @@ HTML;
         return Response::html(AdminLayout::render($title, '<section class="admin-panel"><h2>' . $this->e($title) . '</h2><p>' . $this->e($message) . '</p><p><a href="/admin/sales/order?id=' . $orderId . $this->includeNoSalesQuery($includeNoSales) . '">Return to order</a></p></section>', 'sales'), 422);
     }
 
+    /**
+     * Builds a stable Stripe idempotency key so a browser retry cannot create a
+     * second refund for the same order/payment/amount/reason combination.
+     */
+    private function refundIdempotencyKey(int $tenantId, int $orderId, string $paymentIntentId, int $amountCents, string $reason): string
+    {
+        return 'artsfolio-refund-' . hash('sha256', implode('|', [
+            'tenant', (string) $tenantId,
+            'order', (string) $orderId,
+            'payment_intent', $paymentIntentId,
+            'amount', (string) $amountCents,
+            'reason', $reason,
+        ]));
+    }
+
+    /**
+     * Renders refund failures as a controlled admin response instead of letting
+     * exceptions bubble into the generic 500 page.
+     */
+    private function refundProblemPage(string $title, string $message, int $orderId): Response
+    {
+        $returnUrl = $orderId > 0 ? '/admin/sales/order?id=' . $orderId : '/admin/sales';
+        $body = '<section class="admin-panel"><h2>' . $this->e($title) . '</h2><p>' . $this->e($message) . '</p><p class="admin-muted">No further refund should be attempted until this message is checked against the Stripe Dashboard and the ArtsFolio refund history.</p><p><a href="' . $this->e($returnUrl) . '">Return to order</a></p></section>';
+
+        return Response::html(AdminLayout::render($title, $body, 'sales'), 422);
+    }
+
     private function notice(string $notice): string
     {
         return match ($notice) {
@@ -597,6 +644,7 @@ HTML;
             'saved_shipping_email_unavailable' => '<div class="admin-notice warning">Sales workflow saved. Buyer shipping email was not queued because the order is not shipped, no buyer email exists, or the mail queue is unavailable.</div>',
             'saved' => '<div class="admin-notice success">Sales workflow saved.</div>',
             'security' => '<div class="admin-notice error">Security check failed. Please try again.</div>',
+            'refund_direct' => '<div class="admin-notice warning">Open an order and use the refund form. Refunds cannot be created by loading the refund URL directly.</div>',
             'missing' => '<div class="admin-notice error">Order was not found.</div>',
             default => '',
         };

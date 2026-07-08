@@ -298,7 +298,7 @@ final class StripeCheckoutService
      *
      * @return array<string,mixed>
      */
-    public function refundPaymentIntent(string $secretKey, string $paymentIntentId, int $amountCents, string $reason = 'requested_by_customer'): array
+    public function refundPaymentIntent(string $secretKey, string $paymentIntentId, int $amountCents, string $reason = 'requested_by_customer', ?string $idempotencyKey = null): array
     {
         if (trim($secretKey) === '') {
             throw new RuntimeException('Stripe secret key is not configured in platform admin settings.');
@@ -322,9 +322,9 @@ final class StripeCheckoutService
             return $this->stripePost('https://api.stripe.com/v1/refunds', $secretKey, $payload + [
                 'reverse_transfer' => 'true',
                 'refund_application_fee' => 'true',
-            ]);
+            ], $idempotencyKey);
         } catch (RuntimeException $e) {
-            return $this->stripePost('https://api.stripe.com/v1/refunds', $secretKey, $payload);
+            return $this->stripePost('https://api.stripe.com/v1/refunds', $secretKey, $payload, $idempotencyKey);
         }
     }
 
@@ -341,6 +341,9 @@ final class StripeCheckoutService
             'Authorization: Bearer ' . $secretKey,
             'Content-Type: application/x-www-form-urlencoded',
         ];
+        if ($idempotencyKey !== null && trim($idempotencyKey) !== '') {
+            $headers[] = 'Idempotency-Key: ' . trim($idempotencyKey);
+        }
 
         if (function_exists('curl_init')) {
             $ch = curl_init($url);

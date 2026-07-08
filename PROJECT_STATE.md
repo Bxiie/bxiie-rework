@@ -2601,3 +2601,6 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 <!-- End of sales shipping contact state update. -->
 - 2026-07-08: Sales Checkout now pre-fills Stripe Checkout shipping by creating a Stripe Customer from the ArtsFolio cart/order shipping contact, passing that Customer to Checkout, and attaching PaymentIntent shipping details so buyers do not re-enter shipping data.
 - 2026-07-08: Tenant `GET /admin/sales/refund` is a safe redirect to the sales list or order review page; live Stripe refund creation remains restricted to `POST /admin/sales/refund`.
+- 2026-07-08: Tenant sales refunds are POST-only, direct GET refund loads redirect to the order UI, and Stripe refund creation uses a stable idempotency key per tenant/order/payment-intent/amount/reason to prevent duplicate refunds after browser retries or local persistence errors.
+
+# End of file.
