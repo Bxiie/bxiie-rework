@@ -13,7 +13,7 @@ if ($source === false) {
 }
 
 $required = [
-    'getting-started' => ['Recommended first build', 'Open tenant admin', 'Test visitor paths'],
+    'getting-started' => ['Recommended first build', 'Open your admin', 'Test visitor paths'],
     'new-admin-tour' => ['Sign in and open the dashboard', 'Configure identity and branding', 'Invite helpers, verify domain, and launch'],
     'tenant-admin-functions' => ['Identity, branding, and public content', 'Artwork and portfolio', 'Access, domains, billing, discovery, and diagnostics'],
     'branding' => ['How to update branding', 'How to update About and Contact', 'Common mistakes'],
@@ -24,7 +24,7 @@ $required = [
     'users-domains-billing' => ['Use the minimum useful role', 'Follow DNS instructions exactly', 'Review plan state'],
     'directory' => ['Before opting in', 'Configure directory listing', 'Troubleshooting directory visibility'],
     'stats' => ['Open and read stats', 'How to use stats for decisions', 'Why stats may look wrong'],
-    'audit' => ['Audit Log', 'Tenant Routes', 'Route troubleshooting workflow'],
+    'audit' => ['Audit Log', 'Routes', 'Route troubleshooting workflow'],
     'training-videos' => ['Video directory', 'How to use these videos when they are recorded', 'Video link pending'],
 ];
 
@@ -41,7 +41,7 @@ foreach ($required as $slug => $markers) {
     }
 }
 
-foreach (['<code>/admin/artwork/upload</code>', '<code>/admin/routes</code>', '// End of file.'] as $marker) {
+foreach (['Click <strong>Upload Artwork</strong> in the sidebar', 'Click <strong>Routes</strong> in the sidebar', '// End of file.'] as $marker) {
     if (!str_contains($source, $marker)) {
         $failures[] = "Missing required marker: {$marker}";
     }
