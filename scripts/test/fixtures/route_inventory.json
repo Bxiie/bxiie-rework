@@ -692,12 +692,27 @@
     {
         "scope": "tenant",
         "method": "GET",
+        "path": "/admin/sale"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
         "path": "/admin/sales"
     },
     {
         "scope": "tenant",
         "method": "GET",
         "path": "/admin/sales/analytics"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
+        "path": "/admin/sales/order"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
+        "path": "/admin/sales/refund"
     },
     {
         "scope": "tenant",
@@ -1070,4 +1085,3 @@
         "path": "/signup"
     }
 ]
-

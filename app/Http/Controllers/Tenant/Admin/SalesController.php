@@ -60,31 +60,45 @@ final class SalesController
             $stripeLine = $stripeRef !== '' ? '<br><small>PI: ' . $this->e($stripeRef) . '</small>' : '';
             $shippingEmail = trim((string) ($order['shipping_email_sent_at'] ?? ''));
             $shippingLine = $shippingEmail !== '' ? '<br><small>Buyer emailed: ' . $this->e($shippingEmail) . '</small>' : '';
-            $rows .= '<tr><td><a href="/admin/sales?id=' . $id . $this->includeNoSalesQuery($includeNoSales) . '">' . $this->e((string) $order['order_number']) . '</a><br><small>' . $this->e((string) $order['created_at']) . '</small></td><td>' . $itemList . '</td><td>' . $this->statusBadge($paymentStatus) . $stripeLine . '</td><td>' . $this->statusBadge($workflowStatus) . $shippingLine . '</td><td>' . $this->money((int) $order['total_cents']) . '</td><td>' . $this->money((int) ($order['commission_cents'] ?? 0)) . '</td><td>' . $this->money((int) ($order['credit_card_fee_cents'] ?? 0)) . '</td><td>' . $this->money((int) ($order['seller_net_cents'] ?? max(0, (int) $order['total_cents'] - (int) ($order['commission_cents'] ?? 0) - (int) ($order['credit_card_fee_cents'] ?? 0)))) . '</td></tr>';
+            $rows .= '<tr><td><a href="/admin/sales/order?id=' . $id . $this->includeNoSalesQuery($includeNoSales) . '">' . $this->e((string) $order['order_number']) . '</a><br><small>' . $this->e((string) $order['created_at']) . '</small></td><td>' . $itemList . '</td><td>' . $this->statusBadge($paymentStatus) . $stripeLine . '</td><td>' . $this->statusBadge($workflowStatus) . $shippingLine . '</td><td>' . $this->money((int) $order['total_cents']) . '</td><td>' . $this->money((int) ($order['commission_cents'] ?? 0)) . '</td><td>' . $this->money((int) ($order['credit_card_fee_cents'] ?? 0)) . '</td><td>' . $this->money((int) ($order['seller_net_cents'] ?? max(0, (int) $order['total_cents'] - (int) ($order['commission_cents'] ?? 0) - (int) ($order['credit_card_fee_cents'] ?? 0)))) . '</td></tr>';
         }
         if ($rows === '') {
             $rows = '<tr><td colspan="8">No paid sales yet. Use “Show no-sale checkout rows” to inspect abandoned or unpaid checkout records.</td></tr>';
         }
-
-        $detail = '';
-        $selectedId = (int) ($_GET['id'] ?? 0);
-        if ($selectedId > 0) {
-            $order = $this->sales->order($tenant, $selectedId);
-            if ($order) {
-                $csrf = $this->e($this->csrf->getOrCreate());
-                $detail = $this->detailForm($order, $csrf, $includeNoSales);
-            }
-        }
-
         $body = <<<HTML
 {$notice}
 <p class="admin-muted">Track paid orders from Stripe checkout through ordered, acknowledged, packed, shipped, and refunded. Open an order to review Stripe references, item detail, refund history, refund actions, and buyer shipping email controls.</p>
 {$filterHtml}
 <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Order</th><th>Items</th><th>Payment</th><th>Workflow</th><th>Total</th><th>Commission</th><th>CC fees</th><th>Seller net</th></tr></thead><tbody>{$rows}</tbody></table></div>
-{$detail}
 HTML;
 
         return Response::html(AdminLayout::render('Sales', $body, 'sales'));
+    }
+
+
+    public function show(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+        }
+
+        $orderId = (int) ($_GET['id'] ?? $_GET['order_id'] ?? 0);
+        if ($orderId <= 0) {
+            return new Response('', 303, ['Location' => '/admin/sales?notice=missing']);
+        }
+
+        $order = $this->sales->order($tenant, $orderId);
+        if (!$order) {
+            return new Response('', 303, ['Location' => '/admin/sales?notice=missing']);
+        }
+
+        $notice = $this->notice((string) ($_GET['notice'] ?? ''));
+        $csrf = $this->e($this->csrf->getOrCreate());
+        $body = $notice
+            . '<p><a class="admin-link" href="/admin/sales">← Back to sales</a></p>'
+            . $this->detailForm($order, $csrf);
+
+        return Response::html(AdminLayout::render('Review ' . (string) $order['order_number'], $body, 'sales'));
     }
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -130,7 +144,23 @@ HTML;
             $request->server('REMOTE_ADDR'),
         );
 
-        return new Response('', 303, ['Location' => '/admin/sales?id=' . $orderId . '&notice=' . $notice . $this->includeNoSalesQuery($includeNoSales)]);
+        return new Response('', 303, ['Location' => '/admin/sales/order?id=' . $orderId . '&notice=' . $notice . $this->includeNoSalesQuery($includeNoSales)]);
+    }
+
+    public function refundEntry(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html('<h1>Forbidden</h1><p>Tenant admin access required.</p>', 403);
+        }
+
+        $orderId = (int) ($_GET['order_id'] ?? $_GET['id'] ?? 0);
+        $includeNoSales = isset($_GET['include_no_sales']);
+        $target = '/admin/sales?notice=refund_direct_link' . $this->includeNoSalesQuery($includeNoSales);
+        if ($orderId > 0) {
+            $target = '/admin/sales/order?id=' . $orderId . '&notice=refund_direct_link' . $this->includeNoSalesQuery($includeNoSales);
+        }
+
+        return new Response('', 303, ['Location' => $target]);
     }
 
     public function refund(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -183,7 +213,7 @@ HTML;
             return $this->errorPage('Stripe refund failed', $e->getMessage(), $orderId, $includeNoSales);
         }
 
-        return new Response('', 303, ['Location' => '/admin/sales?id=' . $orderId . '&notice=refund_sent' . $this->includeNoSalesQuery($includeNoSales)]);
+        return new Response('', 303, ['Location' => '/admin/sales/order?id=' . $orderId . '&notice=refund_sent' . $this->includeNoSalesQuery($includeNoSales)]);
     }
 
     private function detailForm(array $order, string $csrf, bool $includeNoSales): string
@@ -394,7 +424,7 @@ HTML;
 
     private function errorPage(string $title, string $message, int $orderId, bool $includeNoSales = false): Response
     {
-        return Response::html(AdminLayout::render($title, '<section class="admin-panel"><h2>' . $this->e($title) . '</h2><p>' . $this->e($message) . '</p><p><a href="/admin/sales?id=' . $orderId . $this->includeNoSalesQuery($includeNoSales) . '">Return to order</a></p></section>', 'sales'), 422);
+        return Response::html(AdminLayout::render($title, '<section class="admin-panel"><h2>' . $this->e($title) . '</h2><p>' . $this->e($message) . '</p><p><a href="/admin/sales/order?id=' . $orderId . $this->includeNoSalesQuery($includeNoSales) . '">Return to order</a></p></section>', 'sales'), 422);
     }
 
     private function notice(string $notice): string
