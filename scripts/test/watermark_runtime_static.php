@@ -1,10 +1,8 @@
 <?php
 
-declare(strict_types=1);
+// Verifies public watermark rendering, thumbnail exclusion, and cache hardening.
 
-/**
- * Regression checks for public watermark rendering and thumbnail exclusion.
- */
+declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
 $controllerPath = $root . '/app/Http/Controllers/Tenant/MediaController.php';
@@ -21,9 +19,15 @@ if ($controller === false || $service === false) {
 $controllerNeedles = [
     "\$variantKey !== 'thumb'",
     "\$watermark->fingerprint(\$tenant)",
-    'public, max-age=0, must-revalidate',
+    'public, max-age=86400, immutable',
+    'storage/cache/watermarks/',
+    'HTTP_IF_NONE_MATCH',
     'X-ArtsFolio-Watermark',
     'thumbnail-excluded',
+];
+
+$controllerForbiddenNeedles = [
+    'public, max-age=0, must-revalidate',
 ];
 
 $serviceNeedles = [
@@ -44,6 +48,16 @@ foreach ($controllerNeedles as $needle) {
     }
 }
 
+foreach ($controllerForbiddenNeedles as $needle) {
+    if (str_contains($controller, $needle)) {
+        fwrite(
+            STDERR,
+            "[FAIL] Obsolete text remains in MediaController.php: {$needle}\n"
+        );
+        exit(1);
+    }
+}
+
 foreach ($serviceNeedles as $needle) {
     if (!str_contains($service, $needle)) {
         fwrite(
@@ -54,6 +68,20 @@ foreach ($serviceNeedles as $needle) {
     }
 }
 
-echo "[PASS] Watermark runtime and thumbnail exclusion checks passed.\n";
+$etagCheckPosition = strpos($controller, 'HTTP_IF_NONE_MATCH');
+$renderPosition = strpos($controller, '$watermark->render(');
+if (
+    $etagCheckPosition === false
+    || $renderPosition === false
+    || $etagCheckPosition > $renderPosition
+) {
+    fwrite(
+        STDERR,
+        "[FAIL] Conditional ETag handling must occur before watermark rendering.\n"
+    );
+    exit(1);
+}
+
+echo "[PASS] Watermark runtime, cache, and thumbnail exclusion checks passed.\n";
 
 // End of file.
