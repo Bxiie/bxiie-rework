@@ -25,6 +25,22 @@ final class TenantSignupService
     }
 
 
+    /**
+     * Normalizes and validates tenant slugs before persistence or domain use.
+     */
+    private function normalizeSlug(string $slug): string
+    {
+        $slug = strtolower(trim($slug));
+        $slug = preg_replace('/[^a-z0-9-]+/', '-', $slug) ?? '';
+        $slug = trim($slug, '-');
+
+        if (!preg_match('/^[a-z0-9](?:[a-z0-9-]{1,61}[a-z0-9])$/', $slug)) {
+            throw new RuntimeException('Site address must be 3 to 63 lowercase letters, numbers, or hyphens and cannot begin or end with a hyphen.');
+        }
+
+        return $slug;
+    }
+
     public function requiresSignupCode(): bool
     {
         return $this->settings !== null

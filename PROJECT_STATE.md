@@ -1,3 +1,17 @@
+
+## 2026-07-10 Security hardening
+
+- Tenant-scoped OAuth admin API requests now require the bearer token tenant_id to exactly match the URL tenant ID.
+- Stripe webhooks fail closed when stripe_webhook_secret is absent and reject invalid signatures.
+- Tenant and platform logins plus password-reset requests use the database-backed RateLimiter.
+- Caddy on-demand TLS authorization uses APCu positive/negative caching when available and database-backed request throttling.
+- Public watermark rendering now honors ETags before GD work and caches rendered variants under storage/cache/watermarks.
+- Artwork placement and ordering mutations require CSRF validation.
+- Stripe secrets are no longer rendered into platform settings HTML and blank submissions preserve configured values.
+- Production session cookies force Secure; local non-production development may still use HTTP.
+- Tenant slugs and domain hostnames receive strict format validation; self-service signup normalizeSlug is implemented.
+- Development MariaDB binds only to 127.0.0.1:3307 and bootstrap explicitly disables displayed PHP errors.
+
 ## 2026-07-08 Go-live hardening pass
 - Repaired `/platform/admin/jobs/{id}` so it accepts the router parameter array and reads `$params['id']`, avoiding a runtime TypeError on platform job detail pages.
 - Added `scripts/test/platform_job_detail_route_params_static.php` and included it in `scripts/test/preflight.sh`.

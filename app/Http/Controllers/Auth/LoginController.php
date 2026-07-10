@@ -14,6 +14,7 @@ use App\Http\Response;
 use App\Http\Support\SessionCookie;
 use App\Http\View\AuthPage;
 use App\Platform\Auth\Password\PasswordAuthService;
+use App\Platform\Security\RateLimiter;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Flash\FlashMessages;
 use App\Support\Security\CsrfTokenService;
@@ -30,6 +31,7 @@ final class LoginController
         private readonly PasswordAuthService $passwordAuth,
         private readonly CsrfTokenService $csrf,
         private readonly ?TenantSettingsRepository $settings = null,
+        private readonly ?RateLimiter $rateLimiter = null,
     ) {
     }
 
@@ -50,6 +52,16 @@ final class LoginController
     {
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
             return Response::invalidCsrf();
+        }
+
+        $email = strtolower(trim((string) ($_POST['email'] ?? '')));
+        $rateKey = 'auth:tenant-login:' . ($tenant?->tenantId ?? 0) . ':' . hash('sha256', (string) $request->server('REMOTE_ADDR') . '|' . $email);
+        if ($this->rateLimiter !== null && !$this->rateLimiter->allow($rateKey, 10, 900)) {
+            return Response::html(
+                AuthPage::login('/login', 'Too many sign-in attempts. Please wait 15 minutes and try again.', 'ArtsFolio', '/', $this->csrf->getOrCreate()),
+                429,
+                ['Retry-After' => '900']
+            );
         }
 
         try {

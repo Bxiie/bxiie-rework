@@ -68,7 +68,7 @@ final class AdminApiController
 
     public function tenantSettings(Request $request, int $tenantId): Response
     {
-        if (!$this->authorized('tenant:write')) { return $this->unauthorized(); }
+        if (!$this->tenantAuthorized('tenant:write', $tenantId)) { return $this->unauthorized(); }
         if ($request->method() === 'GET') {
             $stmt = $this->pdo->prepare('SELECT setting_key, setting_value FROM tenant_settings WHERE tenant_id = :tenant_id ORDER BY setting_key');
             $stmt->execute(['tenant_id' => $tenantId]);
@@ -84,7 +84,7 @@ final class AdminApiController
 
     public function collection(Request $request, int $tenantId, string $entity): Response
     {
-        if (!$this->authorized('tenant:write')) { return $this->unauthorized(); }
+        if (!$this->tenantAuthorized('tenant:write', $tenantId)) { return $this->unauthorized(); }
         $map = $this->entityMap();
         if (!isset($map[$entity])) { return $this->json(['error' => 'unknown_entity'], 404); }
         $table = $map[$entity]['table'];
@@ -107,7 +107,7 @@ final class AdminApiController
 
     public function item(Request $request, int $tenantId, string $entity, int $id): Response
     {
-        if (!$this->authorized('tenant:write')) { return $this->unauthorized(); }
+        if (!$this->tenantAuthorized('tenant:write', $tenantId)) { return $this->unauthorized(); }
         $map = $this->entityMap();
         if (!isset($map[$entity])) { return $this->json(['error' => 'unknown_entity'], 404); }
         $table = $map[$entity]['table'];
@@ -130,6 +130,22 @@ final class AdminApiController
         if (!$this->token) { return false; }
         $scopes = json_decode((string) ($this->token['scopes'] ?? '[]'), true) ?: [];
         return in_array($scope, $scopes, true) || in_array('*', $scopes, true);
+    }
+
+    /**
+     * Requires both the requested tenant scope and an exact token tenant match.
+     * Platform-scoped tokens must use platform API routes instead of borrowing a
+     * tenant URL identifier.
+     */
+    private function tenantAuthorized(string $scope, int $tenantId): bool
+    {
+        if (!$this->authorized($scope)) {
+            return false;
+        }
+
+        $tokenTenantId = (int) ($this->token['tenant_id'] ?? 0);
+
+        return $tokenTenantId > 0 && $tokenTenantId === $tenantId;
     }
 
     private function body(): array

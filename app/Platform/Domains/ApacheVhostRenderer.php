@@ -51,7 +51,12 @@ APACHE;
             $hostname = explode(':', $hostname, 2)[0];
         }
 
-        return rtrim($hostname, '.');
+        $hostname = rtrim($hostname, '.');
+        if (!preg_match('/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/', $hostname)) {
+            throw new \RuntimeException('Invalid hostname format.');
+        }
+
+        return $hostname;
     }
 }
 

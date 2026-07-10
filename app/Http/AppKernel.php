@@ -202,6 +202,7 @@ final class AppKernel
         $sessionTokens,
         new CsrfTokenService(),
         new AuditLogRepository($pdo),
+        new RateLimiter($pdo),
     );
 
     $bearerToken = (new BearerTokenAuth(

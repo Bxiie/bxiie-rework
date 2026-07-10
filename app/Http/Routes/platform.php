@@ -154,6 +154,10 @@ return static function (Router $router, array $context): void {
         }
 
         $email = strtolower(trim((string) ($_POST['email'] ?? '')));
+        $resetRateKey = 'auth:password-forgot:' . 'platform' . ':' . hash('sha256', (string) $request->server('REMOTE_ADDR') . '|' . $email);
+        if (!(new RateLimiter($pdo))->allow($resetRateKey, 3, 3600)) {
+            return Response::html(AuthPage::pageMessage('Password reset requested', 'If that email address exists, a reset link has been queued.'), 202, ['Retry-After' => '3600']);
+        }
         if ($email !== '') {
             $reset = (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->createResetTokenForEmail($email);
             if ($reset) {

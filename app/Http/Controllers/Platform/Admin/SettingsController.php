@@ -46,8 +46,10 @@ final class SettingsController
         $mailFromEmail = $this->escape($this->settings->get('mail_from_email', ''));
         $mailFromName = $this->escape($this->settings->get('mail_from_name', 'ArtsFolio'));
         $stripePublishableKey = $this->escape($this->settings->get('stripe_publishable_key', ''));
-        $stripeSecretKey = $this->escape($this->settings->get('stripe_secret_key', ''));
-        $stripeWebhookSecret = $this->escape($this->settings->get('stripe_webhook_secret', ''));
+        $stripeSecretKeyConfigured = trim((string) $this->settings->get('stripe_secret_key', '')) !== '';
+        $stripeWebhookSecretConfigured = trim((string) $this->settings->get('stripe_webhook_secret', '')) !== '';
+        $stripeSecretKeyPlaceholder = $this->escape($stripeSecretKeyConfigured ? 'Configured; leave blank to keep' : 'Not configured');
+        $stripeWebhookSecretPlaceholder = $this->escape($stripeWebhookSecretConfigured ? 'Configured; leave blank to keep' : 'Not configured');
         $expectedIpv4 = $this->escape($this->settings->get('expected_ipv4', getenv('ARTSFOLIO_EXPECTED_IPV4') ?: ''));
         $persistentLoginDays = $this->escape($this->settings->get('persistent_login_days', '30'));
         $platformCustomCss = $this->escape($this->settings->get('platform_custom_css', ''));
@@ -78,7 +80,7 @@ final class SettingsController
     <fieldset><legend>OAuth providers</legend><div class="admin-form-grid"><label>OAuth callback base URL<input type="url" name="oauth_auth_base_url" value="{$oauthAuthBaseUrl}" placeholder="https://artsfol.io"></label><label>Google client ID<input type="text" name="google_oauth_client_id" value="{$googleClientId}"></label><label>Google client secret<input type="password" name="google_oauth_client_secret" value="{$googleClientSecret}"></label><label>Facebook client ID<input type="text" name="facebook_oauth_client_id" value="{$facebookClientId}"></label><label>Facebook client secret<input type="password" name="facebook_oauth_client_secret" value="{$facebookClientSecret}"></label></div><p class="admin-muted">Stored in <code>platform_settings</code>. Use the platform origin, normally <code>https://artsfol.io</code>, so provider callback URLs stay stable across tenant domains. Do not expose provider secrets in <code>PROJECT_STATE.md</code> or docs.</p></fieldset>
     <fieldset><legend>Spam protection</legend><div class="admin-form-grid"><label>Cloudflare Turnstile site key<input type="text" name="turnstile_site_key" value="{$turnstileSiteKey}"></label><label>Cloudflare Turnstile secret key<input type="password" name="turnstile_secret_key" value="{$turnstileSecretKey}"></label></div><p class="admin-muted">When the secret key is blank, public contact and signup forms do not block submissions in development. Create keys in Cloudflare Turnstile and allow artsfol.io plus active tenant domains.</p></fieldset>
     <fieldset><legend>Email delivery</legend><div class="admin-form-grid"><label>SMTP host<input type="text" name="smtp_host" value="{$smtpHost}"></label><label>SMTP port<input type="number" name="smtp_port" value="{$smtpPort}" min="1" max="65535"></label><label>SMTP username<input type="text" name="smtp_username" value="{$smtpUsername}"></label><label>SMTP password<input type="password" name="smtp_password" value="{$smtpPassword}"></label><label>SMTP encryption<input type="text" name="smtp_encryption" value="{$smtpEncryption}" placeholder="tls, ssl, or none"></label><label>From email<input type="email" name="mail_from_email" value="{$mailFromEmail}"></label><label>From name<input type="text" name="mail_from_name" value="{$mailFromName}"></label><label>Postmark message stream<input type="text" name="smtp_x_pm_message_stream" value="{$smtpMessageStream}" placeholder="outbound or broadcasts"></label></div><p class="admin-muted">Postmark message stream is sent as <code>X-PM-Message-Stream</code>. These values are stored in <code>platform_settings</code>. Keep production backups and database access restricted because SMTP and ecommerce secrets are sensitive.</p></fieldset>
-    <fieldset><legend>Ecommerce</legend><div class="admin-form-grid"><label>Stripe publishable key<input type="text" name="stripe_publishable_key" value="{$stripePublishableKey}"></label><label>Stripe secret key<input type="password" name="stripe_secret_key" value="{$stripeSecretKey}"></label><label>Stripe webhook secret<input type="password" name="stripe_webhook_secret" value="{$stripeWebhookSecret}"></label></div></fieldset>
+    <fieldset><legend>Ecommerce</legend><div class="admin-form-grid"><label>Stripe publishable key<input type="text" name="stripe_publishable_key" value="{$stripePublishableKey}"></label><label>Stripe secret key<input type="password" name="stripe_secret_key" value="" placeholder="{$stripeSecretKeyPlaceholder}" autocomplete="new-password"></label><label>Stripe webhook secret<input type="password" name="stripe_webhook_secret" value="" placeholder="{$stripeWebhookSecretPlaceholder}" autocomplete="new-password"></label></div></fieldset>
     <fieldset class="admin-panel-wide"><legend>Platform custom CSS</legend><p class="admin-muted">Applied to platform marketing, pricing, help, and platform admin pages through <code>/assets/platform-custom.css</code>.</p><textarea name="platform_custom_css" rows="18" spellcheck="false">{$platformCustomCss}</textarea></fieldset>
     <button type="submit">Save platform settings</button>
 </form>
@@ -190,8 +192,12 @@ HTML,
         $this->settings->set('mail_from_email', $mailFromEmail);
         $this->settings->set('mail_from_name', $mailFromName);
         $this->settings->set('stripe_publishable_key', $stripePublishableKey);
-        $this->settings->set('stripe_secret_key', $stripeSecretKey);
-        $this->settings->set('stripe_webhook_secret', $stripeWebhookSecret);
+        if ($stripeSecretKey !== '') {
+            $this->settings->set('stripe_secret_key', $stripeSecretKey);
+        }
+        if ($stripeWebhookSecret !== '') {
+            $this->settings->set('stripe_webhook_secret', $stripeWebhookSecret);
+        }
         FlashMessages::success('Platform settings saved.');
 
         $this->auditAction($request, $currentUser, [

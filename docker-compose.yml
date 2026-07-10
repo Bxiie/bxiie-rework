@@ -9,7 +9,7 @@ services:
       MARIADB_USER: artsfolio
       MARIADB_PASSWORD: artsfolio_dev
     ports:
-      - "3307:3306"
+      - "127.0.0.1:3307:3306"
     volumes:
       - artsfolio_mariadb_data:/var/lib/mysql
 

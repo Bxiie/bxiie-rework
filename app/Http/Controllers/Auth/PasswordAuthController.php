@@ -13,6 +13,7 @@ use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Auth\Password\PasswordAuthService;
 use App\Platform\Auth\Session\SessionRepository;
 use App\Platform\Auth\Session\SessionTokenService;
+use App\Platform\Security\RateLimiter;
 use App\Support\Security\CsrfTokenService;
 
 /**
@@ -26,6 +27,7 @@ final class PasswordAuthController
         private readonly SessionTokenService $tokens,
         private readonly CsrfTokenService $csrf,
         private readonly ?AuditLogRepository $auditLog = null,
+        private readonly ?RateLimiter $rateLimiter = null,
     ) {
     }
 
@@ -41,8 +43,13 @@ final class PasswordAuthController
             return Response::invalidCsrf();
         }
 
-        $email = (string) ($_POST['email'] ?? '');
+        $email = strtolower(trim((string) ($_POST['email'] ?? '')));
         $password = (string) ($_POST['password'] ?? '');
+        $rateKey = 'auth:platform-login:' . hash('sha256', (string) $request->server('REMOTE_ADDR') . '|' . $email);
+        if ($this->rateLimiter !== null && !$this->rateLimiter->allow($rateKey, 6, 900)) {
+            $this->auditAuth($request, 'auth.password_login.denied.rate_limited', null, ['email' => $email]);
+            return Response::html('<h1>Too many sign-in attempts</h1><p>Please wait 15 minutes and try again.</p>', 429, ['Retry-After' => '900']);
+        }
 
         try {
             $login = $this->auth->login(

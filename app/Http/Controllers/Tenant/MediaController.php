@@ -102,9 +102,29 @@ final class MediaController
             . ':' . $watermarkFingerprint
         ) . '"';
 
-        $bytes = $watermarkEnabled
-            ? $watermark->render($tenant, $absolute, $mimeType)
-            : null;
+        if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && trim((string) $_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
+            http_response_code(304);
+            exit;
+        }
+
+        $bytes = null;
+        $watermarkCachePath = null;
+        if ($watermarkEnabled) {
+            $cacheDir = dirname(__DIR__, 4) . '/storage/cache/watermarks/' . $tenant->tenantId;
+            $watermarkCachePath = $cacheDir . '/' . trim($etag, '"') . '.bin';
+            if (is_file($watermarkCachePath)) {
+                $bytes = file_get_contents($watermarkCachePath);
+            } else {
+                $bytes = $watermark->render($tenant, $absolute, $mimeType);
+                if ($bytes !== null) {
+                    if (!is_dir($cacheDir) && !mkdir($cacheDir, 0750, true) && !is_dir($cacheDir)) {
+                        error_log('ArtsFolio could not create watermark cache directory: ' . $cacheDir);
+                    } elseif (file_put_contents($watermarkCachePath, $bytes, LOCK_EX) === false) {
+                        error_log('ArtsFolio could not write watermark cache file: ' . $watermarkCachePath);
+                    }
+                }
+            }
+        }
 
         $watermarkStatus = 'disabled';
 
@@ -136,18 +156,13 @@ final class MediaController
             'Cache-Control: '
             . (
                 $watermarkEnabled
-                    ? 'public, max-age=0, must-revalidate'
+                    ? 'public, max-age=86400, immutable'
                     : 'public, max-age=86400'
             )
         );
         header('ETag: ' . $etag);
         // Unwatermarked media policy: Cache-Control: public, max-age=86400
         header('X-ArtsFolio-Watermark: ' . $watermarkStatus);
-
-        if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && trim((string) $_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
-            http_response_code(304);
-            exit;
-        }
 
         if ($bytes !== null) { echo $bytes; } else { readfile($absolute); }
         exit;

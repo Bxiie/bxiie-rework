@@ -23,7 +23,11 @@ final class StripeWebhookController
     {
         $payload = file_get_contents('php://input') ?: '';
         $secret = trim((string) $this->settings->get('stripe_webhook_secret', ''));
-        if ($secret !== '' && !$this->validSignature($payload, (string) ($_SERVER['HTTP_STRIPE_SIGNATURE'] ?? ''), $secret)) {
+        if ($secret === '') {
+            error_log('ArtsFolio Stripe webhook rejected because stripe_webhook_secret is not configured.');
+            return Response::json(['ok' => false, 'error' => 'webhook_not_configured'], 503);
+        }
+        if (!$this->validSignature($payload, (string) ($_SERVER['HTTP_STRIPE_SIGNATURE'] ?? ''), $secret)) {
             return Response::json(['ok' => false, 'error' => 'invalid_signature'], 400);
         }
 

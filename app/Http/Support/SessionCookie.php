@@ -100,7 +100,8 @@ final class SessionCookie
             'Max-Age=' . $maxAge,
         ];
 
-        if (self::isSecure()) {
+        $environment = strtolower(trim((string) (getenv('APP_ENV') ?: 'production')));
+        if ($environment === 'production' || self::isSecure()) {
             $parts[] = 'Secure';
         }
 

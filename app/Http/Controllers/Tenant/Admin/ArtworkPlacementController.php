@@ -11,6 +11,7 @@ use App\Http\View\AdminLayout;
 use App\Http\View\ErrorPage;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Pagination\Pagination;
+use App\Support\Security\CsrfTokenService;
 use PDO;
 
 /**
@@ -21,6 +22,7 @@ final class ArtworkPlacementController
     public function __construct(
         private readonly RequireTenantRoleBrowser $roles,
         private readonly PDO $pdo,
+        private readonly CsrfTokenService $csrf,
     ) {
     }
 
@@ -83,6 +85,7 @@ final class ArtworkPlacementController
         }
         $pager = $this->pager('/admin/artworks/placement', $base, (int) $result['page'], (int) $result['page_count']);
         $notice = ($_GET['notice'] ?? '') === 'saved' ? '<p class="notice">Artwork placements saved for this page.</p>' : '';
+        $csrf = $this->e($this->csrf->getOrCreate());
         $summary = (int) $result['total'] === 0 ? 'No artworks' : 'Showing ' . (((int) $result['page'] - 1) * $pageSize + 1) . '–' . min((int) $result['page'] * $pageSize, (int) $result['total']) . ' of ' . (int) $result['total'];
         $returnTo = '/admin/artworks/placement?' . http_build_query(array_merge($base, ['page' => (int) $result['page']]));
         $body = <<<HTML
@@ -95,7 +98,7 @@ final class ArtworkPlacementController
 <form data-artwork-page-form method="get" action="/admin/artworks/placement" style="display:flex;gap:.75rem;align-items:end;flex-wrap:wrap;"><label>Search artworks<br><input type="search" name="q" value="{$this->e($q)}"></label><label>Artworks per page<br><select name="per_page">{$pageSizeOptions}</select></label><button type="submit">Apply</button><a href="/admin/artworks/placement">Clear</a></form>
 <div class="placement-column-tools" style="display:flex;gap:.75rem;align-items:end;flex-wrap:wrap;margin:1rem 0;"><label>Visible columns<br><input type="search" data-placement-column-search placeholder="Type a column name" autocomplete="off"></label><button type="button" data-placement-column-reset>All columns</button><button type="button" data-placement-assignment-reset hidden>All artworks</button><span data-placement-filter-status role="status" aria-live="polite"></span></div>
 <p><strong>{$summary}</strong></p>{$pager}
-<form method="post" action="/admin/artworks/placement"><input type="hidden" name="return_to" value="{$this->e($returnTo)}">
+<form method="post" action="/admin/artworks/placement"><input type="hidden" name="csrf_token" value="{$csrf}"><input type="hidden" name="return_to" value="{$this->e($returnTo)}">
 <div style="overflow-x:auto;"><table class="placement-matrix" data-placement-matrix border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;"><thead><tr><th>Thumbnail</th><th>Artwork</th><th data-placement-column data-placement-column-name="Home page"><button type="button" class="placement-column-filter" data-placement-assignment-filter="home" aria-pressed="false" title="Show only artworks assigned to Home page">Home page</button></th>{$sectionHeaders}</tr></thead><tbody>{$rows}</tbody></table></div>
 <p><button type="submit">Save placements for this page</button></p></form>{$pager}
 </section>
@@ -109,6 +112,9 @@ HTML;
     {
         if (!$this->canManage($currentUser, $tenant)) {
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+        if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
+            return Response::invalidCsrf();
         }
 
         $visibleIds = array_values(array_unique(array_filter(array_map('intval', is_array($_POST['visible_artwork_ids'] ?? null) ? $_POST['visible_artwork_ids'] : []), static fn (int $id): bool => $id > 0)));
@@ -201,6 +207,7 @@ HTML;
         $notice = ($_GET['notice'] ?? '') === 'saved'
             ? '<p class="notice" style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Artwork order saved.</p>'
             : '';
+        $csrf = $this->e($this->csrf->getOrCreate());
 
         $body = <<<HTML
 <main class="admin-main" style="max-width:1000px;margin:2rem auto;padding:0 1rem;">
@@ -209,6 +216,7 @@ HTML;
     <p>Drag rows or edit numeric order fields. Home page is included as a section. Lower numbers appear first.</p>
     {$notice}
     <form method="post" action="/admin/portfolio-sections/order">
+        <input type="hidden" name="csrf_token" value="{$csrf}">
         {$blocks}
         <p><button type="submit">Save order</button></p>
     </form>
@@ -223,6 +231,9 @@ HTML;
     {
         if (!$this->canManage($currentUser, $tenant)) {
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+        if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
+            return Response::invalidCsrf();
         }
 
         $sort = is_array($_POST['sort'] ?? null) ? $_POST['sort'] : [];

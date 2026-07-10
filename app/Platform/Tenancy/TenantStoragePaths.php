@@ -12,6 +12,9 @@ final class TenantStoragePaths
     public function __construct(
         private readonly TenantContext $tenant,
     ) {
+        if (!preg_match('/^[a-z0-9](?:[a-z0-9-]{1,61}[a-z0-9])$/', $this->tenant->slug)) {
+            throw new \InvalidArgumentException('Invalid tenant slug for storage path construction.');
+        }
     }
 
     public function originalsPath(string $filename): string

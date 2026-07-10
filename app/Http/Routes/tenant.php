@@ -177,11 +177,11 @@ return static function (Router $router, array $context): void {
         };
         $router->get('/auth/google', fn (Request $request): Response => $tenantOauthRedirect($request, 'google'));
         $router->get('/auth/facebook', fn (Request $request): Response => $tenantOauthRedirect($request, 'facebook'));
-        $router->post('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings))->login($request, $tenant));
-        $router->get('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings))->logout($request));
+        $router->post('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings, new RateLimiter($pdo)))->login($request, $tenant));
+        $router->get('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings, new RateLimiter($pdo)))->logout($request));
     $router->get('/help/developer', fn (Request $request): Response => (new HelpController())->developer($request, $currentUser));
 
-        $router->post('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings))->logout($request));
+        $router->post('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings, new RateLimiter($pdo)))->logout($request));
         $router->get('/admin/curation', fn (Request $request): Response => $curationController->queue($request, $tenant, $currentUser));
         $router->post('/admin/curation/review', fn (Request $request): Response => $curationController->review($request, $tenant, $currentUser));
         $router->get('/admin/media', fn (Request $request): Response => (new TenantMediaController($pdo, new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->admin($request, $tenant, $currentUser));
@@ -194,10 +194,10 @@ return static function (Router $router, array $context): void {
         $router->post('/admin/events/order', fn (Request $request): Response => (new TenantAdminEventsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new CsrfTokenService()))->order($request, $tenant, $currentUser));
         $router->get('/admin/content', fn (Request $request): Response => (new TenantAdminContentController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, $pdo))->edit($request, $tenant, $currentUser));
         $router->post('/admin/content', fn (Request $request): Response => (new TenantAdminContentController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, $pdo))->update($request, $tenant, $currentUser));
-        $router->get('/admin/artworks/placement', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->index($request, $tenant, $currentUser));
-        $router->post('/admin/artworks/placement', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->update($request, $tenant, $currentUser));
-        $router->get('/admin/portfolio-sections/order', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->order($request, $tenant, $currentUser));
-        $router->post('/admin/portfolio-sections/order', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->updateOrder($request, $tenant, $currentUser));
+        $router->get('/admin/artworks/placement', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->index($request, $tenant, $currentUser));
+        $router->post('/admin/artworks/placement', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->update($request, $tenant, $currentUser));
+        $router->get('/admin/portfolio-sections/order', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->order($request, $tenant, $currentUser));
+        $router->post('/admin/portfolio-sections/order', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->updateOrder($request, $tenant, $currentUser));
         $router->get('/admin/artworks', fn (Request $request): Response => (new TenantAdminArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new AuditLogRepository($pdo)))->index($request, $tenant, $currentUser));
         $router->get('/admin/artworks/edit', fn (Request $request): Response => (new TenantAdminArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new AuditLogRepository($pdo)))->edit($request, $tenant, $currentUser));
         $router->post('/admin/artworks/edit', fn (Request $request): Response => (new TenantAdminArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new AuditLogRepository($pdo)))->update($request, $tenant, $currentUser));
@@ -208,7 +208,7 @@ return static function (Router $router, array $context): void {
         $router->get('/admin/artwork/upload', fn (Request $request): Response => (new TenantAdminArtworkUploadController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), new ArtworkUploadService($pdo), new AuditLogRepository($pdo), $pdo))->form($request, $tenant, $currentUser));
         $router->post('/admin/artwork/upload', fn (Request $request): Response => (new TenantAdminArtworkUploadController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), new ArtworkUploadService($pdo), new AuditLogRepository($pdo), $pdo))->submit($request, $tenant, $currentUser));
         $router->get('/admin/getting-started', fn (Request $request): Response => (new TenantAdminGettingStartedController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
-        $router->get('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), $csrf, $tenantSettings))->show($request, $tenant));
+        $router->get('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), $csrf, $tenantSettings, new RateLimiter($pdo)))->show($request, $tenant));
         $router->get('/help/{topic}', fn (Request $request, array $params): Response => $helpController->topic($request, (string) $params['topic']));
         
         $router->get('/password/reset', function (Request $request): Response {
@@ -262,6 +262,10 @@ return static function (Router $router, array $context): void {
             }
 
             $email = strtolower(trim((string) ($_POST['email'] ?? '')));
+            $resetRateKey = 'auth:password-forgot:' . (string) $tenant->tenantId . ':' . hash('sha256', (string) $request->server('REMOTE_ADDR') . '|' . $email);
+            if (!(new RateLimiter($pdo))->allow($resetRateKey, 3, 3600)) {
+                return Response::html(AuthPage::pageMessage('Password reset requested', 'If that email address exists for this artist site, a reset link has been queued.'), 202, ['Retry-After' => '3600']);
+            }
             if ($email !== '' && $tenantPasswordResetGuard->recipientExists((int) $tenant->tenantId, $email)) {
                 $reset = (new PasswordResetService($pdo, new UserRepository($pdo), new PasswordHasher(), new PasswordResetTokenRepository($pdo)))->createResetTokenForTenantEmail($email, (int) ($tenant->tenantId ?? $tenant->id ?? 0));
                 if ($reset) {
