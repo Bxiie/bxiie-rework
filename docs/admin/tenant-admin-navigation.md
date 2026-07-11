@@ -1,5 +1,29 @@
-# Tenant Admin Navigation
+# Tenant admin navigation
 
-Tenant site visitors who can administer a tenant should use the Admin link on that tenant site. It opens `/admin` for that tenant. Global platform administration remains under `https://artsfol.io/platform/admin`.
+Tenant admin pages use the current tenant's site name, artist name, colors, and public navigation labels.
 
-# End of file.
+The tenant-admin sidebar includes:
+
+- Dashboard
+- Settings
+- Content
+- Artworks
+- Curation
+- Portfolio Sections
+- Events
+- Messages
+- Email Signups
+- Domains
+- Billing
+- Sales
+- Sales Analytics
+- Users
+- Stats
+- Audit Log
+- Tenant Routes
+
+Directory management is available from **Settings**. It is intentionally not duplicated as a standalone sidebar item.
+
+The sidebar is shared by all tenant-admin pages. Individual controllers must not provide their own branding or partial navigation lists.
+
+<!-- End of file. -->

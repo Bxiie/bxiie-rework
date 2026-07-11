@@ -292,6 +292,7 @@ run_php scripts/test/email_logo_branding_static.php
 run_php scripts/test/branded_error_pages_static.php
 
 run_php scripts/test/tenant_getting_started_branding_static.php
+run_php scripts/test/tenant_admin_canonical_layout_static.php
 run_php scripts/test/onboarding_reset_controls_static.php
 
 run_php scripts/test/tenant_color_palettes_static.php

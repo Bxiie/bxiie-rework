@@ -51,4 +51,34 @@ if ($failures !== []) {
 echo "Tenant directory settings subpage static checks passed.
 ";
 
+$navPath = $root . '/app/Http/View/TenantAdminNav.php';
+$settingsPath = $root . '/app/Http/Controllers/Tenant/Admin/SettingsController.php';
+
+if (!is_file($navPath) || !is_file($settingsPath)) {
+    fwrite(STDERR, "[FAIL] Missing tenant Directory navigation/settings source files.\n");
+    exit(1);
+}
+
+$navSource = (string) file_get_contents($navPath);
+$settingsSource = (string) file_get_contents($settingsPath);
+
+if (str_contains($navSource, "'directory' => ['/admin/directory', 'Directory']")) {
+    fwrite(
+        STDERR,
+        "[FAIL] Standalone tenant Directory nav item should be removed now that Directory is a settings subpage.\n"
+    );
+    exit(1);
+}
+
+if (
+    !str_contains($settingsSource, 'Directory')
+    && !str_contains($settingsSource, 'directory')
+) {
+    fwrite(
+        STDERR,
+        "[FAIL] Tenant Settings no longer exposes the Directory subpage.\n"
+    );
+    exit(1);
+}
+
 // End of file.
