@@ -99,6 +99,12 @@ final class TenantSignupService
         $domain = $slug . '.' . $platformDomain;
         $validatedSignupCode = $this->validateSignupCode($signupCode, $adminEmail);
         $selectedPlan = $this->validateSelectedPlan($validatedSignupCode, $selectedPlanSlug);
+        $complimentaryMonths = $validatedSignupCode !== null
+            ? max(0, (int) ($validatedSignupCode['free_access_months'] ?? 0))
+            : 0;
+        $complimentaryUntil = $complimentaryMonths > 0
+            ? (new \DateTimeImmutable('now'))->modify('+' . $complimentaryMonths . ' months')->format('Y-m-d H:i:s')
+            : null;
 
         $this->pdo->beginTransaction();
 
@@ -137,6 +143,10 @@ final class TenantSignupService
                 'selected_plan' => $selectedPlan ?? [],
                 'selected_plan_slug' => (string) ($selectedPlan['slug'] ?? 'free'),
                 'selected_plan_monthly_price_cents' => (int) ($selectedPlan['monthly_price_cents'] ?? 0),
+                'complimentary_months' => $complimentaryMonths,
+                'complimentary_until' => $complimentaryUntil,
+                'requires_immediate_checkout' => (int) ($selectedPlan['monthly_price_cents'] ?? 0) > 0
+                    && $complimentaryMonths < 1,
             ];
         } catch (\Throwable $e) {
             $this->pdo->rollBack();

@@ -2326,6 +2326,14 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Invite copy is maintained in `template/email/platform/tenant-signup-invite.txt` and queued with template key `platform.tenant_signup_invite`.
 - Migration `0065_signup_code_default_free_month.sql` changes the database default without modifying previously applied migrations.
 
+
+## Complimentary signup checkout gating
+
+- Signup codes with `free_access_months > 0` suppress immediate Stripe subscription checkout, including `one_time` codes.
+- `TenantSignupService::register()` returns `complimentary_months`, `complimentary_until`, and `requires_immediate_checkout`.
+- `SignupController` relies on `requires_immediate_checkout`; paid plan price alone must not trigger Stripe during a complimentary period.
+- Regression coverage lives in `scripts/test/signup_complimentary_checkout_static.php`.
+
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 

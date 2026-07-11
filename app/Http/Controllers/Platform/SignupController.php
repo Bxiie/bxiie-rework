@@ -160,7 +160,7 @@ HTML);
             $headers['Set-Cookie'] = SessionCookie::issueSetCookie($sessionToken, true);
         }
 
-        if ((int) ($result['selected_plan_monthly_price_cents'] ?? 0) > 0 && $this->settings !== null) {
+        if (($result['requires_immediate_checkout'] ?? false) === true && $this->settings !== null) {
             try {
                 $checkout = (new StripeSubscriptionCheckoutService())->createSubscriptionSession((string) $this->settings->get('stripe_secret_key', ''), (int) $result['tenant_id'], (array) ($result['selected_plan'] ?? []), 'https://' . (string) $result['domain'] . '/admin/billing?notice=billing-complete', 'https://' . (string) $result['domain'] . '/admin/billing?notice=billing-canceled', strtolower(trim($adminEmail)), 0);
                 $headers['Location'] = (string) $checkout['url'];
