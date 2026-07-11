@@ -2317,6 +2317,15 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
 - Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
 
+
+## Prospective signup invite complimentary period
+
+- Prospective signup-code invitations state that the plan selected during signup is free for the code's configured number of months.
+- Free-access months default to 1 in the platform-admin forms, `SignupCodeRepository`, and the database column default.
+- Individual `one_time` signup codes retain `free_access_months`; plan-grant behavior now keys off a positive month count rather than only the `free_months` code type.
+- Invite copy is maintained in `template/email/platform/tenant-signup-invite.txt` and queued with template key `platform.tenant_signup_invite`.
+- Migration `0065_signup_code_default_free_month.sql` changes the database default without modifying previously applied migrations.
+
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 
@@ -2734,3 +2743,15 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - Stripe remains the source of truth for KYC, bank accounts, payout timing, restrictions, disputes, and chargebacks. ArtsFolio stores only non-secret connected-account IDs and readiness flags.
 
 <!-- End of file. -->
+
+## 2026-07-10 Tenant signup slug availability repair
+
+- Restored `TenantSignupService::ensureTenantSlugAvailable()` after signup
+  called the method while its implementation was absent.
+- Public signup now checks `tenants.slug` before insertion and returns a stable
+  duplicate-address message; the database unique key remains the concurrency
+  safeguard.
+- Added `scripts/test/tenant_signup_slug_availability_static.php` to preflight.
+
+<!-- End of tenant signup slug availability repair. -->
+

@@ -16,7 +16,7 @@ final class SignupCodeRepository
     {
     }
 
-    public function create(string $kind, string $label, ?string $recipientEmail, int $maxRedemptions, ?int $createdByUserId, int $freeAccessMonths = 0): array
+    public function create(string $kind, string $label, ?string $recipientEmail, int $maxRedemptions, ?int $createdByUserId, int $freeAccessMonths = 1): array
     {
         if (!in_array($kind, ['one_time', 'blanket', 'free_months'], true)) {
             throw new RuntimeException('Signup code type must be one_time, blanket, or free_months.');
@@ -26,7 +26,9 @@ final class SignupCodeRepository
             throw new RuntimeException('Recipient email is invalid.');
         }
         $maxRedemptions = $kind === 'one_time' ? 1 : max(1, $maxRedemptions);
-        $freeAccessMonths = $kind === 'free_months' ? max(1, min(60, $freeAccessMonths)) : 0;
+        $freeAccessMonths = in_array($kind, ['one_time', 'free_months'], true)
+            ? max(1, min(60, $freeAccessMonths))
+            : 0;
         $code = $this->generateCode($kind);
 
         $stmt = $this->pdo->prepare(

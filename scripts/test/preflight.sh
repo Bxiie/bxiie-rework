@@ -152,6 +152,7 @@ run_if_exists scripts/test/email_outbox_status.php
 run_if_exists scripts/test/lifecycle_email_guard_static.php
 
 run_if_exists scripts/test/signup_owner_role_and_branding_static.php
+run_if_exists scripts/test/tenant_signup_slug_availability_static.php
 
 run_if_exists scripts/test/audit_log.php
 
@@ -300,6 +301,8 @@ run_php scripts/test/signup_code_revocation_and_billing_static.php
 run_php scripts/test/signup_code_used_filter_static.php
 
 run_php scripts/test/signup_code_invite_status_static.php
+
+run_php scripts/test/signup_code_invite_free_months_static.php
 
 run_if_exists scripts/test/platform_terms_privacy_static.php
 

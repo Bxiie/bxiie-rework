@@ -211,8 +211,8 @@ final class TenantSignupService
     private function assignSignupCodePlanGrant(int $tenantId, ?array $signupCode, ?array $selectedPlan): void
     {
         if ($selectedPlan === null || !$this->tableExists('tenant_plan_assignments')) { return; }
-        $isFreeAccess = $signupCode !== null && (string) ($signupCode['code_type'] ?? '') === 'free_months';
-        $months = $isFreeAccess ? max(1, (int) ($signupCode['free_access_months'] ?? 0)) : 0;
+        $months = $signupCode !== null ? max(0, (int) ($signupCode['free_access_months'] ?? 0)) : 0;
+        $isFreeAccess = $months > 0;
         $complimentaryUntil = $isFreeAccess ? (new \DateTimeImmutable('now'))->modify('+' . $months . ' months')->format('Y-m-d H:i:s') : null;
         $priceCents = (int) ($selectedPlan['monthly_price_cents'] ?? 0);
         $billingStatus = $priceCents > 0 && !$isFreeAccess ? 'payment_pending' : ($isFreeAccess ? 'trial' : 'free');
@@ -224,6 +224,33 @@ final class TenantSignupService
         $existingId = $stmt->fetchColumn();
         if ($existingId !== false) { $this->updateKnown('tenant_plan_assignments', (int) $existingId, $values); return; }
         $this->insertKnown('tenant_plan_assignments', $values);
+    }
+
+
+    /**
+     * Rejects a tenant slug that is already assigned to another site.
+     *
+     * The database unique key remains the final concurrency guard. This
+     * explicit lookup provides a stable, artist-friendly validation message
+     * before tenant creation reaches the insert.
+     */
+    private function ensureTenantSlugAvailable(string $slug): void
+    {
+        if (!$this->tableExists('tenants')) {
+            throw new RuntimeException('Tenant storage is not available.');
+        }
+
+        $columns = $this->tableColumns('tenants');
+        if (!isset($columns['slug'])) {
+            throw new RuntimeException('Tenant storage does not contain a slug column.');
+        }
+
+        $stmt = $this->pdo->prepare('SELECT id FROM tenants WHERE slug = :slug LIMIT 1');
+        $stmt->execute(['slug' => $slug]);
+
+        if ($stmt->fetchColumn() !== false) {
+            throw new RuntimeException('That site address is already in use. Please choose another.');
+        }
     }
 
     private function ensureDomainAvailable(string $domain): void

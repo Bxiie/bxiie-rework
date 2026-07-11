@@ -101,7 +101,7 @@ HTML;
             <label>Label<input type="text" name="label" placeholder="June gallery prospect list"></label>
             <label>Recipient email, optional<input type="email" name="recipient_email"></label>
             <label>Blanket/free-code redemption limit<input type="number" name="max_redemptions" min="1" max="10000" value="25"></label>
-            <label>Free access months<input type="number" name="free_access_months" min="1" max="60" value="3"></label>
+            <label>Free access months<input type="number" name="free_access_months" min="1" max="60" value="1"></label>
         </div>
         <button type="submit">Create code</button>
     </form>
@@ -116,7 +116,7 @@ HTML;
         <label>Campaign label<input type="text" name="label" placeholder="Prospects"></label>
         <label>Mode<select name="code_type"><option value="one_time">Individual one-time codes</option><option value="blanket">One blanket code for all recipients</option><option value="free_months">One free-access code for all recipients</option></select></label>
         <label>Blanket/free-code redemption limit<input type="number" name="max_redemptions" min="1" max="10000" value="100"></label>
-        <label>Free access months<input type="number" name="free_access_months" min="1" max="60" value="3"></label>
+        <label>Free access months<input type="number" name="free_access_months" min="1" max="60" value="1"></label>
         <button type="submit">Create and queue invites</button>
     </form>
 </section>
@@ -175,7 +175,7 @@ HTML;
         $email = strtolower(trim((string) ($_POST['recipient_email'] ?? '')));
         foreach ($this->codes->listRecent(500) as $row) {
             if ((int) $row['id'] === $id) {
-                $this->queueInvite($email, (string) $row['code']);
+                $this->queueInvite($email, $row);
                 $this->audit($request, $currentUser, 'platform.signup_code.invite_queued', (string) $id, ['recipient_email' => $email]);
                 break;
             }
@@ -212,21 +212,44 @@ HTML;
         if (in_array($type, ['blanket', 'free_months'], true)) {
             $code = $this->codes->create($type, (string) ($_POST['label'] ?? ($type === 'free_months' ? 'Free access prospect code' : 'Blanket prospect code')), null, (int) ($_POST['max_redemptions'] ?? count($emails)), isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, (int) ($_POST['free_access_months'] ?? 0));
             foreach ($emails as $email) {
-                $this->queueInvite($email, (string) $code['code']);
+                $this->queueInvite($email, $code);
             }
             return;
         }
         foreach ($emails as $email) {
-            $code = $this->codes->create('one_time', (string) ($_POST['label'] ?? 'Prospect code'), $email, 1, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null);
-            $this->queueInvite($email, (string) $code['code']);
+            $code = $this->codes->create(
+                'one_time',
+                (string) ($_POST['label'] ?? 'Prospect code'),
+                $email,
+                1,
+                isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
+                (int) ($_POST['free_access_months'] ?? 1),
+            );
+            $this->queueInvite($email, $code);
         }
     }
 
-    private function queueInvite(string $email, string $code): void
+    /**
+     * Queues a prospective-tenant invite with its complimentary plan period.
+     */
+    private function queueInvite(string $email, array $signupCode): void
     {
+        $code = (string) ($signupCode['code'] ?? '');
+        $months = max(1, (int) ($signupCode['free_access_months'] ?? 1));
+        $monthsLabel = $months . ' month' . ($months === 1 ? '' : 's');
         $signupUrl = 'https://artsfol.io/signup?code=' . rawurlencode($code);
-        $body = "You are invited to create an ArtsFolio site.\n\nSignup code: {$code}\nCreate your site: {$signupUrl}\n";
-        $this->outbox->queue($email, 'Create your ArtsFolio site', $body, nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8')), null, null, null, 'platform.tenant_signup_invite');
+        $templatePath = dirname(__DIR__, 5) . '/template/email/platform/tenant-signup-invite.txt';
+        $template = is_file($templatePath) ? (string) file_get_contents($templatePath) : '';
+        if ($template === '') {
+            throw new \RuntimeException('Tenant signup invite template is unavailable.');
+        }
+        $body = strtr($template, [
+            '{{FREE_ACCESS_MONTHS}}' => $monthsLabel,
+            '{{SIGNUP_CODE}}' => $code,
+            '{{SIGNUP_URL}}' => $signupUrl,
+        ]);
+        $subject = 'Your ArtsFolio plan is free for ' . $monthsLabel;
+        $this->outbox->queue($email, $subject, $body, nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8')), null, null, null, 'platform.tenant_signup_invite');
     }
 
 
