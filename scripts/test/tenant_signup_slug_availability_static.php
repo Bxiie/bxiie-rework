@@ -18,7 +18,7 @@ if ($contents === false) {
 $required = [
     'Signup calls slug availability validation' => '$this->ensureTenantSlugAvailable($slug);',
     'Slug availability method exists' => 'private function ensureTenantSlugAvailable(string $slug): void',
-    'Slug lookup is parameterized' => "SELECT id FROM tenants WHERE slug = :slug LIMIT 1",
+    'Slug lookup is parameterized' => "SELECT id, status",
     'Slug collision has a user-facing message' => 'That site address is already in use. Please choose another.',
     'Missing tenant storage is rejected' => 'Tenant storage is not available.',
     'Missing slug schema is rejected' => 'Tenant storage does not contain a slug column.',

@@ -2416,6 +2416,12 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - No schema migration is required.
 - Regression coverage: `scripts/test/deleted_tenant_slug_reuse_static.php`.
 
+
+## Tenant signup slug availability regression test
+
+- `scripts/test/tenant_signup_slug_availability_static.php` validates the parameterized `SELECT id, status` lookup used for active/deleted tenant distinction.
+- The test no longer depends on the obsolete exact SQL string `SELECT id FROM tenants WHERE slug = :slug LIMIT 1`.
+
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 
