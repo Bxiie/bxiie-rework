@@ -2352,6 +2352,13 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Filesystem templates remain the source of truth, so production UI edits should be committed back to source control before redeployment.
 - Regression coverage: `scripts/test/platform_email_templates_admin_static.php`.
 
+
+## Email-template placeholder reference
+
+- Platform Admin > Email Templates displays a complete placeholder table with token, scope, and meaning.
+- Placeholder availability is renderer-specific; the catalog distinguishes authentication, invitation, lifecycle, sales, billing, and platform-report values.
+- Regression coverage: `scripts/test/platform_email_template_placeholders_static.php`.
+
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 

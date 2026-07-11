@@ -249,6 +249,7 @@ run_if_exists scripts/test/tenant_chrome_static.php
 run_if_exists scripts/test/email_outbox_diagnostics_static.php
 
 run_php scripts/test/platform_email_templates_admin_static.php
+run_php scripts/test/platform_email_template_placeholders_static.php
 run_php scripts/test/email_template_no_end_marker_static.php
 run_php scripts/test/email_logo_branding_static.php
 

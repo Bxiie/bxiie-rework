@@ -81,6 +81,8 @@ final class EmailTemplatesController
                 . '</form>';
         }
 
+        $placeholderReference = $this->placeholderReferenceHtml();
+
         return Response::html(AdminLayout::render(
             title: 'Email Templates | Platform Admin',
             body: <<<HTML
@@ -96,6 +98,11 @@ final class EmailTemplatesController
         {$editor}
     </section>
 </div>
+<section class="admin-panel" style="margin-top:1rem">
+    <h2>Available placeholders</h2>
+    <p class="admin-muted">Use the exact <code>{{ placeholder_name }}</code> form. Availability is template-specific; unsupported placeholders remain blank or literal depending on the renderer.</p>
+    {$placeholderReference}
+</section>
 HTML,
             nav: [
                 '/admin' => 'Dashboard',
@@ -225,6 +232,61 @@ HTML,
                 unlink($temporary);
             }
         }
+    }
+
+
+    /**
+     * Returns the documented placeholder catalog used by email renderers.
+     *
+     * The scope column matters: not every renderer supplies every value.
+     */
+    private function placeholderReferenceHtml(): string
+    {
+        $placeholders = [
+            'action_url' => ['Invitation emails', 'The URL the recipient should follow to accept an invitation or complete the requested action.'],
+            'admin_url' => ['Tenant lifecycle emails', 'The tenant administration dashboard URL.'],
+            'amount' => ['Billing emails', 'A formatted currency amount, such as $19.00.'],
+            'billing_health_url' => ['Platform billing report', 'The platform-admin billing health page URL.'],
+            'billing_url' => ['Tenant billing emails', 'The tenant administration billing page URL.'],
+            'cart_total' => ['Abandoned-cart emails', 'The formatted total value of the customer cart.'],
+            'cart_url' => ['Abandoned-cart emails', 'The secure URL that restores and opens the customer cart.'],
+            'change_type' => ['Plan-change emails', 'The billing change category, such as upgrade, downgrade, or cancel.'],
+            'critical_count' => ['Platform billing report', 'The number of tenants currently in a critical billing state.'],
+            'effective_at' => ['Scheduled plan-change emails', 'The date or timestamp when a scheduled billing change takes effect.'],
+            'functions_url' => ['Tenant lifecycle emails', 'The tenant function-index documentation URL.'],
+            'help_url' => ['Tenant lifecycle emails', 'The tenant help index URL.'],
+            'invoice_number' => ['Billing payment emails', 'The Stripe invoice number when one is available.'],
+            'invoice_url' => ['Billing payment emails', 'The Stripe-hosted invoice or payment page URL.'],
+            'item_count' => ['Abandoned-cart emails', 'The number of items currently in the customer cart.'],
+            'past_due_count' => ['Platform billing report', 'The number of tenant subscriptions currently past due.'],
+            'plan_name' => ['Billing and signup emails', 'The human-readable selected plan name.'],
+            'plan_slug' => ['Billing emails', 'The machine-readable plan identifier, such as studio or professional.'],
+            'recipient_email' => ['Authentication and invitation emails', 'The recipient email address.'],
+            'recipient_name' => ['Welcome and invitation emails', 'The recipient display name, or a friendly fallback when unavailable.'],
+            'report_date' => ['Platform billing report', 'The date represented by the billing health report.'],
+            'report_lines' => ['Platform billing report', 'The preformatted tenant-by-tenant report detail lines.'],
+            'reset_url' => ['Password-reset email', 'The single-use password-reset URL.'],
+            'support_email' => ['Tenant billing emails', 'The ArtsFolio support email address.'],
+            'tenant_name' => ['Tenant, billing, sales, and invitation emails', 'The public or administrative name of the tenant site.'],
+            'tenant_slug' => ['Billing and tenant emails', 'The tenant site slug used in ArtsFolio URLs.'],
+            'tour_url' => ['Tenant lifecycle emails', 'The guided onboarding tour URL.'],
+            'verification_url' => ['Email-verification email', 'The single-use email-verification URL.'],
+            'videos_url' => ['Tenant lifecycle emails', 'The tenant training-video directory URL.'],
+            'warning_count' => ['Platform billing report', 'The number of tenants currently in a warning billing state.'],
+        ];
+
+        $rows = '';
+        foreach ($placeholders as $name => [$scope, $meaning]) {
+            $rows .= '<tr>'
+                . '<td><code>{{ ' . $this->escape($name) . ' }}</code></td>'
+                . '<td>' . $this->escape($scope) . '</td>'
+                . '<td>' . $this->escape($meaning) . '</td>'
+                . '</tr>';
+        }
+
+        return '<div style="overflow-x:auto"><table class="admin-table">'
+            . '<thead><tr><th>Placeholder</th><th>Available in</th><th>Meaning</th></tr></thead>'
+            . '<tbody>' . $rows . '</tbody></table></div>';
     }
 
     private function allows(?array $currentUser): bool
