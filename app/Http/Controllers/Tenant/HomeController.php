@@ -39,7 +39,7 @@ final class HomeController
         $homeIntro = (string) $this->settings->get(
             $tenant,
             'home_intro',
-            'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.'
+            ''
         );
 
         $includeUnpublished = $this->unpublishedPreviewEnabled($tenant);

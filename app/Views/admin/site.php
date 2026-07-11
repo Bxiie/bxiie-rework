@@ -20,7 +20,7 @@
   <label>Accent color<input name="accent_color" type="color" value="<?= View::e($settings['accent_color'] ?? '#c9a85f') ?>"></label>
   <label>Background color<input name="background_color" type="color" value="<?= View::e($settings['background_color'] ?? '#f7f2e8') ?>"></label>
 
-  <label class="wide">Home intro text / HTML allowed<textarea name="home_intro"><?= View::e($settings['home_intro'] ?? 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.') ?></textarea></label>
+  <label class="wide">Home intro text / HTML allowed<textarea name="home_intro"><?= View::e($settings['home_intro'] ?? '') ?></textarea></label>
 
   <label>Recent exhibitions heading<input name="exhibitions_heading" value="<?= View::e($settings['exhibitions_heading'] ?? 'Recent exhibitions') ?>"></label>
   <label>Exhibitions display<select name="exhibitions_display_mode"><option value="text" <?= ($settings['exhibitions_display_mode'] ?? 'text') === 'text' ? 'selected' : '' ?>>Text / stacked</option><option value="table" <?= ($settings['exhibitions_display_mode'] ?? '') === 'table' ? 'selected' : '' ?>>Table</option></select></label>

@@ -2422,6 +2422,20 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - `scripts/test/tenant_signup_slug_availability_static.php` validates the parameterized `SELECT id, status` lookup used for active/deleted tenant distinction.
 - The test no longer depends on the obsolete exact SQL string `SELECT id FROM tenants WHERE slug = :slug LIMIT 1`.
 
+
+## New tenant home-page copy
+
+- New tenants are not provisioned with artist-specific demo text.
+- The sentence beginning `Contemporary mixed-media work` is prohibited from current application, configuration, template, seed, and provisioning-script paths.
+- Historical migration files are not rewritten.
+- Regression coverage: `scripts/test/new_tenant_homepage_defaults_static.php`.
+
+
+## New tenant home-page copy regression test
+
+- `scripts/test/new_tenant_homepage_defaults_static.php` constructs the prohibited demo sentence from fragments so the test cannot match its own source file.
+- The scan still checks application, configuration, template, script, and seed paths for the complete rendered phrase.
+
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 

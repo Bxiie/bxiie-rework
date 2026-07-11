@@ -50,7 +50,7 @@ final class SettingsController
         $browserTitle = $this->setting($tenant, 'browser_title', $siteTitle);
         $siteAdminEmail = $this->setting($tenant, 'site_admin_email', '');
         $copyrightName = $this->setting($tenant, 'copyright_name', $artistName);
-        $homeIntro = $this->setting($tenant, 'home_intro', 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.');
+        $homeIntro = $this->setting($tenant, 'home_intro', '');
         $salesNotes = $this->setting($tenant, 'sales_notes', 'Sales are handled directly by the artist. Contact the studio for shipping, pickup, installation, and timing details.');
         $stripeConnectedAccountId = $this->setting($tenant, 'stripe_connected_account_id', '');
         $stripeConnectPanel = $this->stripeConnectPanel($request, $tenant, $csrf);

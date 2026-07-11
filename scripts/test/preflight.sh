@@ -187,6 +187,7 @@ run_if_exists scripts/test/lifecycle_email_guard_static.php
 run_if_exists scripts/test/signup_owner_role_and_branding_static.php
 run_if_exists scripts/test/tenant_signup_slug_availability_static.php
 run_php scripts/test/deleted_tenant_slug_reuse_static.php
+run_php scripts/test/new_tenant_homepage_defaults_static.php
 
 run_if_exists scripts/test/audit_log.php
 

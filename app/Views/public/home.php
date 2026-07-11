@@ -1,7 +1,7 @@
 <?php ob_start(); use App\Core\View; ?>
 <section class="hero">
   <h1><?= View::e($settings['artist_name'] ?? ($settings['site_title'] ?? $tenant['display_name'])) ?></h1>
-  <div class="prose"><?= View::html($settings['home_intro'] ?? 'Contemporary mixed-media work, archival textures, fragments, signals, and beautiful static from the machine room of memory.') ?></div>
+  <div class="prose"><?= View::html($settings['home_intro'] ?? '') ?></div>
 </section>
 <section class="grid">
   <?php foreach ($images as $image): ?>
