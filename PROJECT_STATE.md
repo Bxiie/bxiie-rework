@@ -2393,6 +2393,20 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Selection occurs in `SignupCodesController::queueInvite()` using exact month-count branches.
 - Regression coverage: `scripts/test/signup_invite_template_variants_static.php`.
 
+
+## Signup-code invite status variants
+
+- The Platform Admin signup-code page calculates queued, pending, sent, and last-delivery timestamps across all signup-invite template keys.
+- Counted keys are `platform.tenant_signup_invite`, `platform.tenant_signup_invite.no_free_period`, `platform.tenant_signup_invite.one_month`, and `platform.tenant_signup_invite.multiple_months`.
+- This is a read-model correction only; no schema migration is required.
+- Regression coverage: `scripts/test/signup_code_invite_variant_status_static.php`.
+
+## Strict PHP preflight runner
+
+- `scripts/test/preflight.sh::run_php()` invokes PHP with `E_ALL` and `display_errors=1`.
+- It fails on nonzero exit status and on PHP warning, notice, deprecation, parse-error, or fatal-error diagnostics emitted with exit status 0.
+- Successful output is prefixed `[PASS]`; diagnostic output is prefixed `[FAIL]`.
+
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 

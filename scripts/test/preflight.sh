@@ -46,9 +46,42 @@ run_command() {
 }
 
 run_php() {
-  local file="$1"
-  shift
-  run_command "php ${file}" php "$file" "$@"
+    local output
+    local status
+
+    printf '[RUN] php %s\n' "$*"
+
+    set +e
+    output="$(
+        php \
+            -d error_reporting=E_ALL \
+            -d display_errors=1 \
+            "$@" 2>&1
+    )"
+    status=$?
+    set -e
+
+    if [[ $status -ne 0 ]]; then
+        if [[ -n "$output" ]]; then
+            printf '%s\n' "$output" | sed 's/^/[FAIL] /'
+        fi
+        printf '[FAIL] php %s (exit %d)\n' "$*" "$status"
+        return "$status"
+    fi
+
+    if printf '%s\n' "$output" | grep -Eiq '(^|[[:space:]])(PHP )?(Warning|Notice|Deprecated|Strict Standards|Parse error|Fatal error):'; then
+        if [[ -n "$output" ]]; then
+            printf '%s\n' "$output" | sed 's/^/[FAIL] /'
+        fi
+        printf '[FAIL] php %s emitted PHP diagnostics.\n' "$*"
+        return 1
+    fi
+
+    if [[ -n "$output" ]]; then
+        printf '%s\n' "$output" | sed 's/^/[PASS] /'
+    fi
+
+    return 0
 }
 
 run_if_exists() {
@@ -310,6 +343,7 @@ run_php scripts/test/signup_code_invite_status_static.php
 run_php scripts/test/signup_code_invite_free_months_static.php
 run_php scripts/test/signup_invite_recipient_email_placeholder_static.php
 run_php scripts/test/signup_invite_template_variants_static.php
+run_php scripts/test/signup_code_invite_variant_status_static.php
 
 run_php scripts/test/signup_complimentary_checkout_static.php
 

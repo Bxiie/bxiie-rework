@@ -79,34 +79,59 @@ final class SignupCodeRepository
                 (
                     SELECT COUNT(*)
                     FROM email_outbox eo
-                    WHERE eo.template_key = 'platform.tenant_signup_invite'
+                    WHERE eo.template_key IN (
+                          'platform.tenant_signup_invite',
+                          'platform.tenant_signup_invite.no_free_period',
+                          'platform.tenant_signup_invite.one_month',
+                          'platform.tenant_signup_invite.multiple_months'
+                      )
                       AND eo.body_text LIKE CONCAT('%', c.code, '%')
                 ) AS invite_email_count,
                 (
                     SELECT COUNT(*)
                     FROM email_outbox eo
-                    WHERE eo.template_key = 'platform.tenant_signup_invite'
+                    WHERE eo.template_key IN (
+                          'platform.tenant_signup_invite',
+                          'platform.tenant_signup_invite.no_free_period',
+                          'platform.tenant_signup_invite.one_month',
+                          'platform.tenant_signup_invite.multiple_months'
+                      )
                       AND eo.body_text LIKE CONCAT('%', c.code, '%')
                       AND eo.status = 'sent'
                 ) AS invite_email_sent_count,
                 (
                     SELECT COUNT(*)
                     FROM email_outbox eo
-                    WHERE eo.template_key = 'platform.tenant_signup_invite'
+                    WHERE eo.template_key IN (
+                          'platform.tenant_signup_invite',
+                          'platform.tenant_signup_invite.no_free_period',
+                          'platform.tenant_signup_invite.one_month',
+                          'platform.tenant_signup_invite.multiple_months'
+                      )
                       AND eo.body_text LIKE CONCAT('%', c.code, '%')
                       AND eo.status IN ('queued', 'sending')
                 ) AS invite_email_pending_count,
                 (
                     SELECT MAX(eo.sent_at)
                     FROM email_outbox eo
-                    WHERE eo.template_key = 'platform.tenant_signup_invite'
+                    WHERE eo.template_key IN (
+                          'platform.tenant_signup_invite',
+                          'platform.tenant_signup_invite.no_free_period',
+                          'platform.tenant_signup_invite.one_month',
+                          'platform.tenant_signup_invite.multiple_months'
+                      )
                       AND eo.body_text LIKE CONCAT('%', c.code, '%')
                       AND eo.status = 'sent'
                 ) AS invite_email_last_sent_at,
                 (
                     SELECT MAX(eo.created_at)
                     FROM email_outbox eo
-                    WHERE eo.template_key = 'platform.tenant_signup_invite'
+                    WHERE eo.template_key IN (
+                          'platform.tenant_signup_invite',
+                          'platform.tenant_signup_invite.no_free_period',
+                          'platform.tenant_signup_invite.one_month',
+                          'platform.tenant_signup_invite.multiple_months'
+                      )
                       AND eo.body_text LIKE CONCAT('%', c.code, '%')
                 ) AS invite_email_last_queued_at
              FROM tenant_signup_codes c
