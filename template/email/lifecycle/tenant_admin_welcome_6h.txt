@@ -16,5 +16,3 @@ Tenant function index:
 
 Training video directory:
 {{ videos_url }}
-
-# End of file.

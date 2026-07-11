@@ -47,6 +47,11 @@
     {
         "scope": "platform",
         "method": "GET",
+        "path": "/admin/email-templates"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
         "path": "/admin/jobs"
     },
     {
@@ -257,6 +262,11 @@
     {
         "scope": "platform",
         "method": "GET",
+        "path": "/platform/admin/email-templates"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
         "path": "/platform/admin/jobs"
     },
     {
@@ -447,6 +457,11 @@
     {
         "scope": "platform",
         "method": "POST",
+        "path": "/platform/admin/email-templates"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
         "path": "/platform/admin/jobs/action"
     },
     {
@@ -493,6 +508,11 @@
         "scope": "platform",
         "method": "POST",
         "path": "/platform/admin/tenants/delete"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
+        "path": "/platform/admin/tenants/onboarding/reset"
     },
     {
         "scope": "platform",
@@ -988,6 +1008,11 @@
         "scope": "tenant",
         "method": "POST",
         "path": "/admin/events/order"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/onboarding/reset"
     },
     {
         "scope": "tenant",

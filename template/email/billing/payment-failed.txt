@@ -11,5 +11,3 @@ If you have already updated your card, no further action may be needed. Stripe w
 
 Thanks,
 ArtsFolio
-
-# End of file.

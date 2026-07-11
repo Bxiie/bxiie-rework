@@ -12,5 +12,3 @@ Review billing details:
 
 Thanks,
 ArtsFolio
-
-# End of file.

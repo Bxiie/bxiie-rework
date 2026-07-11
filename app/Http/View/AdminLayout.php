@@ -222,6 +222,7 @@ HTML;
             str_contains(strtolower($title), 'billing') => 'billing',
             str_contains(strtolower($title), 'directory') => 'directory',
             str_contains(strtolower($title), 'stat') => 'stats',
+            str_contains(strtolower($title), 'email template') => 'email_templates',
             str_contains(strtolower($title), 'audit') => 'audit',
             default => 'dashboard',
         };
@@ -261,6 +262,7 @@ HTML;
             'contacts' => ['/platform/admin/contacts', 'Contacts'],
             'email_signups' => ['/platform/admin/email-signups', 'Email Signups'],
             'email' => ['/platform/admin/email-outbox', 'Email Outbox'],
+            'email_templates' => ['/platform/admin/email-templates', 'Email Templates'],
             'stats' => ['/platform/admin/stats', 'Platform Stats'],
             'audit' => ['/platform/admin/audit-log', 'Platform Audit Log'],
             'routes' => ['/platform/admin/routes', 'Platform Routes'],

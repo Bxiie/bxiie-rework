@@ -6,5 +6,3 @@ Signup code: {{SIGNUP_CODE}}
 Create your site: {{SIGNUP_URL}}
 
 ArtsFolio
-
-# End of file.

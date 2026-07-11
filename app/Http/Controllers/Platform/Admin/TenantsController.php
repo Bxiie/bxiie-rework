@@ -107,6 +107,7 @@ HTML,
         $noticeText = match ($noticeCode) {
             'complementary-updated' => 'Tenant billing override updated.',
             'password-updated' => 'Tenant user password updated.',
+            'onboarding-reset' => 'Tenant onboarding state reset.',
             default => '',
         };
         $notice = $noticeText !== '' ? '<p class="admin-notice admin-notice-success">' . $this->escape($noticeText) . '</p>' : '';
@@ -157,6 +158,16 @@ HTML;
         <div><button type="submit">Save billing override</button></div>
     </form>
 </section>
+
+<section class="admin-panel">
+    <h2>Onboarding</h2>
+    <p class="admin-muted">Reset the tenant-wide dashboard checklist and guided-tour state without changing site content, artwork, users, branding, or billing.</p>
+    <form method="post" action="/platform/admin/tenants/onboarding/reset" onsubmit="return confirm('Reset onboarding for this tenant? The tenant dashboard checklist and guided tour will appear as they do for a newly created tenant.');">
+        <input type="hidden" name="csrf_token" value="{$csrf}">
+        <input type="hidden" name="tenant_id" value="{$tenantId}">
+        <button type="submit">Reset onboarding</button>
+    </form>
+</section>
 {$billingDetails}
 <table class="admin-table">
     <thead><tr><th>ID</th><th>User</th><th>Membership</th><th>Roles</th><th>Last log on</th><th>Password</th></tr></thead>
@@ -184,6 +195,51 @@ HTML,
         $this->auditLog?->record('platform.tenant.complementary_updated', null, (int) ($currentUser['user_id'] ?? 0), 'tenant', (string) $tenantId, ['complementary' => $enabled], $request->server('REMOTE_ADDR'));
         FlashMessages::success('Tenant billing override updated.');
         return new Response('', 303, ['Location' => '/platform/admin/tenants/' . $tenantId . '?notice=complementary-updated']);
+    }
+
+
+    /**
+     * Resets tenant-wide onboarding state from the platform tenant page.
+     */
+    public function resetOnboarding(Request $request, ?array $currentUser): Response
+    {
+        if (!$this->canManageTenants($currentUser) || !$this->csrf) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::invalidCsrf();
+        }
+
+        $tenantId = (int) ($_POST['tenant_id'] ?? 0);
+        if ($tenantId < 1 || !$this->findTenant($tenantId)) {
+            return Response::html('<h1>Invalid tenant onboarding reset request</h1>', 422);
+        }
+
+        $stmt = $this->pdo()->prepare(
+            "DELETE FROM tenant_settings
+             WHERE tenant_id = :tenant_id
+               AND (
+                    setting_key LIKE 'onboarding\\_%'
+                 OR setting_key LIKE 'admin\\_onboarding\\_%'
+                 OR setting_key LIKE 'admin\\_tour\\_%'
+                 OR setting_key LIKE 'getting\\_started\\_%'
+                 OR setting_key LIKE 'dashboard\\_checklist\\_%'
+               )"
+        );
+        $stmt->execute(['tenant_id' => $tenantId]);
+
+        $this->auditLog?->record(
+            'platform.tenant.onboarding_reset',
+            $tenantId,
+            isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
+            'tenant',
+            (string) $tenantId,
+            ['deleted_setting_count' => $stmt->rowCount(), 'source' => 'platform_admin'],
+            $request->server('REMOTE_ADDR'),
+        );
+
+        FlashMessages::success('Tenant onboarding state reset.');
+        return new Response('', 303, ['Location' => '/platform/admin/tenants/' . $tenantId . '?notice=onboarding-reset']);
     }
 
 

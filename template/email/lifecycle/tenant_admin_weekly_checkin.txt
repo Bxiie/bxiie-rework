@@ -4,5 +4,3 @@ Admin: {{ admin_url }}
 Help: {{ help_url }}
 Function index: {{ functions_url }}
 Training videos: {{ videos_url }}
-
-# End of file.

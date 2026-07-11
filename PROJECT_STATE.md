@@ -2334,6 +2334,24 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - `SignupController` relies on `requires_immediate_checkout`; paid plan price alone must not trigger Stripe during a complimentary period.
 - Regression coverage lives in `scripts/test/signup_complimentary_checkout_static.php`.
 
+
+## Tenant onboarding reset
+
+- Tenant admins can reset onboarding from the tenant dashboard with `POST /admin/onboarding/reset`.
+- Platform admins can reset a tenant from its tenant detail page with `POST /platform/admin/tenants/onboarding/reset`.
+- Resetting removes only tenant-scoped onboarding, tour, getting-started, and dashboard-checklist settings.
+- Both paths require CSRF validation, enforce administrative roles, and write audit events.
+- Regression coverage: `scripts/test/onboarding_reset_controls_static.php`.
+
+
+## Platform email-template editor
+
+- Platform owners and platform administrators can edit all existing email templates at `/platform/admin/email-templates`.
+- The editor allowlists canonical `.txt`, `.md`, and `.html` files under `template/email/`; it cannot create files or escape the template root.
+- Saves are CSRF-protected, atomic, limited to 256 KiB, and audited as `platform.email_template.updated`.
+- Filesystem templates remain the source of truth, so production UI edits should be committed back to source control before redeployment.
+- Regression coverage: `scripts/test/platform_email_templates_admin_static.php`.
+
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 
@@ -2738,6 +2756,13 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - Platform help includes expanded tenant admin documentation, a new-admin setup tour, a tenant function index, and a training video directory placeholder at `/help/training-videos`.
 - Tenant-local onboarding remains available at `/admin/getting-started` and now points to Upload Artwork, Help, Function Index, and Training Videos.
 - Video scripts are maintained outside the runtime as `ArtsFolio_Tenant_Admin_Training_Video_Scripts_20260708.docx`; links will be added to the help site after videos are recorded and published.
+
+
+## Email template source-footers
+
+- Files under `template/email/` must not contain the literal line `# End of file.` because email templates are rendered as user-visible message bodies.
+- The general source-file footer convention still applies to executable and human-maintained code where appropriate, but not to outgoing email content.
+- Regression coverage: `scripts/test/email_template_no_end_marker_static.php`.
 
 # End of file.
 

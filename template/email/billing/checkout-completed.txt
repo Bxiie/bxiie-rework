@@ -7,5 +7,3 @@ You can review your plan, renewal date, and payment details here:
 
 Thanks,
 ArtsFolio
-
-# End of file.
