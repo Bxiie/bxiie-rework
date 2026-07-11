@@ -15,6 +15,8 @@ use App\Http\View\AdminLayout;
 use App\Http\View\ErrorPage;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Membership\Roles;
+use App\Platform\Email\EmailTemplateCatalog;
+use App\Platform\Settings\PlatformSettingsRepository;
 use App\Support\Security\CsrfTokenService;
 
 /**
@@ -30,6 +32,7 @@ final class EmailTemplatesController
         private readonly RequirePlatformRole $roles,
         private readonly CsrfTokenService $csrf,
         private readonly AuditLogRepository $auditLog,
+        private readonly PlatformSettingsRepository $settings,
         private readonly string $templateRoot,
     ) {
     }
@@ -48,14 +51,16 @@ final class EmailTemplatesController
 
         $notice = match ((string) ($_GET['notice'] ?? '')) {
             'saved' => '<p class="admin-notice admin-notice-success">Email template saved.</p>',
+            'status-saved' => '<p class="admin-notice admin-notice-success">Email delivery status saved.</p>',
             default => '',
         };
 
         $list = '';
         foreach ($templates as $relativePath => $absolutePath) {
-            $active = $relativePath === $selected ? ' class="active"' : '';
-            $list .= '<li><a' . $active . ' href="/platform/admin/email-templates?template=' . rawurlencode($relativePath) . '">'
-                . $this->escape($relativePath) . '</a></li>';
+            $selectedClass = $relativePath === $selected ? ' class="active"' : '';
+            $status = EmailTemplateCatalog::isActive($this->settings, $relativePath) ? 'Active' : 'Suppressed';
+            $list .= '<li><a' . $selectedClass . ' href="/platform/admin/email-templates?template=' . rawurlencode($relativePath) . '">'
+                . $this->escape($relativePath) . '</a> <small>(' . $status . ')</small></li>';
         }
         if ($list === '') {
             $list = '<li>No email templates were found.</li>';
@@ -69,10 +74,22 @@ final class EmailTemplatesController
             }
 
             $csrf = $this->escape($this->csrf->getOrCreate());
-            $editor = '<form method="post" action="/platform/admin/email-templates">'
+            $description = $this->escape(EmailTemplateCatalog::description($selected));
+            $isActive = EmailTemplateCatalog::isActive($this->settings, $selected);
+            $checked = $isActive ? ' checked' : '';
+            $statusLabel = $isActive ? 'Active' : 'Suppressed';
+            $editor = '<p><strong>' . $this->escape($selected) . '</strong></p>'
+                . '<p>' . $description . '</p>'
+                . '<form method="post" action="/platform/admin/email-templates/status" style="margin-bottom:1rem">'
                 . '<input type="hidden" name="csrf_token" value="' . $csrf . '">'
                 . '<input type="hidden" name="template" value="' . $this->escape($selected) . '">'
-                . '<p><strong>' . $this->escape($selected) . '</strong></p>'
+                . '<label><input type="checkbox" name="active" value="1"' . $checked . '> Active</label> '
+                . '<button type="submit">Save delivery status</button>'
+                . '<p class="admin-muted">Current status: <strong>' . $statusLabel . '</strong>. Suppressed templates are not added to the email outbox.</p>'
+                . '</form>'
+                . '<form method="post" action="/platform/admin/email-templates">'
+                . '<input type="hidden" name="csrf_token" value="' . $csrf . '">'
+                . '<input type="hidden" name="template" value="' . $this->escape($selected) . '">'
                 . '<p class="admin-muted">Placeholders such as <code>{{ tenant_name }}</code> are preserved literally until the email is rendered.</p>'
                 . '<label for="template_body">Template body</label>'
                 . '<textarea id="template_body" name="template_body" rows="30" spellcheck="true" style="width:100%;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">'
@@ -113,6 +130,24 @@ HTML,
                 '/admin/platform-settings' => 'Settings',
             ],
         ));
+    }
+
+
+    /** Updates whether a template type may be queued. */
+    public function updateStatus(Request $request, ?array $currentUser): Response
+    {
+        if (!$this->allows($currentUser)) return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) return Response::invalidCsrf();
+        $relativePath = trim((string) ($_POST['template'] ?? ''));
+        $templates = $this->templateInventory();
+        if ($relativePath === '' || !isset($templates[$relativePath])) return Response::html('<h1>Invalid email template</h1>', 422);
+        $active = (string) ($_POST['active'] ?? '') === '1';
+        $previous = EmailTemplateCatalog::isActive($this->settings, $relativePath);
+        $this->settings->set(EmailTemplateCatalog::settingKey($relativePath), $active ? '1' : '0');
+        if ($previous !== $active) {
+            $this->auditLog->record('platform.email_template.status_updated', null, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, 'email_template', $relativePath, ['previous_active' => $previous, 'active' => $active, 'template_keys' => EmailTemplateCatalog::templateKeys($relativePath)], $request->server('REMOTE_ADDR'));
+        }
+        return new Response('', 303, ['Location' => '/platform/admin/email-templates?template=' . rawurlencode($relativePath) . '&notice=status-saved']);
     }
 
     public function update(Request $request, ?array $currentUser): Response

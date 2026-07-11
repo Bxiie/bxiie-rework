@@ -462,6 +462,11 @@
     {
         "scope": "platform",
         "method": "POST",
+        "path": "/platform/admin/email-templates/status"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
         "path": "/platform/admin/jobs/action"
     },
     {

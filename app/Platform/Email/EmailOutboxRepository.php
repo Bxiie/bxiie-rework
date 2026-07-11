@@ -29,6 +29,9 @@ final class EmailOutboxRepository
         int $availableAfterSeconds = 0,
     ): int {
         $this->assertSendableEmail($templateKey, $tenantId, $userId, $recipientEmail);
+        if (!EmailTemplateCatalog::isTemplateKeyActive($this->pdo, $templateKey)) {
+            return 0;
+        }
 
         $brandedBodies = $this->brandBodies($subject, $bodyText, $bodyHtml);
         $bodyText = $brandedBodies['body_text'];
