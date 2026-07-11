@@ -100,6 +100,7 @@ HTML;
             </label>
             <label>Label<input type="text" name="label" placeholder="June gallery prospect list"></label>
             <label>Recipient email, optional<input type="email" name="recipient_email"></label>
+            <label><span><input type="checkbox" name="send_invite" value="1" checked> Automatically send the invite to this email address</span><small>Used only when creating a one-time code. A valid recipient email is required when selected.</small></label>
             <label>Blanket/free-code redemption limit<input type="number" name="max_redemptions" min="1" max="10000" value="25"></label>
             <label>Free access months<input type="number" name="free_access_months" min="1" max="60" value="1"></label>
         </div>
@@ -150,15 +151,33 @@ HTML;
             return new Response('', 303, ['Location' => '/platform/admin/signup-codes?notice=bulk-created']);
         }
 
+        $kind = (string) ($_POST['code_type'] ?? 'one_time');
+        $recipientEmail = strtolower(trim((string) ($_POST['recipient_email'] ?? '')));
+        $sendInvite = $kind === 'one_time' && (string) ($_POST['send_invite'] ?? '') === '1';
+        if ($sendInvite && !filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+            return Response::html(
+                ErrorPage::validation('A valid recipient email is required to automatically send the invite.', '/platform/admin/signup-codes'),
+                422,
+            );
+        }
+
         $code = $this->codes->create(
-            kind: (string) ($_POST['code_type'] ?? 'one_time'),
+            kind: $kind,
             label: (string) ($_POST['label'] ?? ''),
-            recipientEmail: (string) ($_POST['recipient_email'] ?? '') ?: null,
+            recipientEmail: $recipientEmail !== '' ? $recipientEmail : null,
             maxRedemptions: (int) ($_POST['max_redemptions'] ?? 1),
             createdByUserId: isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
-            freeAccessMonths: (int) ($_POST['free_access_months'] ?? 0),
+            freeAccessMonths: (int) ($_POST['free_access_months'] ?? 1),
         );
-        $this->audit($request, $currentUser, 'platform.signup_code.created', (string) ($code['id'] ?? $code['code']), ['code_type' => $code['code_type'] ?? '']);
+        $entityId = (string) ($code['id'] ?? $code['code']);
+        $this->audit($request, $currentUser, 'platform.signup_code.created', $entityId, ['code_type' => $code['code_type'] ?? '']);
+
+        if ($sendInvite) {
+            $this->queueInvite($recipientEmail, $code);
+            $this->audit($request, $currentUser, 'platform.signup_code.invite_queued', $entityId, ['recipient_email' => $recipientEmail, 'automatic' => true]);
+
+            return new Response('', 303, ['Location' => '/platform/admin/signup-codes?notice=created-and-invite-queued']);
+        }
 
         return new Response('', 303, ['Location' => '/platform/admin/signup-codes?notice=created']);
     }
@@ -333,6 +352,7 @@ HTML;
     {
         $text = match ($notice) {
             'created' => 'Signup code created.',
+            'created-and-invite-queued' => 'Signup code created and invite email queued.',
             'bulk-created' => 'Signup codes created and invite emails queued.',
             'invite-queued' => 'Signup invite email queued.',
             'revoked' => 'Signup code revoked.',

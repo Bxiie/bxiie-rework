@@ -2333,6 +2333,7 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Shopping cart repair 2026-06-30: migration 0058 no longer uses MariaDB REGEXP for legacy price detection, and the tenant public HomeController keeps the `site-cart-link` cart chrome helper while rendering product add-to-cart forms.
 
 - 2026-07-02: Added user documentation for the Small flat items shipping profile so buyers understand shared shipping for stickers and other small products.
+- Single one-time code creation includes a checked-by-default option to validate the recipient and queue the signup invitation immediately after code creation.
 
 ## Tenant admin help and onboarding, 2026-07-08
 

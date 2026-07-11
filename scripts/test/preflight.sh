@@ -304,6 +304,8 @@ run_php scripts/test/signup_code_invite_status_static.php
 
 run_php scripts/test/signup_code_invite_free_months_static.php
 
+run_php scripts/test/signup_code_auto_invite_static.php
+
 run_if_exists scripts/test/platform_terms_privacy_static.php
 
 run_if_exists scripts/test/canonical_oauth_logout_static.php

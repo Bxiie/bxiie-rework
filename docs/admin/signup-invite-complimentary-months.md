@@ -6,6 +6,8 @@ Individual one-time codes and shared free-access codes retain the configured com
 
 After signup, `TenantSignupService` records the selected plan as a trial whenever the redeemed code has `free_access_months > 0`. The complimentary period waives ArtsFolio plan charges only. Payment-card fees, commissions, shipping, taxes, and other third-party charges are not waived.
 
+When creating an individual one-time code, **Automatically send the invite to this email address** is selected by default. If it remains selected, a valid recipient email is required; ArtsFolio creates the code and queues the invitation in the same request. Clear the checkbox to create the code without sending it.
+
 Invite copy lives in `template/email/platform/tenant-signup-invite.txt`.
 
 <!-- End of file. -->
