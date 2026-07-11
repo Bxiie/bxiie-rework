@@ -308,6 +308,7 @@ run_php scripts/test/signup_code_used_filter_static.php
 run_php scripts/test/signup_code_invite_status_static.php
 
 run_php scripts/test/signup_code_invite_free_months_static.php
+run_php scripts/test/signup_invite_recipient_email_placeholder_static.php
 
 run_php scripts/test/signup_complimentary_checkout_static.php
 

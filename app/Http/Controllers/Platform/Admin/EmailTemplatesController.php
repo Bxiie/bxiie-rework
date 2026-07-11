@@ -310,17 +310,35 @@ HTML,
             'warning_count' => ['Platform billing report', 'The number of tenants currently in a warning billing state.'],
         ];
 
+        $uppercaseAliases = [
+            'recipient_email',
+            'free_access_months',
+            'signup_code',
+            'signup_url',
+        ];
+
         $rows = '';
         foreach ($placeholders as $name => [$scope, $meaning]) {
             $rows .= '<tr>'
                 . '<td><code>{{ ' . $this->escape($name) . ' }}</code></td>'
+                . '<td>Preferred</td>'
                 . '<td>' . $this->escape($scope) . '</td>'
                 . '<td>' . $this->escape($meaning) . '</td>'
                 . '</tr>';
+
+            if (in_array($name, $uppercaseAliases, true)) {
+                $rows .= '<tr>'
+                    . '<td><code>{{' . $this->escape(strtoupper($name)) . '}}</code></td>'
+                    . '<td>Legacy alias</td>'
+                    . '<td>' . $this->escape($scope) . '</td>'
+                    . '<td>' . $this->escape($meaning)
+                    . ' This uppercase form is retained for compatibility; prefer the lowercase token above in new edits.</td>'
+                    . '</tr>';
+            }
         }
 
         return '<div style="overflow-x:auto"><table class="admin-table">'
-            . '<thead><tr><th>Placeholder</th><th>Available in</th><th>Meaning</th></tr></thead>'
+            . '<thead><tr><th>Placeholder</th><th>Form</th><th>Available in</th><th>Meaning</th></tr></thead>'
             . '<tbody>' . $rows . '</tbody></table></div>';
     }
 

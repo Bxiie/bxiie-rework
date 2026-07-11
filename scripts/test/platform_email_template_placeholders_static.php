@@ -24,8 +24,15 @@ $required = [
     "'invoice_number' =>",
     "'support_email' =>",
     "'report_lines' =>",
+    '<th>Form</th>',
     '<th>Available in</th>',
     '<th>Meaning</th>',
+    "'recipient_email',",
+    "'free_access_months',",
+    "'signup_code',",
+    "'signup_url',",
+    'strtoupper($name)',
+    'Legacy alias',
 ];
 
 foreach ($required as $marker) {

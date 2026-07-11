@@ -263,6 +263,15 @@ HTML;
             throw new \RuntimeException('Tenant signup invite template is unavailable.');
         }
         $body = strtr($template, [
+            // Preferred editor-facing placeholder names.
+            '{{ recipient_email }}' => $email,
+            '{{ free_access_months }}' => $monthsLabel,
+            '{{ signup_code }}' => $code,
+            '{{ signup_url }}' => $signupUrl,
+
+            // Preserve compatibility with templates created before the
+            // platform email-template editor standardized placeholder names.
+            '{{RECIPIENT_EMAIL}}' => $email,
             '{{FREE_ACCESS_MONTHS}}' => $monthsLabel,
             '{{SIGNUP_CODE}}' => $code,
             '{{SIGNUP_URL}}' => $signupUrl,

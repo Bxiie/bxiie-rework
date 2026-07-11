@@ -2368,6 +2368,20 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Existing outbox rows are unaffected. Status changes are audited as `platform.email_template.status_updated`.
 - Regression coverage: `scripts/test/platform_email_template_status_static.php`.
 
+
+## Signup invite recipient placeholder
+
+- `template/email/platform/tenant-signup-invite.txt` supports `{{ recipient_email }}`.
+- The signup invite renderer also supports lowercase editor-facing placeholders for complimentary months, signup code, and signup URL while retaining legacy uppercase placeholders.
+- Regression coverage: `scripts/test/signup_invite_recipient_email_placeholder_static.php`.
+
+
+## Email-template uppercase placeholder aliases
+
+- Platform Admin > Email Templates shows legacy uppercase aliases alongside preferred lowercase placeholders.
+- Uppercase compatibility aliases currently documented: `{{RECIPIENT_EMAIL}}`, `{{FREE_ACCESS_MONTHS}}`, `{{SIGNUP_CODE}}`, and `{{SIGNUP_URL}}`.
+- New template edits should use lowercase, spaced placeholders such as `{{ recipient_email }}`.
+
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 
