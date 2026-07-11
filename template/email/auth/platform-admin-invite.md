@@ -8,5 +8,3 @@ Use this link to sign in:
 
 Thanks,  
 ArtsFolio
-
-<!-- End of file. -->

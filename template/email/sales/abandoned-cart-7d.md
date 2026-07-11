@@ -10,5 +10,3 @@ If the work is still available, you can complete checkout from the cart page. If
 
 Thanks,
 ArtsFolio
-
-<!-- End of file. -->

@@ -10,5 +10,3 @@ Artwork and size availability can change, especially for originals and limited r
 
 Thanks,
 ArtsFolio
-
-<!-- End of file. -->

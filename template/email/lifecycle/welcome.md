@@ -1,14 +1,18 @@
-# Welcome to ArtsFolio
+Subject: Welcome to ArtsFolio
 
-Hi {{ recipient_name }},
+Welcome to ArtsFolio, {{ recipient_name }}.
 
-Welcome to ArtsFolio.
+Your tenant admin page is here:
+{{ admin_url }}
 
-Useful first steps:
+Start with the guided setup tour:
+{{ tour_url }}
 
-1. Complete your profile.
-2. Choose your site name.
-3. Review portfolio settings.
-4. Upload your first artwork.
+Help index:
+{{ help_url }}
 
-<!-- End of file. -->
+Tenant function index:
+{{ functions_url }}
+
+Training video directory:
+{{ videos_url }}

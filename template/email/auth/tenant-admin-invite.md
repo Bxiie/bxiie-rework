@@ -1,4 +1,4 @@
-# You have been invited to administer {{tenant_name}}
+{{ recipient_email }}
 
 You have been invited to administer {{tenant_name}} on ArtsFolio.
 
@@ -8,5 +8,3 @@ Use this link to sign in:
 
 Thanks,  
 ArtsFolio
-
-<!-- End of file. -->

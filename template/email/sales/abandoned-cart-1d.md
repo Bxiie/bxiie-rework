@@ -10,5 +10,3 @@ If you have questions about the work, reply to the artist through the site befor
 
 Thanks,
 ArtsFolio
-
-<!-- End of file. -->

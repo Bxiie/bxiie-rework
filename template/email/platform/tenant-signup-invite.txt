@@ -1,3 +1,5 @@
+{{ recipient_email }}
+
 You are invited to create an ArtsFolio site.
 
 The plan you select will be free for {{FREE_ACCESS_MONTHS}}. You can build and publish your site during this complimentary period without ArtsFolio plan charges. After the complimentary period, a paid plan requires billing details to continue.
