@@ -117,18 +117,63 @@ final class TenantAdminRepository
         $this->pdo->beginTransaction();
 
         try {
-            $domains = $this->pdo->prepare('DELETE FROM tenant_domains WHERE tenant_id = :tenant_id');
+            $tenant = $this->pdo->prepare(
+                'SELECT slug
+                 FROM tenants
+                 WHERE id = :tenant_id
+                 FOR UPDATE'
+            );
+            $tenant->execute(['tenant_id' => $tenantId]);
+            $slug = $tenant->fetchColumn();
+
+            if ($slug === false) {
+                throw new \RuntimeException('Tenant not found.');
+            }
+
+            $tombstoneSlug = $this->deletedTenantTombstoneSlug(
+                $tenantId,
+                (string) $slug,
+            );
+
+            $domains = $this->pdo->prepare(
+                'DELETE FROM tenant_domains WHERE tenant_id = :tenant_id'
+            );
             $domains->execute(['tenant_id' => $tenantId]);
 
-            $stmt = $this->pdo->prepare("UPDATE tenants SET status = 'deleted', deleted_at = CURRENT_TIMESTAMP WHERE id = :tenant_id");
-            $stmt->execute(['tenant_id' => $tenantId]);
+            $stmt = $this->pdo->prepare(
+                "UPDATE tenants
+                 SET status = 'deleted',
+                     deleted_at = CURRENT_TIMESTAMP,
+                     updated_at = CURRENT_TIMESTAMP,
+                     slug = :tombstone_slug
+                 WHERE id = :tenant_id"
+            );
+            $stmt->execute([
+                'tombstone_slug' => $tombstoneSlug,
+                'tenant_id' => $tenantId,
+            ]);
+
+            if ($stmt->rowCount() !== 1) {
+                throw new \RuntimeException('Tenant deletion did not update exactly one tenant.');
+            }
 
             $this->pdo->commit();
         } catch (\Throwable $e) {
-            $this->pdo->rollBack();
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+
             throw $e;
         }
     }
+    /**
+     * Builds the internal slug retained by a soft-deleted tenant.
+     */
+    private function deletedTenantTombstoneSlug(int $tenantId, string $slug): string
+    {
+        return 'deleted-' . $tenantId . '-' . substr(hash('sha256', $slug . '|' . $tenantId), 0, 16);
+    }
+
 }
 
 // End of file.

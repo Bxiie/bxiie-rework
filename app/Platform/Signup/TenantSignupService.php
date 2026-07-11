@@ -255,12 +255,54 @@ final class TenantSignupService
             throw new RuntimeException('Tenant storage does not contain a slug column.');
         }
 
-        $stmt = $this->pdo->prepare('SELECT id FROM tenants WHERE slug = :slug LIMIT 1');
-        $stmt->execute(['slug' => $slug]);
+        $select = $this->pdo->prepare(
+            'SELECT id, status
+             FROM tenants
+             WHERE slug = :slug
+             LIMIT 1'
+        );
+        $select->execute(['slug' => $slug]);
+        $tenant = $select->fetch();
 
-        if ($stmt->fetchColumn() !== false) {
+        if ($tenant === false) {
+            return;
+        }
+
+        if ((string) ($tenant['status'] ?? '') !== 'deleted') {
             throw new RuntimeException('That site address is already in use. Please choose another.');
         }
+
+        $tenantId = (int) ($tenant['id'] ?? 0);
+        if ($tenantId < 1) {
+            throw new RuntimeException('That site address is already in use. Please choose another.');
+        }
+
+        $tombstoneSlug = $this->deletedTenantTombstoneSlug($tenantId, $slug);
+        $release = $this->pdo->prepare(
+            "UPDATE tenants
+             SET slug = :tombstone_slug,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = :tenant_id
+               AND slug = :slug
+               AND status = 'deleted'"
+        );
+        $release->execute([
+            'tombstone_slug' => $tombstoneSlug,
+            'tenant_id' => $tenantId,
+            'slug' => $slug,
+        ]);
+
+        if ($release->rowCount() !== 1) {
+            throw new RuntimeException('That site address is already in use. Please choose another.');
+        }
+    }
+
+    /**
+     * Builds a deterministic unique slug for a soft-deleted tenant.
+     */
+    private function deletedTenantTombstoneSlug(int $tenantId, string $slug): string
+    {
+        return 'deleted-' . $tenantId . '-' . substr(hash('sha256', $slug . '|' . $tenantId), 0, 16);
     }
 
     private function ensureDomainAvailable(string $domain): void
