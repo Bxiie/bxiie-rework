@@ -2382,6 +2382,17 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Uppercase compatibility aliases currently documented: `{{RECIPIENT_EMAIL}}`, `{{FREE_ACCESS_MONTHS}}`, `{{SIGNUP_CODE}}`, and `{{SIGNUP_URL}}`.
 - New template edits should use lowercase, spaced placeholders such as `{{ recipient_email }}`.
 
+
+## Signup invitation template variants
+
+- Signup-code invitations use three duration-specific templates:
+  - 0 months: `template/email/platform/tenant-signup-invite-no-free-period.txt`
+  - 1 month: `template/email/platform/tenant-signup-invite-one-month.txt`
+  - 2+ months: `template/email/platform/tenant-signup-invite.txt`
+- Each template has a distinct outbox template key and independent Active/Suppressed control in Platform Admin.
+- Selection occurs in `SignupCodesController::queueInvite()` using exact month-count branches.
+- Regression coverage: `scripts/test/signup_invite_template_variants_static.php`.
+
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 

@@ -288,6 +288,7 @@ HTML,
             'change_type' => ['Plan-change emails', 'The billing change category, such as upgrade, downgrade, or cancel.'],
             'critical_count' => ['Platform billing report', 'The number of tenants currently in a critical billing state.'],
             'effective_at' => ['Scheduled plan-change emails', 'The date or timestamp when a scheduled billing change takes effect.'],
+            'free_access_months' => ['Prospective tenant signup invitation', 'The complimentary-access duration shown in the invitation.'],
             'functions_url' => ['Tenant lifecycle emails', 'The tenant function-index documentation URL.'],
             'help_url' => ['Tenant lifecycle emails', 'The tenant help index URL.'],
             'invoice_number' => ['Billing payment emails', 'The Stripe invoice number when one is available.'],
@@ -301,6 +302,8 @@ HTML,
             'report_date' => ['Platform billing report', 'The date represented by the billing health report.'],
             'report_lines' => ['Platform billing report', 'The preformatted tenant-by-tenant report detail lines.'],
             'reset_url' => ['Password-reset email', 'The single-use password-reset URL.'],
+            'signup_code' => ['Prospective tenant signup invitation', 'The one-time or shared signup code.'],
+            'signup_url' => ['Prospective tenant signup invitation', 'The signup URL containing or associated with the code.'],
             'support_email' => ['Tenant billing emails', 'The ArtsFolio support email address.'],
             'tenant_name' => ['Tenant, billing, sales, and invitation emails', 'The public or administrative name of the tenant site.'],
             'tenant_slug' => ['Billing and tenant emails', 'The tenant site slug used in ArtsFolio URLs.'],
@@ -309,37 +312,20 @@ HTML,
             'videos_url' => ['Tenant lifecycle emails', 'The tenant training-video directory URL.'],
             'warning_count' => ['Platform billing report', 'The number of tenants currently in a warning billing state.'],
         ];
-
-        $uppercaseAliases = [
-            'recipient_email',
-            'free_access_months',
-            'signup_code',
-            'signup_url',
-        ];
-
         $rows = '';
         foreach ($placeholders as $name => [$scope, $meaning]) {
-            $rows .= '<tr>'
-                . '<td><code>{{ ' . $this->escape($name) . ' }}</code></td>'
-                . '<td>Preferred</td>'
-                . '<td>' . $this->escape($scope) . '</td>'
-                . '<td>' . $this->escape($meaning) . '</td>'
-                . '</tr>';
-
-            if (in_array($name, $uppercaseAliases, true)) {
-                $rows .= '<tr>'
-                    . '<td><code>{{' . $this->escape(strtoupper($name)) . '}}</code></td>'
-                    . '<td>Legacy alias</td>'
-                    . '<td>' . $this->escape($scope) . '</td>'
-                    . '<td>' . $this->escape($meaning)
-                    . ' This uppercase form is retained for compatibility; prefer the lowercase token above in new edits.</td>'
-                    . '</tr>';
-            }
+            $rows .= '<tr><td><code>{{ ' . $this->escape($name) . ' }}</code></td><td>Preferred</td><td>' . $this->escape($scope) . '</td><td>' . $this->escape($meaning) . '</td></tr>';
         }
-
-        return '<div style="overflow-x:auto"><table class="admin-table">'
-            . '<thead><tr><th>Placeholder</th><th>Form</th><th>Available in</th><th>Meaning</th></tr></thead>'
-            . '<tbody>' . $rows . '</tbody></table></div>';
+        $legacyAliases = [
+            '{{RECIPIENT_EMAIL}}' => ['Authentication and invitation emails', 'Legacy alias for {{ recipient_email }}.'],
+            '{{FREE_ACCESS_MONTHS}}' => ['Prospective tenant signup invitation', 'Legacy alias for {{ free_access_months }}.'],
+            '{{SIGNUP_CODE}}' => ['Prospective tenant signup invitation', 'Legacy alias for {{ signup_code }}.'],
+            '{{SIGNUP_URL}}' => ['Prospective tenant signup invitation', 'Legacy alias for {{ signup_url }}.'],
+        ];
+        foreach ($legacyAliases as $token => [$scope, $meaning]) {
+            $rows .= '<tr><td><code>' . $this->escape($token) . '</code></td><td>Legacy alias</td><td>' . $this->escape($scope) . '</td><td>' . $this->escape($meaning) . '</td></tr>';
+        }
+        return '<div style="overflow-x:auto"><table class="admin-table"><thead><tr><th>Placeholder</th><th>Form</th><th>Available in</th><th>Meaning</th></tr></thead><tbody>' . $rows . '</tbody></table></div>';
     }
 
     private function allows(?array $currentUser): bool

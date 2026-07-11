@@ -1,0 +1,8 @@
+{{ recipient_email }}
+
+You are invited to create an ArtsFolio site.
+
+Choose the plan that fits your work when you create your site. Paid plans proceed to secure Stripe checkout during signup.
+
+Signup code: {{ signup_code }}
+Create your site: {{ signup_url }}

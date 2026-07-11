@@ -1,0 +1,8 @@
+{{ recipient_email }}
+
+You are invited to create an ArtsFolio site.
+
+The plan you select will be free for 1 month. You will not be charged during that complimentary period.
+
+Signup code: {{ signup_code }}
+Create your site: {{ signup_url }}

@@ -251,33 +251,63 @@ HTML;
     /**
      * Queues a prospective-tenant invite with its complimentary plan period.
      */
+
+    /**
+     * Queues a prospective-tenant invite using the template that matches the
+     * exact complimentary-access duration attached to the signup code.
+     */
     private function queueInvite(string $email, array $signupCode): void
     {
-        $code = (string) ($signupCode['code'] ?? '');
-        $months = max(1, (int) ($signupCode['free_access_months'] ?? 1));
-        $monthsLabel = $months . ' month' . ($months === 1 ? '' : 's');
+        $code = trim((string) ($signupCode['code'] ?? ''));
+        if ($code === '') {
+            throw new \RuntimeException('Tenant signup invite code is unavailable.');
+        }
+
+        $months = max(0, (int) ($signupCode['free_access_months'] ?? 0));
         $signupUrl = 'https://artsfol.io/signup?code=' . rawurlencode($code);
-        $templatePath = dirname(__DIR__, 5) . '/template/email/platform/tenant-signup-invite.txt';
+
+        if ($months === 0) {
+            $relativeTemplatePath = 'platform/tenant-signup-invite-no-free-period.txt';
+            $subject = 'Create your ArtsFolio site';
+            $templateKey = 'platform.tenant_signup_invite.no_free_period';
+        } elseif ($months === 1) {
+            $relativeTemplatePath = 'platform/tenant-signup-invite-one-month.txt';
+            $subject = 'Your ArtsFolio plan is free for 1 month';
+            $templateKey = 'platform.tenant_signup_invite.one_month';
+        } else {
+            $relativeTemplatePath = 'platform/tenant-signup-invite.txt';
+            $subject = 'Your ArtsFolio plan is free for ' . $months . ' months';
+            $templateKey = 'platform.tenant_signup_invite.multiple_months';
+        }
+
+        $templatePath = dirname(__DIR__, 5) . '/template/email/' . $relativeTemplatePath;
         $template = is_file($templatePath) ? (string) file_get_contents($templatePath) : '';
         if ($template === '') {
-            throw new \RuntimeException('Tenant signup invite template is unavailable.');
+            throw new \RuntimeException('Tenant signup invite template is unavailable: ' . $relativeTemplatePath);
         }
+
+        $monthsLabel = $months . ' month' . ($months === 1 ? '' : 's');
         $body = strtr($template, [
-            // Preferred editor-facing placeholder names.
             '{{ recipient_email }}' => $email,
             '{{ free_access_months }}' => $monthsLabel,
             '{{ signup_code }}' => $code,
             '{{ signup_url }}' => $signupUrl,
-
-            // Preserve compatibility with templates created before the
-            // platform email-template editor standardized placeholder names.
             '{{RECIPIENT_EMAIL}}' => $email,
             '{{FREE_ACCESS_MONTHS}}' => $monthsLabel,
             '{{SIGNUP_CODE}}' => $code,
             '{{SIGNUP_URL}}' => $signupUrl,
         ]);
-        $subject = 'Your ArtsFolio plan is free for ' . $monthsLabel;
-        $this->outbox->queue($email, $subject, $body, nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8')), null, null, null, 'platform.tenant_signup_invite');
+
+        $this->outbox->queue(
+            $email,
+            $subject,
+            $body,
+            nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8')),
+            null,
+            null,
+            null,
+            $templateKey,
+        );
     }
 
 
