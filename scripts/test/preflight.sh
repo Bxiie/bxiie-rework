@@ -461,3 +461,8 @@ run_php scripts/test/backup_operations_static.php
 run_php scripts/test/restic_platform_settings_static.php
 
 # End of file.
+
+# Backup reliability regression.
+run_php scripts/test/backup_outstanding_fixes_static.php
+
+# End of file.

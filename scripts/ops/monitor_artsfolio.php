@@ -55,11 +55,18 @@ function artsfolioCurrentBootId(): string
 
 $options = getopt('', ['json', 'no-email', 'force-report', 'trouble-only', 'component-started:', 'notification-only']);
 $lockPath = getenv('ARTSFOLIO_MONITOR_LOCK_FILE') ?: '/tmp/artsfolio-monitor.lock';
-$lock = fopen($lockPath, 'c');
-if ($lock === false || !flock($lock, LOCK_EX | LOCK_NB)) {
-    fwrite(STDERR, "Another ArtsFolio monitor process is already running.\n");
-    exit(0);
+$lock = @fopen($lockPath, 'c');
+if ($lock === false) {
+    $error = error_get_last();
+    $detail = is_array($error) ? (string) ($error['message'] ?? 'unknown error') : 'unknown error';
+    fwrite(STDERR, "Unable to open ArtsFolio monitor lock {$lockPath}: {$detail}\n");
+    exit(3);
 }
+if (!flock($lock, LOCK_EX | LOCK_NB)) {
+    fwrite(STDERR, "Another ArtsFolio monitor process is already running.\n");
+    exit(75);
+}
+@chmod($lockPath, 0660);
 
 $pdo = Database::connect($root);
 $monitor = new OperationsMonitor($pdo, $root);

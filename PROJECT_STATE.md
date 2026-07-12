@@ -2907,3 +2907,13 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - Secret values are write-only in the browser and are omitted from audit details. The Restic password must also be retained outside ArtsFolio for disaster recovery.
 
 <!-- End of Platform-managed Restic configuration. -->
+
+## 2026-07-12 Backup reliability repair
+
+- Restic uses `/var/cache/artsfolio/restic`; hardened services no longer attempt to write `/root/.cache`.
+- Hourly backup uses the stable staging directory and captures the exact snapshot ID from `restic backup --json`.
+- Monthly restore validation consumes the complete gzip stream and avoids the `grep -q`/`pipefail` false failure.
+- Weekly and monthly checks run the operations monitor as the `artsfolio` account and treat monitor exit codes 0–2 as health outcomes, not report-process failures.
+- `/etc/artsfolio/backup.env` is no longer referenced by the backup service.
+
+<!-- End of Backup reliability repair. -->

@@ -2,8 +2,14 @@
 Description=Verify ArtsFolio Restic repository and email platform admins
 After=network-online.target
 Wants=network-online.target
+
 [Service]
 Type=oneshot
 User=root
+Group=root
+ExecStartPre=/usr/bin/rm -f /tmp/artsfolio-monitor.lock
 ExecStart=/var/www/artsfolio/scripts/backup/artsfolio_backup_weekly_check.sh
+CacheDirectory=artsfolio/restic
+CacheDirectoryMode=0750
+
 # End of file.

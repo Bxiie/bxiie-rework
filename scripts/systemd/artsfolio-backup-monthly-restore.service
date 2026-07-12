@@ -2,8 +2,14 @@
 Description=Restore-test ArtsFolio backup and email platform admins
 After=network-online.target mariadb.service
 Wants=network-online.target
+
 [Service]
 Type=oneshot
 User=root
+Group=root
+ExecStartPre=/usr/bin/rm -f /tmp/artsfolio-monitor.lock
 ExecStart=/var/www/artsfolio/scripts/backup/artsfolio_backup_monthly_restore_test.sh
+CacheDirectory=artsfolio/restic
+CacheDirectoryMode=0750
+
 # End of file.
