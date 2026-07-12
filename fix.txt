@@ -1,6 +1,9 @@
 ## Now
 
 - Stripe description should include 'ArtsFolio: '
+- Back up database, images, system and application hourly
+- Update system operations page and status emails with new metrics
+- Add {{logo}} to templates.
 
 
 ##

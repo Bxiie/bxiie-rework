@@ -1,0 +1,13 @@
+[Unit]
+Description=Run ArtsFolio backup hourly
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=5m
+Persistent=true
+Unit=artsfolio-backup.service
+
+[Install]
+WantedBy=timers.target
+
+# End of file.

@@ -30,6 +30,7 @@ final class OperationsMonitor
         $this->collectDatabaseMetrics();
         $this->collectApplicationMetrics();
         $this->collectQueueMetrics();
+        $this->collectBackupMetrics();
         $this->collectNetworkMetrics();
 
         return new HealthReport(
@@ -207,6 +208,71 @@ final class OperationsMonitor
             }
             $this->add('worker.' . $workerName . '.heartbeat_age_seconds', $status, '<= 75 WARN; > 150 CRIT', $age . ' seconds', 'status=' . (string) $row['status']);
         }
+    }
+
+    /** Collects status written by the hourly, weekly, and monthly backup jobs. */
+    private function collectBackupMetrics(): void
+    {
+        $stateDir = rtrim((string) (getenv('ARTSFOLIO_BACKUP_STATE_DIR') ?: '/var/lib/artsfolio/backup-status'), '/');
+        $hourly = $this->backupStatusFile($stateDir . '/hourly.json');
+        $weekly = $this->backupStatusFile($stateDir . '/weekly.json');
+        $monthly = $this->backupStatusFile($stateDir . '/monthly.json');
+
+        $this->backupAgeMetric('backup.snapshot.age_minutes', $hourly, 90, 180, 'hourly.json');
+        $this->backupResultMetric('backup.snapshot.status', $hourly, 'hourly.json');
+        $this->backupAgeMetric('backup.integrity_check.age_hours', $weekly, 192 * 60, 240 * 60, 'weekly.json', true);
+        $this->backupResultMetric('backup.integrity_check.status', $weekly, 'weekly.json');
+        $this->backupAgeMetric('backup.restore_test.age_days', $monthly, 40 * 1440, 50 * 1440, 'monthly.json', true);
+        $this->backupResultMetric('backup.restore_test.status', $monthly, 'monthly.json');
+
+        if (isset($hourly['repository_bytes']) && is_numeric($hourly['repository_bytes'])) {
+            $this->add('backup.repository.size', HealthMetric::INFO, 'informational; track growth', $this->formatBytes((int) $hourly['repository_bytes']));
+        }
+        if (isset($hourly['dump_bytes']) && is_numeric($hourly['dump_bytes'])) {
+            $this->add('backup.database_dump.size', HealthMetric::INFO, '> 0 bytes', $this->formatBytes((int) $hourly['dump_bytes']));
+        }
+        if (isset($hourly['duration_seconds']) && is_numeric($hourly['duration_seconds'])) {
+            $this->add('backup.snapshot.duration', HealthMetric::INFO, 'informational; watch trend', $this->formatSeconds((int) $hourly['duration_seconds']));
+        }
+
+        foreach (['artsfolio-backup.timer', 'artsfolio-backup-weekly-check.timer', 'artsfolio-backup-monthly-restore.timer'] as $timer) {
+            $enabled = trim($this->command('systemctl is-enabled ' . escapeshellarg($timer) . ' 2>/dev/null || true'));
+            $this->add('backup.timer.' . str_replace(['@', '.'], ['_', '_'], $timer), $enabled === 'enabled' ? HealthMetric::OK : HealthMetric::CRIT, 'enabled', $enabled !== '' ? $enabled : 'unknown', $timer);
+        }
+    }
+
+    /** @return array<string,mixed> */
+    private function backupStatusFile(string $path): array
+    {
+        if (!is_readable($path)) {
+            return ['_missing' => true, '_path' => $path];
+        }
+        $decoded = json_decode((string) file_get_contents($path), true);
+        return is_array($decoded) ? $decoded + ['_path' => $path] : ['_invalid' => true, '_path' => $path];
+    }
+
+    private function backupResultMetric(string $name, array $status, string $label): void
+    {
+        if (($status['_missing'] ?? false) || ($status['_invalid'] ?? false)) {
+            $this->add($name, HealthMetric::CRIT, 'ok', 'unavailable', (string) ($status['_path'] ?? $label));
+            return;
+        }
+        $actual = strtolower(trim((string) ($status['status'] ?? 'unknown')));
+        $this->add($name, $actual === 'ok' ? HealthMetric::OK : HealthMetric::CRIT, 'ok', $actual, trim((string) ($status['detail'] ?? '')));
+    }
+
+    private function backupAgeMetric(string $name, array $status, int $warnMinutes, int $critMinutes, string $label, bool $displayLargerUnit = false): void
+    {
+        $checkedAt = trim((string) ($status['checked_at'] ?? ''));
+        $epoch = $checkedAt !== '' ? strtotime($checkedAt) : false;
+        if ($epoch === false) {
+            $this->add($name, HealthMetric::CRIT, "< {$warnMinutes} minutes WARN; >= {$critMinutes} CRIT", 'unavailable', (string) ($status['_path'] ?? $label));
+            return;
+        }
+        $minutes = max(0, (int) floor((time() - $epoch) / 60));
+        $severity = $minutes >= $critMinutes ? HealthMetric::CRIT : ($minutes >= $warnMinutes ? HealthMetric::WARN : HealthMetric::OK);
+        $actual = $displayLargerUnit && $minutes >= 1440 ? number_format($minutes / 1440, 1) . ' days' : ($displayLargerUnit && $minutes >= 60 ? number_format($minutes / 60, 1) . ' hours' : $minutes . ' minutes');
+        $this->add($name, $severity, "< {$warnMinutes} minutes WARN; >= {$critMinutes} CRIT", $actual, $checkedAt);
     }
 
     private function collectNetworkMetrics(): void

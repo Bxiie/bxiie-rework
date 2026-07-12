@@ -62,7 +62,7 @@ final class OperationsController
         }
 
         $body = $this->styles()
-            . '<p class="admin-notice">Share this page URL with another platform administrator. They must sign in with an authorized platform account.</p>'
+            . '<p class="admin-notice"><strong>Backup protection:</strong> this dashboard includes hourly off-site snapshot freshness, repository size, weekly integrity checks, monthly restore tests, and timer state. Any stale or failed result is included in platform-admin status email.</p>'
             . '<form class="admin-form" method="get" action="/platform/admin/operations"><div class="admin-grid-2"><label>Trend/check start<input type="date" name="start" value="' . AdminLayout::escape($start) . '"></label><label>Trend/check end<input type="date" name="end" value="' . AdminLayout::escape($end) . '"></label><label>Check status<select name="status"><option value="">All</option><option value="OK"' . ($status==='OK'?' selected':'') . '>OK</option><option value="WARN"' . ($status==='WARN'?' selected':'') . '>WARN</option><option value="CRIT"' . ($status==='CRIT'?' selected':'') . '>CRIT</option></select></label></div><button type="submit">Apply range</button></form>'
             . '<p class="admin-muted">Trend lines cover ' . AdminLayout::escape($start) . ' through ' . AdminLayout::escape($end) . ' (' . AdminLayout::escape($this->displayTimezone()) . ').</p>'
             . '<div class="ops-summary-grid">' . $cards . '</div>'

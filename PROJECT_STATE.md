@@ -2888,3 +2888,22 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 
 <!-- End of tenant signup slug availability repair. -->
 
+
+## 2026-07-12 Encrypted off-site backup operations
+
+- ArtsFolio uses Restic for encrypted hourly off-site snapshots, with a consistent MariaDB logical dump and selected application, media, secret, and system configuration paths.
+- Backup credentials live in `/etc/artsfolio/backup.env`; secret values are never committed or recorded here.
+- Backup result files live under `/var/lib/artsfolio/backup-status` and are consumed by `OperationsMonitor` as `backup.*` metrics.
+- `artsfolio-backup.timer` runs hourly; `artsfolio-backup-weekly-check.timer` verifies repository integrity Sundays; `artsfolio-backup-monthly-restore.timer` performs a restore validation on the first day of each month.
+- Weekly and monthly jobs invoke the operations monitor with `--force-report`, notifying active platform owners and administrators through the existing status-email path.
+- Deployment and recovery procedures are documented in `docs/dev/backup-restore-cookbook.md`.
+
+<!-- End of encrypted off-site backup operations. -->
+
+## 2026-07-12 Platform-managed Restic configuration
+
+- Restic repository, repository password, Backblaze B2 account ID, B2 application key, and weekly read subset are managed under Platform Admin → Platform Settings → Off-site backups.
+- Backup jobs retrieve the values from `platform_settings` through `scripts/backup/export_restic_environment.php` and no longer depend on `/etc/artsfolio/backup.env`.
+- Secret values are write-only in the browser and are omitted from audit details. The Restic password must also be retained outside ArtsFolio for disaster recovery.
+
+<!-- End of Platform-managed Restic configuration. -->

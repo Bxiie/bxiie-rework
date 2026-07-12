@@ -1,0 +1,10 @@
+[Unit]
+Description=Run ArtsFolio monthly backup restore test
+[Timer]
+OnCalendar=*-*-01 05:20:00
+RandomizedDelaySec=10m
+Persistent=true
+Unit=artsfolio-backup-monthly-restore.service
+[Install]
+WantedBy=timers.target
+# End of file.

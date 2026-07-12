@@ -1,0 +1,9 @@
+[Unit]
+Description=Verify ArtsFolio Restic repository and email platform admins
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+User=root
+ExecStart=/var/www/artsfolio/scripts/backup/artsfolio_backup_weekly_check.sh
+# End of file.

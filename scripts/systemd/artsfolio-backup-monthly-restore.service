@@ -1,0 +1,9 @@
+[Unit]
+Description=Restore-test ArtsFolio backup and email platform admins
+After=network-online.target mariadb.service
+Wants=network-online.target
+[Service]
+Type=oneshot
+User=root
+ExecStart=/var/www/artsfolio/scripts/backup/artsfolio_backup_monthly_restore_test.sh
+# End of file.

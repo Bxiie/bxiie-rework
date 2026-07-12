@@ -1,0 +1,10 @@
+[Unit]
+Description=Run ArtsFolio weekly backup integrity check
+[Timer]
+OnCalendar=Sun *-*-* 04:20:00
+RandomizedDelaySec=10m
+Persistent=true
+Unit=artsfolio-backup-weekly-check.service
+[Install]
+WantedBy=timers.target
+# End of file.

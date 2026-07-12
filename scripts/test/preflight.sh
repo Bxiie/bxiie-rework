@@ -451,3 +451,13 @@ run_php scripts/test/analytics_bot_filter_static.php
 php scripts/test/sales_shipping_contact_collection_static.php
 
 # End of file.
+
+# Encrypted off-site backup operations regression.
+run_php scripts/test/backup_operations_static.php
+
+# End of file.
+
+# Platform-admin Restic credential regression.
+run_php scripts/test/restic_platform_settings_static.php
+
+# End of file.

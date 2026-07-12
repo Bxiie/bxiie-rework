@@ -64,6 +64,14 @@ final class SettingsController
         $turnstileSiteKey = $this->escape($this->settings->get('turnstile_site_key', $this->settings->get('recaptcha_site_key', '')));
         $turnstileSecretKey = $this->escape($this->settings->get('turnstile_secret_key', ''));
         $signupCodeRequired = $this->truthy($this->settings->get('tenant_signup_code_required', '0')) ? ' checked' : '';
+        $resticRepository = $this->escape($this->settings->get('restic_repository', ''));
+        $resticPasswordConfigured = trim((string) $this->settings->get('restic_password', '')) !== '';
+        $b2AccountIdConfigured = trim((string) $this->settings->get('b2_account_id', '')) !== '';
+        $b2AccountKeyConfigured = trim((string) $this->settings->get('b2_account_key', '')) !== '';
+        $resticPasswordPlaceholder = $this->escape($resticPasswordConfigured ? 'Configured; leave blank to keep' : 'Not configured');
+        $b2AccountIdPlaceholder = $this->escape($b2AccountIdConfigured ? 'Configured; leave blank to keep' : 'Not configured');
+        $b2AccountKeyPlaceholder = $this->escape($b2AccountKeyConfigured ? 'Configured; leave blank to keep' : 'Not configured');
+        $resticWeeklyReadSubset = $this->escape($this->settings->get('restic_weekly_read_subset', '5%'));
 
         return Response::html(AdminLayout::render(
             title: 'Platform Settings',
@@ -81,6 +89,7 @@ final class SettingsController
     <fieldset><legend>Spam protection</legend><div class="admin-form-grid"><label>Cloudflare Turnstile site key<input type="text" name="turnstile_site_key" value="{$turnstileSiteKey}"></label><label>Cloudflare Turnstile secret key<input type="password" name="turnstile_secret_key" value="{$turnstileSecretKey}"></label></div><p class="admin-muted">When the secret key is blank, public contact and signup forms do not block submissions in development. Create keys in Cloudflare Turnstile and allow artsfol.io plus active tenant domains.</p></fieldset>
     <fieldset><legend>Email delivery</legend><div class="admin-form-grid"><label>SMTP host<input type="text" name="smtp_host" value="{$smtpHost}"></label><label>SMTP port<input type="number" name="smtp_port" value="{$smtpPort}" min="1" max="65535"></label><label>SMTP username<input type="text" name="smtp_username" value="{$smtpUsername}"></label><label>SMTP password<input type="password" name="smtp_password" value="{$smtpPassword}"></label><label>SMTP encryption<input type="text" name="smtp_encryption" value="{$smtpEncryption}" placeholder="tls, ssl, or none"></label><label>From email<input type="email" name="mail_from_email" value="{$mailFromEmail}"></label><label>From name<input type="text" name="mail_from_name" value="{$mailFromName}"></label><label>Postmark message stream<input type="text" name="smtp_x_pm_message_stream" value="{$smtpMessageStream}" placeholder="outbound or broadcasts"></label></div><p class="admin-muted">Postmark message stream is sent as <code>X-PM-Message-Stream</code>. These values are stored in <code>platform_settings</code>. Keep production backups and database access restricted because SMTP and ecommerce secrets are sensitive.</p></fieldset>
     <fieldset><legend>Ecommerce</legend><div class="admin-form-grid"><label>Stripe publishable key<input type="text" name="stripe_publishable_key" value="{$stripePublishableKey}"></label><label>Stripe secret key<input type="password" name="stripe_secret_key" value="" placeholder="{$stripeSecretKeyPlaceholder}" autocomplete="new-password"></label><label>Stripe webhook secret<input type="password" name="stripe_webhook_secret" value="" placeholder="{$stripeWebhookSecretPlaceholder}" autocomplete="new-password"></label></div></fieldset>
+    <fieldset><legend>Off-site backups</legend><div class="admin-form-grid"><label>Restic repository<input type="text" name="restic_repository" value="{$resticRepository}" placeholder="b2:bucket-name:artsfolio-production"></label><label>Restic repository password<input type="password" name="restic_password" value="" placeholder="{$resticPasswordPlaceholder}" autocomplete="new-password"></label><label>Backblaze B2 account ID<input type="password" name="b2_account_id" value="" placeholder="{$b2AccountIdPlaceholder}" autocomplete="new-password"></label><label>Backblaze B2 application key<input type="password" name="b2_account_key" value="" placeholder="{$b2AccountKeyPlaceholder}" autocomplete="new-password"></label><label>Weekly repository read subset<input type="text" name="restic_weekly_read_subset" value="{$resticWeeklyReadSubset}" placeholder="5%"></label></div><p class="admin-muted">The hourly, weekly, and monthly backup jobs read these values from <code>platform_settings</code>. Secret values are never displayed after saving. Use a bucket-scoped B2 application key and retain the Restic password in an external password manager because losing it makes the repository unrecoverable.</p></fieldset>
     <fieldset class="admin-panel-wide"><legend>Platform custom CSS</legend><p class="admin-muted">Applied to platform marketing, pricing, help, and platform admin pages through <code>/assets/platform-custom.css</code>.</p><textarea name="platform_custom_css" rows="18" spellcheck="false">{$platformCustomCss}</textarea></fieldset>
     <button type="submit">Save platform settings</button>
 </form>
@@ -125,6 +134,11 @@ HTML,
         $turnstileSiteKey = trim((string) ($_POST['turnstile_site_key'] ?? ''));
         $turnstileSecretKey = (string) ($_POST['turnstile_secret_key'] ?? '');
         $signupCodeRequired = isset($_POST['tenant_signup_code_required']) ? '1' : '0';
+        $resticRepository = trim((string) ($_POST['restic_repository'] ?? ''));
+        $resticPassword = (string) ($_POST['restic_password'] ?? '');
+        $b2AccountId = (string) ($_POST['b2_account_id'] ?? '');
+        $b2AccountKey = (string) ($_POST['b2_account_key'] ?? '');
+        $resticWeeklyReadSubset = trim((string) ($_POST['restic_weekly_read_subset'] ?? '5%'));
 
         if ($platformName === '') {
             return Response::html('<h1>Platform name is required</h1>', 422);
@@ -150,6 +164,12 @@ HTML,
         if ($oauthAuthBaseUrl !== '' && !preg_match('#^https://[A-Za-z0-9.-]+(?::[0-9]{1,5})?$#', $oauthAuthBaseUrl)) {
             return Response::html('<h1>OAuth callback base URL must be an HTTPS origin without a path</h1>', 422);
         }
+        if ($resticRepository !== '' && !preg_match('/^b2:[^:\s]+:.+$/', $resticRepository)) {
+            return Response::html('<h1>Restic repository must use the b2:bucket:path format</h1>', 422);
+        }
+        if (!preg_match('/^(?:100|[1-9]?[0-9])%$/', $resticWeeklyReadSubset)) {
+            return Response::html('<h1>Weekly repository read subset must be a percentage from 0% through 100%</h1>', 422);
+        }
 
         $before = [
             'platform_name' => $this->settings->get('platform_name', 'ArtsFolio'),
@@ -165,6 +185,11 @@ HTML,
             'oauth_auth_base_url' => $this->settings->get('oauth_auth_base_url', 'https://artsfol.io'),
             'google_oauth_client_id' => $this->settings->get('google_oauth_client_id', ''),
             'facebook_oauth_client_id' => $this->settings->get('facebook_oauth_client_id', ''),
+            'restic_repository' => $this->settings->get('restic_repository', ''),
+            'restic_password_configured' => trim((string) $this->settings->get('restic_password', '')) !== '',
+            'b2_account_id_configured' => trim((string) $this->settings->get('b2_account_id', '')) !== '',
+            'b2_account_key_configured' => trim((string) $this->settings->get('b2_account_key', '')) !== '',
+            'restic_weekly_read_subset' => $this->settings->get('restic_weekly_read_subset', '5%'),
         ];
 
         $this->settings->set('platform_name', $platformName);
@@ -198,6 +223,17 @@ HTML,
         if ($stripeWebhookSecret !== '') {
             $this->settings->set('stripe_webhook_secret', $stripeWebhookSecret);
         }
+        $this->settings->set('restic_repository', $resticRepository);
+        $this->settings->set('restic_weekly_read_subset', $resticWeeklyReadSubset);
+        if ($resticPassword !== '') {
+            $this->settings->set('restic_password', $resticPassword);
+        }
+        if ($b2AccountId !== '') {
+            $this->settings->set('b2_account_id', $b2AccountId);
+        }
+        if ($b2AccountKey !== '') {
+            $this->settings->set('b2_account_key', $b2AccountKey);
+        }
         FlashMessages::success('Platform settings saved.');
 
         $this->auditAction($request, $currentUser, [
@@ -216,6 +252,11 @@ HTML,
                 'oauth_auth_base_url' => $oauthAuthBaseUrl !== '' ? $oauthAuthBaseUrl : 'https://artsfol.io',
                 'google_oauth_client_id' => $googleClientId,
                 'facebook_oauth_client_id' => $facebookClientId,
+                'restic_repository' => $resticRepository,
+                'restic_password_configured' => $resticPassword !== '' || trim((string) $this->settings->get('restic_password', '')) !== '',
+                'b2_account_id_configured' => $b2AccountId !== '' || trim((string) $this->settings->get('b2_account_id', '')) !== '',
+                'b2_account_key_configured' => $b2AccountKey !== '' || trim((string) $this->settings->get('b2_account_key', '')) !== '',
+                'restic_weekly_read_subset' => $resticWeeklyReadSubset,
             ],
         ]);
 
