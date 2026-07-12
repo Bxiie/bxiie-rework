@@ -74,7 +74,7 @@ final class OperationsController
             . '<form method="post" action="/platform/admin/operations/run-monitor">'
             . '<input type="hidden" name="csrf_token" value="' . $csrf . '">'
             . '<button type="submit">Run monitor now</button></form>'
-            . '<a class="admin-button" href="/platform/admin/backups">View backups</a></div>'
+            . '</div>'
             . '<form class="admin-form" method="get" action="/platform/admin/operations"><div class="admin-grid-2"><label>Trend/check start<input type="date" name="start" value="' . AdminLayout::escape($start) . '"></label><label>Trend/check end<input type="date" name="end" value="' . AdminLayout::escape($end) . '"></label><label>Check status<select name="status"><option value="">All</option><option value="OK"' . ($status==='OK'?' selected':'') . '>OK</option><option value="WARN"' . ($status==='WARN'?' selected':'') . '>WARN</option><option value="CRIT"' . ($status==='CRIT'?' selected':'') . '>CRIT</option></select></label></div><button type="submit">Apply range</button></form>'
             . '<p class="admin-muted">Trend lines cover ' . AdminLayout::escape($start) . ' through ' . AdminLayout::escape($end) . ' (' . AdminLayout::escape($this->displayTimezone()) . ').</p>'
             . '<div class="ops-summary-grid">' . $cards . '</div>'

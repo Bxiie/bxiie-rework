@@ -37,10 +37,7 @@ final class BackupsController
         $csrf = AdminLayout::escape($this->csrf->getOrCreate());
         $hourly = $this->readStatus('hourly.json');
         $weekly = $this->readStatus('weekly.json');
-        $monthly = $this->readStatus('monthly.json');
-
-        $body = '<p><a class="admin-button" href="/platform/admin/operations">Back to System Operations</a></p>'
-            . '<p class="admin-notice">These controls queue systemd jobs. Refresh after the job finishes to see its recorded result.</p>'
+        $monthly = $this->readStatus('monthly.json');$body = '<p class="admin-notice">These controls queue systemd jobs. Refresh after the job finishes to see its recorded result.</p>'
             . '<div class="admin-grid-3">'
             . $this->jobCard('Hourly off-site backup', 'backup', 'artsfolio-backup.service', $hourly, $csrf, 'Run backup now')
             . $this->jobCard('Weekly repository verification', 'integrity-check', 'artsfolio-backup-weekly-check.service', $weekly, $csrf, 'Run verification now')

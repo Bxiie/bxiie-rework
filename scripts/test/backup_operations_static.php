@@ -8,7 +8,7 @@ $required = [
     'scripts/backup/artsfolio_backup_weekly_check.sh' => ['restic check', '--force-report', 'weekly.json'],
     'scripts/backup/artsfolio_backup_monthly_restore_test.sh' => ['restic restore latest', '--force-report', 'monthly.json'],
     'app/Platform/Monitoring/OperationsMonitor.php' => ['collectBackupMetrics', 'backup.snapshot.age_minutes', 'backup.restore_test.status'],
-    'app/Http/Controllers/Platform/Admin/OperationsController.php' => [  'View backups'],
+    'app/Http/Controllers/Platform/Admin/OperationsController.php' => [  'Run monitor now'],
     'docs/dev/backup-restore-cookbook.md' => ['Backblaze B2', 'System Operations', 'platform owners and administrators'],
 ];
 
