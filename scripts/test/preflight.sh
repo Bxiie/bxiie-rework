@@ -486,3 +486,8 @@ run_php scripts/test/backup_navigation_buttons_removed_static.php
 run_php scripts/test/plan_commission_stripe_fees_static.php
 
 # End of file.
+
+# Backup page administrator-time-zone regression.
+run_php scripts/test/backup_admin_timezone_static.php
+
+# End of file.

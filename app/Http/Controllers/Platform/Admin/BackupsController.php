@@ -103,7 +103,7 @@ final class BackupsController
     {
         return '<section class="admin-card"><h2>' . AdminLayout::escape($title) . '</h2>'
             . '<p><strong>Recorded result:</strong> ' . AdminLayout::escape(strtoupper((string) ($status['status'] ?? 'unavailable'))) . '</p>'
-            . '<p><strong>Checked:</strong> ' . AdminLayout::escape((string) ($status['checked_at'] ?? 'Never')) . '</p>'
+            . '<p><strong>Checked:</strong> ' . AdminLayout::escape($this->statusTime($status)) . '</p>'
             . '<p><strong>Service:</strong> ' . AdminLayout::escape($this->serviceState($service)) . '</p>'
             . '<form method="post" action="/platform/admin/backups/action">'
             . '<input type="hidden" name="csrf_token" value="' . $csrf . '">'
@@ -123,6 +123,14 @@ final class BackupsController
             } elseif ($value === null) {
                 $value = '';
             }
+
+            if (
+                is_string($value)
+                && ($key === 'checked_at' || str_ends_with((string) $key, '_at'))
+            ) {
+                $value = $this->displayUtcTime($value);
+            }
+
             $rows .= '<tr><th>' . AdminLayout::escape(ucwords(str_replace('_', ' ', (string) $key))) . '</th>'
                 . '<td><pre style="white-space:pre-wrap;margin:0">' . AdminLayout::escape((string) $value) . '</pre></td></tr>';
         }
@@ -135,6 +143,69 @@ final class BackupsController
         $code = 0;
         exec('/usr/bin/systemctl show ' . escapeshellarg($unit) . ' --property=ActiveState,SubState,Result --value 2>/dev/null', $output, $code);
         return $code === 0 && $output !== [] ? implode(' / ', array_filter(array_map('trim', $output))) : 'unavailable';
+    }
+
+    /** @param array<string, mixed> $status */
+    private function statusTime(array $status): string
+    {
+        $raw = trim((string) ($status['checked_at'] ?? ''));
+
+        return $raw === '' ? 'Never' : $this->displayUtcTime($raw);
+    }
+
+    /**
+     * Backup status JSON stores ISO-8601 timestamps in UTC.
+     */
+    private function displayUtcTime(string $raw): string
+    {
+        $raw = trim($raw);
+        if ($raw === '') {
+            return '';
+        }
+
+        try {
+            $value = new \DateTimeImmutable($raw, new \DateTimeZone('UTC'));
+            $timezone = new \DateTimeZone($this->displayTimezone());
+        } catch (\Throwable) {
+            return $raw;
+        }
+
+        return $value->setTimezone($timezone)->format('M j, Y g:i:s A T');
+    }
+
+    /**
+     * systemd supplies human-readable times with their source offset or zone.
+     */
+    private function displaySystemTime(string $raw): string
+    {
+        $raw = trim($raw);
+        if ($raw === '' || in_array(strtolower($raw), ['n/a', 'unavailable'], true)) {
+            return $raw !== '' ? $raw : 'unavailable';
+        }
+
+        try {
+            $value = new \DateTimeImmutable($raw);
+            $timezone = new \DateTimeZone($this->displayTimezone());
+        } catch (\Throwable) {
+            return $raw;
+        }
+
+        return $value->setTimezone($timezone)->format('M j, Y g:i:s A T');
+    }
+
+    /**
+     * Bootstrap stores the signed-in user's configured IANA zone here.
+     */
+    private function displayTimezone(): string
+    {
+        $timezone = (string) ($GLOBALS['artsfolio_user_timezone'] ?? date_default_timezone_get());
+
+        try {
+            new \DateTimeZone($timezone);
+            return $timezone;
+        } catch (\Throwable) {
+            return 'UTC';
+        }
     }
 
     private function timerTable(): string
@@ -151,8 +222,8 @@ final class BackupsController
             exec('/usr/bin/systemctl show ' . escapeshellarg($unit) . ' --property=ActiveState,NextElapseUSecRealtime,LastTriggerUSec --value 2>/dev/null', $output, $code);
             $values = array_values(array_pad($output, 3, 'unavailable'));
             $rows .= '<tr><td>' . AdminLayout::escape($label) . '</td><td><code>' . AdminLayout::escape($unit) . '</code></td>'
-                . '<td>' . AdminLayout::escape(trim((string) $values[0])) . '</td><td>' . AdminLayout::escape(trim((string) $values[1])) . '</td>'
-                . '<td>' . AdminLayout::escape(trim((string) $values[2])) . '</td></tr>';
+                . '<td>' . AdminLayout::escape(trim((string) $values[0])) . '</td><td>' . AdminLayout::escape($this->displaySystemTime((string) $values[1])) . '</td>'
+                . '<td>' . AdminLayout::escape($this->displaySystemTime((string) $values[2])) . '</td></tr>';
         }
         return '<table class="admin-table"><thead><tr><th>Schedule</th><th>Timer</th><th>State</th><th>Next</th><th>Last</th></tr></thead><tbody>' . $rows . '</tbody></table>';
     }

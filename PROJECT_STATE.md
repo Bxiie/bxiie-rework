@@ -2948,3 +2948,11 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - The historical global commission setting remains only as a compatibility fallback.
 
 <!-- End of Plan-specific sales commissions. -->
+
+## 2026-07-12 Backup administrator timezone display
+
+- `/platform/admin/backups` stores source timestamps in UTC and displays them in the signed-in administrator's configured IANA time zone.
+- Backup detail timestamps and systemd timer next/last values are localized.
+- Display includes the active time-zone abbreviation.
+
+<!-- End of Backup administrator timezone display. -->
