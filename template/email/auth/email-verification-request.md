@@ -1,3 +1,5 @@
+{{logo}}
+
 # Verify your ArtsFolio email address
 
 Please verify your ArtsFolio email address:

@@ -38,7 +38,7 @@ $brandedNeedles = [
     'body_html payload' => "'body_html'",
     'logo helper' => 'logoHtml',
     'logo asset' => 'logo_2.png',
-    'logo injection' => 'self::logoHtml()',
+    'medium logo injection' => "self::logoHtml('medium')",
 ];
 
 foreach ($brandedNeedles as $label => $needle) {

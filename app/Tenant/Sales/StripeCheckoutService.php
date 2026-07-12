@@ -94,9 +94,14 @@ final class StripeCheckoutService
             $payload["line_items[{$index}][price_data][product_data][name]"] = (string) $item['title_snapshot'];
 
             $description = $this->variantDescription($item);
-            if ($description !== '') {
-                $payload["line_items[{$index}][price_data][product_data][description]"] = $description;
-            }
+            $descriptionDetail = $description !== ''
+                ? $description
+                : trim((string) ($item['title_snapshot'] ?? 'Artwork'));
+            $payload["line_items[{$index}][price_data][product_data][description]"] = mb_substr(
+                'ArtsFolio: ' . $descriptionDetail,
+                0,
+                500
+            );
         }
 
         $body = http_build_query($payload);

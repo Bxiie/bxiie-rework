@@ -1,3 +1,5 @@
+{{logo}}
+
 Subject: Welcome to ArtsFolio
 
 Welcome to ArtsFolio, {{ recipient_name }}.

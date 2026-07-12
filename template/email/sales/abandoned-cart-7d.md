@@ -1,3 +1,5 @@
+{{logo}}
+
 Hi,
 
 This is the final reminder about your {{ tenant_name }} cart:

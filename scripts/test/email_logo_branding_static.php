@@ -32,7 +32,7 @@ $required = [
     'logo HTML helper' => 'logoHtml',
     'absolute fallback URL' => 'https://artsfol.io',
     'logo asset' => 'logo_2.png',
-    'logo injection' => 'self::logoHtml()',
+    'medium logo injection' => "self::logoHtml('medium')",
 ];
 
 foreach ($required as $label => $needle) {

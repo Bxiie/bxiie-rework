@@ -1,3 +1,5 @@
+{{logo}}
+
 Your ArtsFolio cart is still waiting.
 
 Open your cart to complete checkout:

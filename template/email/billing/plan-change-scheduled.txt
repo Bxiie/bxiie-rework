@@ -1,3 +1,5 @@
+{{logo}}
+
 Hello {{ tenant_name }},
 
 Your ArtsFolio {{ change_type }} has been scheduled.

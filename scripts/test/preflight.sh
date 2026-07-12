@@ -471,3 +471,8 @@ run_php scripts/test/backup_outstanding_fixes_static.php
 php scripts/test/platform_backup_controls_static.php
 
 # End of file.
+
+# Email logo tokens, Stripe description, and operations-copy regression.
+run_php scripts/test/email_logo_tokens_and_stripe_description_static.php
+
+# End of file.

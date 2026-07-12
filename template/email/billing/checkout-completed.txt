@@ -1,3 +1,5 @@
+{{logo}}
+
 Hello {{ tenant_name }},
 
 Your ArtsFolio billing is active for {{ plan_name }}.

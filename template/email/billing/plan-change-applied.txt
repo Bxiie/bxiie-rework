@@ -1,3 +1,5 @@
+{{logo}}
+
 Hello {{ tenant_name }},
 
 Your scheduled ArtsFolio {{ change_type }} has taken effect.

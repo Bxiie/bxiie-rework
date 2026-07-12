@@ -1,3 +1,5 @@
+{{logo}}
+
 You left artwork in your ArtsFolio cart.
 
 Open your cart to continue checkout:

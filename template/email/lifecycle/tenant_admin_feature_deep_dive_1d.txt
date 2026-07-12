@@ -1,3 +1,5 @@
+{{logo}}
+
 Subject: ArtsFolio setup deep dive
 
 Your ArtsFolio tenant admin page is here:

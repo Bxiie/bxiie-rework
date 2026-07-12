@@ -1,3 +1,5 @@
+{{logo}}
+
 Hi,
 
 A quick reminder that your {{ tenant_name }} cart is still open:

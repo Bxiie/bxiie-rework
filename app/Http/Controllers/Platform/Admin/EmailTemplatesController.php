@@ -90,7 +90,7 @@ final class EmailTemplatesController
                 . '<form method="post" action="/platform/admin/email-templates">'
                 . '<input type="hidden" name="csrf_token" value="' . $csrf . '">'
                 . '<input type="hidden" name="template" value="' . $this->escape($selected) . '">'
-                . '<p class="admin-muted">Placeholders such as <code>{{ tenant_name }}</code> are preserved literally until the email is rendered.</p>'
+                . '<p class="admin-muted">Placeholders such as <code>{{ tenant_name }}</code> are preserved until rendering. Use <code>{{logo}}</code>, <code>{{logo-large}}</code>, or <code>{{logo-small}}</code> to position an ArtsFolio logo.</p>'
                 . '<label for="template_body">Template body</label>'
                 . '<textarea id="template_body" name="template_body" rows="30" spellcheck="true" style="width:100%;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">'
                 . $this->escape($body) . '</textarea>'
@@ -278,6 +278,9 @@ HTML,
     private function placeholderReferenceHtml(): string
     {
         $placeholders = [
+            'logo' => ['All email templates', 'Inserts the medium ArtsFolio logo at this position in the HTML email.'],
+            'logo-large' => ['All email templates', 'Inserts the large ArtsFolio logo at this position in the HTML email.'],
+            'logo-small' => ['All email templates', 'Inserts the small ArtsFolio logo at this position in the HTML email.'],
             'action_url' => ['Invitation emails', 'The URL the recipient should follow to accept an invitation or complete the requested action.'],
             'admin_url' => ['Tenant lifecycle emails', 'The tenant administration dashboard URL.'],
             'amount' => ['Billing emails', 'A formatted currency amount, such as $19.00.'],

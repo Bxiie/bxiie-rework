@@ -1,11 +1,13 @@
 ## Now
 
 - Stripe description should include 'ArtsFolio: '
-- Back up database, images, system and application hourly
-- Update system operations page and status emails with new metrics
 - Add {{logo}} to templates.
 
 
+##
+
+- Back up database, images, system and application hourly
+- Update system operations page and status emails with new metrics
 ##
 
 - Make sure the tenant welcome email includes a link to the admin page.

@@ -1,3 +1,5 @@
+{{logo}}
+
 Hello {{ tenant_name }},
 
 Stripe reported that an ArtsFolio payment failed for {{ plan_name }}.

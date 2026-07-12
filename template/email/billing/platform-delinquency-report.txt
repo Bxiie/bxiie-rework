@@ -1,3 +1,5 @@
+{{logo}}
+
 ArtsFolio daily billing delinquency report
 Generated: {{ report_date }}
 

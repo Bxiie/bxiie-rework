@@ -1,3 +1,5 @@
+{{logo}}
+
 # You have been invited to administer ArtsFolio
 
 You have been invited to administer ArtsFolio.

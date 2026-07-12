@@ -1,3 +1,5 @@
+{{logo}}
+
 {{ recipient_email }}
 
 You have been invited to administer {{tenant_name}} on ArtsFolio.

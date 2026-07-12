@@ -18,17 +18,21 @@ final class BrandedEmail
      */
     public static function text(string $bodyText): string
     {
+        $bodyText = self::stripLogoTokens($bodyText);
         $bodyText = trim($bodyText);
 
         if ($bodyText === '') {
-            return "ArtsFolio\n";
+            return "ArtsFolio
+";
         }
 
         if (str_contains($bodyText, 'ArtsFolio')) {
             return $bodyText;
         }
 
-        return $bodyText . "\n\nArtsFolio";
+        return $bodyText . "
+
+ArtsFolio";
     }
 
     /**
@@ -56,7 +60,7 @@ final class BrandedEmail
             . '<body style="margin:0;padding:0;background:#f6f3ee;color:#1f1f1f;font-family:Arial,Helvetica,sans-serif;">'
             . '<div style="max-width:680px;margin:0 auto;padding:32px 20px;">'
             . '<div style="background:#ffffff;border:1px solid #e6dfd5;border-radius:18px;padding:28px;box-shadow:0 12px 40px rgba(0,0,0,0.06);">'
-            . self::logoHtml()
+            . (self::containsLogoToken($bodyText) ? '' : self::logoHtml('medium'))
             . '<h1 style="font-size:24px;line-height:1.25;margin:0 0 18px 0;color:#141414;">' . $safeSubject . '</h1>'
             . '<div style="font-size:16px;line-height:1.6;color:#2c2c2c;">' . self::paragraphsFromText($bodyText) . '</div>'
             . '</div>'
@@ -92,13 +96,30 @@ final class BrandedEmail
     /**
      * Returns the logo block injected into every HTML email.
      */
-    private static function logoHtml(): string
+    private static function logoHtml(string $size = 'medium'): string
     {
         $logoUrl = htmlspecialchars(self::artsfolioLogoUrl(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $width = match ($size) {
+            'small' => 120,
+            'large' => 280,
+            default => 180,
+        };
+        $maxWidth = $size === 'large' ? '90%' : '60%';
 
         return '<div style="margin:0 0 24px 0;text-align:left;">'
-            . '<img src="' . $logoUrl . '" alt="ArtsFolio" width="180" style="display:block;width:180px;max-width:60%;height:auto;border:0;">'
+            . '<img src="' . $logoUrl . '" alt="ArtsFolio" width="' . $width . '" style="display:block;width:' . $width . 'px;max-width:' . $maxWidth . ';height:auto;border:0;">'
             . '</div>';
+    }
+
+    private static function containsLogoToken(string $bodyText): bool
+    {
+        return preg_match('/\{\{\s*logo(?:-(?:small|large))?\s*\}\}/i', $bodyText) === 1;
+    }
+
+    private static function stripLogoTokens(string $bodyText): string
+    {
+        $withoutTokens = preg_replace('/^[ \t]*\{\{\s*logo(?:-(?:small|large))?\s*\}\}[ \t]*\R?/mi', '', $bodyText);
+        return is_string($withoutTokens) ? $withoutTokens : $bodyText;
     }
 
     /**
@@ -115,14 +136,28 @@ final class BrandedEmail
         $html = [];
 
         foreach ($blocks as $block) {
-            $safe = htmlspecialchars(trim($block), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $trimmed = trim($block);
+            $logoToken = strtolower((string) preg_replace('/\s+/', '', $trimmed));
+            if ($logoToken === '{{logo-small}}') {
+                $html[] = self::logoHtml('small');
+                continue;
+            }
+            if ($logoToken === '{{logo-large}}') {
+                $html[] = self::logoHtml('large');
+                continue;
+            }
+            if ($logoToken === '{{logo}}') {
+                $html[] = self::logoHtml('medium');
+                continue;
+            }
+
+            $safe = htmlspecialchars($trimmed, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
             $safe = nl2br($safe, false);
             $safe = preg_replace(
                 '~(https?://[^\s<]+)~',
                 '<a href="$1" style="color:#7656d6;text-decoration:underline;">$1</a>',
                 $safe
             ) ?? $safe;
-
             $html[] = '<p style="margin:0 0 16px 0;">' . $safe . '</p>';
         }
 

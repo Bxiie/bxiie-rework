@@ -1,3 +1,5 @@
+{{logo}}
+
 Hi,
 
 You left {{ item_count }} item(s) in your {{ tenant_name }} cart. The cart is still saved, and you can review it here:

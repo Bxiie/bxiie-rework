@@ -2927,3 +2927,14 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - Manual starts are recorded in the platform audit log.
 
 <!-- End of Platform backup controls. -->
+
+## 2026-07-12 Email logo tokens and Stripe descriptions
+
+- Email templates support `{{logo}}`, `{{logo-small}}`, and `{{logo-large}}`.
+- Medium, small, and large logos render at 180, 120, and 280 pixels respectively.
+- Every existing filesystem-backed email template includes `{{logo}}`.
+- Logo tokens are removed from plain-text alternatives and rendered in HTML only.
+- Stripe artwork line-item descriptions begin with `ArtsFolio: `.
+- The requested backup-protection and platform-admin sharing notices were removed from System Operations.
+
+<!-- End of Email logo tokens and Stripe descriptions. -->

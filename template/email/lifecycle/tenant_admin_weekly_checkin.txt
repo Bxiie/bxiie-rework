@@ -1,3 +1,5 @@
+{{logo}}
+
 Subject: ArtsFolio weekly check-in
 
 Admin: {{ admin_url }}

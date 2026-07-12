@@ -1,3 +1,5 @@
+{{logo}}
+
 {{ recipient_email }}
 
 You are invited to create an ArtsFolio site.
