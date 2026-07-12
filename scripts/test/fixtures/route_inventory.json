@@ -1,17 +1,17 @@
 [
     {
         "scope": "platform",
-        "method": "DELETE",
-        "path": "/api/admin/tenants/{id}/{entity}/{item_id}"
-    },
-    {
-        "scope": "platform",
         "method": "GET",
         "path": "/"
     },
     {
         "scope": "platform",
         "method": "GET",
+        "path": "/account/timezone"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
         "path": "/account/timezone"
     },
     {
@@ -38,6 +38,11 @@
         "scope": "platform",
         "method": "GET",
         "path": "/admin/domains"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
+        "path": "/admin/domains/action"
     },
     {
         "scope": "platform",
@@ -106,7 +111,17 @@
     },
     {
         "scope": "platform",
+        "method": "POST",
+        "path": "/api/admin/tenants"
+    },
+    {
+        "scope": "platform",
         "method": "GET",
+        "path": "/api/admin/tenants/{id}"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
         "path": "/api/admin/tenants/{id}"
     },
     {
@@ -116,8 +131,28 @@
     },
     {
         "scope": "platform",
+        "method": "POST",
+        "path": "/api/admin/tenants/{id}/settings"
+    },
+    {
+        "scope": "platform",
         "method": "GET",
         "path": "/api/admin/tenants/{id}/{entity}"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
+        "path": "/api/admin/tenants/{id}/{entity}"
+    },
+    {
+        "scope": "platform",
+        "method": "DELETE",
+        "path": "/api/admin/tenants/{id}/{entity}/{item_id}"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
+        "path": "/api/admin/tenants/{id}/{entity}/{item_id}"
     },
     {
         "scope": "platform",
@@ -147,6 +182,11 @@
     {
         "scope": "platform",
         "method": "GET",
+        "path": "/contact"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
         "path": "/contact"
     },
     {
@@ -186,7 +226,22 @@
     },
     {
         "scope": "platform",
+        "method": "POST",
+        "path": "/login"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
+        "path": "/login/password"
+    },
+    {
+        "scope": "platform",
         "method": "GET",
+        "path": "/logout"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
         "path": "/logout"
     },
     {
@@ -201,7 +256,17 @@
     },
     {
         "scope": "platform",
+        "method": "POST",
+        "path": "/password/forgot"
+    },
+    {
+        "scope": "platform",
         "method": "GET",
+        "path": "/password/reset"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
         "path": "/password/reset"
     },
     {
@@ -218,6 +283,16 @@
         "scope": "platform",
         "method": "GET",
         "path": "/platform/admin/audit-log.csv"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
+        "path": "/platform/admin/backups"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
+        "path": "/platform/admin/backups/action"
     },
     {
         "scope": "platform",
@@ -246,8 +321,23 @@
     },
     {
         "scope": "platform",
+        "method": "POST",
+        "path": "/platform/admin/contacts/delete"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
+        "path": "/platform/admin/contacts/status"
+    },
+    {
+        "scope": "platform",
         "method": "GET",
         "path": "/platform/admin/domains"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
+        "path": "/platform/admin/domains/action"
     },
     {
         "scope": "platform",
@@ -266,8 +356,23 @@
     },
     {
         "scope": "platform",
+        "method": "POST",
+        "path": "/platform/admin/email-templates"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
+        "path": "/platform/admin/email-templates/status"
+    },
+    {
+        "scope": "platform",
         "method": "GET",
         "path": "/platform/admin/jobs"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
+        "path": "/platform/admin/jobs/action"
     },
     {
         "scope": "platform",
@@ -286,6 +391,11 @@
     },
     {
         "scope": "platform",
+        "method": "POST",
+        "path": "/platform/admin/operations/run-monitor"
+    },
+    {
+        "scope": "platform",
         "method": "GET",
         "path": "/platform/admin/operations/runs/{id}"
     },
@@ -296,7 +406,17 @@
     },
     {
         "scope": "platform",
+        "method": "POST",
+        "path": "/platform/admin/platform-settings"
+    },
+    {
+        "scope": "platform",
         "method": "GET",
+        "path": "/platform/admin/pricing"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
         "path": "/platform/admin/pricing"
     },
     {
@@ -321,166 +441,6 @@
     },
     {
         "scope": "platform",
-        "method": "GET",
-        "path": "/platform/admin/settings"
-    },
-    {
-        "scope": "platform",
-        "method": "GET",
-        "path": "/platform/admin/signup-codes"
-    },
-    {
-        "scope": "platform",
-        "method": "GET",
-        "path": "/platform/admin/stats"
-    },
-    {
-        "scope": "platform",
-        "method": "GET",
-        "path": "/platform/admin/tenants"
-    },
-    {
-        "scope": "platform",
-        "method": "GET",
-        "path": "/platform/admin/tenants/{id}"
-    },
-    {
-        "scope": "platform",
-        "method": "GET",
-        "path": "/platform/admin/users"
-    },
-    {
-        "scope": "platform",
-        "method": "GET",
-        "path": "/platform/admin/workers"
-    },
-    {
-        "scope": "platform",
-        "method": "GET",
-        "path": "/pricing"
-    },
-    {
-        "scope": "platform",
-        "method": "GET",
-        "path": "/privacy"
-    },
-    {
-        "scope": "platform",
-        "method": "GET",
-        "path": "/signup"
-    },
-    {
-        "scope": "platform",
-        "method": "GET",
-        "path": "/terms"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/account/timezone"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/admin/domains/action"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/api/admin/tenants"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/api/admin/tenants/{id}"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/api/admin/tenants/{id}/settings"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/api/admin/tenants/{id}/{entity}"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/api/admin/tenants/{id}/{entity}/{item_id}"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/contact"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/login"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/login/password"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/logout"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/password/forgot"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/password/reset"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/platform/admin/contacts/delete"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/platform/admin/contacts/status"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/platform/admin/domains/action"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/platform/admin/email-templates"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/platform/admin/email-templates/status"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/platform/admin/jobs/action"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/platform/admin/platform-settings"
-    },
-    {
-        "scope": "platform",
-        "method": "POST",
-        "path": "/platform/admin/pricing"
-    },
-    {
-        "scope": "platform",
         "method": "POST",
         "path": "/platform/admin/scale-tenants/create"
     },
@@ -488,6 +448,16 @@
         "scope": "platform",
         "method": "POST",
         "path": "/platform/admin/scale-tenants/remove"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
+        "path": "/platform/admin/settings"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
+        "path": "/platform/admin/signup-codes"
     },
     {
         "scope": "platform",
@@ -503,6 +473,16 @@
         "scope": "platform",
         "method": "POST",
         "path": "/platform/admin/signup-codes/send"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
+        "path": "/platform/admin/stats"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
+        "path": "/platform/admin/tenants"
     },
     {
         "scope": "platform",
@@ -536,6 +516,16 @@
     },
     {
         "scope": "platform",
+        "method": "GET",
+        "path": "/platform/admin/tenants/{id}"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
+        "path": "/platform/admin/users"
+    },
+    {
+        "scope": "platform",
         "method": "POST",
         "path": "/platform/admin/users/delete"
     },
@@ -566,8 +556,33 @@
     },
     {
         "scope": "platform",
+        "method": "GET",
+        "path": "/platform/admin/workers"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
+        "path": "/pricing"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
+        "path": "/privacy"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
+        "path": "/signup"
+    },
+    {
+        "scope": "platform",
         "method": "POST",
         "path": "/signup"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
+        "path": "/terms"
     },
     {
         "scope": "tenant",
@@ -586,6 +601,11 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/account/timezone"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
         "path": "/admin"
     },
@@ -596,8 +616,23 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/artwork/upload"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
         "path": "/admin/artworks"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/artworks/delete"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/artworks/directory-thumbnail"
     },
     {
         "scope": "tenant",
@@ -606,8 +641,23 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/artworks/edit"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
         "path": "/admin/artworks/placement"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/artworks/placement"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/artworks/status"
     },
     {
         "scope": "tenant",
@@ -626,6 +676,21 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/billing/free-access-code"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/billing/plan"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/billing/portal"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
         "path": "/admin/contact-messages"
     },
@@ -636,7 +701,22 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/contact-messages/delete"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/contact-messages/status"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
+        "path": "/admin/content"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/admin/content"
     },
     {
@@ -646,13 +726,28 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/curation/review"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
+        "path": "/admin/directory"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/admin/directory"
     },
     {
         "scope": "tenant",
         "method": "GET",
         "path": "/admin/domains"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/domains/action"
     },
     {
         "scope": "tenant",
@@ -666,6 +761,26 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/email-signups/consent"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/email-signups/delete"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/email-signups/import"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/email-signups/update"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
         "path": "/admin/events"
     },
@@ -673,6 +788,16 @@
         "scope": "tenant",
         "method": "GET",
         "path": "/admin/events/edit"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/events/edit"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/events/order"
     },
     {
         "scope": "tenant",
@@ -691,7 +816,17 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/onboarding/reset"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
+        "path": "/admin/platform-discovery"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/admin/platform-discovery"
     },
     {
@@ -706,7 +841,17 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/portfolio-sections/edit"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
+        "path": "/admin/portfolio-sections/order"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/admin/portfolio-sections/order"
     },
     {
@@ -746,8 +891,28 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/sales/refund"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/sales/update"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
         "path": "/admin/settings"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/settings"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/settings/stripe/connect"
     },
     {
         "scope": "tenant",
@@ -768,6 +933,31 @@
         "scope": "tenant",
         "method": "GET",
         "path": "/admin/users"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/users/delete"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/users/invite"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/users/password"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/users/promote-owner"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/users/resend-invite"
     },
     {
         "scope": "tenant",
@@ -806,6 +996,11 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/cart/add"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
         "path": "/cart/bridge"
     },
@@ -816,6 +1011,21 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/cart/checkout"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/cart/remove"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/cart/update"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
         "path": "/checkout/success"
     },
@@ -823,6 +1033,16 @@
         "scope": "tenant",
         "method": "GET",
         "path": "/contact"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/contact"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/curation/add"
     },
     {
         "scope": "tenant",
@@ -861,7 +1081,17 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/login"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
+        "path": "/logout"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/logout"
     },
     {
@@ -881,7 +1111,17 @@
     },
     {
         "scope": "tenant",
+        "method": "POST",
+        "path": "/password/forgot"
+    },
+    {
+        "scope": "tenant",
         "method": "GET",
+        "path": "/password/reset"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/password/reset"
     },
     {
@@ -901,237 +1141,12 @@
     },
     {
         "scope": "tenant",
-        "method": "GET",
-        "path": "/tenant.css"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/account/timezone"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/artwork/upload"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/artworks/delete"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/artworks/directory-thumbnail"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/artworks/edit"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/artworks/placement"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/artworks/status"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/billing/free-access-code"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/billing/plan"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/billing/portal"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/contact-messages/delete"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/contact-messages/status"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/content"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/curation/review"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/directory"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/domains/action"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/email-signups/consent"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/email-signups/delete"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/email-signups/import"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/email-signups/update"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/events/edit"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/events/order"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/onboarding/reset"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/platform-discovery"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/portfolio-sections/edit"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/portfolio-sections/order"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/sales/refund"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/sales/update"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/settings"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/settings/stripe/connect"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/users/delete"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/users/invite"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/users/password"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/users/promote-owner"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/admin/users/resend-invite"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/cart/add"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/cart/checkout"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/cart/remove"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/cart/update"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/contact"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/curation/add"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/login"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/logout"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/password/forgot"
-    },
-    {
-        "scope": "tenant",
-        "method": "POST",
-        "path": "/password/reset"
-    },
-    {
-        "scope": "tenant",
         "method": "POST",
         "path": "/signup"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
+        "path": "/tenant.css"
     }
 ]

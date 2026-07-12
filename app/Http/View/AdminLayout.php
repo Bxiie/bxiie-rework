@@ -259,6 +259,7 @@ HTML;
             'jobs' => ['/platform/admin/jobs', 'Jobs'],
             'workers' => ['/platform/admin/workers', 'Workers'],
             'operations' => ['/platform/admin/operations', 'System Operations'],
+            'backups' => ['/platform/admin/backups', 'Backups'],
             'contacts' => ['/platform/admin/contacts', 'Contacts'],
             'email_signups' => ['/platform/admin/email-signups', 'Email Signups'],
             'email' => ['/platform/admin/email-outbox', 'Email Outbox'],

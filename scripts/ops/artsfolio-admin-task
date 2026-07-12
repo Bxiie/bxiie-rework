@@ -1,0 +1,15 @@
+#!/bin/bash
+set -Eeuo pipefail
+
+# Root-only allow-list used by Platform Admin operations controls.
+case "${1:-}" in
+    monitor) /usr/bin/systemctl start --no-block artsfolio-monitor.service ;;
+    backup) /usr/bin/systemctl start --no-block artsfolio-backup.service ;;
+    integrity-check) /usr/bin/systemctl start --no-block artsfolio-backup-weekly-check.service ;;
+    restore-test) /usr/bin/systemctl start --no-block artsfolio-backup-monthly-restore.service ;;
+    *) echo "Unsupported ArtsFolio administrative task: ${1:-}" >&2; exit 64 ;;
+esac
+
+echo "Queued ArtsFolio task: ${1}"
+
+# End of file.

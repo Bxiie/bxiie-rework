@@ -11,12 +11,19 @@ use App\Http\View\AdminLayout;
 use App\Http\View\ErrorPage;
 use App\Platform\Membership\Roles;
 use App\Platform\Monitoring\OperationsMonitorRepository;
+use App\Platform\Audit\AuditLogRepository;
+use App\Platform\Operations\OperationsTaskLauncher;
+use App\Support\Flash\FlashMessages;
+use App\Support\Security\CsrfTokenService;
 
 final class OperationsController
 {
     public function __construct(
         private readonly RequirePlatformRole $roles,
         private readonly OperationsMonitorRepository $operations,
+        private readonly CsrfTokenService $csrf,
+        private readonly AuditLogRepository $auditLog,
+        private readonly OperationsTaskLauncher $launcher,
     ) {
     }
 
@@ -61,8 +68,15 @@ final class OperationsController
             $cards = '<p>No saved metric rows yet. Run the monitor after applying migration 0045.</p>';
         }
 
+        $csrf = AdminLayout::escape($this->csrf->getOrCreate());
         $body = $this->styles()
-            . '<p class="admin-notice"><strong>Backup protection:</strong> this dashboard includes hourly off-site snapshot freshness, repository size, weekly integrity checks, monthly restore tests, and timer state. Any stale or failed result is included in platform-admin status email.</p>'
+            . '<div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem">'
+            . '<form method="post" action="/platform/admin/operations/run-monitor">'
+            . '<input type="hidden" name="csrf_token" value="' . $csrf . '">'
+            . '<button type="submit">Run monitor now</button></form>'
+            . '<a class="admin-button" href="/platform/admin/backups">View backups</a></div>'
+            . '<p class="admin-notice"><strong>Backup protection:</strong> Hourly encrypted off-site backups are monitored here, with weekly integrity checks and monthly restore tests. Use the Backups page to review details or manually start a backup or verification.</p>'
+            . '<p class="admin-notice">Share this page URL with another platform administrator. They must sign in with an authorized platform account.</p>'
             . '<form class="admin-form" method="get" action="/platform/admin/operations"><div class="admin-grid-2"><label>Trend/check start<input type="date" name="start" value="' . AdminLayout::escape($start) . '"></label><label>Trend/check end<input type="date" name="end" value="' . AdminLayout::escape($end) . '"></label><label>Check status<select name="status"><option value="">All</option><option value="OK"' . ($status==='OK'?' selected':'') . '>OK</option><option value="WARN"' . ($status==='WARN'?' selected':'') . '>WARN</option><option value="CRIT"' . ($status==='CRIT'?' selected':'') . '>CRIT</option></select></label></div><button type="submit">Apply range</button></form>'
             . '<p class="admin-muted">Trend lines cover ' . AdminLayout::escape($start) . ' through ' . AdminLayout::escape($end) . ' (' . AdminLayout::escape($this->displayTimezone()) . ').</p>'
             . '<div class="ops-summary-grid">' . $cards . '</div>'
@@ -70,6 +84,35 @@ final class OperationsController
             . '<p><a class="admin-button" href="/platform/admin/operations?' . http_build_query(['start'=>$start,'end'=>$end,'status'=>$status,'page'=>max(1,$page-1)]) . '">Previous</a> <span class="admin-muted">Page ' . $page . '</span> <a class="admin-button" href="/platform/admin/operations?' . http_build_query(['start'=>$start,'end'=>$end,'status'=>$status,'page'=>$page+1]) . '">Next</a></p>';
 
         return Response::html(AdminLayout::render(title: 'System Operations', body: $body, active: 'operations'));
+    }
+
+    public function runMonitor(Request $request, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, [Roles::PLATFORM_OWNER, Roles::PLATFORM_ADMIN])) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Platform owner or administrator access required.'), 403);
+        }
+        if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) {
+            return Response::invalidCsrf();
+        }
+
+        $result = $this->launcher->start('monitor');
+        $this->auditLog->record(
+            'platform.operations.monitor_manual_start',
+            null,
+            isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null,
+            'operations_task',
+            'monitor',
+            ['queued' => $result['ok'], 'exit_code' => $result['exit_code'], 'output' => mb_substr($result['output'], 0, 1000)],
+            $request->server('REMOTE_ADDR'),
+        );
+
+        if ($result['ok']) {
+            FlashMessages::success('The operations monitor was queued.');
+        } else {
+            FlashMessages::error('The operations monitor could not be queued: ' . $result['output']);
+        }
+
+        return new Response('', 302, ['Location' => '/platform/admin/operations']);
     }
 
     public function run(Request $request, ?array $currentUser, int $runId): Response

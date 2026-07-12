@@ -2917,3 +2917,13 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - `/etc/artsfolio/backup.env` is no longer referenced by the backup service.
 
 <!-- End of Backup reliability repair. -->
+
+## 2026-07-12 Platform backup controls
+
+- System Operations includes a CSRF-protected button that queues `artsfolio-monitor.service`.
+- `/platform/admin/backups` displays hourly, weekly, and monthly backup results and timer details.
+- Platform owners and administrators can queue backup, integrity-check, and restore-test services.
+- `/usr/local/sbin/artsfolio-admin-task` is the fixed privileged action bridge.
+- Manual starts are recorded in the platform audit log.
+
+<!-- End of Platform backup controls. -->

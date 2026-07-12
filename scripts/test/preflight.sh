@@ -466,3 +466,8 @@ run_php scripts/test/restic_platform_settings_static.php
 run_php scripts/test/backup_outstanding_fixes_static.php
 
 # End of file.
+
+# Platform backup controls regression.
+php scripts/test/platform_backup_controls_static.php
+
+# End of file.

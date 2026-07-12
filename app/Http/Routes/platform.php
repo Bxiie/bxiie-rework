@@ -27,6 +27,8 @@ use App\Http\Controllers\Tenant\Admin\DomainsController as TenantAdminDomainsCon
 use App\Http\Controllers\Platform\Admin\JobsController as PlatformAdminJobsController;
 use App\Http\Controllers\Platform\Admin\WorkersController as PlatformAdminWorkersController;
 use App\Http\Controllers\Platform\Admin\OperationsController as PlatformAdminOperationsController;
+use App\Http\Controllers\Platform\Admin\BackupsController as PlatformAdminBackupsController;
+use App\Platform\Operations\OperationsTaskLauncher;
 use App\Http\Controllers\Platform\Admin\AuditLogController as PlatformAdminAuditLogController;
 use App\Http\Controllers\Platform\Admin\TenantsController as PlatformAdminTenantsController;
 use App\Http\Controllers\Platform\Admin\ScaleTenantsController as PlatformAdminScaleTenantsController;
@@ -256,7 +258,10 @@ return static function (Router $router, array $context): void {
     $router->get('/platform/admin/contact-messages', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/contacts']));
     $router->get('/platform/admin/domains', fn (Request $request): Response => (new PlatformAdminDomainsController(new RequirePlatformRole(new MembershipRepository($pdo)), new DomainAdminRepository($pdo), new DomainAdminService($pdo), new CsrfTokenService(), new AuditLogRepository($pdo)))->index($request, $currentUser));
     $router->get('/platform/admin/jobs', fn (Request $request): Response => (new PlatformAdminJobsController(new RequirePlatformRole(new MembershipRepository($pdo)), new JobAdminRepository($pdo), new JobAdminService($pdo, new JobAttemptRepository($pdo)), new CsrfTokenService(), new AuditLogRepository($pdo), new JobAttemptRepository($pdo)))->index($request, $currentUser));
-    $router->get('/platform/admin/operations', fn (Request $request): Response => (new PlatformAdminOperationsController(new RequirePlatformRole(new MembershipRepository($pdo)), new OperationsMonitorRepository($pdo)))->index($request, $currentUser));
+    $router->get('/platform/admin/operations', fn (Request $request): Response => (new PlatformAdminOperationsController(new RequirePlatformRole(new MembershipRepository($pdo)), new OperationsMonitorRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo), new OperationsTaskLauncher()))->index($request, $currentUser));
+    $router->post('/platform/admin/operations/run-monitor', fn (Request $request): Response => (new PlatformAdminOperationsController(new RequirePlatformRole(new MembershipRepository($pdo)), new OperationsMonitorRepository($pdo), new CsrfTokenService(), new AuditLogRepository($pdo), new OperationsTaskLauncher()))->runMonitor($request, $currentUser));
+    $router->get('/platform/admin/backups', fn (Request $request): Response => (new PlatformAdminBackupsController(new RequirePlatformRole(new MembershipRepository($pdo)), new CsrfTokenService(), new AuditLogRepository($pdo), new OperationsTaskLauncher()))->index($request, $currentUser));
+    $router->post('/platform/admin/backups/action', fn (Request $request): Response => (new PlatformAdminBackupsController(new RequirePlatformRole(new MembershipRepository($pdo)), new CsrfTokenService(), new AuditLogRepository($pdo), new OperationsTaskLauncher()))->action($request, $currentUser));
     $router->get('/platform/admin/operations/metrics', fn (Request $request): Response => (new PlatformAdminOperationsController(new RequirePlatformRole(new MembershipRepository($pdo)), new OperationsMonitorRepository($pdo)))->metric($request, $currentUser));
     $router->get('/platform/admin/operations/runs/{id}', fn (Request $request, array $params): Response => (new PlatformAdminOperationsController(new RequirePlatformRole(new MembershipRepository($pdo)), new OperationsMonitorRepository($pdo)))->run($request, $currentUser, (int) ($params['id'] ?? 0)));
     $router->get('/platform/admin/workers', fn (Request $request): Response => (new PlatformAdminWorkersController(new RequirePlatformRole(new MembershipRepository($pdo)), new WorkerHeartbeatRepository($pdo)))->index($request, $currentUser));
