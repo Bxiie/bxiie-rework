@@ -58,6 +58,12 @@ final class PricingController
             $ccPercent = number_format(((int) ($plan['credit_card_fee_basis_points'] ?? 290)) / 100, 2, '.', '');
             $ccFixed = number_format(((int) ($plan['credit_card_fixed_fee_cents'] ?? 30)) / 100, 2, '.', '');
             $allowSales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? ' checked' : '';
+            $planCommission = number_format(
+                ((int) ($plan['platform_commission_basis_points'] ?? $this->commissionBasisPoints())) / 100,
+                2,
+                '.',
+                ''
+            );
             $order = (string) (int) ($plan['display_order'] ?? 100);
             $domain = ((int) $plan['custom_domain_included']) === 1 ? ' checked' : '';
             $active = ((int) $plan['is_active']) === 1 ? ' checked' : '';
@@ -77,16 +83,17 @@ final class PricingController
     <td><input type="number" name="plans[{$id}][allowed_admin_users]" min="0" value="{$admins}"></td>
     <td><label><input type="checkbox" name="plans[{$id}][custom_domain_included]" value="1"{$domain}> included</label></td>
     <td><label><input type="checkbox" name="plans[{$id}][allow_sales]" value="1"{$allowSales}> enabled</label></td>
+    <td><input type="number" name="plans[{$id}][platform_commission_percent]" min="0" max="100" step="0.01" value="{$planCommission}"></td>
     <td><input type="number" name="plans[{$id}][credit_card_fee_percent]" min="0" max="100" step="0.01" value="{$ccPercent}"></td>
     <td><input type="number" name="plans[{$id}][credit_card_fixed_fee_dollars]" min="0" step="0.01" value="{$ccFixed}"></td>
     <td><label><input type="checkbox" name="plans[{$id}][is_active]" value="1"{$active}> active</label></td>
     <td><input type="number" name="plans[{$id}][display_order]" min="0" value="{$order}"></td>
 </tr>
-<tr><td></td><td colspan="16"><label>Description<textarea name="plans[{$id}][description]" rows="2">{$description}</textarea></label></td></tr>
+<tr><td></td><td colspan="17"><label>Description<textarea name="plans[{$id}][description]" rows="2">{$description}</textarea></label></td></tr>
 HTML;
             } else {
                 $price = '$' . number_format(((int) $plan['monthly_price_cents']) / 100, 2);
-                $rows .= '<tr><td><code>' . $slug . '</code></td><td>' . $name . '</td><td>' . $price . '</td><td>' . $artworks . '</td><td>' . $emails . '</td><td>' . $ccPercent . '% + $' . $ccFixed . '</td><td>' . (((int) $plan['is_active']) ? 'active' : 'inactive') . '</td><td>' . $order . '</td></tr>';
+                $rows .= '<tr><td><code>' . $slug . '</code></td><td>' . $name . '</td><td>' . $price . '</td><td>' . $artworks . '</td><td>' . $emails . '</td><td>' . $planCommission . '%</td><td>' . $ccPercent . '% + $' . $ccFixed . '</td><td>' . (((int) $plan['is_active']) ? 'active' : 'inactive') . '</td><td>' . $order . '</td></tr>';
             }
         }
         if ($rows === '') {
@@ -98,10 +105,9 @@ HTML;
         $formClose = $canEdit ? '</form>' : '';
 
         return Response::html(AdminLayout::render(title: 'Platform Pricing', body: <<<HTML
-<p class="admin-muted">Set public pricing, plan limits, platform sales commission, and plan-specific card processing fee disclosure. Complimentary tenants waive only subscription billing; they still pay platform commission and card processing fees on sales.</p>
+<p class="admin-muted">Set public pricing, plan limits, plan-specific sales commission, and card-processing fee disclosure. Complimentary tenants waive only subscription billing; they still pay platform commission and card processing fees on sales.</p>
 {$formOpen}
-<section class="admin-panel"><h2>Platform sales commission</h2><label>Commission on sales, percent<input type="number" name="platform_sales_commission_percent" min="0" max="100" step="0.01" value="{$commissionPercent}"></label><p class="admin-muted">Current disclosure: ArtsFolio commission is {$commissionPercent}% of platform-processed sales.</p></section>
-<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Slug</th><th>Name</th><th>Monthly</th><th>Stripe product</th><th>Stripe monthly price</th><th>Stripe lookup key</th><th>Allowed artworks</th><th>Allowed email addresses</th><th>Storage GB</th><th>Contact messages</th><th>Admin users</th><th>Custom domain</th><th>Sales</th><th>CC %</th><th>CC fixed</th><th>Status</th><th>Order</th></tr></thead><tbody>{$rows}</tbody></table></div>
+<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Slug</th><th>Name</th><th>Monthly</th><th>Stripe product</th><th>Stripe monthly price</th><th>Stripe lookup key</th><th>Allowed artworks</th><th>Allowed email addresses</th><th>Storage GB</th><th>Contact messages</th><th>Admin users</th><th>Custom domain</th><th>Sales</th><th>Commission %</th><th>Stripe %</th><th>CC fixed</th><th>Status</th><th>Order</th></tr></thead><tbody>{$rows}</tbody></table></div>
 <section class="admin-panel"><h2>Create plan</h2>
 <div class="admin-form-grid three">
 <label>Slug<input name="new_plan[slug]" pattern="[a-z0-9-]+" placeholder="artist-plus"></label>
@@ -120,6 +126,7 @@ HTML;
 <label>Display order<input type="number" name="new_plan[display_order]" min="0" value="50"></label>
 <label><input type="checkbox" name="new_plan[custom_domain_included]" value="1"> Custom domain included</label>
 <label><input type="checkbox" name="new_plan[allow_sales]" value="1"> Allow sales</label>
+<label>Sales commission percent<input type="number" name="new_plan[platform_commission_percent]" min="0" max="100" step="0.01" value="5.00"></label>
 <label><input type="checkbox" name="new_plan[is_active]" value="1" checked> Active</label>
 </div>
 <label>Description<textarea name="new_plan[description]" rows="2" placeholder="Who this plan is for and what it includes."></textarea></label>
@@ -140,10 +147,7 @@ HTML, active: 'pricing'));
             return Response::invalidCsrf();
         }
 
-        $commissionPercent = max(0.0, min(100.0, (float) ($_POST['platform_sales_commission_percent'] ?? 0)));
-        $commissionBasisPoints = (int) round($commissionPercent * 100);
-        $before = ['commission_basis_points' => $this->commissionBasisPoints(), 'plans' => $this->plans()];
-        $this->settings->set('platform_sales_commission_basis_points', (string) $commissionBasisPoints);
+        $before = ['plans' => $this->plans()];
 
         foreach ((array) ($_POST['plans'] ?? []) as $plan) {
             $id = (int) ($plan['id'] ?? 0);
@@ -151,7 +155,7 @@ HTML, active: 'pricing'));
             if ($id < 1 || $name === '') {
                 continue;
             }
-            $stmt = $this->pdo->prepare('UPDATE plans SET name = :name, monthly_price_cents = :monthly_price_cents, stripe_product_id = :stripe_product_id, stripe_monthly_price_id = :stripe_monthly_price_id, stripe_price_lookup_key = :stripe_price_lookup_key, description = :description, custom_domain_included = :custom_domain_included, allowed_artworks = :allowed_artworks, allowed_email_addresses = :allowed_email_addresses, allowed_storage_gb = :allowed_storage_gb, allowed_contact_messages = :allowed_contact_messages, allowed_admin_users = :allowed_admin_users, allow_sales = :allow_sales, credit_card_fee_basis_points = :credit_card_fee_basis_points, credit_card_fixed_fee_cents = :credit_card_fixed_fee_cents, display_order = :display_order, is_active = :is_active WHERE id = :id');
+            $stmt = $this->pdo->prepare('UPDATE plans SET name = :name, monthly_price_cents = :monthly_price_cents, stripe_product_id = :stripe_product_id, stripe_monthly_price_id = :stripe_monthly_price_id, stripe_price_lookup_key = :stripe_price_lookup_key, description = :description, custom_domain_included = :custom_domain_included, allowed_artworks = :allowed_artworks, allowed_email_addresses = :allowed_email_addresses, allowed_storage_gb = :allowed_storage_gb, allowed_contact_messages = :allowed_contact_messages, allowed_admin_users = :allowed_admin_users, allow_sales = :allow_sales, platform_commission_basis_points = :platform_commission_basis_points, credit_card_fee_basis_points = :credit_card_fee_basis_points, credit_card_fixed_fee_cents = :credit_card_fixed_fee_cents, display_order = :display_order, is_active = :is_active WHERE id = :id');
             $stmt->execute($this->planParams($plan, $id, $name));
         }
 
@@ -162,14 +166,14 @@ HTML, active: 'pricing'));
             if (!preg_match('/^[a-z0-9-]+$/', $newSlug) || $newName === '') {
                 return Response::html('<h1>New plan requires a lowercase slug and name</h1>', 422);
             }
-            $insert = $this->pdo->prepare('INSERT INTO plans (slug, name, monthly_price_cents, stripe_product_id, stripe_monthly_price_id, stripe_price_lookup_key, description, custom_domain_included, allowed_artworks, allowed_email_addresses, allowed_storage_gb, allowed_contact_messages, allowed_admin_users, allow_sales, credit_card_fee_basis_points, credit_card_fixed_fee_cents, display_order, is_active) VALUES (:slug, :name, :monthly_price_cents, :stripe_product_id, :stripe_monthly_price_id, :stripe_price_lookup_key, :description, :custom_domain_included, :allowed_artworks, :allowed_email_addresses, :allowed_storage_gb, :allowed_contact_messages, :allowed_admin_users, :allow_sales, :credit_card_fee_basis_points, :credit_card_fixed_fee_cents, :display_order, :is_active) ON DUPLICATE KEY UPDATE name = VALUES(name), monthly_price_cents = VALUES(monthly_price_cents), stripe_product_id = VALUES(stripe_product_id), stripe_monthly_price_id = VALUES(stripe_monthly_price_id), stripe_price_lookup_key = VALUES(stripe_price_lookup_key), description = VALUES(description), custom_domain_included = VALUES(custom_domain_included), allowed_artworks = VALUES(allowed_artworks), allowed_email_addresses = VALUES(allowed_email_addresses), allowed_storage_gb = VALUES(allowed_storage_gb), allowed_contact_messages = VALUES(allowed_contact_messages), allowed_admin_users = VALUES(allowed_admin_users), allow_sales = VALUES(allow_sales), credit_card_fee_basis_points = VALUES(credit_card_fee_basis_points), credit_card_fixed_fee_cents = VALUES(credit_card_fixed_fee_cents), display_order = VALUES(display_order), is_active = VALUES(is_active)');
+            $insert = $this->pdo->prepare('INSERT INTO plans (slug, name, monthly_price_cents, stripe_product_id, stripe_monthly_price_id, stripe_price_lookup_key, description, custom_domain_included, allowed_artworks, allowed_email_addresses, allowed_storage_gb, allowed_contact_messages, allowed_admin_users, allow_sales, platform_commission_basis_points, credit_card_fee_basis_points, credit_card_fixed_fee_cents, display_order, is_active) VALUES (:slug, :name, :monthly_price_cents, :stripe_product_id, :stripe_monthly_price_id, :stripe_price_lookup_key, :description, :custom_domain_included, :allowed_artworks, :allowed_email_addresses, :allowed_storage_gb, :allowed_contact_messages, :allowed_admin_users, :allow_sales, :platform_commission_basis_points, :credit_card_fee_basis_points, :credit_card_fixed_fee_cents, :display_order, :is_active) ON DUPLICATE KEY UPDATE name = VALUES(name), monthly_price_cents = VALUES(monthly_price_cents), stripe_product_id = VALUES(stripe_product_id), stripe_monthly_price_id = VALUES(stripe_monthly_price_id), stripe_price_lookup_key = VALUES(stripe_price_lookup_key), description = VALUES(description), custom_domain_included = VALUES(custom_domain_included), allowed_artworks = VALUES(allowed_artworks), allowed_email_addresses = VALUES(allowed_email_addresses), allowed_storage_gb = VALUES(allowed_storage_gb), allowed_contact_messages = VALUES(allowed_contact_messages), allowed_admin_users = VALUES(allowed_admin_users), allow_sales = VALUES(allow_sales), platform_commission_basis_points = VALUES(platform_commission_basis_points), credit_card_fee_basis_points = VALUES(credit_card_fee_basis_points), credit_card_fixed_fee_cents = VALUES(credit_card_fixed_fee_cents), display_order = VALUES(display_order), is_active = VALUES(is_active)');
             $params = $this->planParams($newPlan, null, $newName);
             $params['slug'] = $newSlug;
             unset($params['id']);
             $insert->execute($params);
         }
 
-        $this->auditLog?->record('platform.pricing.updated', null, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, 'plans', 'pricing', ['before' => $before, 'after' => ['commission_basis_points' => $commissionBasisPoints, 'plans' => $this->plans()]], $request->server('REMOTE_ADDR'));
+        $this->auditLog?->record('platform.pricing.updated', null, isset($currentUser['user_id']) ? (int) $currentUser['user_id'] : null, 'plans', 'pricing', ['before' => $before, 'after' => ['plans' => $this->plans()]], $request->server('REMOTE_ADDR'));
         FlashMessages::success('Platform pricing saved.');
         return new Response('', 303, ['Location' => '/platform/admin/pricing?notice=saved']);
     }
@@ -190,6 +194,10 @@ HTML, active: 'pricing'));
             'allowed_contact_messages' => max(0, (int) ($plan['allowed_contact_messages'] ?? 0)),
             'allowed_admin_users' => max(0, (int) ($plan['allowed_admin_users'] ?? 0)),
             'allow_sales' => isset($plan['allow_sales']) ? 1 : 0,
+            'platform_commission_basis_points' => max(
+                0,
+                min(10000, (int) round(((float) ($plan['platform_commission_percent'] ?? 5.0)) * 100))
+            ),
             'credit_card_fee_basis_points' => max(0, min(10000, (int) round(((float) ($plan['credit_card_fee_percent'] ?? 2.9)) * 100))),
             'credit_card_fixed_fee_cents' => max(0, (int) round(((float) ($plan['credit_card_fixed_fee_dollars'] ?? 0.30)) * 100)),
             'display_order' => max(0, (int) ($plan['display_order'] ?? 100)),
@@ -218,6 +226,7 @@ HTML, active: 'pricing'));
             . ($columns['allowed_contact_messages'] ? ', allowed_contact_messages' : ', 0 AS allowed_contact_messages')
             . ($columns['allowed_admin_users'] ? ', allowed_admin_users' : ', 0 AS allowed_admin_users')
             . ($columns['allow_sales'] ? ', allow_sales' : ', 0 AS allow_sales')
+            . ($columns['platform_commission_basis_points'] ? ', platform_commission_basis_points' : ', ' . $this->commissionBasisPoints() . ' AS platform_commission_basis_points')
             . ($columns['credit_card_fee_basis_points'] ? ', credit_card_fee_basis_points' : ', 290 AS credit_card_fee_basis_points')
             . ($columns['credit_card_fixed_fee_cents'] ? ', credit_card_fixed_fee_cents' : ', 30 AS credit_card_fixed_fee_cents')
             . ($columns['display_order'] ? ', display_order' : ', 100 AS display_order');
@@ -231,7 +240,7 @@ HTML, active: 'pricing'));
 
     private function planColumns(): array
     {
-        $columns = ['description' => false, 'stripe_product_id' => false, 'stripe_monthly_price_id' => false, 'stripe_price_lookup_key' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'allowed_storage_gb' => false, 'allowed_contact_messages' => false, 'allowed_admin_users' => false, 'allow_sales' => false, 'credit_card_fee_basis_points' => false, 'credit_card_fixed_fee_cents' => false, 'display_order' => false];
+        $columns = ['description' => false, 'stripe_product_id' => false, 'stripe_monthly_price_id' => false, 'stripe_price_lookup_key' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'allowed_storage_gb' => false, 'allowed_contact_messages' => false, 'allowed_admin_users' => false, 'allow_sales' => false, 'platform_commission_basis_points' => false, 'credit_card_fee_basis_points' => false, 'credit_card_fixed_fee_cents' => false, 'display_order' => false];
         $stmt = $this->pdo->prepare('SELECT column_name FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = :table');
         $stmt->execute(['table' => 'plans']);
         foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $column) {

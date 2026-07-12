@@ -975,8 +975,8 @@ HTML;
 
         $shipping = array_sum($this->sales->cartShippingAllocations($items));
         $total = $subtotal + $shipping;
-        $commissionBasisPoints = max(0, min(10000, (int) $this->platformSettings->get('platform_sales_commission_basis_points', '500')));
         $planFees = $this->planPaymentFees($tenant);
+        $commissionBasisPoints = (int) $planFees['platform_commission_basis_points'];
         $commission = (int) round($subtotal * ($commissionBasisPoints / 10000));
         $creditCardFee = (int) round($total * (((int) $planFees['credit_card_fee_basis_points']) / 10000)) + (int) $planFees['credit_card_fixed_fee_cents'];
 
@@ -994,11 +994,15 @@ HTML;
     private function planPaymentFees(TenantContext $tenant): array
     {
         try {
-            $stmt = $this->pdo->prepare('SELECT COALESCE(p.credit_card_fee_basis_points, 290) AS credit_card_fee_basis_points, COALESCE(p.credit_card_fixed_fee_cents, 30) AS credit_card_fixed_fee_cents FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id WHERE tpa.tenant_id = :tenant_id AND tpa.status IN ("trial", "active", "manual") ORDER BY tpa.id DESC LIMIT 1');
+            $stmt = $this->pdo->prepare('SELECT COALESCE(p.platform_commission_basis_points, 500) AS platform_commission_basis_points, COALESCE(p.credit_card_fee_basis_points, 290) AS credit_card_fee_basis_points, COALESCE(p.credit_card_fixed_fee_cents, 30) AS credit_card_fixed_fee_cents FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id WHERE tpa.tenant_id = :tenant_id AND tpa.status IN ("trial", "active", "manual") ORDER BY tpa.id DESC LIMIT 1');
             $stmt->execute(['tenant_id' => $tenant->tenantId]);
             $row = $stmt->fetch();
             if ($row) {
                 return [
+                    'platform_commission_basis_points' => max(
+                        0,
+                        min(10000, (int) ($row['platform_commission_basis_points'] ?? 500))
+                    ),
                     'credit_card_fee_basis_points' => max(0, min(10000, (int) ($row['credit_card_fee_basis_points'] ?? 290))),
                     'credit_card_fixed_fee_cents' => max(0, (int) ($row['credit_card_fixed_fee_cents'] ?? 30)),
                 ];
@@ -1006,7 +1010,14 @@ HTML;
         } catch (Throwable) {
             // Migration may not have reached older environments yet. Use Stripe's common public baseline.
         }
-        return ['credit_card_fee_basis_points' => 290, 'credit_card_fixed_fee_cents' => 30];
+        return [
+            'platform_commission_basis_points' => max(
+                0,
+                min(10000, (int) $this->platformSettings->get('platform_sales_commission_basis_points', '500'))
+            ),
+            'credit_card_fee_basis_points' => 290,
+            'credit_card_fixed_fee_cents' => 30,
+        ];
     }
 
     private function verifyCsrf(): bool

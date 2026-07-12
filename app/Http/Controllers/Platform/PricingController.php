@@ -26,7 +26,6 @@ final class PricingController
     {
         $cards = $this->pricingCards();
         $comparison = $this->comparisonTable();
-        $commission = $this->commissionPercent();
         $defaultCardFees = $this->defaultCardFeesLabel();
         $body = <<<HTML
 <section class="platform-hero pricing-hero compact">
@@ -40,7 +39,7 @@ final class PricingController
 <section class="pricing-grid professional-pricing">
 {$cards}
 </section>
-<section class="platform-section commission-disclosure"><h2>How payouts work</h2><p>ArtsFolio commission on platform-processed artwork sales is <strong>{$commission}</strong>. Credit card charges are shown only for plans where checkout is available and are commonly <strong>{$defaultCardFees}</strong>.</p><p>Artists receive the sale amount minus platform commission, minus the credit card percentage, minus the fixed credit card charge. Complimentary tenants do not pay subscription fees, but they still pay platform commission and credit card charges on sales.</p></section>
+<section class="platform-section commission-disclosure"><h2>How payouts work</h2><p>ArtsFolio commission varies by pricing plan and is shown on each plan below. Artists also pay Stripe processing charges, commonly <strong>{$defaultCardFees}</strong>.</p><p>Artists receive the sale amount minus platform commission, minus the credit card percentage, minus the fixed credit card charge. Complimentary tenants do not pay subscription fees, but they still pay platform commission and credit card charges on sales.</p></section>
 <section class="platform-section comparison-section"><h2>Plan comparison</h2>{$comparison}</section>
 <style>
 /* Pricing page final polish: Studio contrast, readable buttons, and comparison-row normalization. */
@@ -206,7 +205,9 @@ HTML;
             $workflow = ((int) (($plan['curation_workflow_included'] ?? 0) ?? 0)) === 1
                 ? 'Curation workflow included'
                 : 'Curation workflow not included';
-            $fees = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? '<li>Sales fee disclosure: ArtsFolio commission plus ' . $this->cardFeesLabel($plan) . ' credit card charges</li>' : '';
+            $fees = ((int) ($plan['allow_sales'] ?? 0)) === 1
+                ? '<li>Sales fees: ' . $this->commissionLabel($plan) . ' ArtsFolio commission plus ' . $this->cardFeesLabel($plan) . ' Stripe processing</li>'
+                : '';
             $freeNotice = $slug === 'free' ? '<li>Includes ArtsFolio notification/link on free tenant pages</li>' : '';
             $cta = $slug === 'pro' || $slug === 'collective' ? '<a class="button secondary" href="/contact">Contact ArtsFolio</a>' : '<a class="button ' . ($slug === 'studio' ? 'primary' : 'secondary') . '" href="/signup">Choose ' . $name . '</a>';
             $html .= <<<HTML
@@ -230,7 +231,8 @@ HTML;
         $notice = '<tr><td>ArtsFolio notification/link</td>';
         $sales = '<tr><td>Online checkout</td>';
         $workflow = '<tr><td>Curation workflow</td>';
-        $cardFees = '<tr><td>Credit card charges</td>';
+        $commissionFees = '<tr><td>ArtsFolio commission</td>';
+        $cardFees = '<tr><td>Stripe processing</td>';
         foreach ($plans as $plan) {
             $heads .= '<th>' . AdminLayout::escape((string) $plan['name']) . '</th>';
             $price .= '<td>' . $this->priceLabel((int) $plan['monthly_price_cents']) . '</td>';
@@ -240,9 +242,10 @@ HTML;
             $notice .= '<td>' . (((string) $plan['slug']) === 'free' ? 'Included' : '-') . '</td>';
             $sales .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Included' : '-') . '</td>';
             $workflow .= '<td>' . (((int) (($plan['curation_workflow_included'] ?? 0) ?? 0)) === 1 ? 'Included' : '-') . '</td>';
+            $commissionFees .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? $this->commissionLabel($plan) : '-') . '</td>';
             $cardFees .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? $this->cardFeesLabel($plan) : '-') . '</td>';
         }
-        return '<table class="admin-table"><thead><tr><th>Feature</th>' . $heads . '</tr></thead><tbody>' . $price . '</tr>' . $artworks . '</tr>' . $emails . '</tr>' . $domains . '</tr>' . $notice . '</tr>' . $sales . '</tr>' . $workflow . '</tr>' . $cardFees . '</tr></tbody></table>';
+        return '<table class="admin-table"><thead><tr><th>Feature</th>' . $heads . '</tr></thead><tbody>' . $price . '</tr>' . $artworks . '</tr>' . $emails . '</tr>' . $domains . '</tr>' . $notice . '</tr>' . $sales . '</tr>' . $workflow . '</tr>' . $commissionFees . '</tr>' . $cardFees . '</tr></tbody></table>';
     }
 
     private function plans(): array
@@ -257,6 +260,7 @@ HTML;
             . ($columns['allowed_email_addresses'] ? ', allowed_email_addresses' : ', NULL AS allowed_email_addresses')
             . ($columns['display_order'] ? ', display_order' : ', 100 AS display_order')
             . ($columns['allow_sales'] ? ', allow_sales' : ', 0 AS allow_sales')
+            . ($columns['platform_commission_basis_points'] ? ', platform_commission_basis_points' : ', 500 AS platform_commission_basis_points')
             . ($columns['curation_workflow_included'] ? ', curation_workflow_included' : " , CASE WHEN slug = 'free' THEN 0 ELSE 1 END AS curation_workflow_included")
             . ($columns['credit_card_fee_basis_points'] ? ', credit_card_fee_basis_points' : ', 290 AS credit_card_fee_basis_points')
             . ($columns['credit_card_fixed_fee_cents'] ? ', credit_card_fixed_fee_cents' : ', 30 AS credit_card_fixed_fee_cents');
@@ -277,6 +281,16 @@ HTML;
     {
         $value = (int) ($limit ?? 0);
         return $value > 0 ? number_format($value) . ' ' . $label : 'Plan-configured ' . $label;
+    }
+
+    private function commissionLabel(array $plan): string
+    {
+        $basisPoints = max(
+            0,
+            min(10000, (int) ($plan['platform_commission_basis_points'] ?? 500))
+        );
+
+        return number_format($basisPoints / 100, 2) . '%';
     }
 
     private function cardFeesLabel(array $plan): string
@@ -304,7 +318,7 @@ HTML;
 
     private function planColumns(): array
     {
-        $columns = ['description' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'display_order' => false, 'allow_sales' => false, 'credit_card_fee_basis_points' => false, 'credit_card_fixed_fee_cents' => false];
+        $columns = ['description' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'display_order' => false, 'allow_sales' => false, 'platform_commission_basis_points' => false, 'credit_card_fee_basis_points' => false, 'credit_card_fixed_fee_cents' => false];
         if (!$this->pdo) {
             return $columns;
         }

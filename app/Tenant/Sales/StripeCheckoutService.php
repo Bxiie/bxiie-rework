@@ -51,6 +51,8 @@ final class StripeCheckoutService
             'payment_intent_data[metadata][artsfolio_order_id]' => (string) $order['id'],
             'payment_intent_data[metadata][artsfolio_tenant_id]' => (string) $order['tenant_id'],
             'payment_intent_data[metadata][artsfolio_cart_id]' => (string) ($order['cart_id'] ?? ''),
+            'payment_intent_data[metadata][artsfolio_commission_cents]' => (string) ((int) ($order['commission_cents'] ?? 0)),
+            'payment_intent_data[metadata][artsfolio_estimated_stripe_fee_cents]' => (string) ((int) ($order['credit_card_fee_cents'] ?? 0)),
             'phone_number_collection[enabled]' => 'true',
             'shipping_address_collection[allowed_countries][0]' => 'US',
             'shipping_address_collection[allowed_countries][1]' => 'CA',

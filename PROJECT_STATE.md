@@ -2938,3 +2938,13 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - The requested backup-protection and platform-admin sharing notices were removed from System Operations.
 
 <!-- End of Email logo tokens and Stripe descriptions. -->
+
+## 2026-07-12 Plan-specific sales commissions
+
+- `plans.platform_commission_basis_points` is the authoritative per-plan sales commission.
+- Launch defaults: Free 10%, Studio 5%, Pro 3%, Collective 2%.
+- Checkout adds plan commission plus estimated Stripe processing to the Connect application fee.
+- Orders continue to store commission, estimated card fee, and seller net separately.
+- The historical global commission setting remains only as a compatibility fallback.
+
+<!-- End of Plan-specific sales commissions. -->

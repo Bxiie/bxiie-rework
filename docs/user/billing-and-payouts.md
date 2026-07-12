@@ -1,17 +1,18 @@
 # Billing and payouts
 
-When a paid ArtsFolio plan allows online checkout, the artist's proceeds are calculated from the sale amount minus ArtsFolio platform commission, minus credit card percentage charges, minus the fixed credit card charge.
+Your ArtsFolio plan determines the commission charged on artwork sales. The
+current commission is shown in your Billing area and on the public pricing page.
 
-Complimentary tenant status only waives the monthly ArtsFolio subscription charge. Sales still include platform commission and credit card charges.
+Stripe processing charges are also deducted from your proceeds. ArtsFolio shows
+the percentage and fixed processing estimate before checkout and records the
+estimated charge on each order.
 
-Tenant billing shows example payout estimates for common sale amounts.
+Your estimated proceeds are:
 
-## How you get paid for artwork sales
+**buyer total − ArtsFolio commission − Stripe processing**
 
-Click **Settings** in the sidebar and find **How you get paid**. Click **Connect Stripe** and complete Stripe-hosted onboarding. Stripe collects your banking, identity, tax, and business details directly.
-
-After Stripe sends you back to ArtsFolio, return to **Settings** and confirm your payout status says your account is connected and ready for checkout. Buyers cannot complete online checkout until Stripe confirms that your account can accept charges and receive payouts.
-
-When an artwork sells, Stripe processes the buyer payment, ArtsFolio applies the platform commission and card-processing costs, and the artist proceeds are routed through your connected Stripe account. Stripe controls the exact payout timing shown in your Stripe dashboard.
+Shipping is passed through to you, but Stripe processing is calculated on the
+full amount charged to the buyer. Sales tax, refunds, disputes, currency
+conversion, and other Stripe fees can affect the final payout shown by Stripe.
 
 <!-- End of file. -->

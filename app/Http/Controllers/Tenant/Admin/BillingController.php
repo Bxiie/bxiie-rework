@@ -612,7 +612,7 @@ private function absoluteTenantUrl(Request $request, string $path): string
 
     private function fallbackPlan(): array
     {
-        return ['id' => 0, 'slug' => 'studio', 'name' => 'Studio', 'monthly_price_cents' => 1200, 'description' => 'For active artists.', 'allowed_artworks' => 250, 'allowed_storage_gb' => 5, 'allowed_email_addresses' => 2500, 'allowed_contact_messages' => 250, 'custom_domain_included' => 0, 'allowed_admin_users' => 3, 'allow_sales' => 1, 'credit_card_fee_basis_points' => 290, 'credit_card_fixed_fee_cents' => 30];
+        return ['id' => 0, 'slug' => 'studio', 'name' => 'Studio', 'monthly_price_cents' => 1200, 'description' => 'For active artists.', 'allowed_artworks' => 250, 'allowed_storage_gb' => 5, 'allowed_email_addresses' => 2500, 'allowed_contact_messages' => 250, 'custom_domain_included' => 0, 'allowed_admin_users' => 3, 'allow_sales' => 1, 'platform_commission_basis_points' => 500, 'credit_card_fee_basis_points' => 290, 'credit_card_fixed_fee_cents' => 30];
     }
 
     private function usage(TenantContext $tenant): array
@@ -630,14 +630,10 @@ private function absoluteTenantUrl(Request $request, string $path): string
 
     private function salesEconomics(array $plan): array
     {
-        $commissionBasisPoints = 500;
-        try {
-            $stmt = $this->pdo->prepare("SELECT setting_value FROM platform_settings WHERE setting_key = 'platform_sales_commission_basis_points' LIMIT 1");
-            $stmt->execute();
-            $commissionBasisPoints = max(0, min(10000, (int) ($stmt->fetchColumn() ?: 500)));
-        } catch (Throwable) {
-            // Keep the billing screen available even if platform settings are not ready.
-        }
+        $commissionBasisPoints = max(
+            0,
+            min(10000, (int) ($plan['platform_commission_basis_points'] ?? 500))
+        );
 
         $cardBasisPoints = max(0, min(10000, (int) ($plan['credit_card_fee_basis_points'] ?? 290)));
         $cardFixedCents = max(0, (int) ($plan['credit_card_fixed_fee_cents'] ?? 30));

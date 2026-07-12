@@ -481,3 +481,8 @@ run_php scripts/test/email_logo_tokens_and_stripe_description_static.php
 run_php scripts/test/backup_navigation_buttons_removed_static.php
 
 # End of file.
+
+# Plan-specific commission and Stripe-fee regression.
+run_php scripts/test/plan_commission_stripe_fees_static.php
+
+# End of file.
