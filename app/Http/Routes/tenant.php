@@ -259,7 +259,7 @@ return static function (Router $router, array $context): void {
     $router->get('/admin/login', fn (Request $request): Response => new Response('', 303, ['Location' => '/login']));
     $router->get('/register', fn (Request $request): Response => Response::html(AuthPage::register('/register')));
     $router->get('/password/forgot', fn (Request $request): Response => Response::html(AuthPage::forgotPassword('/password/forgot', (new CsrfTokenService())->getOrCreate())));
-        $router->post('/password/forgot', function (Request $request) use ($pdo, $root, $tenant): Response {
+        $router->post('/password/forgot', function (Request $request) use ($pdo, $root, $tenant, $tenantPasswordResetGuard): Response {
             $csrf = new CsrfTokenService();
             if (!$csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
                 return Response::html(AuthPage::forgotPassword('/password/forgot', $csrf->getOrCreate()) . '<p class="error">The security check expired. Please try again.</p>', 419);

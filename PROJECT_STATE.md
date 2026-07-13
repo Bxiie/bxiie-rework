@@ -3001,3 +3001,19 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - Provisioning does not overwrite an existing `custom_css` value.
 
 <!-- End of New-tenant documented Custom CSS. -->
+
+## 2026-07-13 Signup-code trial duration
+
+- Signup-code free access now sets `current_period_ends_at` to the same value as `complimentary_until`.
+- Platform tenant billing details prefer `complimentary_until` for trial expiration and billing-start countdown.
+- Existing trial tenants with a correct complimentary expiration display the correct duration without a data migration.
+
+<!-- End of Signup-code trial duration. -->
+
+## 2026-07-13 Tenant password-forgot guard capture
+
+- Tenant `POST /password/forgot` captures `TenantPasswordResetGuard` in its route closure.
+- Tenant-scoped password-reset submission no longer fails with an undefined-variable HTTP 500.
+- The recipient-existence guard remains tenant scoped.
+
+<!-- End of Tenant password-forgot guard capture. -->

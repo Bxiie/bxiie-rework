@@ -521,3 +521,13 @@ run_php scripts/test/new_tenant_custom_css_seed_static.php
 run_php scripts/test/platform_operations_route_constructor_static.php
 
 # End of file.
+
+# Signup-code trial duration regression.
+run_php scripts/test/signup_code_trial_duration_static.php
+
+# End of file.
+
+# Tenant password-forgot closure dependency regression.
+run_php scripts/test/tenant_password_forgot_guard_capture_static.php
+
+# End of file.

@@ -255,8 +255,16 @@ HTML,
         $rawStatus = strtolower(trim((string) ($row['billing_status'] ?? $row['status'] ?? 'manual')));
         $status = $this->escape($rawStatus);
         $periodEndRaw = trim((string) ($row['current_period_ends_at'] ?? ''));
-        $recurs = $periodEndRaw !== '' ? $this->escape($this->displayBillingTime($periodEndRaw)) : 'Not set';
-        $trialDetails = $rawStatus === 'trial' ? $this->trialPeriodDetails($periodEndRaw) : '';
+        $complimentaryUntilRaw = trim((string) ($row['complimentary_until'] ?? ''));
+        $trialEndRaw = $rawStatus === 'trial' && $complimentaryUntilRaw !== ''
+            ? $complimentaryUntilRaw
+            : $periodEndRaw;
+        $recurs = $trialEndRaw !== ''
+            ? $this->escape($this->displayBillingTime($trialEndRaw))
+            : 'Not set';
+        $trialDetails = $rawStatus === 'trial'
+            ? $this->trialPeriodDetails($trialEndRaw)
+            : '';
         $subscription = $this->escape((string) ($row['stripe_subscription_id'] ?? '')) ?: 'Not connected';
         $latest = isset($row['latest_charge_cents']) ? '$' . number_format(((int) $row['latest_charge_cents']) / 100, 2) : '$0.00';
         $pending = trim((string) ($row['pending_change_type'] ?? '')) !== '' ? $this->escape((string) $row['pending_change_type']) . ' to ' . $this->escape((string) ($row['pending_plan_slug'] ?? 'selected plan')) . ' on ' . $this->escape((string) ($row['pending_effective_at'] ?? 'not set')) : 'None';

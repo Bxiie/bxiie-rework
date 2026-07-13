@@ -228,7 +228,22 @@ final class TenantSignupService
         $billingStatus = $priceCents > 0 && !$isFreeAccess ? 'payment_pending' : ($isFreeAccess ? 'trial' : 'free');
         $status = $isFreeAccess ? 'trial' : 'active';
         $note = $isFreeAccess ? 'Free access signup code ' . (string) $signupCode['code'] . ' for ' . $months . ' month' . ($months === 1 ? '' : 's') . '.' : ($priceCents > 0 ? 'Paid signup selected. Stripe Checkout is required before billing is complete.' : 'Free plan selected at signup.');
-        $values = ['tenant_id' => $tenantId, 'plan_id' => (int) $selectedPlan['id'], 'status' => $status, 'billing_status' => $billingStatus, 'current_period_started_at' => $this->now(), 'current_period_ends_at' => (new \DateTimeImmutable('now'))->modify('+1 month')->format('Y-m-d H:i:s'), 'complimentary_until' => $complimentaryUntil, 'granted_by_signup_code_id' => $isFreeAccess ? (int) $signupCode['id'] : null, 'billing_note' => $note, 'created_at' => $this->now()];
+        $currentPeriodEndsAt = $isFreeAccess
+            ? $complimentaryUntil
+            : (new \DateTimeImmutable('now'))->modify('+1 month')->format('Y-m-d H:i:s');
+
+        $values = [
+            'tenant_id' => $tenantId,
+            'plan_id' => (int) $selectedPlan['id'],
+            'status' => $status,
+            'billing_status' => $billingStatus,
+            'current_period_started_at' => $this->now(),
+            'current_period_ends_at' => $currentPeriodEndsAt,
+            'complimentary_until' => $complimentaryUntil,
+            'granted_by_signup_code_id' => $isFreeAccess ? (int) $signupCode['id'] : null,
+            'billing_note' => $note,
+            'created_at' => $this->now(),
+        ];
         $stmt = $this->pdo->prepare('SELECT id FROM tenant_plan_assignments WHERE tenant_id = :tenant_id LIMIT 1');
         $stmt->execute(['tenant_id' => $tenantId]);
         $existingId = $stmt->fetchColumn();
