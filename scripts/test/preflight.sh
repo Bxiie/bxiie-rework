@@ -491,3 +491,13 @@ run_php scripts/test/plan_commission_stripe_fees_static.php
 run_php scripts/test/backup_admin_timezone_static.php
 
 # End of file.
+
+# Dedicated Tenant Admin Onboarding tab regression.
+run_php scripts/test/tenant_onboarding_tab_static.php
+
+# End of file.
+
+# Default Tenant Admin contrast regression.
+run_php scripts/test/new_tenant_admin_contrast_static.php
+
+# End of file.

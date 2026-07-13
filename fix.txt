@@ -1,8 +1,15 @@
 ## Now
 
+- Add a switch to tenant admin to supress mailing list dialog in footer.
+- Add a switch to tenant admin to supress contact page.
+- Add a switch to tenant admin to supress about page.
+- Add a switch to remove 'All' section button from Portfolio page.
+- 
+
+##
+
 - Stripe description should include 'ArtsFolio: '
 - Add {{logo}} to templates.
-
 
 ##
 

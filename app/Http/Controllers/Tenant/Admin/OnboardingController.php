@@ -37,6 +37,10 @@ final class OnboardingController
             return Response::invalidCsrf();
         }
 
+        if ((string) ($_POST['reset_onboarding_confirm'] ?? '') !== '1') {
+            return Response::html('<h1>Confirm onboarding reset</h1>', 422);
+        }
+
         $stmt = $this->pdo->prepare(
             "DELETE FROM tenant_settings
              WHERE tenant_id = :tenant_id
@@ -60,10 +64,10 @@ final class OnboardingController
             $request->server('REMOTE_ADDR'),
         );
 
-        FlashMessages::success('Onboarding was reset. The dashboard checklist and tour will appear as they do for a new site.');
+        FlashMessages::success('Onboarding was reset. The checklist and guided tour are ready to use again.');
 
         return new Response('', 303, [
-            'Location' => '/admin?notice=onboarding-reset&onboarding_reset=1',
+            'Location' => '/admin/onboarding?notice=onboarding-reset&onboarding_reset=1',
         ]);
     }
 }

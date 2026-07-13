@@ -9,7 +9,6 @@ use App\Http\Response;
 use App\Http\View\TenantAdminLayout;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Database;
-use App\Support\Security\CsrfTokenService;
 use App\Tenant\Settings\TenantSettingsRepository;
 use PDO;
 use Throwable;
@@ -34,13 +33,8 @@ final class DashboardController
         $recentMessages = $this->recentMessageRows($tenant);
         $planName = $this->e($metrics['plan_name']);
         $salesState = $this->e($metrics['sales_state']);
-        $csrf = $this->e((new CsrfTokenService())->getOrCreate());
-        $onboardingNotice = (string) ($_GET['notice'] ?? '') === 'onboarding-reset'
-            ? '<p class="admin-notice admin-notice-success">Onboarding was reset. The checklist and guided tour are ready to run again.</p>'
-            : '';
 
         $body = <<<HTML
-{$onboardingNotice}
 <p class="admin-muted">Manage the public site, artwork catalog, engagement, sales workflow, and reporting. This dashboard favors things that need action over wallpaper numbers.</p>
 
 <section class="dashboard-metric-grid" aria-label="Tenant summary metrics">
@@ -82,32 +76,8 @@ final class DashboardController
             <a class="admin-button tenant-admin-action-button" href="/admin/sales"><strong>Process sales</strong><span>Acknowledge, pack, ship, and track customer orders.</span></a>
             <a class="admin-button tenant-admin-action-button" href="/admin/stats"><strong>Study traffic</strong><span>Find what visitors view, where they come from, and what earns attention.</span></a>
         </div>
-        <hr>
-        <h3>Onboarding</h3>
-        <p class="admin-muted">Reset only the dashboard checklist and guided tour state. Your site content and settings are not changed.</p>
-        <form method="post" action="/admin/onboarding/reset" onsubmit="return confirm('Reset onboarding for this site? The dashboard checklist and guided tour will appear as they do for a newly created tenant.');">
-            <input type="hidden" name="csrf_token" value="{$csrf}">
-            <button type="submit">Reset onboarding</button>
-        </form>
     </section>
 </div>
-<script>
-(function () {
-    if (new URLSearchParams(window.location.search).get('onboarding_reset') !== '1') {
-        return;
-    }
-    try {
-        Object.keys(window.localStorage).forEach(function (key) {
-            var normalized = key.toLowerCase();
-            if (normalized.indexOf('artsfolio') !== -1 && (normalized.indexOf('onboarding') !== -1 || normalized.indexOf('tour') !== -1 || normalized.indexOf('checklist') !== -1)) {
-                window.localStorage.removeItem(key);
-            }
-        });
-    } catch (error) {
-        // Server-backed state is authoritative; browser cleanup is best effort.
-    }
-})();
-</script>
 HTML;
 
         return Response::html((new TenantAdminLayout($this->settings))->render($tenant, 'Tenant Admin', $body, 'dashboard'));

@@ -48,6 +48,7 @@ use App\Http\Controllers\Tenant\Admin\DiscoverySettingsController as TenantAdmin
 use App\Http\Controllers\Tenant\Admin\StatsController as TenantAdminStatsController;
 use App\Http\Controllers\Tenant\Admin\GettingStartedController as TenantAdminGettingStartedController;
 use App\Http\Controllers\Tenant\Admin\OnboardingController as TenantAdminOnboardingController;
+use App\Http\Controllers\Tenant\Admin\OnboardingPageController as TenantAdminOnboardingPageController;
 use App\Http\Controllers\Tenant\Admin\ArtworkUploadController as TenantAdminArtworkUploadController;
 use App\Http\Controllers\Tenant\Admin\ArtworksController as TenantAdminArtworksController;
 use App\Http\Controllers\Tenant\Admin\ArtworkPlacementController as TenantAdminArtworkPlacementController;
@@ -209,6 +210,7 @@ return static function (Router $router, array $context): void {
         $router->get('/admin/artwork/upload', fn (Request $request): Response => (new TenantAdminArtworkUploadController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), new ArtworkUploadService($pdo), new AuditLogRepository($pdo), $pdo))->form($request, $tenant, $currentUser));
         $router->post('/admin/artwork/upload', fn (Request $request): Response => (new TenantAdminArtworkUploadController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), new ArtworkUploadService($pdo), new AuditLogRepository($pdo), $pdo))->submit($request, $tenant, $currentUser));
         $router->get('/admin/getting-started', fn (Request $request): Response => (new TenantAdminGettingStartedController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
+        $router->get('/admin/onboarding', fn (Request $request): Response => (new TenantAdminOnboardingPageController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, new CsrfTokenService()))->index($request, $tenant, $currentUser));
         $router->post('/admin/onboarding/reset', fn (Request $request): Response => (new TenantAdminOnboardingController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new CsrfTokenService(), new AuditLogRepository($pdo)))->reset($request, $tenant, $currentUser));
         $router->get('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), $csrf, $tenantSettings, new RateLimiter($pdo)))->show($request, $tenant));
         $router->get('/help/{topic}', fn (Request $request, array $params): Response => $helpController->topic($request, (string) $params['topic']));

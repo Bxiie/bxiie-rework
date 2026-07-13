@@ -19,6 +19,7 @@ final class TenantAdminNav
     {
         $items = [
             'dashboard' => ['/admin', 'Dashboard'],
+            'onboarding' => ['/admin/onboarding', 'Onboarding'],
             'settings' => ['/admin/settings', 'Settings'],
             'content' => ['/admin/content', 'Content'],
             'artworks' => ['/admin/artworks', 'Artworks'],

@@ -2956,3 +2956,21 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - Display includes the active time-zone abbreviation.
 
 <!-- End of Backup administrator timezone display. -->
+
+## 2026-07-12 Tenant Admin Onboarding tab
+
+- `/admin/onboarding` is the canonical tenant-admin onboarding page.
+- Tenant Admin sidebar includes an `Onboarding` item.
+- The page links to `/admin/getting-started`, `/help/new-admin-tour`, the function index, and training resources.
+- Onboarding reset requires an explicit confirmation switch and redirects back to `/admin/onboarding`.
+- Onboarding controls and reset-localStorage behavior were removed from the tenant Dashboard.
+
+<!-- End of Tenant Admin Onboarding tab. -->
+
+## 2026-07-12 Tenant Admin sidebar contrast v2
+
+- Tenant Admin sidebar text, metadata, navigation, footer links, and Upload Artwork action use `menu_text_color`.
+- A final high-specificity CSS layer overrides legacy forced-white rules.
+- Tenant Admin stylesheet cache version is `20260712-sidebar-contrast-v2`.
+
+<!-- End of Tenant Admin sidebar contrast v2. -->

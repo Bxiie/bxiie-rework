@@ -816,6 +816,11 @@
     },
     {
         "scope": "tenant",
+        "method": "GET",
+        "path": "/admin/onboarding"
+    },
+    {
+        "scope": "tenant",
         "method": "POST",
         "path": "/admin/onboarding/reset"
     },

@@ -6,7 +6,7 @@ declare(strict_types=1);
 $root = dirname(__DIR__, 2);
 $files = [
     'tenant_controller' => $root . '/app/Http/Controllers/Tenant/Admin/OnboardingController.php',
-    'tenant_dashboard' => $root . '/app/Http/Controllers/Tenant/Admin/DashboardController.php',
+    'tenant_page' => $root . '/app/Http/Controllers/Tenant/Admin/OnboardingPageController.php',
     'platform_tenants' => $root . '/app/Http/Controllers/Platform/Admin/TenantsController.php',
     'tenant_routes' => $root . '/app/Http/Routes/tenant.php',
     'platform_routes' => $root . '/app/Http/Routes/platform.php',
@@ -20,7 +20,7 @@ foreach ($files as $name => $path) {
     $content[$name] = (string) file_get_contents($path);
 }
 $checks = [
-    'tenant dashboard has reset form' => str_contains($content['tenant_dashboard'], 'action="/admin/onboarding/reset"'),
+    'tenant onboarding page has reset form' => str_contains($content['tenant_page'], 'action="/admin/onboarding/reset"'),
     'tenant reset route is POST' => str_contains($content['tenant_routes'], '$router->post(\'/admin/onboarding/reset\''),
     'platform tenant page has reset form' => str_contains($content['platform_tenants'], 'action="/platform/admin/tenants/onboarding/reset"'),
     'platform reset route is POST' => str_contains($content['platform_routes'], '$router->post(\'/platform/admin/tenants/onboarding/reset\''),

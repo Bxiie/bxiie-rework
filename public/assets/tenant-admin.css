@@ -4203,3 +4203,44 @@ form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact"
 /* End ArtsFolio logo aspect-ratio guard. */
 
 /* End of file. */
+
+/* Tenant admin final sidebar contrast layer. */
+body.tenant-admin-page .tenant-admin-sidebar,
+body.tenant-admin-page .tenant-admin-sidebar .tenant-admin-brand,
+body.tenant-admin-page .tenant-admin-sidebar .tenant-admin-sidebar-title,
+body.tenant-admin-page .tenant-admin-sidebar .tenant-admin-sidebar-title strong,
+body.tenant-admin-page .tenant-admin-sidebar nav a,
+body.tenant-admin-page .tenant-admin-sidebar .tenant-admin-sidebar-foot a {
+  color: var(--menu-text-color, var(--text-color, #1f1a14)) !important;
+  text-shadow: none !important;
+}
+
+body.tenant-admin-page .tenant-admin-sidebar .tenant-admin-sidebar-title span {
+  color: color-mix(
+    in srgb,
+    var(--menu-text-color, var(--text-color, #1f1a14)) 76%,
+    transparent
+  ) !important;
+  text-shadow: none !important;
+}
+
+body.tenant-admin-page .tenant-admin-sidebar nav a:hover,
+body.tenant-admin-page .tenant-admin-sidebar nav a:focus-visible,
+body.tenant-admin-page .tenant-admin-sidebar nav a.active,
+body.tenant-admin-page .tenant-admin-sidebar nav a[aria-current="page"] {
+  color: var(--menu-text-color, var(--text-color, #1f1a14)) !important;
+  background: color-mix(
+    in srgb,
+    var(--menu-text-color, var(--text-color, #1f1a14)) 13%,
+    transparent
+  ) !important;
+}
+
+body.tenant-admin-page .tenant-admin-sidebar .tenant-admin-sidebar-upload,
+body.tenant-admin-page .tenant-admin-sidebar .tenant-admin-sidebar-upload:hover,
+body.tenant-admin-page .tenant-admin-sidebar .tenant-admin-sidebar-upload:focus-visible {
+  color: var(--menu-text-color, var(--text-color, #1f1a14)) !important;
+  text-shadow: none !important;
+}
+
+/* End tenant admin final sidebar contrast layer. */
