@@ -2984,3 +2984,11 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - Getting Started displays the exact Tenant Admin URL.
 
 <!-- End of Public visibility and delayed mailing-list prompt. -->
+
+## 2026-07-13 Operations run and trial details
+
+- Operations run details use portable status ordering and tolerate malformed legacy metric rows.
+- Run-detail failures are logged and return a useful administrative response instead of a blank 500.
+- Platform tenant details show trial expiration and a human countdown to billing in the administrator's time zone.
+
+<!-- End of Operations run and trial details. -->

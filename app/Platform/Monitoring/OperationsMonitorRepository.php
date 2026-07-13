@@ -180,7 +180,13 @@ final class OperationsMonitorRepository
         $metrics = $this->pdo->prepare(
             "SELECT metric_name, metric_status, expected_value, actual_value, actual_numeric, detail_text, created_at
              FROM operations_monitor_metrics WHERE run_id = :run_id
-             ORDER BY FIELD(metric_status, 'CRIT', 'WARN', 'OK', 'INFO'), metric_name"
+             ORDER BY CASE metric_status
+                WHEN 'CRIT' THEN 1
+                WHEN 'WARN' THEN 2
+                WHEN 'OK' THEN 3
+                WHEN 'INFO' THEN 4
+                ELSE 5
+             END, metric_name"
         );
         $metrics->execute(['run_id' => $runId]);
         $run['metrics'] = $metrics->fetchAll(PDO::FETCH_ASSOC);

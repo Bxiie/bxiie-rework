@@ -15,7 +15,7 @@ if ($controller === false) {
         'private function utcTimestamp(string $raw): ?int',
         'private function displayTimezone(): string',
         "new \\DateTimeZone('UTC')",
-        '$this->displayUtcTime((string) $run[\'created_at\'])',
+        '$this->displayUtcTime((string) ($run[\'created_at\'] ?? \'\'))',
         '$this->displayUtcTime((string) $metric[\'created_at\'])',
         '$this->displayUtcTime((string) $point[\'created_at\'])',
         '$this->displayTimezone()',
@@ -25,10 +25,17 @@ if ($controller === false) {
         }
     }
 
-    if (substr_count(
-        $controller,
-        '$this->displayUtcTime((string) $run[\'created_at\'])'
-    ) !== 2) {
+    $runTimestampConversions =
+        substr_count(
+            $controller,
+            '$this->displayUtcTime((string) $run[\'created_at\'])'
+        )
+        + substr_count(
+            $controller,
+            '$this->displayUtcTime((string) ($run[\'created_at\'] ?? \'\'))'
+        );
+
+    if ($runTimestampConversions !== 2) {
         $failures[] = 'Both run timestamp displays are not converted.';
     }
 

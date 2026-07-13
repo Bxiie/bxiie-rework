@@ -506,3 +506,8 @@ run_php scripts/test/new_tenant_admin_contrast_static.php
 run_php scripts/test/public_visibility_and_signup_prompt_static.php
 
 # End of file.
+
+# Operations run detail and tenant trial display regression.
+run_php scripts/test/operations_run_and_trial_details_static.php
+
+# End of file.

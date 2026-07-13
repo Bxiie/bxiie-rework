@@ -43,8 +43,8 @@ final class OperationsController
         $runRows = '';
         foreach ($runs as $run) {
             $runRows .= '<tr><td><a href="/platform/admin/operations/runs/' . (int) $run['id'] . '">#' . (int) $run['id'] . '</a></td>'
-                . '<td>' . $this->badge((string) $run['overall_status']) . '</td>'
-                . '<td>' . AdminLayout::escape($this->displayUtcTime((string) $run['created_at'])) . '</td>'
+                . '<td>' . $this->badge($this->normalizedRunStatus((string) ($run['overall_status'] ?? 'INFO'))) . '</td>'
+                . '<td>' . AdminLayout::escape($this->displayUtcTime((string) ($run['created_at'] ?? ''))) . '</td>'
                 . '<td>' . (int) $run['critical_count'] . '</td><td>' . (int) $run['warning_count'] . '</td>'
                 . '<td>' . number_format(((int) $run['duration_ms']) / 1000, 2) . 's</td></tr>';
         }
@@ -118,10 +118,33 @@ final class OperationsController
         if (!$this->allowed($currentUser)) {
             return Response::html(ErrorPage::unauthorized('/login', 'Platform admin access required.'), 403);
         }
-        $run = $this->operations->run($runId);
-        if ($run === null) {
-            return Response::html(AdminLayout::render('System check not found', '<p>No saved system check exists with that ID.</p>', 'operations'), 404);
+        try {
+            $run = $this->operations->run($runId);
+        } catch (\Throwable $exception) {
+            error_log('ArtsFolio operations run detail failed for run ' . $runId . ': ' . $exception->getMessage());
+
+            return Response::html(
+                AdminLayout::render(
+                    title: 'System check unavailable',
+                    body: '<p>The saved system check could not be loaded.</p><p class="admin-muted">Run ID: <code>' . $runId . '</code>. The error was written to the PHP error log.</p>',
+                    active: 'operations'
+                ),
+                503
+            );
         }
+
+        if ($run === null) {
+            return Response::html(
+                AdminLayout::render(
+                    title: 'System check not found',
+                    body: '<p>No saved system check exists with that ID.</p>',
+                    active: 'operations'
+                ),
+                404
+            );
+        }
+
+        $run['metrics'] = is_array($run['metrics'] ?? null) ? $run['metrics'] : [];
 
         $runTimestamp = $this->utcTimestamp((string) ($run['created_at'] ?? '')) ?: time();
         $defaultEnd = date('Y-m-d', $runTimestamp);
@@ -131,13 +154,29 @@ final class OperationsController
 
         $rows = '';
         foreach ($run['metrics'] as $metric) {
-            $name = (string) $metric['metric_name'];
+            if (!is_array($metric)) {
+                continue;
+            }
+
+            $name = trim((string) ($metric['metric_name'] ?? ''));
+            if ($name === '') {
+                $name = 'unnamed.metric';
+            }
+
+            $status = strtoupper(trim((string) ($metric['metric_status'] ?? 'INFO')));
+            if (!in_array($status, ['CRIT', 'WARN', 'OK', 'INFO'], true)) {
+                $status = 'INFO';
+            }
+
             $url = '/platform/admin/operations/metrics?name=' . rawurlencode($name) . '&start=' . rawurlencode($start) . '&end=' . rawurlencode($end);
-            $rows .= '<tr><td>' . $this->badge((string) $metric['metric_status']) . '</td><td><a href="' . AdminLayout::escape($url) . '">' . AdminLayout::escape($this->friendlyName($name)) . '</a><br><code>' . AdminLayout::escape($name) . '</code></td>'
-                . '<td>' . AdminLayout::escape((string) $metric['actual_value']) . '</td><td>' . AdminLayout::escape((string) $metric['expected_value']) . '</td><td>' . AdminLayout::escape((string) ($metric['detail_text'] ?? '')) . '</td></tr>';
+            $rows .= '<tr><td>' . $this->badge($status) . '</td><td><a href="' . AdminLayout::escape($url) . '">' . AdminLayout::escape($this->friendlyName($name)) . '</a><br><code>' . AdminLayout::escape($name) . '</code></td>'
+                . '<td>' . AdminLayout::escape((string) ($metric['actual_value'] ?? '')) . '</td><td>' . AdminLayout::escape((string) ($metric['expected_value'] ?? '')) . '</td><td>' . AdminLayout::escape((string) ($metric['detail_text'] ?? '')) . '</td></tr>';
+        }
+        if ($rows === '') {
+            $rows = '<tr><td colspan="5">This monitor run has no saved metric rows.</td></tr>';
         }
         $body = $this->styles() . '<p><a class="admin-button" href="/platform/admin/operations">Back to operations</a></p>'
-            . '<dl><dt>Status</dt><dd>' . $this->badge((string) $run['overall_status']) . '</dd><dt>Host</dt><dd>' . AdminLayout::escape((string) $run['host_name']) . '</dd><dt>Checked</dt><dd>' . AdminLayout::escape($this->displayUtcTime((string) $run['created_at'])) . '</dd></dl>'
+            . '<dl><dt>Status</dt><dd>' . $this->badge((string) $run['overall_status']) . '</dd><dt>Host</dt><dd>' . AdminLayout::escape((string) ($run['host_name'] ?? 'unknown')) . '</dd><dt>Checked</dt><dd>' . AdminLayout::escape($this->displayUtcTime((string) $run['created_at'])) . '</dd></dl>'
             . '<table class="admin-table"><thead><tr><th>Status</th><th>Check</th><th>Actual</th><th>Expected</th><th>Details</th></tr></thead><tbody>' . $rows . '</tbody></table>';
         return Response::html(AdminLayout::render(title: 'System Check #' . $runId, body: $body, active: 'operations'));
     }
@@ -213,6 +252,12 @@ final class OperationsController
     private function allowed(?array $currentUser): bool
     {
         return $this->roles->allows($currentUser, [Roles::PLATFORM_OWNER, Roles::PLATFORM_ADMIN, Roles::PLATFORM_SUPPORT]);
+    }
+
+    private function normalizedRunStatus(string $status): string
+    {
+        $status = strtoupper(trim($status));
+        return in_array($status, ['CRIT', 'WARN', 'OK', 'INFO'], true) ? $status : 'INFO';
     }
 
     private function badge(string $status): string

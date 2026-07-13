@@ -252,8 +252,11 @@ HTML,
         } catch (\Throwable) { $row = false; }
         if (!$row) { return '<section class="admin-panel"><h2>Billing details</h2><p class="admin-muted">No billing assignment found.</p></section>'; }
         $plan = $this->escape((string) ($row['plan_name'] ?? $row['plan_slug'] ?? 'Unknown plan'));
-        $status = $this->escape((string) ($row['billing_status'] ?? $row['status'] ?? 'manual'));
-        $recurs = $this->escape((string) ($row['current_period_ends_at'] ?? 'Not set'));
+        $rawStatus = strtolower(trim((string) ($row['billing_status'] ?? $row['status'] ?? 'manual')));
+        $status = $this->escape($rawStatus);
+        $periodEndRaw = trim((string) ($row['current_period_ends_at'] ?? ''));
+        $recurs = $periodEndRaw !== '' ? $this->escape($this->displayBillingTime($periodEndRaw)) : 'Not set';
+        $trialDetails = $rawStatus === 'trial' ? $this->trialPeriodDetails($periodEndRaw) : '';
         $subscription = $this->escape((string) ($row['stripe_subscription_id'] ?? '')) ?: 'Not connected';
         $latest = isset($row['latest_charge_cents']) ? '$' . number_format(((int) $row['latest_charge_cents']) / 100, 2) : '$0.00';
         $pending = trim((string) ($row['pending_change_type'] ?? '')) !== '' ? $this->escape((string) $row['pending_change_type']) . ' to ' . $this->escape((string) ($row['pending_plan_slug'] ?? 'selected plan')) . ' on ' . $this->escape((string) ($row['pending_effective_at'] ?? 'not set')) : 'None';
@@ -262,12 +265,65 @@ HTML,
     <h2>Billing details</h2>
     <p><strong>Plan:</strong> {$plan}</p>
     <p><strong>Billing status:</strong> {$status}</p>
+    {$trialDetails}
     <p><strong>Recurring billing date:</strong> {$recurs}</p>
     <p><strong>Stripe subscription:</strong> {$subscription}</p>
     <p><strong>Latest charge:</strong> {$latest}</p>
     <p><strong>Pending change:</strong> {$pending}</p>
 </section>
 HTML;
+    }
+
+    private function trialPeriodDetails(string $periodEndRaw): string
+    {
+        if ($periodEndRaw === '') {
+            return '<p><strong>Trial period:</strong> Expiration date is not set.</p>';
+        }
+
+        try {
+            $utc = new \DateTimeZone('UTC');
+            $end = new \DateTimeImmutable($periodEndRaw, $utc);
+            $now = new \DateTimeImmutable('now', $utc);
+        } catch (\Throwable) {
+            return '<p><strong>Trial period:</strong> Expiration date is invalid.</p>';
+        }
+
+        $displayEnd = $this->displayBillingTime($periodEndRaw);
+        $relative = $this->relativeBillingTime($now, $end);
+
+        if ($end <= $now) {
+            return '<p><strong>Trial period:</strong> Expired ' . $this->escape($relative) . ' on ' . $this->escape($displayEnd) . '.</p>';
+        }
+
+        return '<p><strong>Trial period:</strong> Ends ' . $this->escape($displayEnd) . '; billing starts ' . $this->escape($relative) . '.</p>';
+    }
+
+    private function displayBillingTime(string $raw): string
+    {
+        try {
+            $value = new \DateTimeImmutable($raw, new \DateTimeZone('UTC'));
+            $timezone = new \DateTimeZone((string) ($GLOBALS['artsfolio_user_timezone'] ?? date_default_timezone_get()));
+        } catch (\Throwable) {
+            return $raw;
+        }
+        return $value->setTimezone($timezone)->format('M j, Y g:i A T');
+    }
+
+    private function relativeBillingTime(\DateTimeImmutable $from, \DateTimeImmutable $to): string
+    {
+        $future = $to >= $from;
+        $interval = $future ? $from->diff($to) : $to->diff($from);
+        $parts = [];
+        if ($interval->y > 0) { $parts[] = $interval->y . ' ' . ($interval->y === 1 ? 'year' : 'years'); }
+        if ($interval->m > 0) { $parts[] = $interval->m . ' ' . ($interval->m === 1 ? 'month' : 'months'); }
+        if ($interval->d > 0) { $parts[] = $interval->d . ' ' . ($interval->d === 1 ? 'day' : 'days'); }
+        if ($parts === []) {
+            if ($interval->h > 0) { $parts[] = $interval->h . ' ' . ($interval->h === 1 ? 'hour' : 'hours'); }
+            elseif ($interval->i > 0) { $parts[] = $interval->i . ' ' . ($interval->i === 1 ? 'minute' : 'minutes'); }
+            else { $parts[] = 'less than a minute'; }
+        }
+        $duration = implode(', ', array_slice($parts, 0, 2));
+        return $future ? 'in ' . $duration : $duration . ' ago';
     }
 
     private function complementaryChecked(int $tenantId): string
