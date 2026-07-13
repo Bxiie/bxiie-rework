@@ -124,7 +124,9 @@ HTML;
         $body = "<h1>Portfolio</h1>\n";
         $body .= '<section data-artwork-pager-root tabindex="-1">';
         $body .= "<nav style=\"display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 1rem;\">\n";
-        $body .= '    <a data-artwork-page-link href="' . $this->escape($allHref) . '" style="padding:.5rem .75rem;border:1px solid #222;text-decoration:none;">All</a>' . "\n";
+        if (!$this->settingEnabled($tenant, 'hide_portfolio_all_button')) {
+            $body .= '    <a data-artwork-page-link href="' . $this->escape($allHref) . '" style="padding:.5rem .75rem;border:1px solid #222;text-decoration:none;">All</a>' . "\n";
+        }
 
         foreach ($sections as $section) {
             $sectionQuery = http_build_query([
@@ -266,6 +268,10 @@ $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublish
 
     public function about(Request $request, TenantContext $tenant): Response
     {
+        if ($this->settingEnabled($tenant, 'suppress_about_page')) {
+            return Response::html('<h1>404</h1><p>Page not found.</p>', 404);
+        }
+
         $this->track($request, $tenant, 'about_view');
         $about = $this->settings->get($tenant, 'about_content', '');
         $aboutImageHtml = $this->siteImageFigure($tenant, 'about_media_uuid', 'about_image_opacity', 'About image');
@@ -285,6 +291,10 @@ $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublish
 
     public function contact(Request $request, TenantContext $tenant): Response
     {
+        if ($this->settingEnabled($tenant, 'suppress_contact_page')) {
+            return Response::html('<h1>404</h1><p>Page not found.</p>', 404);
+        }
+
         $this->track($request, $tenant, 'contact_view');
         $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
         $captcha = FirstPartyCaptcha::render('contact', (int) $tenant->tenantId, $this->turnstileSiteKey($tenant));
@@ -809,7 +819,15 @@ private function tenantAdminLink(TenantContext $tenant): string
         $aboutSlug = $this->escape($this->settings->get($tenant, 'about_slug', 'about'));
         $contactSlug = $this->escape($this->settings->get($tenant, 'contact_slug', 'contact'));
         $backgroundStyle = $this->backgroundCssVariables($tenant);
-        $footerSignupForm = $this->footerSignupForm($tenant, $contactSlug);
+        $aboutNavigation = $this->settingEnabled($tenant, 'suppress_about_page')
+            ? ''
+            : '<a href="/' . $aboutSlug . '">' . $aboutTab . '</a>';
+        $contactNavigation = $this->settingEnabled($tenant, 'suppress_contact_page')
+            ? ''
+            : '<a href="/' . $contactSlug . '">' . $contactTab . '</a>';
+        $mailingListSuppressed = $this->settingEnabled($tenant, 'suppress_mailing_list_dialog');
+        $footerSignupForm = $mailingListSuppressed ? '' : $this->footerSignupForm($tenant, $contactSlug);
+        $mailingListDialog = $mailingListSuppressed ? '' : $this->mailingListDialog($tenant, $contactSlug);
         $previewSwitch = $this->unpublishedPreviewFooterSwitch($tenant);
         $socialLinks = $this->socialFooterLinks($tenant);
         $platformAdminLink = $this->tenantAdminLink($tenant);
@@ -835,8 +853,8 @@ private function tenantAdminLink(TenantContext $tenant): string
     <nav>
         <a href="/">{$homeTab}</a>
         <a href="/{$portfolioSlug}">{$portfolioTab}</a>
-        <a href="/{$aboutSlug}">{$aboutTab}</a>
-        <a href="/{$contactSlug}">{$contactTab}</a>
+        {$aboutNavigation}
+        {$contactNavigation}
         {$platformAdminLink}
         {$cartChrome}
     </nav>
@@ -851,6 +869,7 @@ private function tenantAdminLink(TenantContext $tenant): string
     {$previewSwitch}
     {$footerSignupForm}
 </footer>
+{$mailingListDialog}
 {$this->cookieConsentBanner()}
 {$this->tenantTypographyStyleBlock($tenant)}
 </body>
@@ -1178,6 +1197,49 @@ HTML;
     /**
      * Builds the compact footer signup form available on every public tenant page.
      */
+
+    private function settingEnabled(TenantContext $tenant, string $key): bool
+    {
+        return in_array(strtolower(trim((string) $this->settings->get($tenant, $key, '0'))), ['1', 'true', 'yes', 'on'], true);
+    }
+
+    private function mailingListDialog(TenantContext $tenant, string $contactSlug): string
+    {
+        if ($this->currentUserId() > 0 || isset($_COOKIE['artsfolio_known_visitor'])) {
+            return '';
+        }
+
+        $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
+        $captcha = FirstPartyCaptcha::render('signup', (int) $tenant->tenantId, $this->turnstileSiteKey($tenant));
+        $contactSlug = trim($contactSlug, '/') !== '' ? trim($contactSlug, '/') : 'contact';
+
+        return <<<HTML
+<dialog id="tenant-mailing-list-dialog" class="tenant-mailing-list-dialog" aria-labelledby="tenant-mailing-list-title">
+    <form method="dialog" class="tenant-mailing-list-dialog-close-form"><button type="submit" aria-label="Close mailing-list invitation" data-mailing-list-dismiss>×</button></form>
+    <div class="tenant-mailing-list-dialog-content">
+        <h2 id="tenant-mailing-list-title">Join the mailing list</h2>
+        <p>Receive occasional studio news, new artwork, exhibitions, and other updates.</p>
+        <form method="post" action="/signup" data-af-async-form data-af-result="mailing-list-dialog-result" data-af-busy-label="Subscribing..." data-af-busy-message="Adding you to the mailing list..." data-af-form-purpose="signup" data-af-success-message="Thank you. You have been added to the email list.">
+            <label>Email address<input type="email" name="email" autocomplete="email" required></label>
+            <input type="hidden" name="csrf_token" value="{$csrf}">
+            <input type="hidden" name="source" value="delayed_dialog">
+            <input type="hidden" name="return_to" value="/{$contactSlug}?signup_sent=1">
+            <button type="submit">Subscribe</button>
+            <div id="mailing-list-dialog-result" data-af-form-result class="af-form-result" hidden></div>
+            <div class="tenant-footer-captcha">{$captcha}</div>
+        </form>
+    </div>
+</dialog>
+<style>
+.tenant-mailing-list-dialog{width:min(92vw,560px);border:1px solid color-mix(in srgb,var(--text-color,#1f1a14) 24%,transparent);border-radius:18px;padding:0;background:var(--bg,#fff);color:var(--text-color,#1f1a14);box-shadow:0 24px 80px rgb(0 0 0/.28)}
+.tenant-mailing-list-dialog::backdrop{background:rgb(0 0 0/.42)}
+.tenant-mailing-list-dialog-content{padding:2rem}.tenant-mailing-list-dialog-close-form{position:absolute;right:.75rem;top:.55rem;margin:0}.tenant-mailing-list-dialog-close-form button{border:0;background:transparent;color:inherit;font-size:2rem;cursor:pointer}.tenant-mailing-list-dialog-content form{display:grid;gap:1rem}.tenant-mailing-list-dialog-content input{width:100%;box-sizing:border-box}
+</style>
+<script>
+(function(){var dialog=document.getElementById('tenant-mailing-list-dialog');if(!dialog||typeof dialog.showModal!=='function'){return;}function remember(){document.cookie='artsfolio_known_visitor=1; Max-Age=2592000; Path=/; SameSite=Lax; Secure';}var timer=window.setTimeout(function(){if(!dialog.open&&!document.hidden){dialog.showModal();}},60000);dialog.addEventListener('close',function(){window.clearTimeout(timer);remember();});dialog.querySelectorAll('[data-mailing-list-dismiss]').forEach(function(button){button.addEventListener('click',remember);});var signup=dialog.querySelector('form[action="/signup"]');if(signup){signup.addEventListener('submit',remember);}})();
+</script>
+HTML;
+    }
 
 private function footerSignupForm(TenantContext $tenant, string $contactSlug): string
     {

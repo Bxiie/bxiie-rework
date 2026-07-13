@@ -501,3 +501,8 @@ run_php scripts/test/tenant_onboarding_tab_static.php
 run_php scripts/test/new_tenant_admin_contrast_static.php
 
 # End of file.
+
+# Public visibility and delayed mailing-list prompt regression.
+run_php scripts/test/public_visibility_and_signup_prompt_static.php
+
+# End of file.

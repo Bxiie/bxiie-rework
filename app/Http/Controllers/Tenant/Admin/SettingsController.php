@@ -61,6 +61,18 @@ final class SettingsController
         $portfolioSlug = $this->setting($tenant, 'portfolio_slug', 'portfolio');
         $aboutSlug = $this->setting($tenant, 'about_slug', 'about');
         $contactSlug = $this->setting($tenant, 'contact_slug', 'contact');
+        $suppressMailingListDialog = $this->truthy(
+            $this->setting($tenant, 'suppress_mailing_list_dialog', '0')
+        ) ? ' checked' : '';
+        $suppressContactPage = $this->truthy(
+            $this->setting($tenant, 'suppress_contact_page', '0')
+        ) ? ' checked' : '';
+        $suppressAboutPage = $this->truthy(
+            $this->setting($tenant, 'suppress_about_page', '0')
+        ) ? ' checked' : '';
+        $hidePortfolioAllButton = $this->truthy(
+            $this->setting($tenant, 'hide_portfolio_all_button', '0')
+        ) ? ' checked' : '';
         $fontFamilies = $this->fontFamilyOptions();
         $bodyFontFamily = $this->setting($tenant, 'font_family_body', 'Inter, ui-sans-serif, system-ui, sans-serif');
         $headingFontFamily = $this->setting($tenant, 'font_family_heading', $bodyFontFamily);
@@ -181,6 +193,14 @@ final class SettingsController
                 <label>About slug<input name="about_slug" value="{$aboutSlug}"></label>
                 <label>Contact slug<input name="contact_slug" value="{$contactSlug}"></label>
             </div>
+        </fieldset>
+        <fieldset>
+            <legend>Public page visibility</legend>
+            <label class="checkbox-row"><span><input type="checkbox" name="suppress_about_page" value="1"{$suppressAboutPage}> Suppress the public About page and navigation link</span></label>
+            <label class="checkbox-row"><span><input type="checkbox" name="suppress_contact_page" value="1"{$suppressContactPage}> Suppress the public Contact page and navigation link</span></label>
+            <label class="checkbox-row"><span><input type="checkbox" name="hide_portfolio_all_button" value="1"{$hidePortfolioAllButton}> Remove the All section button from the Portfolio page</span></label>
+            <label class="checkbox-row"><span><input type="checkbox" name="suppress_mailing_list_dialog" value="1"{$suppressMailingListDialog}> Suppress the footer mailing-list form and delayed signup dialog</span></label>
+            <p class="admin-help">When enabled, an unknown signed-out visitor is invited to subscribe after one minute. Dismissed prompts stay hidden in that browser for 30 days.</p>
         </fieldset>
 HTML;
         $typographyContent = <<<HTML
@@ -393,7 +413,14 @@ HTML;
         foreach ($keys as $key) {
             $before[$key] = $this->settings->get($tenant, $key, '');
             $value = trim((string) ($_POST[$key] ?? ''));
-            if (in_array($key, ['platform_directory_opt_in', 'watermark_enabled'], true)) {
+            if (in_array($key, [
+                'platform_directory_opt_in',
+                'watermark_enabled',
+                'suppress_mailing_list_dialog',
+                'suppress_contact_page',
+                'suppress_about_page',
+                'hide_portfolio_all_button',
+            ], true)) {
                 $value = isset($_POST[$key]) ? '1' : '0';
             }
             if ($key === 'new_artwork_default_status') {
@@ -648,6 +675,7 @@ HTML;
             default => [
                 'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro',
                 'home_tab', 'portfolio_tab', 'about_tab', 'contact_tab', 'portfolio_slug', 'about_slug', 'contact_slug',
+                'suppress_mailing_list_dialog', 'suppress_contact_page', 'suppress_about_page', 'hide_portfolio_all_button',
             ],
         };
     }

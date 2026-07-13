@@ -2974,3 +2974,13 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - Tenant Admin stylesheet cache version is `20260712-sidebar-contrast-v2`.
 
 <!-- End of Tenant Admin sidebar contrast v2. -->
+
+## 2026-07-12 Public visibility and delayed mailing-list prompt
+
+- Tenant identity settings include `suppress_about_page`, `suppress_contact_page`, `hide_portfolio_all_button`, and `suppress_mailing_list_dialog`.
+- Suppressed About and Contact pages return 404 and disappear from public navigation.
+- Unknown signed-out visitors receive a mailing-list dialog after 60 seconds unless suppressed.
+- Dialog dismissal writes a 30-day browser cookie; successful signup writes a one-year HttpOnly cookie.
+- Getting Started displays the exact Tenant Admin URL.
+
+<!-- End of Public visibility and delayed mailing-list prompt. -->

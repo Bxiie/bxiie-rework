@@ -76,7 +76,7 @@ final class SignupController
             city: $location['city'],
         );
 
-        return $this->backTo($returnTo, 'signup_sent=1');
+        return $this->backTo($returnTo, 'signup_sent=1', true);
     }
 
     /**
@@ -108,11 +108,16 @@ final class SignupController
         return '';
     }
 
-    private function backTo(string $returnTo, string $query): Response
+    private function backTo(string $returnTo, string $query, bool $knownVisitor = false): Response
     {
         $separator = str_contains($returnTo, '?') ? '&' : '?';
+        $headers = ['Location' => $returnTo . $separator . $query];
 
-        return new Response('', 303, ['Location' => $returnTo . $separator . $query]);
+        if ($knownVisitor) {
+            $headers['Set-Cookie'] = 'artsfolio_known_visitor=1; Max-Age=31536000; Path=/; SameSite=Lax; Secure; HttpOnly';
+        }
+
+        return new Response('', 303, $headers);
     }
 
     private function safeReturnTo(string $returnTo): string
