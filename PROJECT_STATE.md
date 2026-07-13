@@ -2992,3 +2992,12 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - Platform tenant details show trial expiration and a human countdown to billing in the administrator's time zone.
 
 <!-- End of Operations run and trial details. -->
+
+## 2026-07-13 New-tenant documented Custom CSS
+
+- New tenant provisioning snapshots `public/assets/site.css` into `tenant_settings.custom_css`.
+- The seed includes load-order guidance, safe-editing instructions, CSS variables, selector references, responsive guidance, and a tenant-additions section.
+- Platform CSS is not copied into tenant Custom CSS.
+- Provisioning does not overwrite an existing `custom_css` value.
+
+<!-- End of New-tenant documented Custom CSS. -->

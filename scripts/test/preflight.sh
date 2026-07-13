@@ -511,3 +511,13 @@ run_php scripts/test/public_visibility_and_signup_prompt_static.php
 run_php scripts/test/operations_run_and_trial_details_static.php
 
 # End of file.
+
+# New-tenant documented Custom CSS regression.
+run_php scripts/test/new_tenant_custom_css_seed_static.php
+
+# End of file.
+
+# Platform Operations route constructor regression.
+run_php scripts/test/platform_operations_route_constructor_static.php
+
+# End of file.

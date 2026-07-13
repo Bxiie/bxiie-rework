@@ -672,23 +672,33 @@ final class TenantSignupService
         return (bool) $stmt->fetchColumn();
     }
 
+    /**
+     * Creates the initial editable CSS snapshot for a newly created tenant.
+     *
+     * This method never overwrites an existing custom_css value. That protects
+     * tenant edits if provisioning is retried or this method is called again.
+     */
     private function seedTenantCss(int $tenantId): void
     {
         if (!$this->tableExists('tenant_settings')) {
             return;
         }
 
-        $css = $this->defaultTenantCss();
-        if ($css === '') {
+        $stmt = $this->pdo->prepare(
+            "SELECT id
+               FROM tenant_settings
+              WHERE tenant_id = :tenant_id
+                AND setting_key = 'custom_css'
+              LIMIT 1"
+        );
+        $stmt->execute(['tenant_id' => $tenantId]);
+
+        if ($stmt->fetchColumn() !== false) {
             return;
         }
 
-        $stmt = $this->pdo->prepare("SELECT id FROM tenant_settings WHERE tenant_id = :tenant_id AND setting_key = 'custom_css' LIMIT 1");
-        $stmt->execute(['tenant_id' => $tenantId]);
-        $existingId = $stmt->fetchColumn();
-
-        if ($existingId !== false) {
-            $this->updateKnown('tenant_settings', (int) $existingId, ['setting_value' => $css, 'updated_at' => $this->now()]);
+        $css = $this->defaultTenantCss();
+        if ($css === '') {
             return;
         }
 
@@ -701,18 +711,112 @@ final class TenantSignupService
         ]);
     }
 
+    /**
+     * Returns a documented snapshot of the current public tenant stylesheet.
+     *
+     * The public site loads /assets/site.css before /tenant.css. Copying the
+     * current shared stylesheet into Custom CSS gives a new tenant a complete,
+     * editable reference while preserving the exact selectors and defaults
+     * used at the moment the site is created.
+     */
     private function defaultTenantCss(): string
     {
         $root = dirname(__DIR__, 3);
-        $parts = [];
-        foreach (['public/assets/site.css', 'public/assets/platform.css'] as $relativePath) {
-            $path = $root . '/' . $relativePath;
-            if (is_file($path)) {
-                $parts[] = "/* Seeded from {$relativePath}. */\n" . trim((string) file_get_contents($path));
-            }
+        $path = $root . '/public/assets/site.css';
+
+        if (!is_file($path) || !is_readable($path)) {
+            return '';
         }
 
-        return trim(implode("\n\n", $parts));
+        $source = trim((string) file_get_contents($path));
+        if ($source === '') {
+            return '';
+        }
+
+        $guide = <<<'CSS'
+/*
+ * ArtsFolio Custom CSS
+ * ====================
+ *
+ * This is a snapshot of the public tenant stylesheet that was current when
+ * your site was created. You can edit it from Tenant Admin → Settings.
+ *
+ * HOW THE CASCADE WORKS
+ * ---------------------
+ * 1. ArtsFolio loads /assets/site.css.
+ * 2. ArtsFolio then loads your /tenant.css.
+ * 3. Rules lower in this editor usually override matching rules above them.
+ *
+ * SAFE WORKFLOW
+ * -------------
+ * - Search for the selector you want to change.
+ * - Make one small change at a time.
+ * - Save, then check desktop and phone layouts.
+ * - Keep your own additions near the bottom under "Tenant additions".
+ * - Comment out a rule while experimenting instead of deleting it.
+ *
+ * IMPORTANT CSS VARIABLES
+ * -----------------------
+ * --bg                    Main public-page background.
+ * --text-color            Main public text color.
+ * --primary               Accent, border, and button color.
+ * --tenant-font-body      Body and paragraph typeface.
+ * --tenant-font-heading   Heading typeface.
+ * --tenant-font-brand     Site-name or logo-text typeface.
+ *
+ * COMMON SELECTORS
+ * ----------------
+ * :root                   Site-wide variables and defaults.
+ * body                    Whole public page.
+ * .site-header            Public header and navigation area.
+ * .brand                  Site name in the public header.
+ * nav a                   Public navigation links.
+ * .site-main              Main page content width and spacing.
+ * .hero                   Homepage introduction.
+ * .grid                   Portfolio artwork grid.
+ * .card                   Individual artwork card.
+ * .artwork                Artwork-detail layout.
+ * .events                 Events listing.
+ * .form                   Public forms.
+ * .site-footer            Public footer.
+ *
+ * RESPONSIVE RULES
+ * ----------------
+ * Rules inside @media blocks apply only at the listed screen widths. Check
+ * those blocks before changing mobile columns, spacing, navigation, or type.
+ *
+ * GENERATED SNAPSHOT
+ * ------------------
+ * The stylesheet below is copied from public/assets/site.css. ArtsFolio does
+ * not automatically replace this field when shared CSS changes, so your edits
+ * remain under your control.
+ */
+
+/* ===== Current ArtsFolio public stylesheet ===== */
+CSS;
+
+        $tenantAdditions = <<<'CSS'
+
+/*
+ * ===== Tenant additions =====
+ *
+ * Put new overrides below this comment. Keeping additions together makes
+ * future maintenance much easier.
+ *
+ * Example:
+ *
+ * .site-header {
+ *   padding-block: 2rem;
+ * }
+ */
+
+/* End of file. */
+CSS;
+
+        return $guide . "
+
+" . $source . "
+" . $tenantAdditions;
     }
 
     /**
