@@ -25,9 +25,24 @@ final class MediaController
     ) {
     }
 
-    public function public(Request $request, TenantContext $tenant): Response
-    {
-        return $this->serve($tenant, requirePublishedArtwork: true, allowSelectedBackground: true);
+    public function public(
+        Request $request,
+        TenantContext $tenant,
+        ?array $currentUser = null,
+    ): Response {
+        $allowUnpublishedPreview = (string) ($_GET['preview_unpublished'] ?? '') === '1'
+            && $this->roles !== null
+            && $this->roles->allows(
+                $currentUser,
+                $tenant,
+                ['tenant_owner', 'tenant_admin', 'owner', 'admin'],
+            );
+
+        return $this->serve(
+            $tenant,
+            requirePublishedArtwork: !$allowUnpublishedPreview,
+            allowSelectedBackground: true,
+        );
     }
 
     public function admin(Request $request, TenantContext $tenant, ?array $currentUser): Response

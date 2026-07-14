@@ -63,7 +63,8 @@ HTML;
                 $image = '';
 
                 if (!empty($item['media_uuid'])) {
-                    $src = '/media?uuid=' . rawurlencode((string) $item['media_uuid']);
+                    $src = '/media?uuid=' . rawurlencode((string) $item['media_uuid'])
+                        . ($includeUnpublished ? '&preview_unpublished=1' : '');
                     $alt = $this->escape((string) ($item['media_alt_text'] ?? $item['title']));
                     $image = "<img src=\"{$src}\" alt=\"{$alt}\" loading=\"lazy\">";
                 }
@@ -160,7 +161,8 @@ HTML;
                 $image = '';
 
                 if (!empty($item['media_uuid'])) {
-                    $src = '/media?uuid=' . rawurlencode((string) $item['media_uuid']) . '&variant=thumb';
+                    $src = '/media?uuid=' . rawurlencode((string) $item['media_uuid']) . '&variant=thumb'
+                        . ($includeUnpublished ? '&preview_unpublished=1' : '');
                     $alt = $this->escape((string) ($item['media_alt_text'] ?? $item['title']));
                     $image = "<img src=\"{$src}\" alt=\"{$alt}\" loading=\"lazy\" style=\"width:100%;height:240px;object-fit:contain;background:#fff;\">";
                 }
@@ -244,7 +246,8 @@ $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublish
         $body = "<h1>{$title}</h1>\n";
 
         if (!empty($artwork['media_uuid'])) {
-            $src = '/media?uuid=' . rawurlencode((string) $artwork['media_uuid']);
+            $src = '/media?uuid=' . rawurlencode((string) $artwork['media_uuid'])
+                . ($this->unpublishedPreviewEnabled($tenant) ? '&preview_unpublished=1' : '');
             $alt = $this->escape((string) ($artwork['media_alt_text'] ?? $artwork['title']));
             $body .= "<p><img src=\"{$src}\" alt=\"{$alt}\" style=\"max-width:720px;width:100%;height:auto;object-fit:contain;\"></p>\n";
         }

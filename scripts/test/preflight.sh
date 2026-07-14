@@ -564,3 +564,8 @@ run_php scripts/test/tenant_contributor_access_static.php
 run_php scripts/test/upload_artwork_section_assignment_static.php
 
 # End of file.
+
+# Authorized public preview of unpublished artwork media.
+run_php scripts/test/unpublished_preview_media_static.php
+
+# End of file.
