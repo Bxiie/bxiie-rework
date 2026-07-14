@@ -140,9 +140,19 @@ HTML;
         $selected = fn (string $value): string => $status === $value ? ' selected' : '';
         $checked = $showAsTab ? ' checked' : '';
 
-        $archiveButton = $id > 0
+        $isAdmin = $this->isTenantAdmin($currentUser, $tenant);
+        $archiveButton = $isAdmin && $id > 0
             ? '<button type="submit" name="archive" value="1" onclick="return confirm(\'Archive this portfolio section? Existing artwork assignments will remain in the database but this section will no longer appear.\');">Archive section</button>'
             : '';
+        $publicationControls = $isAdmin
+            ? '<p><label><input type="checkbox" name="show_as_tab" value="1"' . $checked . '> Show this section as a public portfolio tab</label></p>'
+                . '<p><label>Status<br><select name="status">'
+                . '<option value="active"' . $selected('active') . '>Active</option>'
+                . '<option value="hidden"' . $selected('hidden') . '>Hidden</option>'
+                . '<option value="archived"' . $selected('archived') . '>Archived</option>'
+                . '</select></label></p>'
+            : '<input type="hidden" name="status" value="hidden">'
+                . '<p class="admin-notice">This section will be saved as a draft. An administrator can review and publish it.</p>';
 
         $body = <<<HTML
 <main class="admin-main" style="max-width:760px;margin:2rem auto;padding:0 1rem;">
@@ -155,16 +165,7 @@ HTML;
         <p><label>Slug<br><input type="text" name="slug" value="{$slug}" placeholder="auto-created from name if blank" style="width:100%"></label></p>
         <p><label>Description<br><textarea name="description" rows="5" style="width:100%">{$description}</textarea></label></p>
         <p><label>Sort order<br><input type="number" name="sort_order" value="{$sortOrder}" style="width:10rem"></label></p>
-        <p><label><input type="checkbox" name="show_as_tab" value="1"{$checked}> Show this section as a public portfolio tab</label></p>
-        <p>
-            <label>Status<br>
-                <select name="status">
-                    <option value="active"{$selected('active')}>Active</option>
-                    <option value="hidden"{$selected('hidden')}>Hidden</option>
-                    <option value="archived"{$selected('archived')}>Archived</option>
-                </select>
-            </label>
-        </p>
+        {$publicationControls}
         <p style="display:flex;gap:.75rem;flex-wrap:wrap;">
             <button type="submit">Save section</button>
             {$archiveButton}
@@ -189,6 +190,14 @@ HTML;
 
         $id = (int) ($_POST['id'] ?? 0);
         $existing = $id > 0 ? $this->find($tenant, $id) : null;
+        $isAdmin = $this->isTenantAdmin($currentUser, $tenant);
+
+        if (!$isAdmin && $existing && (string) ($existing['status'] ?? '') !== 'hidden') {
+            return Response::html(
+                '<h1>Draft access only</h1><p>Contributors cannot alter an active portfolio section.</p>',
+                403,
+            );
+        }
 
         if ($id > 0 && !$existing) {
             return Response::html('<h1>404</h1><p>Portfolio section not found.</p>', 404);
@@ -212,11 +221,12 @@ HTML;
 
         $slug = $this->safeSlug((string) ($_POST['slug'] ?? ''), $name);
         $description = trim((string) ($_POST['description'] ?? '')) ?: null;
-        $showAsTab = isset($_POST['show_as_tab']) ? 1 : 0;
+        $isAdmin = $this->isTenantAdmin($currentUser, $tenant);
+        $showAsTab = $isAdmin && isset($_POST['show_as_tab']) ? 1 : 0;
         $sortOrder = (int) ($_POST['sort_order'] ?? 100);
-        $status = in_array((string) ($_POST['status'] ?? 'active'), ['active', 'hidden', 'archived'], true)
-            ? (string) $_POST['status']
-            : 'active';
+        $status = $isAdmin
+            ? (in_array((string) ($_POST['status'] ?? 'active'), ['active', 'hidden', 'archived'], true) ? (string) $_POST['status'] : 'active')
+            : 'hidden';
 
         if ($existing) {
             $stmt = $this->pdo->prepare(
@@ -275,6 +285,11 @@ HTML;
     }
 
     private function canManage(?array $currentUser, TenantContext $tenant): bool
+    {
+        return $this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin', 'editor', 'user']);
+    }
+
+    private function isTenantAdmin(?array $currentUser, TenantContext $tenant): bool
     {
         return $this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin']);
     }

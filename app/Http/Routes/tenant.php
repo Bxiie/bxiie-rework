@@ -44,6 +44,7 @@ use App\Http\Controllers\Tenant\TenantCssController;
 use App\Http\Controllers\Tenant\MediaController as TenantMediaController;
 use App\Http\Controllers\Tenant\SignupController;
 use App\Http\Controllers\Tenant\Admin\DashboardController as TenantAdminDashboardController;
+use App\Http\Controllers\Tenant\Admin\ContributorDashboardController as TenantContributorDashboardController;
 use App\Http\Controllers\Tenant\Admin\DiscoverySettingsController as TenantAdminDiscoverySettingsController;
 use App\Http\Controllers\Tenant\Admin\StatsController as TenantAdminStatsController;
 use App\Http\Controllers\Tenant\Admin\GettingStartedController as TenantAdminGettingStartedController;
@@ -137,11 +138,15 @@ return static function (Router $router, array $context): void {
                 (new Response('', 303, ['Location' => '/login?notice=admin-login-required']))->send();
                 exit;
             }
-            $adminRoles = str_starts_with($request->path(), '/admin/curation')
+            $path = $request->path();
+            $contributorPaths = ['/admin', '/admin/contributor', '/admin/artwork/upload', '/admin/portfolio-sections', '/admin/portfolio-sections/edit'];
+            $adminRoles = str_starts_with($path, '/admin/curation')
                 ? ['tenant_owner', 'tenant_admin', 'owner', 'admin', 'editor']
-                : ['tenant_owner', 'tenant_admin', 'owner', 'admin'];
+                : (in_array($path, $contributorPaths, true)
+                    ? ['tenant_owner', 'tenant_admin', 'owner', 'admin', 'editor', 'user']
+                    : ['tenant_owner', 'tenant_admin', 'owner', 'admin']);
             if (!$tenantRoleGuard->allows($currentUser, $tenant, $adminRoles)) {
-                Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403)->send();
+                Response::html(ErrorPage::unauthorized('/login', in_array($path, $contributorPaths, true) ? 'Tenant contributor access required.' : 'Tenant admin access required.'), 403)->send();
                 exit;
             }
         }
@@ -282,7 +287,15 @@ return static function (Router $router, array $context): void {
 
             return Response::html(AuthPage::pageMessage('Password reset requested', 'If that email address exists for this artist site, a reset link has been queued.'));
         });
-    $router->get('/admin', fn (Request $request): Response => (new TenantAdminDashboardController($tenantSettings))->index($request, $tenant, $currentUser));
+    $router->get('/admin', function (Request $request) use ($tenantSettings, $tenant, $currentUser, $pdo): Response {
+        $guard = new RequireTenantRoleBrowser(new MembershipRepository($pdo));
+        if ($guard->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return (new TenantAdminDashboardController($tenantSettings))->index($request, $tenant, $currentUser);
+        }
+
+        return new Response('', 303, ['Location' => '/admin/contributor']);
+    });
+    $router->get('/admin/contributor', fn (Request $request): Response => (new TenantContributorDashboardController(new MembershipRepository($pdo)))->index($request, $tenant, $currentUser));
         $router->get('/admin/domains', fn (Request $request): Response => (new TenantAdminDomainsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), $pdo))->index($request, $tenant, $currentUser));
         $router->post('/admin/domains/action', fn (Request $request): Response => (new TenantAdminDomainsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), $pdo))->action($request, $tenant, $currentUser));
         $router->get('/admin/billing', fn (Request $request): Response => (new TenantAdminBillingController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo))->index($request, $tenant, $currentUser));

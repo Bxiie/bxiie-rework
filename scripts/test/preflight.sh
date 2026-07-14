@@ -556,3 +556,6 @@ run_php scripts/test/tenant_billing_comp_status_static.php
 run_php scripts/test/default_tenant_css_cleanup_static.php
 
 # End of file.
+
+# Draft-only tenant contributor workflow.
+run_php scripts/test/tenant_contributor_access_static.php

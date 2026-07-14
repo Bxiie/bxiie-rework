@@ -33,12 +33,15 @@ final class ArtworkUploadController
 
     public function form(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
-        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin', 'editor', 'user'])) {
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
         $csrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
         $uploadNotice = $this->uploadNoticeHtml();
+        $contributorDraftNotice = $this->isTenantAdmin($currentUser, $tenant)
+            ? ''
+            : '<p class="admin-notice">Contributor uploads are saved as drafts and require administrator review before publication.</p>';
         $saleFieldset = $this->pdo !== null ? (new ArtworkSaleAdminForm($this->pdo))->render($tenant->tenantId) : '';
 
         $body = <<<HTML
@@ -72,6 +75,7 @@ final class ArtworkUploadController
 </style>
 
 {$uploadNotice}
+{$contributorDraftNotice}
 <form id="artwork-upload-form" method="post" action="/admin/artwork/upload" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <p><label>Title<br><input type="text" name="title" required></label></p>
@@ -120,7 +124,7 @@ HTML;
 
     public function submit(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
-        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin', 'editor', 'user'])) {
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
@@ -136,7 +140,7 @@ HTML;
                 'notes' => (string) ($_POST['notes'] ?? ''),
                 'sale_status' => (string) ($_POST['sale_status'] ?? 'nfs'),
                 'price' => (string) ($_POST['price'] ?? ''),
-                'status' => $this->newArtworkDefaultStatus($tenant),
+                'status' => $this->isTenantAdmin($currentUser, $tenant) ? $this->newArtworkDefaultStatus($tenant) : 'draft',
             ]);
         } catch (\Throwable $e) {
             return Response::html('<h1>Upload failed</h1><p>' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>', 422);
@@ -145,7 +149,9 @@ HTML;
         if (!empty($record['artwork_id'])) {
             $artworkId = (int) $record['artwork_id'];
             $this->replaceArtworkTypes($artworkId, $_POST['artwork_types'] ?? ['portfolio_images']);
-            $this->updateSalesInventory($tenant, $artworkId, $_POST);
+            if ($this->isTenantAdmin($currentUser, $tenant)) {
+                $this->updateSalesInventory($tenant, $artworkId, $_POST);
+            }
         }
 
         if ($this->auditLog !== null) {
@@ -293,6 +299,11 @@ HTML;
         $status = (string) ($stmt->fetchColumn() ?: 'draft');
 
         return in_array($status, ['draft', 'published'], true) ? $status : 'draft';
+    }
+
+    private function isTenantAdmin(?array $currentUser, TenantContext $tenant): bool
+    {
+        return $this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin']);
     }
 
     private function validAuditUserId(?array $currentUser): ?int
