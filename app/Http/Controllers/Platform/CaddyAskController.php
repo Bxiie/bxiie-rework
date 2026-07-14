@@ -13,7 +13,7 @@ use PDO;
  * Caddy on-demand TLS authorization endpoint.
  *
  * Caddy calls this before issuing a certificate for an unknown host. The
- * endpoint approves only active platform domains or active tenant_domains rows.
+ * endpoint approves canonical ArtsFolio subdomains and active custom domains.
  */
 final class CaddyAskController
 {
@@ -42,7 +42,9 @@ final class CaddyAskController
             return Response::html('forbidden', 403);
         }
 
-        $approved = $this->isApprovedPlatformDomain($domain) || $this->isApprovedTenantDomain($domain);
+        $approved = $this->isApprovedPlatformDomain($domain)
+            || $this->isApprovedArtsFolioSubdomain($domain)
+            || $this->isApprovedTenantDomain($domain);
         if (function_exists('apcu_store')) {
             apcu_store($cacheKey, $approved, $approved ? 300 : 30);
         }
@@ -73,6 +75,17 @@ final class CaddyAskController
             'bxiie.com',
             'www.bxiie.com',
         ], true);
+    }
+
+    /**
+     * Approves exactly one DNS label beneath artsfol.io.
+     */
+    private function isApprovedArtsFolioSubdomain(string $domain): bool
+    {
+        return preg_match(
+            '/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.artsfol\.io$/',
+            $domain
+        ) === 1;
     }
 
     private function isApprovedTenantDomain(string $domain): bool

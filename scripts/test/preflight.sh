@@ -541,3 +541,8 @@ run_php scripts/test/tenant_timezone_layout_static.php
 run_php scripts/test/template_login_unknown_domain_static.php
 
 # End of file.
+
+# Caddy ask authorization for first-level ArtsFolio subdomains.
+run_php scripts/test/caddy_ask_platform_subdomains_static.php
+
+# End of file.
