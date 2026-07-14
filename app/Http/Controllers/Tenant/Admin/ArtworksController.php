@@ -106,6 +106,11 @@ final class ArtworksController
                      FROM artwork_type_assignments ata
                      JOIN artwork_types atype ON atype.id = ata.type_id
                      WHERE ata.artwork_id = a.id) AS artwork_type_codes,
+                    (SELECT GROUP_CONCAT(ps.name ORDER BY LOWER(ps.name), ps.name SEPARATOR '||')
+                     FROM artwork_section_assignments asa
+                     JOIN portfolio_sections ps ON ps.id = asa.section_id
+                     WHERE asa.artwork_id = a.id
+                       AND ps.tenant_id = a.tenant_id) AS section_names,
                     m.id AS media_id, m.uuid AS media_uuid, m.storage_path, m.mime_type, m.width, m.height
              FROM artworks a
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
@@ -145,6 +150,7 @@ final class ArtworksController
             $title = htmlspecialchars((string) $row['title'], ENT_QUOTES, 'UTF-8');
             $status = htmlspecialchars((string) $row['status'], ENT_QUOTES, 'UTF-8');
             $typeBadges = $this->artworkTypeBadges((string) ($row['artwork_type_codes'] ?? ''));
+            $sectionNames = $this->artworkSectionNamesHtml((string) ($row['section_names'] ?? ''));
             $saleStatus = htmlspecialchars((string) $row['sale_status'], ENT_QUOTES, 'UTF-8');
             $price = htmlspecialchars((string) ($row['price'] ?? ''), ENT_QUOTES, 'UTF-8');
             $medium = htmlspecialchars((string) ($row['medium'] ?? ''), ENT_QUOTES, 'UTF-8');
@@ -172,7 +178,7 @@ final class ArtworksController
             $items .= <<<HTML
 <tr id="artwork-{$row['id']}">
     <td><a class="artwork-grid-thumbnail-link" href="/admin/artworks/edit?id={$artworkId}&return_to={$returnToParam}">{$image}</a></td><td><strong>{$title}</strong><br><small>ID {$row['id']} · {$created}</small></td>
-    <td>{$year}</td><td>{$medium}</td><td class="js-artwork-status">{$status}<br>{$typeBadges}</td>
+    <td>{$year}</td><td>{$medium}</td><td>{$sectionNames}</td><td class="js-artwork-status">{$status}<br>{$typeBadges}</td>
     <td>{$saleStatus}</td><td>{$price}</td><td>{$notes}</td>
     <td><form method="post" action="/admin/artworks/directory-thumbnail"><input type="hidden" name="id" value="{$artworkId}"><input type="hidden" name="return_to" value="{$returnToValue}"><label><input type="checkbox" name="directory_thumbnail" value="1"{$directoryChecked}{$directoryDisabled} onchange="this.form.submit()"> Directory thumbnail</label><br><small>{$directoryHelp}</small></form></td>
     <td><a class="admin-button" href="/admin/artworks/edit?id={$artworkId}&return_to={$returnToParam}">Edit</a> {$this->statusActionButton($row, $returnToValue)} <form method="post" action="/admin/artworks/delete" class="js-artwork-action" style="display:inline" onsubmit="return confirm('Archive this artwork?');"><input type="hidden" name="id" value="{$row['id']}"><input type="hidden" name="return_to" value="{$returnToValue}"><button type="submit">Archive</button></form></td>
@@ -180,7 +186,7 @@ final class ArtworksController
 HTML;
         }
         if ($items === '') {
-            $items = '<tr><td colspan="10">No artwork matches these filters.</td></tr>';
+            $items = '<tr><td colspan="11">No artwork matches these filters.</td></tr>';
         }
 
         $e = static fn (string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
@@ -250,7 +256,7 @@ HTML;
 <button type="submit">Apply</button><a href="/admin/artworks">Clear</a>
 </form>
 <p><strong>{$summary}</strong></p>{$pager}
-<div style="overflow-x:auto;"><table border="1" cellpadding="8" cellspacing="0"><thead><tr><th>Image</th><th>Title</th><th>Date/year</th><th>Medium</th><th>Status</th><th>Sale</th><th>Price</th><th>Notes</th><th>Directory thumbnail</th><th>Actions</th></tr></thead><tbody>{$items}</tbody></table></div>
+<div style="overflow-x:auto;"><table border="1" cellpadding="8" cellspacing="0"><thead><tr><th>Image</th><th>Title</th><th>Date/year</th><th>Medium</th><th>Portfolio sections</th><th>Status</th><th>Sale</th><th>Price</th><th>Notes</th><th>Directory thumbnail</th><th>Actions</th></tr></thead><tbody>{$items}</tbody></table></div>
 {$pager}
 </section>
 </main>
@@ -677,6 +683,33 @@ HTML;
         }
 
         return $returnTo;
+    }
+
+    private function artworkSectionNamesHtml(string $rawNames): string
+    {
+        $names = array_values(array_filter(
+            array_map(
+                static fn (string $name): string => trim($name),
+                explode('||', $rawNames),
+            ),
+            static fn (string $name): bool => $name !== '',
+        ));
+
+        if ($names === []) {
+            return '<span class="admin-muted">None</span>';
+        }
+
+        return implode(
+            '<br>',
+            array_map(
+                static fn (string $name): string => htmlspecialchars(
+                    $name,
+                    ENT_QUOTES,
+                    'UTF-8',
+                ),
+                $names,
+            ),
+        );
     }
 
     private function artworkTypeBadges(string $codes): string

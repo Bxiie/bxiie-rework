@@ -4244,3 +4244,63 @@ body.tenant-admin-page .tenant-admin-sidebar .tenant-admin-sidebar-upload:focus-
 }
 
 /* End tenant admin final sidebar contrast layer. */
+
+/*
+ * Checkbox clarity
+ *
+ * Keep each checkbox visually attached to its explanation.
+ */
+.admin-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: .65rem;
+    margin-top: .75rem;
+}
+
+.admin-checkbox-row,
+.admin-main fieldset label:has(> input[type="checkbox"]),
+.admin-main fieldset label:has(> span > input[type="checkbox"]) {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: .7rem;
+    width: 100%;
+    margin: 0;
+    padding: .7rem .8rem;
+    border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+    border-radius: .4rem;
+    line-height: 1.35;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.admin-checkbox-row:hover,
+.admin-main fieldset label:has(> input[type="checkbox"]):hover,
+.admin-main fieldset label:has(> span > input[type="checkbox"]):hover {
+    background: color-mix(in srgb, currentColor 5%, transparent);
+}
+
+.admin-checkbox-row input[type="checkbox"],
+.admin-main fieldset label:has(> input[type="checkbox"]) > input[type="checkbox"],
+.admin-main fieldset label:has(> span > input[type="checkbox"]) > span > input[type="checkbox"] {
+    flex: 0 0 auto;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin: .12rem 0 0;
+}
+
+.admin-checkbox-row > span,
+.admin-main fieldset label:has(> input[type="checkbox"]) > span {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.admin-checkbox-row small {
+    font-weight: normal;
+}
+
+@media (max-width: 700px) {
+    .admin-checkbox-grid {
+        grid-template-columns: 1fr;
+    }
+}

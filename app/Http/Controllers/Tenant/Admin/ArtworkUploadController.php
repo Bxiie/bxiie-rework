@@ -95,8 +95,8 @@ final class ArtworkUploadController
     <fieldset>
         <legend>Artwork types</legend>
         <p>Images can be public portfolio work, site-only material for about/contact/background pickers, or both.</p>
-        <label><input type="checkbox" name="artwork_types[]" value="portfolio_images" checked> Portfolio Images</label>
-        <label><input type="checkbox" name="artwork_types[]" value="site_images"> Site Images</label>
+        <label class="admin-checkbox-row"><input type="checkbox" name="artwork_types[]" value="portfolio_images" checked><span>Portfolio Images</span></label>
+        <label class="admin-checkbox-row"><input type="checkbox" name="artwork_types[]" value="site_images"><span>Site Images</span></label>
     </fieldset>
     <fieldset class="artwork-section-assignment">
         <legend>Portfolio sections</legend>
@@ -262,10 +262,9 @@ HTML;
                 ? ''
                 : ' <small>(' . htmlspecialchars($status, ENT_QUOTES, 'UTF-8') . ')</small>';
 
-            $labels[] = '<label class="admin-checkbox">'
-                . '<input type="checkbox" name="section_ids[]" value="' . $id . '"> '
-                . $name
-                . $statusLabel
+            $labels[] = '<label class="admin-checkbox-row">'
+                . '<input type="checkbox" name="section_ids[]" value="' . $id . '">'
+                . '<span>' . $name . $statusLabel . '</span>'
                 . '</label>';
         }
 

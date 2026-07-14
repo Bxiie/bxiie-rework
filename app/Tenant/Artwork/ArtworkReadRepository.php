@@ -164,13 +164,37 @@ a.medium, a.dimensions, a.year_created, a.status,
     public function activeSections(TenantContext $tenant, bool $includeUnpublished = false): array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT id, name, slug
-             FROM portfolio_sections
-             WHERE tenant_id = :tenant_id
-               AND status = 'active'
-               AND show_as_tab = 1
-               AND (:include_unpublished = 1 OR EXISTS (SELECT 1 FROM artwork_section_assignments asa JOIN artworks a ON a.id=asa.artwork_id WHERE asa.section_id=portfolio_sections.id AND a.status='published'))
-             ORDER BY sort_order ASC, name ASC"
+            "SELECT ps.id, ps.name, ps.slug
+             FROM portfolio_sections ps
+             WHERE ps.tenant_id = :tenant_id
+               AND (
+                    (
+                        :include_unpublished = 0
+                        AND ps.status = 'active'
+                        AND ps.show_as_tab = 1
+                    )
+                    OR
+                    (
+                        :include_unpublished = 1
+                        AND ps.status <> 'archived'
+                    )
+               )
+               AND EXISTS (
+                    SELECT 1
+                    FROM artwork_section_assignments asa
+                    JOIN artworks a ON a.id = asa.artwork_id
+                    WHERE asa.section_id = ps.id
+                      AND a.tenant_id = ps.tenant_id
+                      AND (
+                            a.status = 'published'
+                            OR (
+                                :include_unpublished = 1
+                                AND a.status <> 'archived'
+                            )
+                      )
+                      AND " . $this->portfolioTypeExistsSql('a') . "
+               )
+             ORDER BY ps.sort_order ASC, ps.name ASC"
         );
         $stmt->execute(['tenant_id' => $tenant->tenantId, 'include_unpublished' => $includeUnpublished ? 1 : 0]);
 

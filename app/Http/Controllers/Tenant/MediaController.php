@@ -93,7 +93,8 @@ final class MediaController
 
         $mimeType = (string) ($variant['mime_type'] ?: $media['mime_type'] ?: 'application/octet-stream');
         $watermark = new WatermarkService(
-            new TenantSettingsRepository($this->pdo)
+            new TenantSettingsRepository($this->pdo),
+            $this->pdo,
         );
 
         // Thumbnails intentionally remain unwatermarked. Public medium, large,

@@ -6,6 +6,7 @@ namespace App\Tenant\Media;
 
 use App\Platform\Tenancy\TenantContext;
 use App\Tenant\Settings\TenantSettingsRepository;
+use PDO;
 
 /**
  * Applies an opt-in watermark to public medium, large, and original images.
@@ -17,6 +18,8 @@ final class WatermarkService
 {
     private const FINGERPRINT_KEYS = [
         'watermark_enabled',
+        'watermark_media_uuid',
+        'watermark_mode',
         'watermark_format',
         'watermark_text',
         'watermark_position',
@@ -29,6 +32,7 @@ final class WatermarkService
 
     public function __construct(
         private readonly TenantSettingsRepository $settings,
+        private readonly ?PDO $pdo = null,
     ) {
     }
 
@@ -86,9 +90,22 @@ final class WatermarkService
 
         $width = imagesx($image);
         $height = imagesy($image);
-        $text = $this->watermarkText($tenant);
+        $mode = $this->watermarkMode($tenant);
+        $text = in_array($mode, ['text', 'both'], true)
+            ? $this->watermarkText($tenant)
+            : '';
+        $watermarkImage = in_array($mode, ['image', 'both'], true)
+            ? $this->watermarkImage($tenant)
+            : null;
 
-        if ($width < 1 || $height < 1 || $text === '') {
+        if (
+            $width < 1
+            || $height < 1
+            || ($text === '' && $watermarkImage === null)
+        ) {
+            if ($watermarkImage instanceof \GdImage) {
+                imagedestroy($watermarkImage);
+            }
             imagedestroy($image);
             return null;
         }
@@ -237,6 +254,93 @@ final class WatermarkService
         return $encoded && is_string($bytes) && $bytes !== ''
             ? $bytes
             : null;
+    }
+
+    private function watermarkMode(TenantContext $tenant): string
+    {
+        $mode = strtolower(trim((string) $this->settings->get($tenant, 'watermark_mode', 'text')));
+        return in_array($mode, ['text', 'image', 'both'], true) ? $mode : 'text';
+    }
+
+    private function watermarkImage(TenantContext $tenant): ?\GdImage
+    {
+        if ($this->pdo === null) {
+            return null;
+        }
+
+        $uuid = strtolower(trim((string) $this->settings->get($tenant, 'watermark_media_uuid', '')));
+        if (!preg_match('/^[a-f0-9-]{36}$/', $uuid)) {
+            return null;
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT m.storage_path, m.mime_type
+             FROM media_assets m
+             INNER JOIN artworks a ON a.primary_media_id = m.id AND a.tenant_id = m.tenant_id
+             INNER JOIN artwork_type_assignments ata ON ata.artwork_id = a.id
+             INNER JOIN artwork_types atype ON atype.id = ata.type_id AND atype.code = 'site_images'
+             WHERE m.tenant_id = :tenant_id
+               AND m.uuid = :media_uuid
+               AND m.is_private = 0
+               AND COALESCE(a.status, '') <> 'archived'
+             LIMIT 1"
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'media_uuid' => $uuid]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            return null;
+        }
+
+        $absolute = dirname(__DIR__, 3) . '/' . ltrim((string) $row['storage_path'], '/');
+        if (!is_file($absolute)) {
+            return null;
+        }
+
+        $mimeType = strtolower((string) ($row['mime_type'] ?? ''));
+        $image = match ($mimeType) {
+            'image/jpeg' => function_exists('imagecreatefromjpeg') ? @imagecreatefromjpeg($absolute) : false,
+            'image/png' => function_exists('imagecreatefrompng') ? @imagecreatefrompng($absolute) : false,
+            'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($absolute) : false,
+            default => false,
+        };
+
+        return $image instanceof \GdImage ? $image : null;
+    }
+
+    private function renderImageWatermark(
+        \GdImage $target,
+        \GdImage $watermark,
+        string $position,
+        int $padding,
+        float $opacity,
+        int $sizeChoice,
+    ): void {
+        $sourceWidth = imagesx($watermark);
+        $sourceHeight = imagesy($watermark);
+        if ($sourceWidth < 1 || $sourceHeight < 1) {
+            return;
+        }
+
+        $targetWidth = imagesx($target);
+        $targetHeight = imagesy($target);
+        $scale = 0.08 + ($sizeChoice * 0.035);
+        $ratio = min(
+            max(24, (int) round($targetWidth * $scale)) / $sourceWidth,
+            max(24, (int) round($targetHeight * $scale)) / $sourceHeight,
+            1.0,
+        );
+        $renderWidth = max(1, (int) round($sourceWidth * $ratio));
+        $renderHeight = max(1, (int) round($sourceHeight * $ratio));
+        [$x, $y] = $this->position($position, $targetWidth, $targetHeight, $renderWidth, $renderHeight, $padding);
+
+        $scaled = imagecreatetruecolor($renderWidth, $renderHeight);
+        imagealphablending($scaled, false);
+        imagesavealpha($scaled, true);
+        $transparent = imagecolorallocatealpha($scaled, 0, 0, 0, 127);
+        imagefill($scaled, 0, 0, $transparent);
+        imagecopyresampled($scaled, $watermark, 0, 0, 0, 0, $renderWidth, $renderHeight, $sourceWidth, $sourceHeight);
+        imagecopymerge($target, $scaled, $x, $y, 0, 0, $renderWidth, $renderHeight, (int) round($opacity * 100));
+        imagedestroy($scaled);
     }
 
     private function watermarkText(TenantContext $tenant): string

@@ -569,3 +569,16 @@ run_php scripts/test/upload_artwork_section_assignment_static.php
 run_php scripts/test/unpublished_preview_media_static.php
 
 # End of file.
+
+# Clear checkbox-to-label association across admin forms.
+run_php scripts/test/admin_checkbox_clarity_static.php
+
+# End of file.
+
+# Text and image watermark support.
+run_php scripts/test/image_watermark_static.php
+
+# Artwork section names in admin grid and unpublished portfolio shortcuts.
+run_php scripts/test/artwork_grid_sections_and_preview_shortcuts_static.php
+
+# End of file.
