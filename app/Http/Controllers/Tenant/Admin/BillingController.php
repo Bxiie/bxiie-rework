@@ -56,7 +56,7 @@ final class BillingController
         $price = $this->money((int) ($plan['monthly_price_cents'] ?? 0));
         $summary = $this->e((string) ($plan['description'] ?? 'ArtsFolio artist portfolio plan.'));
         $billing = $this->billingDetails($tenant);
-        $billingPanel = $this->billingDetailsPanel($billing);
+        $billingPanel = $this->billingDetailsPanel($tenant, $billing);
         $planChangeHelp = $this->planChangeHelp($plan, $billing);
 
         $body = <<<HTML
@@ -251,13 +251,16 @@ HTML;
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
     }
 
-    private function billingDetailsPanel(array $billing): string
+    private function billingDetailsPanel(TenantContext $tenant, array $billing): string
     {
         if ($billing === []) {
             return '<div class="admin-panel"><p class="admin-muted">Billing details</p><p>No subscription billing record exists yet.</p></div>';
         }
         $status = $this->e((string) ($billing['billing_status'] ?? $billing['status'] ?? 'manual'));
         $recurs = $this->e($this->dateLabel($this->recurrenceDate($billing)));
+        $complimentary = $this->complimentaryBillingSummary($tenant, $billing);
+        $complimentaryStatus = $this->e($complimentary['status']);
+        $billingBegins = $this->e($complimentary['billing_begins']);
         $subscription = $this->e((string) ($billing['stripe_subscription_id'] ?? '')) ?: 'Not connected';
         $payment = trim((string) ($billing['stripe_payment_method_brand'] ?? '') . ' ' . (string) ($billing['stripe_payment_method_last4'] ?? ''));
         $payment = $payment !== '' ? $this->e($payment) : 'No saved card details yet';
@@ -266,6 +269,8 @@ HTML;
   <div class="admin-panel">
     <p class="admin-muted">Billing details</p>
     <p><strong>Billing status:</strong> {$status}</p>
+    <p><strong>Complimentary access:</strong> {$complimentaryStatus}</p>
+    <p><strong>Platform billing begins:</strong> {$billingBegins}</p>
     <p><strong>Recurring billing date:</strong> {$recurs}</p>
     <p><strong>Stripe subscription:</strong> {$subscription}</p>
     <p><strong>Stripe subscription item:</strong> {$this->e((string) ($billing['stripe_subscription_item_id'] ?? ''))}</p>
@@ -273,6 +278,57 @@ HTML;
     {$pending}
   </div>
 HTML;
+    }
+
+    /**
+     * @return array{status:string,billing_begins:string}
+     */
+    private function complimentaryBillingSummary(TenantContext $tenant, array $billing): array
+    {
+        if ($this->isComplementary($tenant)) {
+            return [
+                'status' => 'Active with no scheduled expiration',
+                'billing_begins' => 'Not scheduled while complimentary status remains active',
+            ];
+        }
+
+        $rawUntil = trim((string) ($billing['complimentary_until'] ?? ''));
+        if ($rawUntil === '') {
+            $billingStatus = strtolower(trim((string) ($billing['billing_status'] ?? '')));
+            $assignmentStatus = strtolower(trim((string) ($billing['status'] ?? '')));
+
+            return [
+                'status' => 'Not active',
+                'billing_begins' => in_array($billingStatus, ['active', 'paid'], true)
+                    || in_array($assignmentStatus, ['active', 'manual'], true)
+                    ? 'Billing is active now'
+                    : 'No billing start date is currently scheduled',
+            ];
+        }
+
+        try {
+            $until = new \DateTimeImmutable($rawUntil, new \DateTimeZone('UTC'));
+            $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+        } catch (Throwable) {
+            return [
+                'status' => 'Date needs review',
+                'billing_begins' => $rawUntil,
+            ];
+        }
+
+        $date = $this->dateLabel($rawUntil);
+
+        if ($until > $now) {
+            return [
+                'status' => 'Active through ' . $date,
+                'billing_begins' => $date,
+            ];
+        }
+
+        return [
+            'status' => 'Expired on ' . $date,
+            'billing_begins' => 'Billing should already be active; review payment status if it is not',
+        ];
     }
 
     private function planChangeHelp(array $currentPlan, array $billing): string
@@ -592,11 +648,36 @@ private function absoluteTenantUrl(Request $request, string $path): string
         $billingNote = 'Free access signup code ' . (string) $signupCode['code'] . ' applied from tenant billing for ' . $months . ' month' . ($months === 1 ? '' : 's') . '.';
 
         $stmt = $this->pdo->prepare(
-            'INSERT INTO tenant_plan_assignments (tenant_id, plan_id, status, complimentary_until, granted_by_signup_code_id, billing_note, created_at)
-             VALUES (:tenant_id, :plan_id, "trial", :complimentary_until, :signup_code_id, :billing_note, CURRENT_TIMESTAMP)
+            'INSERT INTO tenant_plan_assignments (
+                tenant_id,
+                plan_id,
+                status,
+                billing_status,
+                current_period_started_at,
+                current_period_ends_at,
+                complimentary_until,
+                granted_by_signup_code_id,
+                billing_note,
+                created_at
+            )
+             VALUES (
+                :tenant_id,
+                :plan_id,
+                "trial",
+                "trial",
+                UTC_TIMESTAMP(),
+                :complimentary_until,
+                :complimentary_until,
+                :signup_code_id,
+                :billing_note,
+                CURRENT_TIMESTAMP
+             )
              ON DUPLICATE KEY UPDATE
                 plan_id = VALUES(plan_id),
                 status = "trial",
+                billing_status = "trial",
+                current_period_started_at = UTC_TIMESTAMP(),
+                current_period_ends_at = VALUES(current_period_ends_at),
                 complimentary_until = VALUES(complimentary_until),
                 granted_by_signup_code_id = VALUES(granted_by_signup_code_id),
                 billing_note = VALUES(billing_note)'
