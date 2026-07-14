@@ -1,5 +1,5 @@
 /*
- * Bxiie Artist CMS public stylesheet.
+ * ArtsFolio public stylesheet.
  *
  * This file is the default tenant CSS seed. It is intentionally readable
  * because tenant-specific CSS is editable from the admin Site page.
@@ -352,7 +352,7 @@ h1 {
   }
 }
 /*
- * Bxiie public mobile and tablet refinements.
+ * ArtsFolio public mobile and tablet refinements.
  * Kept outside tenant CSS so the site remains usable if edited CSS breaks.
  */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}img{max-width:100%;height:auto}.site-header{gap:1rem}.site-header nav{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}.site-header nav a{white-space:nowrap}.portfolio-tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 2rem}.portfolio-tabs a{border:1px solid currentColor;border-radius:999px;padding:.45rem .8rem;text-decoration:none}.portfolio-tabs a.active{background:var(--primary);color:var(--bg)}.page-image-small{max-width:280px}.stats-graph{display:grid;gap:.5rem;margin:1rem 0 2rem}.stats-bar-row{display:grid;grid-template-columns:90px 1fr 70px;gap:.75rem;align-items:center}.stats-bar-track{background:rgba(0,0,0,.08);border-radius:999px;min-height:14px;overflow:hidden}.stats-bar-fill{display:block;min-height:14px;background:var(--primary,#111)}@media(max-width:900px){.site-main{width:min(100% - 2rem,1180px);margin:2rem auto}.site-header{padding:1rem}.brand{font-size:clamp(2rem,13vw,4rem);line-height:.95}.hero h1,h1{font-size:clamp(2.4rem,16vw,5.5rem);line-height:.95}.grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}.event-row{grid-template-columns:1fr}.events-table{display:block;overflow-x:auto;white-space:nowrap}.form input,.form textarea,.form select,button{min-height:44px}.modal-card{max-height:calc(100vh - 2rem);overflow:auto}.stats-bar-row{grid-template-columns:64px 1fr 50px;font-size:.9rem}}@media(max-width:520px){.site-header{align-items:stretch}.site-header nav{display:flex;flex-wrap:nowrap}.grid{grid-template-columns:1fr 1fr}.card img{border-radius:14px}.portfolio-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:.35rem}}
@@ -370,7 +370,6 @@ body[style*="--background-image"]::before {
     background-size: var(--background-size, cover);
     opacity: var(--background-opacity, 0.12);
 }
-
 
 /* Tenant visual correction: preserve public headers and keep overlays configurable. */
 .site-header,
@@ -408,11 +407,6 @@ body[style*="--background-image"]::before {
 }
 
 /* End tenant visual correction. */
-
-
-
-
-
 
 /* Tenant typography live repair. This late block intentionally carries higher
    specificity and !important on public typography declarations so saved tenant
@@ -511,9 +505,6 @@ body .tenant-social-links a {
 
 /* End tenant typography live repair. */
 
-/* End of file. */
-
-
 /* Stable navigation, contact/signup progress indicators, and signup modal. */
 .site-header nav,
 .platform-header nav {
@@ -604,7 +595,6 @@ body .tenant-social-links a {
   .platform-header nav a { min-width: auto; }
 }
 
-
 /* Tenant visual correction: preserve public headers and keep overlays configurable. */
 .site-header,
 .tenant-admin-public-header {
@@ -641,11 +631,6 @@ body .tenant-social-links a {
 }
 
 /* End tenant visual correction. */
-
-
-
-
-/* End of file. */
 
 /* First-party CAPTCHA form-fix hardening. */
 .af-honeypot {
@@ -670,7 +655,6 @@ input[type="submit"][aria-busy="true"] {
     opacity: 0.72;
 }
 
-
 /* Tenant visual correction: preserve public headers and keep overlays configurable. */
 .site-header,
 .tenant-admin-public-header {
@@ -707,11 +691,6 @@ input[type="submit"][aria-busy="true"] {
 }
 
 /* End tenant visual correction. */
-
-
-
-
-/* End of file. */
 
 /* Optional about/contact site images. */
 .site-content-image {
@@ -726,7 +705,6 @@ input[type="submit"][aria-busy="true"] {
     border-radius: 18px;
 }
 
-
 /* Tenant visual correction: preserve public headers and keep overlays configurable. */
 .site-header,
 .tenant-admin-public-header {
@@ -763,12 +741,6 @@ input[type="submit"][aria-busy="true"] {
 }
 
 /* End tenant visual correction. */
-
-
-
-
-/* End of file. */
-
 
 /* Tenant readable surfaces, menu imagery, and footer signup. */
 .site-header,
@@ -897,8 +869,6 @@ input[type="submit"][aria-busy="true"] {
 
 /* End tenant readable surfaces, menu imagery, and footer signup. */
 
-
-
 /* Tenant visual-surface controls. */
 .site-header,
 .tenant-admin-public-header {
@@ -968,7 +938,6 @@ input[type="submit"][aria-busy="true"] {
 
 /* End tenant visual-surface controls. */
 
-
 /* Tenant visual correction: preserve public headers and keep overlays configurable. */
 .site-header,
 .tenant-admin-public-header {
@@ -1005,11 +974,6 @@ input[type="submit"][aria-busy="true"] {
 }
 
 /* End tenant visual correction. */
-
-
-
-
-/* End of file. */
 
 /* Tenant public form and surface cleanup. */
 .contact-grid {
@@ -1199,11 +1163,6 @@ input[type="submit"][aria-busy="true"] {
   opacity: 0.78;
 }
 
-
-
-
-/* End of file. */
-
 /* Tenant visual authority repair: public and admin headers, nav panel, contact forms. */
 body.tenant-admin-page,
 body:not(.platform-page) {
@@ -1350,11 +1309,6 @@ body:not(.platform-page) {
 
 /* End tenant visual authority repair. */
 
-
-
-
-/* End of file. */
-
 /* Tenant nav and form polish: opacity zero must mean no visible menu panel. */
 .site-header nav,
 .site-header.tenant-admin-public-header nav {
@@ -1391,11 +1345,6 @@ body:not(.platform-page) {
 .site-header.tenant-admin-public-header nav .link-button:hover {
   background: rgba(0, 0, 0, 0.08) !important;
 }
-
-
-
-
-/* End of file. */
 
 /* Sales readiness and cookie consent. */
 .artwork-price {
@@ -1462,11 +1411,6 @@ body:not(.platform-page) {
   margin: 0;
 }
 
-
-
-
-/* End of file. */
-
 /* Sales checkout and order workflow surfaces. */
 .artwork-cart-form {
     display: flex;
@@ -1493,11 +1437,6 @@ body:not(.platform-page) {
     box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
 }
 
-
-
-
-/* End of file. */
-
 /* Sales analytics panels use existing admin surfaces with compact KPI/readout spacing. */
 .af-sales-kpis .admin-panel h2 {
     margin: 0.25rem 0 0;
@@ -1517,12 +1456,6 @@ body:not(.platform-page) {
     border-radius: 999px;
     padding: 0.45rem 0.75rem;
 }
-
-
-
-
-/* End of file. */
-
 
 /* Studio pricing card hard contrast override.
    Targets the rendered Studio card even when it has no useful custom class. */
@@ -1590,12 +1523,6 @@ body article.pricing-card.featured h3 {
     color: #ffffff !important;
 }
 
-
-
-
-/* End of file. */
-
-
 /* Tenant navigation readability: keep new-site menu text dark on light/tan panels. */
 .site-header nav,
 .site-header.tenant-admin-public-header nav {
@@ -1620,11 +1547,6 @@ body article.pricing-card.featured h3 {
 .site-header.tenant-admin-public-header nav .link-button:focus-visible {
   background: rgba(31, 26, 20, 0.10) !important;
 }
-
-
-
-
-/* End of file. */
 
 /* Tenant palette contrast repair: header title and nav text get independent colors. */
 .site-header,
@@ -1660,11 +1582,6 @@ body article.pricing-card.featured h3 {
 .site-header.tenant-admin-public-header nav .link-button:focus-visible {
   background: color-mix(in srgb, currentColor 14%, transparent) !important;
 }
-
-
-
-
-
 
 /* Tenant-configurable public typography. These variables are managed from
    Tenant Admin > Settings > Typography and apply to public home, portfolio,
@@ -1768,11 +1685,8 @@ body article.pricing-card.featured h3 {
   font-size: var(--tenant-font-size-footer, 0.95rem);
 }
 
-/* End of file. */
-
 /* Curation workflow and unpublished preview. */
 .artwork-unpublished{display:inline-block;margin:.4rem 0;padding:.2rem .45rem;border:1px solid currentColor;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}.curation-card-form{display:grid;gap:.4rem;margin-top:.75rem}.curation-card-form textarea,.curation-card-form select{width:100%}.artwork-card-wrap{padding:0}.artwork-card-wrap>.artwork-card{display:block}.artwork-card-wrap>.curation-card-form{padding:0 1rem 1rem}
-/* End of file. */
 
 /* Phase 3 shopping cart chrome and public variant selection. */
 .site-cart-link {
@@ -1832,8 +1746,6 @@ body article.pricing-card.featured h3 {
     }
 }
 
-/* End of file. */
-
 /* Cart branding and navigation repair. */
 .tenant-cart-link {
     white-space: nowrap;
@@ -1855,7 +1767,6 @@ body article.pricing-card.featured h3 {
     padding: 1rem;
     background: color-mix(in srgb, var(--bg, #fff), white 72%);
 }
-/* End of file. */
 
 .artwork-notes {
     margin: 1.5rem 0;
@@ -1913,5 +1824,3 @@ body article.pricing-card.featured h3 {
     flex: 0 0 auto !important;
 }
 /* End ArtsFolio logo aspect-ratio guard. */
-
-/* End of file. */

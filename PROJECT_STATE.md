@@ -3033,3 +3033,12 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - Existing tenant-authored CSS is never overwritten.
 
 <!-- End of New-tenant CSS setting-key repair. -->
+
+## 2026-07-14 Default tenant CSS cleanup
+
+- Removed legacy Bxiie references from the shared public stylesheet.
+- Removed all `/* End of file. */` markers from the shared stylesheet.
+- New-tenant CSS provisioning sanitizes both patterns before storing the editable snapshot.
+- The generated tenant additions section no longer appends an End of file marker.
+
+<!-- End of Default tenant CSS cleanup. -->

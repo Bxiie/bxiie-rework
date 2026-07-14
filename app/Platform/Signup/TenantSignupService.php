@@ -755,6 +755,16 @@ final class TenantSignupService
             return '';
         }
 
+        // Keep the tenant-editable default neutral and free of repository
+        // footer markers inherited from the shared stylesheet.
+        $source = preg_replace('/\\bBxiie\\b/i', 'ArtsFolio', $source) ?? $source;
+        $source = preg_replace(
+            '/^[ \\t]*\\/\\*\\s*End of file\\.\\s*\\*\\/[ \\t]*\\R?/mi',
+            '',
+            $source,
+        ) ?? $source;
+        $source = trim($source);
+
         $guide = <<<'CSS'
 /*
  * ArtsFolio Custom CSS
@@ -832,7 +842,6 @@ CSS;
  * }
  */
 
-/* End of file. */
 CSS;
 
         return $guide . "

@@ -551,3 +551,8 @@ run_php scripts/test/caddy_ask_platform_subdomains_static.php
 run_php scripts/test/tenant_billing_comp_status_static.php
 
 # End of file.
+
+# Neutral default tenant CSS without repository footer markers.
+run_php scripts/test/default_tenant_css_cleanup_static.php
+
+# End of file.

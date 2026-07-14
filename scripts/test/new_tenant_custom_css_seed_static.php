@@ -33,7 +33,6 @@ $requiredService = [
     'COMMON SELECTORS',
     'RESPONSIVE RULES',
     'Tenant additions',
-    '/* End of file. */',
 ];
 
 foreach ($requiredService as $marker) {
