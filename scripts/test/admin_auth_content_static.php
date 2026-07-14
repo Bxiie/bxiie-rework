@@ -8,7 +8,9 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
 $checks = [
-    'password reset template' => [$root . '/template/email/auth/password-reset-request.md', 'Reset your ArtsFolio password'],
+    'password reset template token' => [$root . '/template/email/auth/password-reset-request.md', '{{reset_url}}'],
+    'password reset template key' => [$root . '/app/Platform/Email/LifecycleEmailService.php', "templateKey: 'auth.password_reset_request'"],
+    'password reset subject' => [$root . '/app/Platform/Email/LifecycleEmailService.php', "subject: 'Reset your ArtsFolio password'"],
     'public forgot route' => [$root . '/app/Http/Routes/platform.php', "\$router->get('/password/forgot'"],
     'public reset route' => [$root . '/app/Http/Routes/platform.php', "\$router->get('/password/reset'"],
     'artwork placement route' => [$root . '/app/Http/Routes/tenant.php', '/admin/artworks/placement'],
