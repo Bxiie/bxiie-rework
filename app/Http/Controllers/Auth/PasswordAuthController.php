@@ -11,6 +11,7 @@ use App\Http\View\AuthPage;
 use App\Http\Support\SessionCookie;
 use App\Platform\Audit\AuditLogRepository;
 use App\Platform\Auth\Password\PasswordAuthService;
+use App\Platform\Auth\PostLoginDestination;
 use App\Platform\Auth\Session\SessionRepository;
 use App\Platform\Auth\Session\SessionTokenService;
 use App\Platform\Security\RateLimiter;
@@ -28,6 +29,7 @@ final class PasswordAuthController
         private readonly CsrfTokenService $csrf,
         private readonly ?AuditLogRepository $auditLog = null,
         private readonly ?RateLimiter $rateLimiter = null,
+        private readonly ?PostLoginDestination $destination = null,
     ) {
     }
 
@@ -67,8 +69,12 @@ final class PasswordAuthController
 
         $this->auditAuth($request, 'auth.password_login.succeeded', (int) $login['user_id'], ['email' => $login['email'], 'session_id' => $login['session_id']]);
 
+        $location = $this->destination !== null
+            ? $this->destination->forUser((int) $login['user_id'])
+            : '/platform/admin';
+
         return new Response('', 302, [
-            'Location' => '/platform/admin',
+            'Location' => $location,
             'Set-Cookie' => SessionCookie::issueHeaders($login['session_token'], !empty($_POST['keep_me_logged_in'])),
         ]);
     }

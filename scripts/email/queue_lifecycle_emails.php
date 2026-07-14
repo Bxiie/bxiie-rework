@@ -19,6 +19,9 @@ declare(strict_types=1);
  */
 
 use App\Support\Database;
+use App\Platform\Email\BrandedEmail;
+use App\Platform\Email\EditableEmailTemplate;
+use App\Platform\Email\TemplateRenderer;
 
 $root = dirname(__DIR__, 2);
 require $root . '/bootstrap/app.php';
@@ -81,63 +84,53 @@ function outboxRowExists(PDO $pdo, int $tenantId, string $email, string $templat
     return (bool) $stmt->fetchColumn();
 }
 
-function lifecycleSchedule(string $lifecycle, string $tenantSlug, string $email, string $name): array
+function lifecycleSchedule(string $lifecycle, string $tenantSlug, string $email, string $name, string $root): array
 {
-    $displayName = $name !== '' ? $name : $email;
+    $platformUrl = rtrim((string) (getenv('ARTSFOLIO_PUBLIC_URL') ?: 'https://artsfol.io'), '/');
+    $tenantBaseUrl = 'https://' . $tenantSlug . '.artsfol.io';
+    $values = [
+        'recipient_name' => $name !== '' ? $name : $email,
+        'tenant_slug' => $tenantSlug,
+        'admin_url' => $tenantBaseUrl . '/admin',
+        'tour_url' => $tenantBaseUrl . '/admin/getting-started',
+        'help_url' => $platformUrl . '/help',
+        'functions_url' => $platformUrl . '/help/tenant-admin-functions',
+        'videos_url' => $platformUrl . '/help/training-videos',
+    ];
+    $renderer = new EditableEmailTemplate(new TemplateRenderer(), $root . '/template/email');
 
-    return match ($lifecycle) {
+    $definitions = match ($lifecycle) {
         'tenant_admin_onboarding' => [
-            [
-                'template_key' => 'tenant_admin_welcome_6h',
-                'subject' => 'Welcome to ArtsFolio',
-                'body_text' => "Welcome to ArtsFolio, {$displayName}.\n\nYour tenant {$tenantSlug} is ready. Sign in at your domain /login URL, review settings, add sections, and test contact/signup forms.",
-                'body_html' => "<p>Welcome to ArtsFolio, " . htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8') . ".</p><p>Your tenant <strong>" . htmlspecialchars($tenantSlug, ENT_QUOTES, 'UTF-8') . "</strong> is ready. Sign in at your domain <code>/login</code> URL, review settings, add sections, and test contact/signup forms.</p>",
-                'delay_seconds' => 21600,
-            ],
-            [
-                'template_key' => 'tenant_admin_feature_deep_dive_1d',
-                'subject' => 'ArtsFolio setup deep dive',
-                'body_text' => "Your ArtsFolio tenant is live.\n\nToday: configure homepage copy, portfolio sections, first artwork records, contact delivery, and signup exports.",
-                'body_html' => "<p>Your ArtsFolio tenant is live.</p><p>Today: configure homepage copy, portfolio sections, first artwork records, contact delivery, and signup exports.</p>",
-                'delay_seconds' => 86400,
-            ],
-            [
-                'template_key' => 'tenant_admin_weekly_checkin',
-                'subject' => 'ArtsFolio weekly check-in',
-                'body_text' => "Weekly ArtsFolio check-in.\n\nReview contact messages, email signups, artwork updates, stale workers, and domain health.",
-                'body_html' => "<p>Weekly ArtsFolio check-in.</p><p>Review contact messages, email signups, artwork updates, stale workers, and domain health.</p>",
-                'delay_seconds' => 604800,
-            ],
+            ['tenant_admin_welcome_6h', 'lifecycle/tenant_admin_welcome_6h.txt', 21600],
+            ['tenant_admin_feature_deep_dive_1d', 'lifecycle/tenant_admin_feature_deep_dive_1d.txt', 86400],
+            ['tenant_admin_weekly_checkin', 'lifecycle/tenant_admin_weekly_checkin.txt', 604800],
         ],
         'tenant_admin_cancelled' => [
-            [
-                'template_key' => 'tenant_admin_cancelled_6h',
-                'subject' => 'Sorry to see you go',
-                'body_text' => "Sorry to see you go.\n\nPlease tell us what would have made ArtsFolio more useful.",
-                'body_html' => "<p>Sorry to see you go.</p><p>Please tell us what would have made ArtsFolio more useful.</p>",
-                'delay_seconds' => 21600,
-            ],
-            [
-                'template_key' => 'tenant_admin_winback_1w',
-                'subject' => 'Would you try ArtsFolio again?',
-                'body_text' => "Would you try ArtsFolio again?\n\nWe would like to understand what changed and what would make the platform worth another look.",
-                'body_html' => "<p>Would you try ArtsFolio again?</p><p>We would like to understand what changed and what would make the platform worth another look.</p>",
-                'delay_seconds' => 604800,
-            ],
-            [
-                'template_key' => 'tenant_admin_winback_1m',
-                'subject' => 'One more ArtsFolio check-in',
-                'body_text' => "One more ArtsFolio check-in.\n\nIf your needs have changed, we would be glad to help you restart.",
-                'body_html' => "<p>One more ArtsFolio check-in.</p><p>If your needs have changed, we would be glad to help you restart.</p>",
-                'delay_seconds' => 2592000,
-            ],
+            ['tenant_admin_cancelled_6h', 'lifecycle/tenant_admin_cancelled_6h.txt', 21600],
+            ['tenant_admin_winback_1w', 'lifecycle/tenant_admin_winback_1w.txt', 604800],
+            ['tenant_admin_winback_1m', 'lifecycle/tenant_admin_winback_1m.txt', 2592000],
         ],
         default => throw new InvalidArgumentException("Unsupported lifecycle: {$lifecycle}"),
     };
+
+    $messages = [];
+    foreach ($definitions as [$templateKey, $templatePath, $delaySeconds]) {
+        $message = $renderer->render($templatePath, $values);
+        $bodies = BrandedEmail::render($message['subject'], $message['body']);
+        $messages[] = [
+            'template_key' => $templateKey,
+            'subject' => $message['subject'],
+            'body_text' => $bodies['body_text'],
+            'body_html' => $bodies['body_html'],
+            'delay_seconds' => $delaySeconds,
+        ];
+    }
+
+    return $messages;
 }
 
 $tenantId = requireTenantId($pdo, $tenantSlug);
-$messages = lifecycleSchedule($lifecycle, $tenantSlug, $email, $name);
+$messages = lifecycleSchedule($lifecycle, $tenantSlug, $email, $name, $root);
 $queued = [];
 $skipped = [];
 

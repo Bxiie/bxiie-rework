@@ -14,6 +14,7 @@ use App\Http\Response;
 use App\Http\Support\SessionCookie;
 use App\Http\View\AuthPage;
 use App\Platform\Auth\Password\PasswordAuthService;
+use App\Platform\Auth\PostLoginDestination;
 use App\Platform\Security\RateLimiter;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Flash\FlashMessages;
@@ -32,6 +33,7 @@ final class LoginController
         private readonly CsrfTokenService $csrf,
         private readonly ?TenantSettingsRepository $settings = null,
         private readonly ?RateLimiter $rateLimiter = null,
+        private readonly ?PostLoginDestination $destination = null,
     ) {
     }
 
@@ -91,8 +93,12 @@ final class LoginController
 
         FlashMessages::success('Signed in.');
 
+        $location = $this->destination !== null
+            ? $this->destination->forUser((int) ($result['user_id'] ?? 0), $tenant)
+            : '/admin';
+
         return new Response('', 302, [
-            'Location' => '/admin',
+            'Location' => $location,
             'Set-Cookie' => SessionCookie::loginHeaders($token, true),
         ]);
     }

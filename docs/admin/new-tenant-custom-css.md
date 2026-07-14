@@ -1,21 +1,17 @@
 # New-tenant Custom CSS
 
 When a tenant is created, ArtsFolio copies the current
-`public/assets/site.css` into the tenant's `custom_css` setting.
+`public/assets/site.css` into the tenant's `tenant_css` setting.
 
-The generated editor content includes:
+`tenant_css` is the canonical key used by:
 
-- stylesheet load-order guidance;
-- a safe editing workflow;
-- commonly used CSS variables;
-- a selector map;
-- responsive-design guidance;
-- a clearly marked area for tenant additions.
+- Tenant Admin → Settings → Custom CSS;
+- the public `/tenant.css` response;
+- new-tenant provisioning.
 
-Only the public tenant stylesheet is copied. Platform and administration CSS
-are intentionally excluded.
-
-Provisioning never overwrites an existing `custom_css` value. A retried
-provisioning job therefore cannot erase tenant edits.
+Migration `0067_repair_new_tenant_css_setting_key.sql` repairs tenants created
+while provisioning mistakenly wrote the snapshot under `custom_css`. It copies
+the documented value only when `tenant_css` is absent or empty, so existing
+tenant edits are never overwritten.
 
 <!-- End of file. -->

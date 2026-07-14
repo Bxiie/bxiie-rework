@@ -7,7 +7,10 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\View\AdminLayout;
+use App\Http\View\TenantAdminLayout;
+use App\Platform\Tenancy\TenantContext;
 use App\Platform\Identity\UserRepository;
+use App\Tenant\Settings\TenantSettingsRepository;
 use App\Support\Security\CsrfTokenService;
 use App\Support\Time\UserTimezoneContext;
 
@@ -19,6 +22,8 @@ final class UserTimezoneController
     public function __construct(
         private readonly UserRepository $users,
         private readonly CsrfTokenService $csrf,
+        private readonly ?TenantContext $tenant = null,
+        private readonly ?TenantSettingsRepository $tenantSettings = null,
     ) {
     }
 
@@ -62,11 +67,32 @@ final class UserTimezoneController
 </form>
 HTML;
 
-        return Response::html(AdminLayout::render(
+        return Response::html($this->renderPage(
             title: 'My Time Zone',
             body: $body,
-            active: 'account',
         ));
+    }
+
+    /**
+     * Uses the tenant admin shell on tenant hosts and the platform shell on the
+     * canonical platform host.
+     */
+    private function renderPage(string $title, string $body): string
+    {
+        if ($this->tenant !== null && $this->tenantSettings !== null) {
+            return (new TenantAdminLayout($this->tenantSettings))->render(
+                $this->tenant,
+                $title,
+                $body,
+                ''
+            );
+        }
+
+        return AdminLayout::render(
+            title: $title,
+            body: $body,
+            active: 'account',
+        );
     }
 
     public function update(Request $request, ?array $currentUser): Response
@@ -83,10 +109,9 @@ HTML;
 
         if (!in_array($timezone, UserTimezoneContext::identifiers(), true)) {
             return Response::html(
-                AdminLayout::render(
+                $this->renderPage(
                     title: 'Invalid Time Zone',
                     body: '<p>Select a valid IANA time zone.</p>',
-                    active: 'account',
                 ),
                 422,
             );

@@ -10,11 +10,21 @@ $root = dirname(__DIR__, 2);
 $service = (string) file_get_contents(
     $root . '/app/Platform/Signup/TenantSignupService.php'
 );
+$editor = (string) file_get_contents(
+    $root . '/app/Http/Controllers/Tenant/Admin/SettingsController.php'
+);
+$publicCss = (string) file_get_contents(
+    $root . '/app/Http/Controllers/Tenant/TenantCssController.php'
+);
+$migration = (string) file_get_contents(
+    $root . '/database/migrations/0067_repair_new_tenant_css_setting_key.sql'
+);
+
 $failures = [];
 
-$required = [
-    "setting_key = 'custom_css'",
-    "if (\$stmt->fetchColumn() !== false) {\n            return;",
+$requiredService = [
+    "setting_key = 'tenant_css'",
+    "'setting_key' => 'tenant_css'",
     "\$path = \$root . '/public/assets/site.css';",
     'ArtsFolio Custom CSS',
     'HOW THE CASCADE WORKS',
@@ -23,34 +33,42 @@ $required = [
     'COMMON SELECTORS',
     'RESPONSIVE RULES',
     'Tenant additions',
-    'copied from public/assets/site.css',
-    'ArtsFolio does',
-    'not automatically replace this field',
     '/* End of file. */',
 ];
 
-foreach ($required as $marker) {
+foreach ($requiredService as $marker) {
     if (!str_contains($service, $marker)) {
         $failures[] = "TenantSignupService missing marker: {$marker}";
     }
 }
 
-$forbidden = [
-    "public/assets/platform.css",
-    "\$this->updateKnown('tenant_settings'",
+if (!str_contains($editor, "\$this->setting(\$tenant, 'tenant_css', '')")) {
+    $failures[] = 'Tenant Admin editor does not read tenant_css.';
+}
+
+if (!str_contains($publicCss, "\$settings->get('tenant_css', '')")) {
+    $failures[] = 'Public TenantCssController does not read tenant_css.';
+}
+
+$requiredMigration = [
+    "source.setting_key = 'custom_css'",
+    "'tenant_css'",
+    'NULLIF(TRIM(COALESCE(target.setting_value',
+    'DELETE orphan',
 ];
 
-foreach ($forbidden as $marker) {
-    if (str_contains($service, $marker)) {
-        $failures[] = "TenantSignupService contains forbidden CSS seed behavior: {$marker}";
+foreach ($requiredMigration as $marker) {
+    if (!str_contains($migration, $marker)) {
+        $failures[] = "Migration missing marker: {$marker}";
     }
 }
 
-$siteCss = (string) file_get_contents($root . '/public/assets/site.css');
-if ($siteCss === '') {
-    $failures[] = 'public/assets/site.css is empty or unreadable.';
-} elseif (!str_starts_with(ltrim($siteCss), '/*')) {
-    $failures[] = 'public/assets/site.css must begin with a human-readable comment.';
+if (str_contains($service, "setting_key = 'custom_css'")) {
+    $failures[] = 'TenantSignupService still looks up the unused custom_css key.';
+}
+
+if (str_contains($service, "'setting_key' => 'custom_css'")) {
+    $failures[] = 'TenantSignupService still inserts the unused custom_css key.';
 }
 
 if ($failures !== []) {
@@ -61,6 +79,6 @@ if ($failures !== []) {
     exit(1);
 }
 
-echo "[PASS] New tenants receive documented current Custom CSS.\n";
+echo "[PASS] New tenants receive documented CSS through tenant_css.\n";
 
 // End of file.

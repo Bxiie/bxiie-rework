@@ -531,3 +531,13 @@ run_php scripts/test/signup_code_trial_duration_static.php
 run_php scripts/test/tenant_password_forgot_guard_capture_static.php
 
 # End of file.
+
+# Tenant-aware timezone layout regression.
+run_php scripts/test/tenant_timezone_layout_static.php
+
+# End of file.
+
+# Template source, login destination, and unknown-domain regression.
+run_php scripts/test/template_login_unknown_domain_static.php
+
+# End of file.

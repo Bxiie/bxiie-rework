@@ -89,6 +89,7 @@ use App\Platform\Workers\WorkerHeartbeatRepository;
 use App\Platform\Auth\OAuth\BearerTokenRepository;
 use App\Platform\Auth\OAuth\BearerTokenService;
 use App\Platform\Auth\Password\PasswordAuthService;
+use App\Platform\Auth\PostLoginDestination;
 use App\Platform\Auth\Password\PasswordResetService;
 use App\Platform\Auth\Password\PasswordResetTokenRepository;
 use App\Platform\Email\LifecycleEmailService;
@@ -144,8 +145,8 @@ return static function (Router $router, array $context): void {
                 exit;
             }
         }
-    $router->get('/account/timezone', fn (Request $request): Response => (new UserTimezoneController(new UserRepository($pdo), new CsrfTokenService()))->edit($request, $currentUser));
-    $router->post('/account/timezone', fn (Request $request): Response => (new UserTimezoneController(new UserRepository($pdo), new CsrfTokenService()))->update($request, $currentUser));
+    $router->get('/account/timezone', fn (Request $request): Response => (new UserTimezoneController(new UserRepository($pdo), new CsrfTokenService(), $tenant, $tenantSettings))->edit($request, $currentUser));
+    $router->post('/account/timezone', fn (Request $request): Response => (new UserTimezoneController(new UserRepository($pdo), new CsrfTokenService(), $tenant, $tenantSettings))->update($request, $currentUser));
     $router->get('/help', fn (Request $request): Response => $helpController->index($request, $currentUser));
     $router->get('/help/{article}', fn (Request $request, array $params): Response => $helpController->article($request, (string) ($params['article'] ?? 'getting-started'), $currentUser));
     $router->get('/developer', fn (Request $request): Response => $helpController->developer($request, $currentUser));
@@ -179,11 +180,11 @@ return static function (Router $router, array $context): void {
         };
         $router->get('/auth/google', fn (Request $request): Response => $tenantOauthRedirect($request, 'google'));
         $router->get('/auth/facebook', fn (Request $request): Response => $tenantOauthRedirect($request, 'facebook'));
-        $router->post('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings, new RateLimiter($pdo)))->login($request, $tenant));
-        $router->get('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings, new RateLimiter($pdo)))->logout($request));
+        $router->post('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings, new RateLimiter($pdo), new PostLoginDestination($pdo, new MembershipRepository($pdo))))->login($request, $tenant));
+        $router->get('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings, new RateLimiter($pdo), new PostLoginDestination($pdo, new MembershipRepository($pdo))))->logout($request));
     $router->get('/help/developer', fn (Request $request): Response => (new HelpController())->developer($request, $currentUser));
 
-        $router->post('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings, new RateLimiter($pdo)))->logout($request));
+        $router->post('/logout', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), new CsrfTokenService(), $tenantSettings, new RateLimiter($pdo), new PostLoginDestination($pdo, new MembershipRepository($pdo))))->logout($request));
         $router->get('/admin/curation', fn (Request $request): Response => $curationController->queue($request, $tenant, $currentUser));
         $router->post('/admin/curation/review', fn (Request $request): Response => $curationController->review($request, $tenant, $currentUser));
         $router->get('/admin/media', fn (Request $request): Response => (new TenantMediaController($pdo, new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->admin($request, $tenant, $currentUser));
@@ -212,7 +213,7 @@ return static function (Router $router, array $context): void {
         $router->get('/admin/getting-started', fn (Request $request): Response => (new TenantAdminGettingStartedController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
         $router->get('/admin/onboarding', fn (Request $request): Response => (new TenantAdminOnboardingPageController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, new CsrfTokenService()))->index($request, $tenant, $currentUser));
         $router->post('/admin/onboarding/reset', fn (Request $request): Response => (new TenantAdminOnboardingController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new CsrfTokenService(), new AuditLogRepository($pdo)))->reset($request, $tenant, $currentUser));
-        $router->get('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), $csrf, $tenantSettings, new RateLimiter($pdo)))->show($request, $tenant));
+        $router->get('/login', fn (Request $request): Response => (new LoginController(new PasswordAuthService(new UserRepository($pdo), new UserIdentityRepository($pdo), new PasswordHasher(), new SessionRepository($pdo), new SessionTokenService()), $csrf, $tenantSettings, new RateLimiter($pdo), new PostLoginDestination($pdo, new MembershipRepository($pdo))))->show($request, $tenant));
         $router->get('/help/{topic}', fn (Request $request, array $params): Response => $helpController->topic($request, (string) $params['topic']));
         
         $router->get('/password/reset', function (Request $request): Response {

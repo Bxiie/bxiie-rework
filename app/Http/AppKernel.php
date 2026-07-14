@@ -88,6 +88,7 @@ use App\Platform\Workers\WorkerHeartbeatRepository;
 use App\Platform\Auth\OAuth\BearerTokenRepository;
 use App\Platform\Auth\OAuth\BearerTokenService;
 use App\Platform\Auth\Password\PasswordAuthService;
+use App\Platform\Auth\PostLoginDestination;
 use App\Platform\Auth\Password\PasswordResetService;
 use App\Platform\Auth\Password\PasswordResetTokenRepository;
 use App\Platform\Email\LifecycleEmailService;
@@ -203,6 +204,7 @@ final class AppKernel
         new CsrfTokenService(),
         new AuditLogRepository($pdo),
         new RateLimiter($pdo),
+        new PostLoginDestination($pdo, new MembershipRepository($pdo)),
     );
 
     $bearerToken = (new BearerTokenAuth(
@@ -221,6 +223,17 @@ final class AppKernel
 
 
 $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTTP_HOST') ?? '');
+    $requestHost = strtolower(trim(explode(':', $request->host(), 2)[0]));
+    if (
+        !$tenant
+        && !$suspendedTenant
+        && str_ends_with($requestHost, '.artsfol.io')
+        && !in_array($requestHost, ['www.artsfol.io', 'app.artsfol.io'], true)
+    ) {
+        (new Response('', 302, ['Location' => 'https://artsfol.io/']))->send();
+        exit;
+    }
+
     if (!$tenant && $suspendedTenant) {
         Response::error(503, 'This artist site is not currently available. Please check back later or contact the artist directly if you have an existing relationship.')->send();
         exit;

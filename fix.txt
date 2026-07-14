@@ -1,5 +1,13 @@
 ## Now
 
+##
+
+- logging into any login form should route the user to their correct admin page.
+- accessing an unused artsfol.io domain name should redirect to the artsfol/io home page
+
+##
+
+ https://artsfol.io/platform/admin/operations/runs/5943: 500
 - https://artsfol.io/platform/admin/tenants/1889: If the billing status is Billing status: trial, state how long the trial period is and when the trial period expires, including time to event; billing starts in 1 Month, 10 days.
 
 ##

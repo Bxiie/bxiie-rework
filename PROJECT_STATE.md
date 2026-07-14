@@ -3017,3 +3017,19 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - The recipient-existence guard remains tenant scoped.
 
 <!-- End of Tenant password-forgot guard capture. -->
+
+## 2026-07-13 Tenant-aware timezone layout
+
+- Tenant `/account/timezone` routes pass tenant context and settings to `UserTimezoneController`.
+- Tenant users see `TenantAdminLayout`; platform users continue to see `AdminLayout`.
+- Invalid-timezone responses use the same host-appropriate shell.
+
+<!-- End of Tenant-aware timezone layout. -->
+
+## 2026-07-14 New-tenant CSS setting-key repair
+
+- New tenant provisioning writes documented CSS to `tenant_css`, the key used by the editor and `/tenant.css`.
+- Migration `0067_repair_new_tenant_css_setting_key.sql` backfills nonempty orphaned `custom_css` values only when canonical `tenant_css` is absent or empty.
+- Existing tenant-authored CSS is never overwritten.
+
+<!-- End of New-tenant CSS setting-key repair. -->

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Platform\Signup;
 
 use App\Platform\Settings\PlatformSettingsRepository;
+use App\Platform\Email\BrandedEmail;
+use App\Platform\Email\EditableEmailTemplate;
+use App\Platform\Email\TemplateRenderer;
 use PDO;
 use RuntimeException;
 
@@ -619,38 +622,43 @@ final class TenantSignupService
         $platformUrl = rtrim((string) (getenv('ARTSFOLIO_PUBLIC_URL') ?: 'https://artsfol.io'), '/');
         $tenantHost = (string) preg_replace('/[^a-z0-9-]/', '', strtolower($slug));
         $tenantBaseUrl = 'https://' . $tenantHost . '.artsfol.io';
-        $adminUrl = $tenantBaseUrl . '/admin';
-        $tourUrl = $tenantBaseUrl . '/admin/getting-started';
-        $helpUrl = $platformUrl . '/help';
-        $functionsUrl = $platformUrl . '/help/tenant-admin-functions';
-        $videosUrl = $platformUrl . '/help/training-videos';
-        $safeName = htmlspecialchars($name !== '' ? $name : 'there', ENT_QUOTES, 'UTF-8');
-        $safeSlug = htmlspecialchars($slug, ENT_QUOTES, 'UTF-8');
-        $safeAdminUrl = htmlspecialchars($adminUrl, ENT_QUOTES, 'UTF-8');
-        $safeTourUrl = htmlspecialchars($tourUrl, ENT_QUOTES, 'UTF-8');
-        $safeHelpUrl = htmlspecialchars($helpUrl, ENT_QUOTES, 'UTF-8');
-        $safeFunctionsUrl = htmlspecialchars($functionsUrl, ENT_QUOTES, 'UTF-8');
-        $safeVideosUrl = htmlspecialchars($videosUrl, ENT_QUOTES, 'UTF-8');
-
-        $schedule = [
-            ['tenant_admin_welcome_6h', 'Welcome to ArtsFolio', 21600, "Welcome to ArtsFolio, {$name}.\n\nOpen your admin:\n{$adminUrl}\n\nStart the guided setup tour:\n{$tourUrl}\n\nHelp: {$helpUrl}\nFunction index: {$functionsUrl}\nTraining videos: {$videosUrl}\n", "<p>Welcome to ArtsFolio, {$safeName}.</p><p>Your tenant <strong>{$safeSlug}</strong> is ready.</p><p><a href=\"{$safeAdminUrl}\">Open your admin</a></p><p><a href=\"{$safeTourUrl}\">Start the guided setup tour</a></p><ul><li><a href=\"{$safeHelpUrl}\">Help index</a></li><li><a href=\"{$safeFunctionsUrl}\">Tenant function index</a></li><li><a href=\"{$safeVideosUrl}\">Training video directory</a></li></ul>"],
-            ['tenant_admin_feature_deep_dive_1d', 'ArtsFolio setup deep dive', 86400, "Your ArtsFolio your admin is here:\n{$adminUrl}\n\nTour: {$tourUrl}\nFunction index: {$functionsUrl}\nTraining videos: {$videosUrl}\n", "<p>Your your admin is here: <a href=\"{$safeAdminUrl}\">{$safeAdminUrl}</a></p><p>Work through the <a href=\"{$safeTourUrl}\">setup tour</a>, the <a href=\"{$safeFunctionsUrl}\">tenant function index</a>, and the <a href=\"{$safeVideosUrl}\">training video directory</a>.</p>"],
-            ['tenant_admin_weekly_checkin', 'ArtsFolio weekly check-in', 604800, "Weekly ArtsFolio check-in.\n\nAdmin: {$adminUrl}\nHelp: {$helpUrl}\nTraining videos: {$videosUrl}\n", "<p>Weekly ArtsFolio check-in.</p><ul><li><a href=\"{$safeAdminUrl}\">Open your admin</a></li><li><a href=\"{$safeHelpUrl}\">Open help</a></li><li><a href=\"{$safeVideosUrl}\">Open training video directory</a></li></ul>"],
+        $values = [
+            'recipient_name' => $name !== '' ? $name : 'there',
+            'tenant_slug' => $slug,
+            'admin_url' => $tenantBaseUrl . '/admin',
+            'tour_url' => $tenantBaseUrl . '/admin/getting-started',
+            'help_url' => $platformUrl . '/help',
+            'functions_url' => $platformUrl . '/help/tenant-admin-functions',
+            'videos_url' => $platformUrl . '/help/training-videos',
         ];
 
-        foreach ($schedule as [$templateKey, $subject, $delaySeconds, $bodyText, $bodyHtml]) {
+        $templates = new EditableEmailTemplate(
+            new TemplateRenderer(),
+            dirname(__DIR__, 3) . '/template/email',
+        );
+
+        $schedule = [
+            ['tenant_admin_welcome_6h', 'lifecycle/tenant_admin_welcome_6h.txt', 21600],
+            ['tenant_admin_feature_deep_dive_1d', 'lifecycle/tenant_admin_feature_deep_dive_1d.txt', 86400],
+            ['tenant_admin_weekly_checkin', 'lifecycle/tenant_admin_weekly_checkin.txt', 604800],
+        ];
+
+        foreach ($schedule as [$templateKey, $templatePath, $delaySeconds]) {
             if ($this->lifecycleEmailExists($tenantId, $userId, $templateKey)) {
                 continue;
             }
+
+            $message = $templates->render($templatePath, $values);
+            $bodies = BrandedEmail::render($message['subject'], $message['body']);
 
             $this->insertKnown('email_outbox', [
                 'tenant_id' => $tenantId,
                 'user_id' => $userId,
                 'recipient_email' => $email,
                 'recipient_name' => $name,
-                'subject' => $subject,
-                'body_text' => $bodyText,
-                'body_html' => $bodyHtml,
+                'subject' => $message['subject'],
+                'body_text' => $bodies['body_text'],
+                'body_html' => $bodies['body_html'],
                 'template_key' => $templateKey,
                 'status' => 'queued',
                 'available_at' => gmdate('Y-m-d H:i:s', time() + $delaySeconds),
@@ -659,7 +667,6 @@ final class TenantSignupService
             ]);
         }
     }
-
 
     /**
      * Returns true when a lifecycle message already exists for this tenant,
@@ -690,7 +697,7 @@ final class TenantSignupService
     /**
      * Creates the initial editable CSS snapshot for a newly created tenant.
      *
-     * This method never overwrites an existing custom_css value. That protects
+     * This method never overwrites an existing tenant_css value. That protects
      * tenant edits if provisioning is retried or this method is called again.
      */
     private function seedTenantCss(int $tenantId): void
@@ -703,7 +710,7 @@ final class TenantSignupService
             "SELECT id
                FROM tenant_settings
               WHERE tenant_id = :tenant_id
-                AND setting_key = 'custom_css'
+                AND setting_key = 'tenant_css'
               LIMIT 1"
         );
         $stmt->execute(['tenant_id' => $tenantId]);
@@ -719,7 +726,7 @@ final class TenantSignupService
 
         $this->insertKnown('tenant_settings', [
             'tenant_id' => $tenantId,
-            'setting_key' => 'custom_css',
+            'setting_key' => 'tenant_css',
             'setting_value' => $css,
             'created_at' => $this->now(),
             'updated_at' => $this->now(),
