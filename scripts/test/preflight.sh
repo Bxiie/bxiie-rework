@@ -559,3 +559,8 @@ run_php scripts/test/default_tenant_css_cleanup_static.php
 
 # Draft-only tenant contributor workflow.
 run_php scripts/test/tenant_contributor_access_static.php
+
+# Artwork upload portfolio-section assignment.
+run_php scripts/test/upload_artwork_section_assignment_static.php
+
+# End of file.

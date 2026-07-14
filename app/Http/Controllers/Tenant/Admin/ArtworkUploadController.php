@@ -39,6 +39,7 @@ final class ArtworkUploadController
 
         $csrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
         $uploadNotice = $this->uploadNoticeHtml();
+        $sectionOptions = $this->portfolioSectionOptionsHtml($tenant);
         $contributorDraftNotice = $this->isTenantAdmin($currentUser, $tenant)
             ? ''
             : '<p class="admin-notice">Contributor uploads are saved as drafts and require administrator review before publication.</p>';
@@ -97,6 +98,13 @@ final class ArtworkUploadController
         <label><input type="checkbox" name="artwork_types[]" value="portfolio_images" checked> Portfolio Images</label>
         <label><input type="checkbox" name="artwork_types[]" value="site_images"> Site Images</label>
     </fieldset>
+    <fieldset class="artwork-section-assignment">
+        <legend>Portfolio sections</legend>
+        <p>Select every existing section where this artwork should appear. You can change these assignments later.</p>
+        <div class="admin-checkbox-grid">
+            {$sectionOptions}
+        </div>
+    </fieldset>
     {$saleFieldset}
     <p><label>Image<br><input type="file" name="artwork" accept="image/jpeg,image/png,image/webp,image/gif" required></label></p>
     <button id="artwork-upload-button" type="submit">Upload artwork</button>
@@ -149,6 +157,7 @@ HTML;
         if (!empty($record['artwork_id'])) {
             $artworkId = (int) $record['artwork_id'];
             $this->replaceArtworkTypes($artworkId, $_POST['artwork_types'] ?? ['portfolio_images']);
+            $this->replaceArtworkSections($tenant, $artworkId, $_POST['section_ids'] ?? []);
             if ($this->isTenantAdmin($currentUser, $tenant)) {
                 $this->updateSalesInventory($tenant, $artworkId, $_POST);
             }
@@ -206,6 +215,124 @@ HTML;
             . $titlePrefix
             . htmlspecialchars($statusText, ENT_QUOTES, 'UTF-8')
             . ' The form is ready for the next image.</p>';
+    }
+
+    private function portfolioSectionOptionsHtml(TenantContext $tenant): string
+    {
+        if ($this->pdo === null) {
+            return '<p class="admin-muted">Portfolio sections are unavailable.</p>';
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT id, name, status
+             FROM portfolio_sections
+             WHERE tenant_id = :tenant_id
+             ORDER BY
+                CASE status
+                    WHEN 'active' THEN 0
+                    WHEN 'hidden' THEN 1
+                    WHEN 'archived' THEN 2
+                    ELSE 3
+                END,
+                LOWER(name),
+                name,
+                id"
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+        $sections = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!$sections) {
+            return '<p class="admin-muted">No portfolio sections exist yet. You can assign the artwork later.</p>';
+        }
+
+        $labels = [];
+        foreach ($sections as $section) {
+            $id = (int) ($section['id'] ?? 0);
+            if ($id < 1) {
+                continue;
+            }
+
+            $name = htmlspecialchars(
+                trim((string) ($section['name'] ?? 'Untitled section')),
+                ENT_QUOTES,
+                'UTF-8',
+            );
+            $status = strtolower(trim((string) ($section['status'] ?? 'active')));
+            $statusLabel = $status === 'active'
+                ? ''
+                : ' <small>(' . htmlspecialchars($status, ENT_QUOTES, 'UTF-8') . ')</small>';
+
+            $labels[] = '<label class="admin-checkbox">'
+                . '<input type="checkbox" name="section_ids[]" value="' . $id . '"> '
+                . $name
+                . $statusLabel
+                . '</label>';
+        }
+
+        return $labels !== []
+            ? implode("\n", $labels)
+            : '<p class="admin-muted">No portfolio sections exist yet. You can assign the artwork later.</p>';
+    }
+
+    private function replaceArtworkSections(
+        TenantContext $tenant,
+        int $artworkId,
+        mixed $rawSectionIds,
+    ): void {
+        if ($this->pdo === null) {
+            return;
+        }
+
+        $requestedIds = [];
+        if (is_array($rawSectionIds)) {
+            foreach ($rawSectionIds as $rawSectionId) {
+                $sectionId = filter_var($rawSectionId, FILTER_VALIDATE_INT);
+                if ($sectionId !== false && $sectionId > 0) {
+                    $requestedIds[] = (int) $sectionId;
+                }
+            }
+        }
+        $requestedIds = array_values(array_unique($requestedIds));
+
+        $delete = $this->pdo->prepare(
+            'DELETE FROM artwork_section_assignments WHERE artwork_id = :artwork_id'
+        );
+        $delete->execute(['artwork_id' => $artworkId]);
+
+        if ($requestedIds === []) {
+            return;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($requestedIds), '?'));
+        $validate = $this->pdo->prepare(
+            "SELECT id
+             FROM portfolio_sections
+             WHERE tenant_id = ?
+               AND id IN ({$placeholders})"
+        );
+        $validate->execute([$tenant->tenantId, ...$requestedIds]);
+        $validIds = array_map(
+            static fn (array $row): int => (int) $row['id'],
+            $validate->fetchAll(PDO::FETCH_ASSOC),
+        );
+
+        if ($validIds === []) {
+            return;
+        }
+
+        $insert = $this->pdo->prepare(
+            'INSERT INTO artwork_section_assignments
+                (artwork_id, section_id, sort_order, created_at)
+             VALUES
+                (:artwork_id, :section_id, 0, CURRENT_TIMESTAMP)'
+        );
+
+        foreach ($validIds as $sectionId) {
+            $insert->execute([
+                'artwork_id' => $artworkId,
+                'section_id' => $sectionId,
+            ]);
+        }
     }
 
     private function replaceArtworkTypes(int $artworkId, mixed $rawTypes): void
