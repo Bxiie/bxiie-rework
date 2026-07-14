@@ -36,9 +36,8 @@ $checks = [
         'needles' => [
             'public function createResetTokenForTenantEmail(string $email, ?int $tenantId): ?array',
             'public function resetPasswordForTenant(string $rawToken, string $newPassword, ?int $tenantId): int',
-            'private function userBelongsToTenant(int $userId, int $tenantId): bool',
+            "array \$statuses = ['active']",
             'FROM tenant_memberships',
-            "AND status = 'active'",
         ],
         'forbidden' => [],
     ],

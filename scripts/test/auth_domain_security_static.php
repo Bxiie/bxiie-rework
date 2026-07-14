@@ -30,7 +30,6 @@ $checks = [
             'if ($tenantId === null || $tenantId < 1)',
             'resetPasswordForTenant(string $rawToken, string $newPassword, ?int $tenantId): int',
             'FROM tenant_memberships',
-            "AND status = 'active'",
         ],
         'must_not' => [],
     ],

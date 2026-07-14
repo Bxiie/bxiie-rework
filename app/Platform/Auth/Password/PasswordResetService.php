@@ -144,6 +144,35 @@ final class PasswordResetService
      * Reset a password from a tenant reset form only when the token belongs to
      * a user who is still active on that tenant.
      */
+    /**
+     * Create a password-setting token for an invited or active tenant member.
+     */
+    public function createInvitationTokenForTenantEmail(string $email, ?int $tenantId): ?array
+    {
+        if ($tenantId === null || $tenantId < 1) {
+            return null;
+        }
+
+        $user = $this->users->findByEmail($email);
+        if (!$user || !$this->userBelongsToTenant((int) $user['id'], $tenantId, ['active', 'invited'])) {
+            return null;
+        }
+
+        $rawToken = $this->generateToken();
+        $tokenHash = $this->hashToken($rawToken);
+        $tokenId = $this->tokens->create(
+            userId: (int) $user['id'],
+            tokenHash: $tokenHash,
+        );
+
+        return [
+            'token_id' => $tokenId,
+            'user_id' => (int) $user['id'],
+            'email' => (string) $user['email'],
+            'reset_token' => $rawToken,
+            'token_hash' => $tokenHash,
+        ];
+    }
     public function resetPasswordForTenant(string $rawToken, string $newPassword, ?int $tenantId): int
     {
         if ($tenantId === null || $tenantId < 1) {
@@ -153,11 +182,26 @@ final class PasswordResetService
         $tokenHash = $this->hashToken($rawToken);
         $token = $this->tokens->findActiveByHash($tokenHash);
 
-        if (!$token || !$this->userBelongsToTenant((int) $token['user_id'], $tenantId)) {
+        if (!$token || !$this->userBelongsToTenant((int) $token['user_id'], $tenantId, ['active', 'invited'])) {
             throw new \RuntimeException('Password reset token is invalid for this tenant.');
         }
 
-        return $this->resetPassword($rawToken, $newPassword);
+        $userId = $this->resetPassword($rawToken, $newPassword);
+
+        $stmt = $this->pdo->prepare(
+            "UPDATE tenant_memberships
+             SET status = 'active',
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE tenant_id = :tenant_id
+               AND user_id = :user_id
+               AND status = 'invited'"
+        );
+        $stmt->execute([
+            'tenant_id' => $tenantId,
+            'user_id' => $userId,
+        ]);
+
+        return $userId;
     }
 
     /**
@@ -171,21 +215,32 @@ final class PasswordResetService
     /**
      * Check active tenant membership before issuing or consuming tenant reset tokens.
      */
-    private function userBelongsToTenant(int $userId, int $tenantId): bool
-    {
+    /**
+     * @param list<string> $statuses
+     */
+    private function userBelongsToTenant(
+        int $userId,
+        int $tenantId,
+        array $statuses = ['active'],
+    ): bool {
+        $statuses = array_values(array_filter(
+            $statuses,
+            static fn (string $status): bool => in_array($status, ['active', 'invited'], true),
+        ));
+        if ($statuses === []) {
+            return false;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($statuses), '?'));
         $stmt = $this->pdo->prepare(
             "SELECT 1
              FROM tenant_memberships
-             WHERE tenant_id = :tenant_id
-               AND user_id = :user_id
-               AND status = 'active'
+             WHERE tenant_id = ?
+               AND user_id = ?
+               AND status IN ({$placeholders})
              LIMIT 1"
         );
-
-        $stmt->execute([
-            'tenant_id' => $tenantId,
-            'user_id' => $userId,
-        ]);
+        $stmt->execute([$tenantId, $userId, ...$statuses]);
 
         return (bool) $stmt->fetchColumn();
     }

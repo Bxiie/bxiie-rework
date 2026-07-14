@@ -10,6 +10,7 @@ use App\Http\Response;
 use App\Http\View\ErrorPage;
 use App\Http\View\TenantAdminLayout;
 use App\Platform\Audit\AuditLogRepository;
+use App\Platform\Auth\Password\PasswordResetService;
 use App\Platform\Email\EmailOutboxRepository;
 use App\Platform\Identity\AdminUserRepository;
 use App\Platform\Identity\PasswordHasher;
@@ -31,6 +32,7 @@ final class UsersController
         private readonly TenantSettingsRepository $settings,
         private readonly ?AuditLogRepository $auditLog = null,
         private readonly ?EmailOutboxRepository $emailOutbox = null,
+        private readonly ?PasswordResetService $passwordResets = null,
     ) {
     }
 
@@ -70,38 +72,56 @@ HTML : '';
 HTML : '';
 
             $rows .= <<<HTML
-<tr>
+<tr class="tenant-user-details">
     <td>{$id}</td>
     <td><strong>{$email}</strong><br><small>{$name}</small></td>
     <td>{$status}</td>
     <td>{$roles}</td>
     <td>{$lastLogin}</td>
     <td>{$created}</td>
-    <td>
-        <form method="post" action="/admin/users/password" class="admin-inline-form">
-            <input type="hidden" name="csrf_token" value="{$csrf}">
-            <input type="hidden" name="user_id" value="{$id}">
-            <input type="password" name="new_password" minlength="12" required placeholder="New password">
-            <button type="submit">Change password</button>
-        </form>
-        <form method="post" action="/admin/users/resend-invite" class="admin-inline-form">
-            <input type="hidden" name="csrf_token" value="{$csrf}">
-            <input type="hidden" name="user_id" value="{$id}">
-            <button type="submit">Resend invite</button>
-        </form>
-        {$promoteForm}
-        {$deleteForm}
+</tr>
+<tr class="tenant-user-actions-row">
+    <td colspan="6">
+        <div class="tenant-user-actions">
+            <form method="post" action="/admin/users/password" class="admin-inline-form tenant-user-password-form">
+                <input type="hidden" name="csrf_token" value="{$csrf}">
+                <input type="hidden" name="user_id" value="{$id}">
+                <input type="password" name="new_password" minlength="12" required placeholder="New password">
+                <button type="submit">Change password</button>
+            </form>
+            <form method="post" action="/admin/users/resend-invite" class="admin-inline-form">
+                <input type="hidden" name="csrf_token" value="{$csrf}">
+                <input type="hidden" name="user_id" value="{$id}">
+                <button type="submit">Resend invite</button>
+            </form>
+            {$promoteForm}
+            {$deleteForm}
+        </div>
     </td>
 </tr>
 HTML;
         }
 
         if ($rows === '') {
-            $rows = '<tr><td colspan="7">No tenant users found.</td></tr>';
+            $rows = '<tr><td colspan="6">No tenant users found.</td></tr>';
         }
 
         $body = <<<HTML
-{$notice}
+<style>
+.tenant-user-actions-row td { padding-top: .35rem; padding-bottom: 1.25rem; }
+.tenant-user-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; }
+.tenant-user-actions .admin-inline-form { display: flex; align-items: center; gap: .5rem; margin: 0; }
+.tenant-user-password-form { flex: 1 1 24rem; }
+.tenant-user-password-form input[type="password"] { flex: 1 1 14rem; min-width: 12rem; }
+.tenant-user-actions button { width: auto; min-width: 9rem; margin: 0; }
+@media (max-width: 760px) {
+    .tenant-user-actions,
+    .tenant-user-actions .admin-inline-form { align-items: stretch; flex-direction: column; width: 100%; }
+    .tenant-user-password-form { flex-basis: auto; }
+    .tenant-user-actions button,
+    .tenant-user-password-form input[type="password"] { width: 100%; }
+}
+</style>{$notice}
 <p class="admin-muted">Tenant admins can see tenant users, rotate local passwords, and invite additional tenant admins. Tenant owners can promote admins to owner and delete tenant user access.</p>
 <section class="admin-panel">
     <h2>Invite tenant user</h2>
@@ -114,7 +134,7 @@ HTML;
     </form>
 </section>
 <table class="admin-table">
-    <thead><tr><th>ID</th><th>User</th><th>Status</th><th>Roles</th><th>Last log on</th><th>Created</th><th>Password</th></tr></thead>
+    <thead><tr><th>ID</th><th>User</th><th>Status</th><th>Roles</th><th>Last log on</th><th>Created</th></tr></thead>
     <tbody>{$rows}</tbody>
 </table>
 HTML;
@@ -259,13 +279,26 @@ HTML;
         }
 
         $siteName = $this->settings->get($tenant, 'site_title', $tenant->name);
-        $loginUrl = 'https://' . ($_SERVER['HTTP_HOST'] ?? '') . '/login';
+        $host = strtolower(trim((string) ($_SERVER['HTTP_HOST'] ?? '')));
+        $host = explode(':', $host, 2)[0];
+        $host = $host !== '' ? $host : $tenant->slug . '.artsfol.io';
+
+        $invitation = $this->passwordResets?->createInvitationTokenForTenantEmail(
+            $email,
+            $tenant->tenantId,
+        );
+        if ($invitation === null) {
+            throw new \RuntimeException('Unable to create tenant invitation password link.');
+        }
+
+        $passwordUrl = 'https://' . $host
+            . '/password/reset?token='
+            . rawurlencode((string) $invitation['reset_token']);
         $nameLine = $displayName ? "Hello {$displayName}," : 'Hello,';
-        $bodyText = "{$nameLine}\n\nYou have been invited to {$siteName}.\n\nOpen {$loginUrl} to sign in. If you do not have a local password yet, use the password reset flow to set one.\n\nArtsFolio";
+        $bodyText = "{$nameLine}\n\nYou have been invited to {$siteName}.\n\nSet your password and activate your access here:\n{$passwordUrl}\n\nArtsFolio";
         $bodyHtml = '<p>' . htmlspecialchars($nameLine, ENT_QUOTES, 'UTF-8') . '</p>'
             . '<p>You have been invited to ' . htmlspecialchars($siteName, ENT_QUOTES, 'UTF-8') . '.</p>'
-            . '<p><a href="' . htmlspecialchars($loginUrl, ENT_QUOTES, 'UTF-8') . '">Open tenant login</a></p>'
-            . '<p>If you do not have a local password yet, use the password reset flow to set one.</p>';
+            . '<p><a href="' . htmlspecialchars($passwordUrl, ENT_QUOTES, 'UTF-8') . '">Set your password and activate access</a></p>';
 
         $this->emailOutbox->queue(
             recipientEmail: $email,
