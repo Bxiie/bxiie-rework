@@ -592,3 +592,8 @@ run_php scripts/test/image_watermark_render_call_static.php
 run_php scripts/test/watermark_preview_decoupling_static.php
 
 # End of file.
+
+# Watermark image resolution from the saved tenant media UUID.
+run_php scripts/test/watermark_image_lookup_static.php
+
+# End of file.

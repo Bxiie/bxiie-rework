@@ -288,29 +288,54 @@ final class WatermarkService
         }
 
         $stmt = $this->pdo->prepare(
-            "SELECT m.storage_path, m.mime_type
-             FROM media_assets m
-             INNER JOIN artworks a ON a.primary_media_id = m.id AND a.tenant_id = m.tenant_id
-             INNER JOIN artwork_type_assignments ata ON ata.artwork_id = a.id
-             INNER JOIN artwork_types atype ON atype.id = ata.type_id AND atype.code = 'site_images'
-             WHERE m.tenant_id = :tenant_id
-               AND m.uuid = :media_uuid
-               AND m.is_private = 0
-               AND COALESCE(a.status, '') <> 'archived'
+            "SELECT storage_path, mime_type
+             FROM media_assets
+             WHERE tenant_id = :tenant_id
+               AND uuid = :media_uuid
              LIMIT 1"
         );
         $stmt->execute(['tenant_id' => $tenant->tenantId, 'media_uuid' => $uuid]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$row) {
+            error_log(
+                'ArtsFolio watermark media UUID not found for tenant '
+                . $tenant->tenantId
+                . ': '
+                . $uuid
+            );
             return null;
         }
 
-        $absolute = dirname(__DIR__, 3) . '/' . ltrim((string) $row['storage_path'], '/');
-        if (!is_file($absolute)) {
+        $storagePath = ltrim((string) ($row['storage_path'] ?? ''), '/');
+        $root = dirname(__DIR__, 3);
+        $candidates = [
+            $root . '/' . $storagePath,
+            $root . '/storage/' . preg_replace('#^storage/#', '', $storagePath),
+            $root . '/public/' . preg_replace('#^public/#', '', $storagePath),
+        ];
+
+        $absolute = null;
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate)) {
+                $absolute = $candidate;
+                break;
+            }
+        }
+
+        if ($absolute === null) {
+            error_log(
+                'ArtsFolio watermark image file missing for tenant '
+                . $tenant->tenantId
+                . ': '
+                . $storagePath
+            );
             return null;
         }
 
         $mimeType = strtolower((string) ($row['mime_type'] ?? ''));
+        if ($mimeType === '' && function_exists('mime_content_type')) {
+            $mimeType = strtolower((string) @mime_content_type($absolute));
+        }
         $image = match ($mimeType) {
             'image/jpeg' => function_exists('imagecreatefromjpeg') ? @imagecreatefromjpeg($absolute) : false,
             'image/png' => function_exists('imagecreatefrompng') ? @imagecreatefrompng($absolute) : false,
