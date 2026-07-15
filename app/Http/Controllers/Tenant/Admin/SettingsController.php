@@ -362,7 +362,7 @@ HTML;
                 <label>Position<select name="watermark_position"><option value="bottom-right"{$selected($watermarkPosition,'bottom-right')}>Bottom right</option><option value="bottom-left"{$selected($watermarkPosition,'bottom-left')}>Bottom left</option><option value="top-right"{$selected($watermarkPosition,'top-right')}>Top right</option><option value="top-left"{$selected($watermarkPosition,'top-left')}>Top left</option><option value="center"{$selected($watermarkPosition,'center')}>Center</option></select></label>
                 <label>Appearance<select name="watermark_color"><option value="white"{$selected($watermarkColor,'white')}>White with shadow</option><option value="black"{$selected($watermarkColor,'black')}>Black with shadow</option></select></label>
                 <label>Opacity<input type="number" name="watermark_opacity" min="0.05" max="1" step="0.01" value="{$watermarkOpacity}"></label>
-                <label>Size<select name="watermark_size"><option value="2"{$selected($watermarkSize,'2')}>Small</option><option value="3"{$selected($watermarkSize,'3')}>Medium</option><option value="4"{$selected($watermarkSize,'4')}>Large</option><option value="5"{$selected($watermarkSize,'5')}>Extra large</option></select></label>
+                <label>Size <span class="admin-help">(image width: 20%–60%)</span><select name="watermark_size"><option value="2"{$selected($watermarkSize,'2')}>Small</option><option value="3"{$selected($watermarkSize,'3')}>Medium</option><option value="4"{$selected($watermarkSize,'4')}>Large</option><option value="5"{$selected($watermarkSize,'5')}>Extra large</option></select></label>
             </div>
             <fieldset>
                 <legend>Watermark image</legend>

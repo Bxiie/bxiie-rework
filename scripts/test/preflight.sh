@@ -602,3 +602,8 @@ run_php scripts/test/watermark_image_lookup_static.php
 run_php scripts/test/watermark_transparent_canvas_trim_static.php
 
 # End of file.
+
+# Image watermark sizing and enlargement.
+run_php scripts/test/watermark_image_scale_static.php
+
+# End of file.

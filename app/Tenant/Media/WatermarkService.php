@@ -366,11 +366,23 @@ final class WatermarkService
 
         $targetWidth = imagesx($target);
         $targetHeight = imagesy($target);
-        $scale = 0.08 + ($sizeChoice * 0.035);
+
+        // Image watermarks use the size control as a percentage of artwork
+        // width. Unlike text, a logo may need to be enlarged beyond its
+        // uploaded pixel dimensions on large artwork images.
+        $widthScale = match ($sizeChoice) {
+            1 => 0.20,
+            2 => 0.30,
+            3 => 0.40,
+            4 => 0.50,
+            default => 0.60,
+        };
+        $maxWidth = max(24, (int) round($targetWidth * $widthScale));
+        $maxHeight = max(24, (int) round($targetHeight * 0.45));
         $ratio = min(
-            max(24, (int) round($targetWidth * $scale)) / $sourceWidth,
-            max(24, (int) round($targetHeight * $scale)) / $sourceHeight,
-            1.0,
+            $maxWidth / $sourceWidth,
+            $maxHeight / $sourceHeight,
+            4.0,
         );
         $renderWidth = max(1, (int) round($sourceWidth * $ratio));
         $renderHeight = max(1, (int) round($sourceHeight * $ratio));
