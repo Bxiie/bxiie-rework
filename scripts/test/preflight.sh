@@ -582,3 +582,8 @@ run_php scripts/test/image_watermark_static.php
 run_php scripts/test/artwork_grid_sections_and_preview_shortcuts_static.php
 
 # End of file.
+
+# Image watermark invocation and transparent compositing.
+run_php scripts/test/image_watermark_render_call_static.php
+
+# End of file.

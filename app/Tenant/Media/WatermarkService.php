@@ -165,59 +165,82 @@ final class WatermarkService
             'watermark_position',
             'bottom-right',
         );
-        $fontPath = $this->fontPath();
-
-        if (
-            $fontPath !== null
-            && function_exists('imagettftext')
-            && function_exists('imagettfbbox')
-        ) {
-            $fontSize = max(
-                12,
-                (int) round(
-                    min($width, $height)
-                    * (0.018 + ($sizeChoice * 0.006))
-                )
+        if ($watermarkImage instanceof \GdImage) {
+            $this->renderImageWatermark(
+                $image,
+                $watermarkImage,
+                $position,
+                $padding,
+                $opacity,
+                $sizeChoice,
             );
-            $box = imagettfbbox($fontSize, 0, $fontPath, $text);
+            imagedestroy($watermarkImage);
+        }
 
-            if (is_array($box)) {
-                $textWidth = abs($box[2] - $box[0]);
-                $textHeight = abs($box[7] - $box[1]);
-                [$x, $top] = $this->position(
-                    $position,
-                    $width,
-                    $height,
-                    $textWidth,
-                    $textHeight,
-                    $padding,
-                );
-                $baseline = $top + $textHeight;
-                $shadowOffset = max(
-                    1,
-                    (int) round($fontSize * 0.08),
-                );
+        if ($text !== '') {
+            $fontPath = $this->fontPath();
 
-                imagettftext(
-                    $image,
-                    $fontSize,
-                    0,
-                    $x + $shadowOffset,
-                    $baseline + $shadowOffset,
-                    $shadow,
-                    $fontPath,
-                    $text,
+            if (
+                $fontPath !== null
+                && function_exists('imagettftext')
+                && function_exists('imagettfbbox')
+            ) {
+                $fontSize = max(
+                    12,
+                    (int) round(
+                        min($width, $height)
+                        * (0.018 + ($sizeChoice * 0.006))
+                    )
                 );
-                imagettftext(
-                    $image,
-                    $fontSize,
-                    0,
-                    $x,
-                    $baseline,
-                    $foreground,
-                    $fontPath,
-                    $text,
-                );
+                $box = imagettfbbox($fontSize, 0, $fontPath, $text);
+
+                if (is_array($box)) {
+                    $textWidth = abs($box[2] - $box[0]);
+                    $textHeight = abs($box[7] - $box[1]);
+                    [$x, $top] = $this->position(
+                        $position,
+                        $width,
+                        $height,
+                        $textWidth,
+                        $textHeight,
+                        $padding,
+                    );
+                    $baseline = $top + $textHeight;
+                    $shadowOffset = max(
+                        1,
+                        (int) round($fontSize * 0.08),
+                    );
+
+                    imagettftext(
+                        $image,
+                        $fontSize,
+                        0,
+                        $x + $shadowOffset,
+                        $baseline + $shadowOffset,
+                        $shadow,
+                        $fontPath,
+                        $text,
+                    );
+                    imagettftext(
+                        $image,
+                        $fontSize,
+                        0,
+                        $x,
+                        $baseline,
+                        $foreground,
+                        $fontPath,
+                        $text,
+                    );
+                } else {
+                    $this->renderBuiltinFont(
+                        $image,
+                        $text,
+                        $position,
+                        $padding,
+                        $foreground,
+                        $shadow,
+                    );
+                }
             } else {
                 $this->renderBuiltinFont(
                     $image,
@@ -228,15 +251,6 @@ final class WatermarkService
                     $shadow,
                 );
             }
-        } else {
-            $this->renderBuiltinFont(
-                $image,
-                $text,
-                $position,
-                $padding,
-                $foreground,
-                $shadow,
-            );
         }
 
         ob_start();
@@ -339,7 +353,43 @@ final class WatermarkService
         $transparent = imagecolorallocatealpha($scaled, 0, 0, 0, 127);
         imagefill($scaled, 0, 0, $transparent);
         imagecopyresampled($scaled, $watermark, 0, 0, 0, 0, $renderWidth, $renderHeight, $sourceWidth, $sourceHeight);
-        imagecopymerge($target, $scaled, $x, $y, 0, 0, $renderWidth, $renderHeight, (int) round($opacity * 100));
+        $opacity = max(0.0, min(1.0, $opacity));
+        for ($pixelY = 0; $pixelY < $renderHeight; $pixelY++) {
+            for ($pixelX = 0; $pixelX < $renderWidth; $pixelX++) {
+                $rgba = imagecolorat($scaled, $pixelX, $pixelY);
+                $alpha = ($rgba >> 24) & 0x7F;
+                if ($alpha >= 127) {
+                    continue;
+                }
+
+                $red = ($rgba >> 16) & 0xFF;
+                $green = ($rgba >> 8) & 0xFF;
+                $blue = $rgba & 0xFF;
+                $adjustedAlpha = 127 - (int) round(
+                    (127 - $alpha) * $opacity
+                );
+                $color = imagecolorallocatealpha(
+                    $scaled,
+                    $red,
+                    $green,
+                    $blue,
+                    max(0, min(127, $adjustedAlpha)),
+                );
+                imagesetpixel($scaled, $pixelX, $pixelY, $color);
+            }
+        }
+
+        imagealphablending($target, true);
+        imagecopy(
+            $target,
+            $scaled,
+            $x,
+            $y,
+            0,
+            0,
+            $renderWidth,
+            $renderHeight,
+        );
         imagedestroy($scaled);
     }
 
