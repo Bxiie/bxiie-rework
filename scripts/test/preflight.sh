@@ -607,3 +607,8 @@ run_php scripts/test/watermark_transparent_canvas_trim_static.php
 run_php scripts/test/watermark_image_scale_static.php
 
 # End of file.
+
+# Center and vertically stack image/text watermarks.
+run_php scripts/test/centered_stacked_watermarks_static.php
+
+# End of file.

@@ -160,19 +160,59 @@ final class WatermarkService
             10,
             (int) round(min($width, $height) * 0.025),
         );
-        $position = (string) $this->settings->get(
-            $tenant,
-            'watermark_position',
-            'bottom-right',
+        // Treat the watermark as one centered composition. When both image
+        // and text are enabled, place the image above the text.
+        $position = 'center';
+        $stackGap = max(
+            8,
+            (int) round(min($width, $height) * 0.02),
         );
+        $textLayoutHeight = 0;
+
+        if ($text !== '') {
+            $layoutFontPath = $this->fontPath();
+            if (
+                $layoutFontPath !== null
+                && function_exists('imagettfbbox')
+            ) {
+                $layoutFontSize = max(
+                    12,
+                    (int) round(
+                        min($width, $height)
+                        * (0.018 + ($sizeChoice * 0.006))
+                    )
+                );
+                $layoutBox = imagettfbbox(
+                    $layoutFontSize,
+                    0,
+                    $layoutFontPath,
+                    $text,
+                );
+                if (is_array($layoutBox)) {
+                    $textLayoutHeight = abs(
+                        $layoutBox[7] - $layoutBox[1]
+                    );
+                }
+            }
+
+            if ($textLayoutHeight < 1) {
+                $textLayoutHeight = imagefontheight(5);
+            }
+        }
+
+        $imageRenderSize = [0, 0];
         if ($watermarkImage instanceof \GdImage) {
-            $this->renderImageWatermark(
+            $imageOffsetY = $mode === 'both'
+                ? -((int) round(($textLayoutHeight + $stackGap) / 2))
+                : 0;
+            $imageRenderSize = $this->renderImageWatermark(
                 $image,
                 $watermarkImage,
                 $position,
                 $padding,
                 $opacity,
                 $sizeChoice,
+                $imageOffsetY,
             );
             imagedestroy($watermarkImage);
         }
@@ -205,6 +245,18 @@ final class WatermarkService
                         $textHeight,
                         $padding,
                     );
+                    if ($mode === 'both') {
+                        $top += (int) round(
+                            (($imageRenderSize[1] ?? 0) + $stackGap) / 2
+                        );
+                        $top = min(
+                            max($padding, $top),
+                            max(
+                                $padding,
+                                $height - $textHeight - $padding,
+                            ),
+                        );
+                    }
                     $baseline = $top + $textHeight;
                     $shadowOffset = max(
                         1,
@@ -239,6 +291,11 @@ final class WatermarkService
                         $padding,
                         $foreground,
                         $shadow,
+                        $mode === 'both'
+                            ? (int) round(
+                                (($imageRenderSize[1] ?? 0) + $stackGap) / 2
+                            )
+                            : 0,
                     );
                 }
             } else {
@@ -353,7 +410,8 @@ final class WatermarkService
         int $padding,
         float $opacity,
         int $sizeChoice,
-    ): void {
+        int $centerOffsetY = 0,
+    ): array {
         $trimmed = $this->trimTransparentCanvas($watermark);
         $sourceWidth = imagesx($trimmed);
         $sourceHeight = imagesy($trimmed);
@@ -361,7 +419,7 @@ final class WatermarkService
             if ($trimmed !== $watermark) {
                 imagedestroy($trimmed);
             }
-            return;
+            return [0, 0];
         }
 
         $targetWidth = imagesx($target);
@@ -386,7 +444,20 @@ final class WatermarkService
         );
         $renderWidth = max(1, (int) round($sourceWidth * $ratio));
         $renderHeight = max(1, (int) round($sourceHeight * $ratio));
-        [$x, $y] = $this->position($position, $targetWidth, $targetHeight, $renderWidth, $renderHeight, $padding);
+        $x = max(
+            $padding,
+            (int) round(($targetWidth - $renderWidth) / 2),
+        );
+        $y = (int) round(
+            (($targetHeight - $renderHeight) / 2) + $centerOffsetY
+        );
+        $y = min(
+            max($padding, $y),
+            max(
+                $padding,
+                $targetHeight - $renderHeight - $padding,
+            ),
+        );
 
         $scaled = imagecreatetruecolor($renderWidth, $renderHeight);
         imagealphablending($scaled, false);
@@ -435,6 +506,8 @@ final class WatermarkService
         if ($trimmed !== $watermark) {
             imagedestroy($trimmed);
         }
+
+        return [$renderWidth, $renderHeight];
     }
 
     private function trimTransparentCanvas(\GdImage $image): \GdImage
@@ -555,6 +628,7 @@ final class WatermarkService
         int $padding,
         int $foreground,
         int $shadow,
+        int $centerOffsetY = 0,
     ): void {
         $font = 5;
         $textWidth = imagefontwidth($font) * strlen($text);
@@ -566,6 +640,13 @@ final class WatermarkService
             $textWidth,
             $textHeight,
             $padding,
+        );
+        $y = min(
+            max($padding, $y + $centerOffsetY),
+            max(
+                $padding,
+                imagesy($image) - $textHeight - $padding,
+            ),
         );
 
         imagestring($image, $font, $x + 1, $y + 1, $text, $shadow);
