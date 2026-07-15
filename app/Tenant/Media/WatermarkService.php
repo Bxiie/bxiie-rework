@@ -354,9 +354,13 @@ final class WatermarkService
         float $opacity,
         int $sizeChoice,
     ): void {
-        $sourceWidth = imagesx($watermark);
-        $sourceHeight = imagesy($watermark);
+        $trimmed = $this->trimTransparentCanvas($watermark);
+        $sourceWidth = imagesx($trimmed);
+        $sourceHeight = imagesy($trimmed);
         if ($sourceWidth < 1 || $sourceHeight < 1) {
+            if ($trimmed !== $watermark) {
+                imagedestroy($trimmed);
+            }
             return;
         }
 
@@ -377,7 +381,7 @@ final class WatermarkService
         imagesavealpha($scaled, true);
         $transparent = imagecolorallocatealpha($scaled, 0, 0, 0, 127);
         imagefill($scaled, 0, 0, $transparent);
-        imagecopyresampled($scaled, $watermark, 0, 0, 0, 0, $renderWidth, $renderHeight, $sourceWidth, $sourceHeight);
+        imagecopyresampled($scaled, $trimmed, 0, 0, 0, 0, $renderWidth, $renderHeight, $sourceWidth, $sourceHeight);
         $opacity = max(0.0, min(1.0, $opacity));
         for ($pixelY = 0; $pixelY < $renderHeight; $pixelY++) {
             for ($pixelX = 0; $pixelX < $renderWidth; $pixelX++) {
@@ -416,6 +420,64 @@ final class WatermarkService
             $renderHeight,
         );
         imagedestroy($scaled);
+        if ($trimmed !== $watermark) {
+            imagedestroy($trimmed);
+        }
+    }
+
+    private function trimTransparentCanvas(\GdImage $image): \GdImage
+    {
+        $width = imagesx($image);
+        $height = imagesy($image);
+
+        $minX = $width;
+        $minY = $height;
+        $maxX = -1;
+        $maxY = -1;
+
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                $rgba = imagecolorat($image, $x, $y);
+                $alpha = ($rgba >> 24) & 0x7F;
+
+                if ($alpha < 120) {
+                    $minX = min($minX, $x);
+                    $minY = min($minY, $y);
+                    $maxX = max($maxX, $x);
+                    $maxY = max($maxY, $y);
+                }
+            }
+        }
+
+        if ($maxX < $minX || $maxY < $minY) {
+            return $image;
+        }
+
+        $cropWidth = $maxX - $minX + 1;
+        $cropHeight = $maxY - $minY + 1;
+
+        if ($cropWidth === $width && $cropHeight === $height) {
+            return $image;
+        }
+
+        $cropped = imagecreatetruecolor($cropWidth, $cropHeight);
+        imagealphablending($cropped, false);
+        imagesavealpha($cropped, true);
+        $transparent = imagecolorallocatealpha($cropped, 0, 0, 0, 127);
+        imagefill($cropped, 0, 0, $transparent);
+
+        imagecopy(
+            $cropped,
+            $image,
+            0,
+            0,
+            $minX,
+            $minY,
+            $cropWidth,
+            $cropHeight,
+        );
+
+        return $cropped;
     }
 
     private function watermarkText(TenantContext $tenant): string

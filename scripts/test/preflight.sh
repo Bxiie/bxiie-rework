@@ -597,3 +597,8 @@ run_php scripts/test/watermark_preview_decoupling_static.php
 run_php scripts/test/watermark_image_lookup_static.php
 
 # End of file.
+
+# Trim transparent watermark padding before scaling.
+run_php scripts/test/watermark_transparent_canvas_trim_static.php
+
+# End of file.
