@@ -617,3 +617,8 @@ run_php scripts/test/centered_stacked_watermarks_static.php
 run_php scripts/test/artworks_type_filter_static.php
 
 # End of file.
+
+# Event definition month/year picker.
+run_php scripts/test/event_month_year_picker_static.php
+
+# End of file.

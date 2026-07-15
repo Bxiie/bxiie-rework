@@ -47,7 +47,18 @@ final class EventsController
             $id = (int) $event['id'];
             $rows .= '<tr>'
                 . '<td><input form="event-order-form" type="number" name="sort_order[' . $id . ']" value="' . self::e((string) ($event['sort_order'] ?? '0')) . '" style="width:5rem"></td>'
-                . '<td>' . self::e((string) ($event['exhibition_date'] ?? '')) . '</td>'
+                . '<td>' . self::e(
+                    preg_match(
+                        '/^\d{4}-\d{2}/',
+                        (string) ($event['exhibition_date'] ?? ''),
+                    ) === 1
+                        ? substr(
+                            (string) $event['exhibition_date'],
+                            0,
+                            7,
+                        )
+                        : ''
+                ) . '</td>'
                 . '<td>' . self::e((string) $event['name']) . '</td>'
                 . '<td>' . self::e((string) ($event['exhibition_type'] ?? '')) . '</td>'
                 . '<td>' . self::e((string) ($event['location'] ?? '')) . '</td>'
@@ -83,8 +94,12 @@ HTML;
     {
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) { return Response::html(ErrorPage::unauthorized('/login'), 403); }
         $id = (int) ($_GET['id'] ?? 0); $event = $id > 0 ? $this->find($tenant, $id) : null; $token = self::e($this->csrf->getOrCreate()); $v = fn (string $key): string => self::e((string) ($event[$key] ?? ''));
+        $storedEventDate = trim((string) ($event['exhibition_date'] ?? ''));
+        $eventMonth = preg_match('/^\d{4}-\d{2}/', $storedEventDate) === 1
+            ? self::e(substr($storedEventDate, 0, 7))
+            : '';
         $body = <<<HTML
-<p><a href="/admin/events">&larr; Events</a></p><form class="admin-form" method="post" action="/admin/events/edit"><input type="hidden" name="csrf_token" value="{$token}"><input type="hidden" name="id" value="{$id}"><label>Date<input name="exhibition_date" value="{$v('exhibition_date')}"></label><label>Name<input name="name" value="{$v('name')}" required></label><label>Type<input name="exhibition_type" value="{$v('exhibition_type')}"></label><label>Location<input name="location" value="{$v('location')}"></label><label>City<input name="city" value="{$v('city')}"></label><label>State/region<input name="state_region" value="{$v('state_region')}"></label><label>Work name<input name="work_name" value="{$v('work_name')}"></label><label>Status<select name="status"><option value="active">Active</option><option value="archived">Archived</option></select></label><label>Sort order<input type="number" name="sort_order" value="{$v('sort_order')}"></label><label>Notes<textarea name="notes" rows="8">{$v('notes')}</textarea></label><button>Save event</button></form>
+<p><a href="/admin/events">&larr; Events</a></p><form class="admin-form" method="post" action="/admin/events/edit"><input type="hidden" name="csrf_token" value="{$token}"><input type="hidden" name="id" value="{$id}"><label>Month and year<input type="month" name="exhibition_date" value="{$eventMonth}"></label><label>Name<input name="name" value="{$v('name')}" required></label><label>Type<input name="exhibition_type" value="{$v('exhibition_type')}"></label><label>Location<input name="location" value="{$v('location')}"></label><label>City<input name="city" value="{$v('city')}"></label><label>State/region<input name="state_region" value="{$v('state_region')}"></label><label>Work name<input name="work_name" value="{$v('work_name')}"></label><label>Status<select name="status"><option value="active">Active</option><option value="archived">Archived</option></select></label><label>Sort order<input type="number" name="sort_order" value="{$v('sort_order')}"></label><label>Notes<textarea name="notes" rows="8">{$v('notes')}</textarea></label><button>Save event</button></form>
 HTML;
         return Response::html((new TenantAdminLayout(new TenantSettingsRepository($this->pdo)))->render($tenant, 'Edit Event', $body, 'events'));
     }
@@ -94,7 +109,20 @@ HTML;
         if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) { return Response::html(ErrorPage::unauthorized('/login'), 403); }
         if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) { return Response::html('<h1>Invalid request</h1>', 419); }
         $id = (int) ($_POST['id'] ?? 0); $name = trim((string) ($_POST['name'] ?? '')); if ($name === '') { return Response::html('<h1>Name is required</h1>', 422); }
-        $data = ['tenant_id' => $tenant->tenantId, 'exhibition_date' => trim((string) ($_POST['exhibition_date'] ?? '')) ?: null, 'name' => $name, 'exhibition_type' => trim((string) ($_POST['exhibition_type'] ?? '')) ?: null, 'location' => trim((string) ($_POST['location'] ?? '')) ?: null, 'city' => trim((string) ($_POST['city'] ?? '')) ?: null, 'state_region' => trim((string) ($_POST['state_region'] ?? '')) ?: null, 'work_name' => trim((string) ($_POST['work_name'] ?? '')) ?: null, 'notes' => trim((string) ($_POST['notes'] ?? '')) ?: null, 'status' => in_array((string) ($_POST['status'] ?? 'active'), ['active', 'archived'], true) ? (string) $_POST['status'] : 'active', 'sort_order' => (int) ($_POST['sort_order'] ?? 0)];
+        $eventMonth = trim((string) ($_POST['exhibition_date'] ?? ''));
+        if (
+            $eventMonth !== ''
+            && !preg_match('/^\d{4}-\d{2}$/', $eventMonth)
+        ) {
+            return Response::html(
+                '<h1>Enter a valid event month and year</h1>',
+                422,
+            );
+        }
+        $exhibitionDate = $eventMonth !== ''
+            ? $eventMonth . '-01'
+            : null;
+        $data = ['tenant_id' => $tenant->tenantId, 'exhibition_date' => $exhibitionDate, 'name' => $name, 'exhibition_type' => trim((string) ($_POST['exhibition_type'] ?? '')) ?: null, 'location' => trim((string) ($_POST['location'] ?? '')) ?: null, 'city' => trim((string) ($_POST['city'] ?? '')) ?: null, 'state_region' => trim((string) ($_POST['state_region'] ?? '')) ?: null, 'work_name' => trim((string) ($_POST['work_name'] ?? '')) ?: null, 'notes' => trim((string) ($_POST['notes'] ?? '')) ?: null, 'status' => in_array((string) ($_POST['status'] ?? 'active'), ['active', 'archived'], true) ? (string) $_POST['status'] : 'active', 'sort_order' => (int) ($_POST['sort_order'] ?? 0)];
         if ($id > 0 && $this->find($tenant, $id)) { $data['id'] = $id; $this->pdo->prepare('UPDATE exhibitions SET exhibition_date=:exhibition_date, name=:name, exhibition_type=:exhibition_type, location=:location, city=:city, state_region=:state_region, work_name=:work_name, notes=:notes, status=:status, sort_order=:sort_order, updated_at=CURRENT_TIMESTAMP WHERE id=:id AND tenant_id=:tenant_id')->execute($data); }
         else { $this->pdo->prepare("INSERT INTO exhibitions (uuid, tenant_id, exhibition_date, name, exhibition_type, location, city, state_region, work_name, notes, status, sort_order, created_at, updated_at) VALUES (UUID(), :tenant_id, :exhibition_date, :name, :exhibition_type, :location, :city, :state_region, :work_name, :notes, :status, :sort_order, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)")->execute($data); }
         return new Response('', 303, ['Location' => '/admin/events']);
