@@ -68,3 +68,10 @@ The backup root is selected in this order:
 For persistent production backups, create `/var/lib/artsfolio/training-backups`, make it writable by the `artsfolio` account, and pass it as `ARTSFOLIO_TRAINING_BACKUP_ROOT`.
 
 # End of file.
+
+
+## Required UUID columns
+
+The production schema requires explicit UUID values for `exhibitions`, `contact_messages`, and `email_signups`. The fixture seeder supplies MariaDB `UUID()` values for every newly inserted record. Existing mailing-list rows retain their current UUID when refreshed through the tenant/email unique key.
+
+# End of file.

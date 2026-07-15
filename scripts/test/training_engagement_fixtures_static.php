@@ -37,6 +37,10 @@ if ($failures === []) {
         'training-buyer+taylor@example.com',
         'training-list+pending@example.com',
         'verifyCounts',
+        "UUID(), :tenant_id, :sender_name",
+        "UUID(), :tenant_id, :email",
+        "'contact_messages' => ['id', 'uuid', 'tenant_id'",
+        "'email_signups' => ['id', 'uuid', 'tenant_id'",
     ];
 
     foreach ($requiredSeedMarkers as $marker) {

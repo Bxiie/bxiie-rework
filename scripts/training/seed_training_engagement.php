@@ -212,10 +212,10 @@ function seedMessages(\PDO $pdo, int $tenantId): void
 
     $insert = $pdo->prepare(
         'INSERT INTO contact_messages (
-            tenant_id, sender_name, sender_email, name, email, subject, message,
+            uuid, tenant_id, sender_name, sender_email, name, email, subject, message,
             ip_address, user_agent, country, region, city, status, created_at, updated_at
          ) VALUES (
-            :tenant_id, :sender_name, :sender_email, :name, :email, :subject, :message,
+            UUID(), :tenant_id, :sender_name, :sender_email, :name, :email, :subject, :message,
             :ip_address, :user_agent, :country, :region, :city, :status,
             :created_at, :updated_at
          )'
@@ -255,11 +255,11 @@ function seedSignups(\PDO $pdo, int $tenantId): void
 {
     $insert = $pdo->prepare(
         'INSERT INTO email_signups (
-            tenant_id, email, name, source, notes, ip_address, user_agent,
+            uuid, tenant_id, email, name, source, notes, ip_address, user_agent,
             country, region, city, consent_status, confirmed_at, unsubscribed_at,
             created_at, updated_at
          ) VALUES (
-            :tenant_id, :email, :name, :source, :notes, :ip_address, :user_agent,
+            UUID(), :tenant_id, :email, :name, :source, :notes, :ip_address, :user_agent,
             :country, :region, :city, :consent_status,
             CASE WHEN :confirmed_days IS NULL THEN NULL ELSE UTC_TIMESTAMP() + INTERVAL :confirmed_days_again DAY END,
             NULL,
@@ -339,8 +339,8 @@ try {
 
     assertSchema($pdo, [
         'exhibitions' => ['id', 'uuid', 'tenant_id', 'exhibition_date', 'name', 'exhibition_type', 'location', 'city', 'state_region', 'work_name', 'notes', 'sort_order', 'status', 'created_at', 'updated_at'],
-        'contact_messages' => ['id', 'tenant_id', 'sender_name', 'sender_email', 'name', 'email', 'subject', 'message', 'ip_address', 'user_agent', 'country', 'region', 'city', 'status', 'created_at', 'updated_at'],
-        'email_signups' => ['id', 'tenant_id', 'email', 'name', 'source', 'notes', 'ip_address', 'user_agent', 'country', 'region', 'city', 'consent_status', 'confirmed_at', 'unsubscribed_at', 'created_at', 'updated_at'],
+        'contact_messages' => ['id', 'uuid', 'tenant_id', 'sender_name', 'sender_email', 'name', 'email', 'subject', 'message', 'ip_address', 'user_agent', 'country', 'region', 'city', 'status', 'created_at', 'updated_at'],
+        'email_signups' => ['id', 'uuid', 'tenant_id', 'email', 'name', 'source', 'notes', 'ip_address', 'user_agent', 'country', 'region', 'city', 'consent_status', 'confirmed_at', 'unsubscribed_at', 'created_at', 'updated_at'],
     ]);
 
     $backupDir = backupTrainingRows($pdo, $tenantId, $root);
