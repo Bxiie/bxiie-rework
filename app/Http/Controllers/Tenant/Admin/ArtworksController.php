@@ -44,6 +44,7 @@ final class ArtworksController
         $statusFilter = (string) ($_GET['status'] ?? '');
         $saleFilter = (string) ($_GET['sale_status'] ?? '');
         $imageFilter = (string) ($_GET['image'] ?? '');
+        $typeFilter = (string) ($_GET['artwork_type'] ?? '');
         $sectionFilter = max(0, (int) ($_GET['section_id'] ?? 0));
         $page = max(1, (int) ($_GET['page'] ?? 1));
         $pageSize = Pagination::allowedLimitFromQuery(
@@ -79,6 +80,32 @@ final class ArtworksController
             $where .= ' AND a.primary_media_id IS NULL';
         } elseif ($imageFilter === 'present') {
             $where .= ' AND a.primary_media_id IS NOT NULL';
+        }
+        if (in_array(
+            $typeFilter,
+            ['portfolio', 'site', 'both'],
+            true,
+        )) {
+            if (in_array($typeFilter, ['portfolio', 'both'], true)) {
+                $where .= " AND EXISTS (
+                    SELECT 1
+                    FROM artwork_type_assignments portfolio_ata
+                    JOIN artwork_types portfolio_type
+                      ON portfolio_type.id = portfolio_ata.type_id
+                    WHERE portfolio_ata.artwork_id = a.id
+                      AND portfolio_type.code = 'portfolio_images'
+                )";
+            }
+            if (in_array($typeFilter, ['site', 'both'], true)) {
+                $where .= " AND EXISTS (
+                    SELECT 1
+                    FROM artwork_type_assignments site_ata
+                    JOIN artwork_types site_type
+                      ON site_type.id = site_ata.type_id
+                    WHERE site_ata.artwork_id = a.id
+                      AND site_type.code = 'site_images'
+                )";
+            }
         }
         if ($sectionFilter > 0) {
             $where .= ' AND EXISTS (SELECT 1 FROM artwork_section_assignments af WHERE af.artwork_id = a.id AND af.section_id = :section_filter)';
@@ -138,6 +165,7 @@ final class ArtworksController
             'status' => $statusFilter,
             'sale_status' => $saleFilter,
             'image' => $imageFilter,
+            'artwork_type' => $typeFilter,
             'section_id' => $sectionFilter > 0 ? $sectionFilter : '',
             'per_page' => $pageSize,
         ], static fn ($value): bool => $value !== '');
@@ -249,6 +277,7 @@ HTML;
 <label>Search<br><input type="search" name="q" value="{$e($q)}"></label>
 <label>Status<br><select name="status"><option value="">All</option><option value="draft"{$option($statusFilter,'draft')}>Draft</option><option value="published"{$option($statusFilter,'published')}>Published</option></select></label>
 <label>Sale<br><select name="sale_status"><option value="">All</option><option value="nfs"{$option($saleFilter,'nfs')}>Not for sale</option><option value="for_sale"{$option($saleFilter,'for_sale')}>For sale</option><option value="sold"{$option($saleFilter,'sold')}>Sold</option></select></label>
+<label>Artwork type<br><select name="artwork_type"><option value="">All artwork types</option><option value="portfolio"{$option($typeFilter,'portfolio')}>Portfolio</option><option value="site"{$option($typeFilter,'site')}>Site</option><option value="both"{$option($typeFilter,'both')}>Portfolio and site</option></select></label>
 <label>Image<br><select name="image"><option value="">All</option><option value="present"{$option($imageFilter,'present')}>Has image</option><option value="missing"{$option($imageFilter,'missing')}>Missing image</option></select></label>
 <label>Section<br><select name="section_id">{$sectionOptions}</select></label>
 <label>Sort<br><select name="sort"><option value="created_desc"{$option($sort,'created_desc')}>Newest</option><option value="name"{$option($sort,'name')}>Name</option><option value="medium"{$option($sort,'medium')}>Medium</option><option value="date"{$option($sort,'date')}>Date/year</option><option value="status"{$option($sort,'status')}>Status</option></select></label>

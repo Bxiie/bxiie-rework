@@ -612,3 +612,8 @@ run_php scripts/test/watermark_image_scale_static.php
 run_php scripts/test/centered_stacked_watermarks_static.php
 
 # End of file.
+
+# Artwork type filter on the tenant Artworks grid.
+run_php scripts/test/artworks_type_filter_static.php
+
+# End of file.
