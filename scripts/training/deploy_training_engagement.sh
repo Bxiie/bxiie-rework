@@ -18,6 +18,12 @@ fi
 
 printf '[RUN] Deploying training engagement fixtures from commit %s.\n' "$(git -C "${PROJECT_ROOT}" rev-parse --short HEAD 2>/dev/null || printf unknown)"
 
+if [[ -n "${ARTSFOLIO_TRAINING_BACKUP_ROOT:-}" ]]; then
+    printf '[RUN] Training backup root override: %s\n' "${ARTSFOLIO_TRAINING_BACKUP_ROOT}"
+else
+    printf '[RUN] Training backups will use storage/training-backups or the system temporary directory.\n'
+fi
+
 ARTSFOLIO_ENV_FILE="${ENV_FILE}" \
 php "${PROJECT_ROOT}/scripts/training/seed_training_engagement.php"
 

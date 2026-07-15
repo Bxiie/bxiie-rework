@@ -55,4 +55,16 @@ php scripts/test/training_engagement_fixtures_static.php
 ./scripts/test/preflight.sh
 ```
 
+## Backup location
+
+Before changing fixtures, the seeder writes JSON snapshots of the training tenant's current `exhibitions`, `contact_messages`, and `email_signups` rows.
+
+The backup root is selected in this order:
+
+1. `ARTSFOLIO_TRAINING_BACKUP_ROOT`, when explicitly set and writable.
+2. `/var/www/artsfolio/storage/training-backups`, when writable by the deployment user.
+3. The PHP system temporary directory, normally `/var/tmp/artsfolio-training-backups` or `/tmp/artsfolio-training-backups`.
+
+For persistent production backups, create `/var/lib/artsfolio/training-backups`, make it writable by the `artsfolio` account, and pass it as `ARTSFOLIO_TRAINING_BACKUP_ROOT`.
+
 # End of file.

@@ -69,9 +69,41 @@ function assertSchema(\PDO $pdo, array $requirements): void
  */
 function backupTrainingRows(\PDO $pdo, int $tenantId, string $root): string
 {
+    $configuredRoot = trim((string) getenv('ARTSFOLIO_TRAINING_BACKUP_ROOT'));
+    $candidates = $configuredRoot !== ''
+        ? [$configuredRoot]
+        : [
+            $root . '/storage/training-backups',
+            rtrim(sys_get_temp_dir(), '/') . '/artsfolio-training-backups',
+        ];
+
+    $backupRoot = null;
+    $failures = [];
+
+    foreach ($candidates as $candidate) {
+        if (!is_dir($candidate) && !mkdir($candidate, 0770, true) && !is_dir($candidate)) {
+            $failures[] = "could not create {$candidate}";
+            continue;
+        }
+
+        if (!is_writable($candidate)) {
+            $failures[] = "not writable: {$candidate}";
+            continue;
+        }
+
+        $backupRoot = $candidate;
+        break;
+    }
+
+    if ($backupRoot === null) {
+        throw new \RuntimeException(
+            'Unable to select a writable training backup root: ' . implode('; ', $failures)
+        );
+    }
+
     $backupDir = sprintf(
-        '%s/.update-backups/training-engagement-git-%s',
-        $root,
+        '%s/training-engagement-git-%s',
+        rtrim($backupRoot, '/'),
         gmdate('YmdHis')
     );
 
@@ -95,10 +127,10 @@ function backupTrainingRows(\PDO $pdo, int $tenantId, string $root): string
         'tenant_id' => $tenantId,
         'tables' => ['exhibitions', 'contact_messages', 'email_signups'],
     ];
-    file_put_contents(
-        "{$backupDir}/manifest.json",
-        json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL
-    );
+    $manifestJson = json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    if ($manifestJson === false || file_put_contents("{$backupDir}/manifest.json", $manifestJson . PHP_EOL) === false) {
+        throw new \RuntimeException('Unable to write the training backup manifest.');
+    }
 
     return $backupDir;
 }
