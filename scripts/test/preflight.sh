@@ -587,3 +587,8 @@ run_php scripts/test/artwork_grid_sections_and_preview_shortcuts_static.php
 run_php scripts/test/image_watermark_render_call_static.php
 
 # End of file.
+
+# Public watermarking must remain active during unpublished preview.
+run_php scripts/test/watermark_preview_decoupling_static.php
+
+# End of file.

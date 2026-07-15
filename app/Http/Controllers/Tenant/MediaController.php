@@ -42,6 +42,7 @@ final class MediaController
             $tenant,
             requirePublishedArtwork: !$allowUnpublishedPreview,
             allowSelectedBackground: true,
+            applyPublicWatermark: true,
         );
     }
 
@@ -54,7 +55,12 @@ final class MediaController
         return $this->serve($tenant, requirePublishedArtwork: false);
     }
 
-    private function serve(TenantContext $tenant, bool $requirePublishedArtwork, bool $allowSelectedBackground = false): Response
+    private function serve(
+        TenantContext $tenant,
+        bool $requirePublishedArtwork,
+        bool $allowSelectedBackground = false,
+        bool $applyPublicWatermark = false,
+    ): Response
     {
         $mediaUuid = strtolower(trim((string) ($_GET['uuid'] ?? '')));
         $variantKey = $this->requestedVariant();
@@ -99,7 +105,7 @@ final class MediaController
 
         // Thumbnails intentionally remain unwatermarked. Public medium, large,
         // and original artwork responses use the tenant watermark setting.
-        $watermarkEnabled = $requirePublishedArtwork
+        $watermarkEnabled = $applyPublicWatermark
             && !$isBackgroundRequest
             && !$this->isSelectedPresentationMedia(
                 $tenant,
@@ -157,7 +163,7 @@ final class MediaController
                 );
             }
         } elseif (
-            $requirePublishedArtwork
+            $applyPublicWatermark
             && $variantKey === 'thumb'
         ) {
             $watermarkStatus = 'thumbnail-excluded';
