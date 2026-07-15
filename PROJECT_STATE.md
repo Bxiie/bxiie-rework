@@ -3042,3 +3042,13 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - The generated tenant additions section no longer appends an End of file marker.
 
 <!-- End of Default tenant CSS cleanup. -->
+
+
+## Training tenant fixture deployment
+
+- Repository-native training fixtures are maintained under `scripts/training/`.
+- The fixture runner targets only the tenant slug `training`, validates the schema, creates a JSON backup, applies records transactionally, and verifies exact fixture counts.
+- Production deployment command: `ARTSFOLIO_ROOT=/var/www/artsfolio ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env bash ./scripts/training/deploy_training_engagement.sh`.
+- The fixture deployment is explicit and is not run automatically by ordinary production deploys.
+
+<!-- End of file. -->
