@@ -1,4 +1,13 @@
 
+## Home Page special artwork section
+
+- Tenant admins manage homepage artwork selection from a non-deletable special section on Portfolio Sections.
+- Home Page membership is stored in `homepage_artwork_assignments`, not `portfolio_sections`.
+- Published and draft non-site artworks belonging to the current tenant may be selected; public visibility follows normal portfolio status behavior.
+- Site-type branding artworks remain excluded from the Home Page artwork picker.
+- Assignment replacement is tenant-scoped, CSRF-protected, role-protected, and transactional.
+
+
 ## 2026-07-10 Security hardening
 
 - Tenant-scoped OAuth admin API requests now require the bearer token tenant_id to exactly match the URL tenant ID.
@@ -2450,6 +2459,14 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Directory is a Settings subpage.
 - The canonical tenant-admin sidebar does not contain a standalone Directory item.
 - Regression coverage prevents the duplicate top-level item from returning.
+
+
+## Training artwork fixture scope
+
+- Training artwork metadata fixtures modify only the 14 portfolio training artworks.
+- Site-type branding artworks are preserved and are not archived by the fixture.
+- Homepage artwork assignments are outside the fixture because no tenant-admin UI currently manages them.
+- Static coverage verifies the 14 expected slugs explicitly rather than with a formatting-sensitive regex.
 
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.

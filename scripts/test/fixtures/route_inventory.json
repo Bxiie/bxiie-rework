@@ -732,6 +732,11 @@
     {
         "scope": "tenant",
         "method": "GET",
+        "path": "/admin/portfolio-sections/home-page"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
         "path": "/admin/portfolio-sections/order"
     },
     {
@@ -1053,6 +1058,11 @@
         "scope": "tenant",
         "method": "POST",
         "path": "/admin/portfolio-sections/edit"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/portfolio-sections/home-page"
     },
     {
         "scope": "tenant",

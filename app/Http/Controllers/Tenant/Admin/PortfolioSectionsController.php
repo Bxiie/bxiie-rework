@@ -79,6 +79,11 @@ HTML;
 <main class="admin-main" style="max-width:1100px;margin:2rem auto;padding:0 1rem;">
     <p><a href="/admin">&larr; Admin</a></p>
     <h1>Portfolio Sections</h1>
+<section class="admin-panel homepage-special-section-card" data-special-section="home-page">
+    <h2>Home Page <span class="admin-muted">Special section</span></h2>
+    <p>Select and order the artworks featured on the public home page. This section cannot be renamed, archived, or deleted.</p>
+    <p><a class="admin-button" href="/admin/portfolio-sections/home-page">Manage Home Page artworks</a></p>
+</section>
     {$notice}
     <p>Use sections to group artwork and optionally show selected sections as public portfolio tabs.</p>
     <section aria-label="Portfolio section actions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1.25rem 0 1.5rem;">

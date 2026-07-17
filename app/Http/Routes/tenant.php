@@ -53,6 +53,7 @@ use App\Http\Controllers\Tenant\Admin\OnboardingPageController as TenantAdminOnb
 use App\Http\Controllers\Tenant\Admin\ArtworkUploadController as TenantAdminArtworkUploadController;
 use App\Http\Controllers\Tenant\Admin\ArtworksController as TenantAdminArtworksController;
 use App\Http\Controllers\Tenant\Admin\ArtworkPlacementController as TenantAdminArtworkPlacementController;
+use App\Http\Controllers\Tenant\Admin\HomepageArtworksController as TenantAdminHomepageArtworksController;
 use App\Http\Controllers\Tenant\Admin\ContentController as TenantAdminContentController;
 use App\Http\Controllers\Tenant\Admin\EventsController as TenantAdminEventsController;
 use App\Http\Controllers\Tenant\Admin\PortfolioSectionsController as TenantAdminPortfolioSectionsController;
@@ -202,6 +203,8 @@ return static function (Router $router, array $context): void {
         $router->post('/admin/events/order', fn (Request $request): Response => (new TenantAdminEventsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new CsrfTokenService()))->order($request, $tenant, $currentUser));
         $router->get('/admin/content', fn (Request $request): Response => (new TenantAdminContentController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, $pdo))->edit($request, $tenant, $currentUser));
         $router->post('/admin/content', fn (Request $request): Response => (new TenantAdminContentController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, $pdo))->update($request, $tenant, $currentUser));
+        $router->get('/admin/portfolio-sections/home-page', fn (Request $request): Response => (new TenantAdminHomepageArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->index($request, $tenant, $currentUser));
+        $router->post('/admin/portfolio-sections/home-page', fn (Request $request): Response => (new TenantAdminHomepageArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->update($request, $tenant, $currentUser));
         $router->get('/admin/artworks/placement', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->index($request, $tenant, $currentUser));
         $router->post('/admin/artworks/placement', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->update($request, $tenant, $currentUser));
         $router->get('/admin/portfolio-sections/order', fn (Request $request): Response => (new TenantAdminArtworkPlacementController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->order($request, $tenant, $currentUser));
