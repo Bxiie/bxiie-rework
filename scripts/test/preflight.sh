@@ -624,3 +624,4 @@ run_php scripts/test/event_month_year_picker_static.php
 # End of file.
 run_php scripts/test/homepage_special_section_static.php
 run_php scripts/test/public_variant_detail_homepage_edit_static.php
+run_php scripts/test/homepage_unwatermarked_thumbnails_static.php

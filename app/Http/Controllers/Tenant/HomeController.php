@@ -63,7 +63,9 @@ HTML;
                 $image = '';
 
                 if (!empty($item['media_uuid'])) {
+                    // Home-page cards always use the unwatermarked thumbnail derivative.
                     $src = '/media?uuid=' . rawurlencode((string) $item['media_uuid'])
+                        . '&variant=thumb'
                         . ($includeUnpublished ? '&preview_unpublished=1' : '');
                     $alt = $this->escape((string) ($item['media_alt_text'] ?? $item['title']));
                     $image = "<img src=\"{$src}\" alt=\"{$alt}\" loading=\"lazy\">";

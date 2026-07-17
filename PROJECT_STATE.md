@@ -1,3 +1,9 @@
+## Home page thumbnail watermark behavior
+
+- Home page artwork cards request the `thumb` media derivative.
+- Thumbnail derivatives remain unwatermarked.
+- Medium, large, and original public artwork images continue to follow tenant watermark settings.
+
 ## Public multi-variant artwork detail and Home Page editing
 
 - Public artwork pages define a local cents formatter used by multi-variant option labels.
