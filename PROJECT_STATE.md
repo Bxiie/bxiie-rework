@@ -1,3 +1,11 @@
+## Public multi-variant artwork detail and Home Page editing
+
+- Public artwork pages define a local cents formatter used by multi-variant option labels.
+- The artwork edit page includes Home Page as a special placement checkbox.
+- Draft and published portfolio artwork may be assigned to Home Page.
+- Site-only branding records are excluded by requiring the `portfolio_images` type.
+- Existing Home Page order is retained; newly assigned artwork is appended in increments of 10.
+
 
 ## Home Page special artwork section
 

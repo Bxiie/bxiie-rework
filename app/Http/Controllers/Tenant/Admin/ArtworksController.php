@@ -336,6 +336,7 @@ HTML;
         }
         $selectedSectionIds = $this->artworkSectionIds($tenant, $id);
         $selectedTypeCodes = $this->artworkTypeCodes($id);
+        $homePageSelected = $this->artworkIsOnHomePage($tenant, $id);
         $artworkPreview = '';
         $primaryMediaUuid = trim((string) ($artwork['primary_media_uuid'] ?? ''));
         if ($primaryMediaUuid !== '') {
@@ -355,6 +356,7 @@ HTML;
         }
         $portfolioChecked = in_array('portfolio_images', $selectedTypeCodes, true) ? ' checked' : '';
         $siteChecked = in_array('site_images', $selectedTypeCodes, true) ? ' checked' : '';
+        $homePageChecked = $homePageSelected ? ' checked' : '';
         $sectionOptions = '';
 
         foreach ($sections as $section) {
@@ -429,7 +431,8 @@ HTML;
         </fieldset>
         <fieldset style="margin:1rem 0;padding:1rem;border:1px solid #ccc;">
             <legend>Portfolio sections</legend>
-            <p>Choose where this artwork appears.</p>
+            <p>Choose where this artwork appears. Home Page is a special section; draft visibility follows the normal portfolio preview rules.</p>
+            <label class="homepage-special-section-option" style="display:block;margin:.25rem 0 .75rem;"><input type="checkbox" name="homepage_selected" value="1"{$homePageChecked}> Home Page</label>
             {$sectionOptions}
         </fieldset>
 
@@ -519,6 +522,12 @@ HTML;
 
             $this->replaceArtworkTypes($id, $_POST['artwork_types'] ?? []);
             $this->replaceArtworkSections($tenant, $id, $_POST['section_ids'] ?? []);
+            $this->replaceHomepageAssignment(
+                $tenant,
+                $id,
+                isset($_POST['homepage_selected']),
+                $_POST['artwork_types'] ?? [],
+            );
             try {
                 try {
                     (new ArtworkSaleAdminForm($this->pdo))->saveFromPost($tenant->tenantId, $id, $_POST, $saleStatus);
@@ -843,6 +852,101 @@ HTML;
     /**
      * @param mixed $rawSectionIds
      */
+    private function artworkIsOnHomePage(TenantContext $tenant, int $artworkId): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT 1
+             FROM homepage_artwork_assignments
+             WHERE tenant_id = :tenant_id
+               AND artwork_id = :artwork_id
+             LIMIT 1'
+        );
+        $stmt->execute([
+            'tenant_id' => $tenant->tenantId,
+            'artwork_id' => $artworkId,
+        ]);
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+    /**
+     * @param mixed $rawTypeCodes
+     */
+    private function replaceHomepageAssignment(
+        TenantContext $tenant,
+        int $artworkId,
+        bool $selected,
+        mixed $rawTypeCodes,
+    ): void {
+        $typeCodes = [];
+        if (is_array($rawTypeCodes)) {
+            foreach ($rawTypeCodes as $typeCode) {
+                if (is_scalar($typeCode)) {
+                    $typeCodes[] = trim((string) $typeCode);
+                }
+            }
+        }
+
+        $isPortfolioArtwork = in_array('portfolio_images', $typeCodes, true);
+
+        if (!$selected || !$isPortfolioArtwork) {
+            $this->pdo->prepare(
+                'DELETE FROM homepage_artwork_assignments
+                 WHERE tenant_id = :tenant_id
+                   AND artwork_id = :artwork_id'
+            )->execute([
+                'tenant_id' => $tenant->tenantId,
+                'artwork_id' => $artworkId,
+            ]);
+            return;
+        }
+
+        $existing = $this->pdo->prepare(
+            'SELECT sort_order
+             FROM homepage_artwork_assignments
+             WHERE tenant_id = :tenant_id
+               AND artwork_id = :artwork_id
+             LIMIT 1'
+        );
+        $existing->execute([
+            'tenant_id' => $tenant->tenantId,
+            'artwork_id' => $artworkId,
+        ]);
+        $existingSortOrder = $existing->fetchColumn();
+
+        if ($existingSortOrder !== false) {
+            return;
+        }
+
+        $next = $this->pdo->prepare(
+            'SELECT COALESCE(MAX(sort_order), 0) + 10
+             FROM homepage_artwork_assignments
+             WHERE tenant_id = :tenant_id'
+        );
+        $next->execute(['tenant_id' => $tenant->tenantId]);
+        $sortOrder = max(10, (int) $next->fetchColumn());
+
+        $this->pdo->prepare(
+            'INSERT INTO homepage_artwork_assignments (
+                tenant_id,
+                artwork_id,
+                sort_order,
+                created_at,
+                updated_at
+             ) VALUES (
+                :tenant_id,
+                :artwork_id,
+                :sort_order,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+             )'
+        )->execute([
+            'tenant_id' => $tenant->tenantId,
+            'artwork_id' => $artworkId,
+            'sort_order' => $sortOrder,
+        ]);
+    }
+
     private function replaceArtworkSections(TenantContext $tenant, int $artworkId, mixed $rawSectionIds): void
     {
         $sectionIds = [];

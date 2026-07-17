@@ -565,6 +565,14 @@ HTML;
         return $label === 'Default' ? '' : '<p class="sales-note-small">Option: ' . $this->escape($label) . '</p>';
     }
 
+    /**
+     * Formats integer cents for public variant option labels.
+     */
+    private function money(int $cents): string
+    {
+        return '$' . number_format(max(0, $cents) / 100, 2);
+    }
+
     /** @param array<string,mixed> $variant */
     private function variantPublicLabel(array $variant): string
     {
