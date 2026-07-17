@@ -1,0 +1,5 @@
+.env.video.local
+work/
+output/
+test-results/
+playwright-report/

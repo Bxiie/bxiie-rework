@@ -1,0 +1,109 @@
+1
+00:00:00,000 --> 00:00:08,000
+Welcome to ArtsFolio.
+
+2
+00:00:08,000 --> 00:00:18,000
+In this short tour, you’ll learn how to navigate your admin area,
+understand the dashboard, preview your site, and find help.
+
+3
+00:00:18,000 --> 00:00:30,000
+After you sign in, first confirm that you’re working on the correct site.
+
+4
+00:00:30,000 --> 00:00:45,000
+Your site name appears in the admin sidebar.
+This prevents edits from landing in the wrong studio.
+
+5
+00:00:45,000 --> 00:00:56,000
+The sidebar is your main map.
+
+6
+00:00:56,000 --> 00:01:10,000
+Dashboard returns to the overview.
+Content holds About and Contact material.
+
+7
+00:01:10,000 --> 00:01:24,000
+Artworks, Portfolio Sections, Events, Messages, Sales,
+Settings, and Help each lead to a focused workspace.
+
+8
+00:01:24,000 --> 00:01:38,000
+Think of the dashboard as your control room.
+
+9
+00:01:38,000 --> 00:01:54,000
+Use it to spot items needing attention,
+jump to common tasks, and confirm normal activity.
+
+10
+00:01:54,000 --> 00:02:12,000
+The dashboard gives you the signal.
+The detailed page gives you the tools.
+
+11
+00:02:12,000 --> 00:02:28,000
+Keep your public site close while you work.
+
+12
+00:02:28,000 --> 00:02:48,000
+Edit one area, save it, then inspect the public result,
+especially on a phone.
+
+13
+00:02:48,000 --> 00:03:05,000
+The Onboarding page gathers your setup tools in one place.
+
+14
+00:03:05,000 --> 00:03:22,000
+Use the checklist, guided tour, function index,
+and training resources.
+
+15
+00:03:22,000 --> 00:03:38,000
+Resetting onboarding progress does not delete your site content,
+artwork, settings, users, messages, or sales.
+
+16
+00:03:38,000 --> 00:03:54,000
+Help is available from inside your site.
+
+17
+00:03:54,000 --> 00:04:12,000
+The function index explains what each admin page does,
+when to use it, and what to check before saving.
+
+18
+00:04:12,000 --> 00:04:30,000
+Written guides can remain open in another tab while you work.
+
+19
+00:04:30,000 --> 00:04:46,000
+Change one group of settings at a time.
+Save before leaving the page.
+
+20
+00:04:46,000 --> 00:05:10,000
+Read validation messages and inspect the relevant public page
+on desktop and mobile.
+
+21
+00:05:10,000 --> 00:05:28,000
+Treat your admin area as private workspace.
+
+22
+00:05:28,000 --> 00:05:46,000
+Invite helpers through Users instead of sharing passwords,
+and do not expose customer or visitor information.
+
+23
+00:05:46,000 --> 00:06:02,000
+The sidebar is your map, the dashboard is your control room,
+and the public site is your proof.
+
+24
+00:06:02,000 --> 00:06:10,000
+Next: site identity, branding, and content.

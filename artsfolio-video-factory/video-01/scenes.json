@@ -1,0 +1,62 @@
+[
+  {
+    "id": "01-opening",
+    "title": "ArtsFolio Training 01",
+    "subtitle": "Your Admin Orientation",
+    "narration": "Welcome to ArtsFolio. In this short tour, you’ll learn how to move around your admin area, understand the dashboard, preview your public site, and find help whenever you need it. We’re using the Northstar Studio training site, but your own site works the same way."
+  },
+  {
+    "id": "02-confirm-site",
+    "title": "Confirm the correct site",
+    "subtitle": "Your site name appears in the sidebar",
+    "narration": "After you sign in, first confirm that you’re working on the correct site. Your site name appears in the admin sidebar. If you manage more than one site, this quick check prevents edits from landing in the wrong studio. Your admin area belongs to your site. Changes you make here affect your public pages, artwork, events, messages, and sales settings."
+  },
+  {
+    "id": "03-sidebar",
+    "title": "The sidebar is your map",
+    "subtitle": "Each link opens a focused workspace",
+    "narration": "The sidebar is your main map. Dashboard brings you back to the operational overview. Content holds your About and Contact material. Artworks is where you search, filter, edit, publish, and organize existing work. Upload Artwork starts a new artwork record. Portfolio Sections controls the groups visitors use to explore your work. Events manages exhibitions, talks, fairs, installations, and other public history. Messages and Email Signups collect visitor responses. Sales and Sales Analytics cover orders and commerce. Settings controls your site identity, visual choices, public behavior, and other configuration. Users, Domains, and Billing handle access and account setup. Onboarding and Help are your trail markers whenever the terrain gets foggy."
+  },
+  {
+    "id": "04-dashboard",
+    "title": "Dashboard",
+    "subtitle": "Your control room",
+    "narration": "The dashboard is not meant to replace every admin page. Think of it as your control room. Use it to spot items that may need attention, jump to common tasks, and confirm that your site is behaving normally. Depending on your plan and activity, you may see summaries for artwork, messages, sales, traffic, or setup progress. When a card points to something that needs work, click through to the full page. The dashboard gives you the signal. The detailed page gives you the tools."
+  },
+  {
+    "id": "05-preview",
+    "title": "Edit, save, preview",
+    "subtitle": "Keep the public site close",
+    "narration": "Keep your public site close while you work. After making a change, open the public page and inspect the result. Check the home page, Portfolio, artwork detail pages, About, Contact, and Events. A change that looks fine in a form can behave differently on the public site, especially on a phone. A useful rhythm is simple: edit one area, save it, then look at the public result before moving on."
+  },
+  {
+    "id": "06-onboarding",
+    "title": "Onboarding",
+    "subtitle": "Checklist, tour, and clean restart",
+    "narration": "The Onboarding page gathers the setup tools in one place. The setup checklist helps you move from a new site to a presentable public portfolio. The guided tour walks through the recommended sequence. The function index helps when you know what you want to accomplish but not which page contains the control. Training resources collect these videos and the matching written guides. You may also see an option to reset onboarding progress. That resets the checklist and tour state. It does not delete your artwork, settings, users, events, messages, or sales data."
+  },
+  {
+    "id": "07-help",
+    "title": "Help",
+    "subtitle": "Guides live inside ArtsFolio",
+    "narration": "Help is available from inside the site, so you do not need to memorize paths or keep a separate manual balanced beside your keyboard. The help index organizes guides by task. The tenant-admin function index acts as a directory of the admin area. Each entry explains what a page does, when to use it, and what to check before saving. The training-video directory links each video to its written guide. The written pages are useful while you work because they can remain open in another tab."
+  },
+  {
+    "id": "08-save-verify",
+    "title": "Save and verify",
+    "subtitle": "Small changes, checked carefully",
+    "narration": "A few habits make ArtsFolio much easier to manage. Change one group of settings at a time. Save before leaving the page. Read success and validation messages. After saving, inspect the relevant public page. On smaller screens, check that text remains readable, buttons remain tappable, and images are not stretched or awkwardly cropped. When working with artwork, use drafts for incomplete records and publish only when the title, image, metadata, description, and placement are ready."
+  },
+  {
+    "id": "09-privacy",
+    "title": "Protect private information",
+    "subtitle": "Use individual accounts for helpers",
+    "narration": "Treat your admin area as private workspace. Do not share screenshots containing customer details, email addresses, order information, private notes, or login links. Invite helpers through the Users page instead of sharing your password. Give each person only the access they need, and remove access when their work is finished."
+  },
+  {
+    "id": "10-closing",
+    "title": "You know the map",
+    "subtitle": "Next: identity, branding, and content",
+    "narration": "You now know the basic shape of ArtsFolio: the sidebar is your map, the dashboard is your control room, the public site is your proof, and Onboarding and Help are always nearby. Next, we’ll shape your site identity, branding, About page, Contact page, and visual settings."
+  }
+]

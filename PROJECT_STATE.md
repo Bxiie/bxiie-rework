@@ -2482,6 +2482,11 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Homepage artwork assignments are outside the fixture because no tenant-admin UI currently manages them.
 - Static coverage verifies the 14 expected slugs explicitly rather than with a formatting-sensitive regex.
 
+## Help sidebar contrast
+
+- Platform and tenant-host help pages retain a dark help-navigation sidebar.
+- Help navigation uses white primary text, light gray supporting text, a white active item, and a visible white keyboard-focus outline.
+- The help controller uses a versioned tenant-admin stylesheet URL to invalidate stale browser caches.
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 

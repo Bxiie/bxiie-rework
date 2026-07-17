@@ -4202,6 +4202,42 @@ form:has(textarea[name*="about" i][name*="html" i]):has(textarea[name*="contact"
 }
 /* End ArtsFolio logo aspect-ratio guard. */
 
+/* Platform help sidebar high-contrast override. */
+body.platform-help-page .tenant-admin-sidebar {
+  background: #171717 !important;
+  color: #ffffff !important;
+  border-right-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+body.platform-help-page .tenant-admin-sidebar .tenant-admin-sidebar-title,
+body.platform-help-page .tenant-admin-sidebar .tenant-admin-sidebar-title strong,
+body.platform-help-page .tenant-admin-sidebar nav a {
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+body.platform-help-page .tenant-admin-sidebar .tenant-admin-sidebar-title span {
+  color: #d8d8d8 !important;
+  text-shadow: none !important;
+}
+
+body.platform-help-page .tenant-admin-sidebar nav a:hover,
+body.platform-help-page .tenant-admin-sidebar nav a:focus-visible {
+  color: #ffffff !important;
+  background: #343434 !important;
+  outline: 3px solid #ffffff !important;
+  outline-offset: 2px !important;
+}
+
+body.platform-help-page .tenant-admin-sidebar nav a.active,
+body.platform-help-page .tenant-admin-sidebar nav a[aria-current="page"] {
+  color: #111111 !important;
+  background: #ffffff !important;
+  font-weight: 900 !important;
+}
+
+/* End platform help sidebar high-contrast override. */
+
 /* End of file. */
 
 /* Tenant admin final sidebar contrast layer. */
