@@ -70,8 +70,8 @@ For persistent production backups, create `/var/lib/artsfolio/training-backups`,
 # End of file.
 
 
-## Required UUID columns
+## UUID compatibility
 
-The production schema requires explicit UUID values for `exhibitions`, `contact_messages`, and `email_signups`. The fixture seeder supplies MariaDB `UUID()` values for every newly inserted record. Existing mailing-list rows retain their current UUID when refreshed through the tenant/email unique key.
+The production schema requires explicit UUID values for `exhibitions` and `contact_messages`. The `email_signups` table does not contain a `uuid` column, so mailing-list fixtures use the table's existing tenant/email identity and do not insert or validate a UUID.
 
 # End of file.

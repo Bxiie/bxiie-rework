@@ -38,10 +38,16 @@ if ($failures === []) {
         'training-list+pending@example.com',
         'verifyCounts',
         "UUID(), :tenant_id, :sender_name",
-        "UUID(), :tenant_id, :email",
         "'contact_messages' => ['id', 'uuid', 'tenant_id'",
-        "'email_signups' => ['id', 'uuid', 'tenant_id'",
     ];
+
+    if (str_contains($seed, 'UUID(), :tenant_id, :email')) {
+        $failures[] = 'Email signup fixtures must not insert a UUID; production email_signups has no uuid column.';
+    }
+
+    if (str_contains($seed, "'email_signups' => ['id', 'uuid', 'tenant_id'")) {
+        $failures[] = 'Email signup schema validation must not require email_signups.uuid.';
+    }
 
     foreach ($requiredSeedMarkers as $marker) {
         if (!str_contains($seed, $marker)) {
