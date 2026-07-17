@@ -261,7 +261,7 @@ function seedSignups(\PDO $pdo, int $tenantId): void
          ) VALUES (
             :tenant_id, :email, :name, :source, :notes, :ip_address, :user_agent,
             :country, :region, :city, :consent_status,
-            CASE WHEN :confirmed_days IS NULL THEN NULL ELSE UTC_TIMESTAMP() + INTERVAL :confirmed_days_again DAY END,
+            :confirmed_at,
             NULL,
             :created_at, :updated_at
          )
