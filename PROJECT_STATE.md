@@ -3088,3 +3088,10 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - The fixture deployment is explicit and is not run automatically by ordinary production deploys.
 
 <!-- End of file. -->
+
+## Help sidebar local contrast enforcement
+
+- The help controller emits a page-local high-contrast style block for the help navigation sidebar.
+- All help-sidebar text and links are forced to full-opacity white, with light supporting text.
+- Hover, active, and keyboard-focus states use a white surface with dark text.
+- The page-local rule intentionally overrides tenant and platform theme rules that load later or use unexpected page classes.

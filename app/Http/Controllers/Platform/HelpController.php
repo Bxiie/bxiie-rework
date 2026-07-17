@@ -349,6 +349,58 @@ HTML;
     <link rel="stylesheet" href="/assets/platform.css?v=20260708-logo-aspect">
     <link rel="stylesheet" href="/assets/platform-custom.css">
     <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260717-help-sidebar-contrast">
+
+<style id="help-sidebar-inline-contrast">
+/* HELP_SIDEBAR_INLINE_CONTRAST
+   Keep help navigation readable regardless of tenant or platform theme rules. */
+.tenant-admin-sidebar {
+    background: #151515 !important;
+    color: #ffffff !important;
+    border-right-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+.tenant-admin-sidebar,
+.tenant-admin-sidebar *,
+.tenant-admin-sidebar a,
+.tenant-admin-sidebar strong,
+.tenant-admin-sidebar h1,
+.tenant-admin-sidebar h2,
+.tenant-admin-sidebar h3,
+.tenant-admin-sidebar p,
+.tenant-admin-sidebar span {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
+}
+
+.tenant-admin-sidebar .tenant-admin-sidebar-title span,
+.tenant-admin-sidebar .help-sidebar-subtitle {
+    color: #e2e2e2 !important;
+}
+
+.tenant-admin-sidebar nav a {
+    display: block;
+    color: #ffffff !important;
+    background: transparent !important;
+}
+
+.tenant-admin-sidebar nav a:hover,
+.tenant-admin-sidebar nav a:focus-visible {
+    color: #111111 !important;
+    background: #f2f2f2 !important;
+    outline: 3px solid #ffffff !important;
+    outline-offset: 2px !important;
+}
+
+.tenant-admin-sidebar nav a.active,
+.tenant-admin-sidebar nav a[aria-current="page"] {
+    color: #111111 !important;
+    background: #ffffff !important;
+    font-weight: 900 !important;
+}
+/* End of help sidebar inline contrast. */
+</style>
+
 </head>
 <body class="tenant-admin-page platform-help-page">
 <header class="platform-header platform-help-header">

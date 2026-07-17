@@ -259,6 +259,7 @@ fi
 
 run_php scripts/test/platform_help_copyright_static.php
 run_php scripts/test/help_sidebar_contrast_static.php
+run_php scripts/test/help_sidebar_inline_contrast_static.php
 
 run_php scripts/test/smtp_reserved_recipient_guard_static.php
 
