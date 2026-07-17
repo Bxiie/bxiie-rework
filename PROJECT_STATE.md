@@ -3095,3 +3095,10 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - All help-sidebar text and links are forced to full-opacity white, with light supporting text.
 - Hover, active, and keyboard-focus states use a white surface with dark text.
 - The page-local rule intentionally overrides tenant and platform theme rules that load later or use unexpected page classes.
+
+
+## Help sidebar final contrast rule
+
+- The generic tenant-admin final sidebar color layer excludes `.platform-help-page`.
+- Help pages use a later white-on-dark sidebar rule.
+- The help stylesheet URL is versioned to invalidate stale caches.

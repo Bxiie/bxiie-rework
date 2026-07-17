@@ -348,7 +348,7 @@ HTML;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/assets/platform.css?v=20260708-logo-aspect">
     <link rel="stylesheet" href="/assets/platform-custom.css">
-    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260717-help-sidebar-contrast">
+    <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260717-help-final-contrast">
 
 <style id="help-sidebar-inline-contrast">
 /* HELP_SIDEBAR_INLINE_CONTRAST

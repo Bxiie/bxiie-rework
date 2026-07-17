@@ -35,7 +35,7 @@ foreach ($requiredCss as $marker) {
 
 if (!str_contains(
     $controller,
-    '/assets/tenant-admin.css?v=20260717-help-sidebar-contrast'
+    '/assets/tenant-admin.css?v=20260717-help-final-contrast'
 )) {
     $errors[] = 'HelpController does not use the contrast cache-busting version.';
 }

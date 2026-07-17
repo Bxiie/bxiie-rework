@@ -14,7 +14,7 @@ $failures = [];
 
 $required = [
     'Tenant admin final sidebar contrast layer.',
-    'body.tenant-admin-page .tenant-admin-sidebar nav a',
+    'body.tenant-admin-page:not(.platform-help-page) .tenant-admin-sidebar nav a',
     'var(--menu-text-color, var(--text-color, #1f1a14))',
     '.tenant-admin-sidebar-title span',
     '.tenant-admin-sidebar-upload:hover',
