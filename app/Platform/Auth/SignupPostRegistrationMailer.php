@@ -96,8 +96,7 @@ final class SignupPostRegistrationMailer
     private function queueVerification(int $userId, string $email): bool
     {
         $rawToken = bin2hex(random_bytes(32));
-        $this->storeVerificationToken($userId, $email, $rawToken);
-        $this->storeToken($userId, $rawToken);
+        $this->storeToken($userId, $email, $rawToken);
         $url = 'https://artsfol.io' . $this->verificationPath
             . (str_contains($this->verificationPath, '?') ? '&' : '?')
             . 'token=' . rawurlencode($rawToken);
@@ -147,7 +146,7 @@ final class SignupPostRegistrationMailer
         return true;
     }
 
-    private function storeToken(int $userId, string $rawToken): void
+    private function storeToken(int $userId, string $email, string $rawToken): void
     {
         $table = null;
         foreach (['email_verification_tokens', 'user_email_verification_tokens', 'user_verification_tokens'] as $candidate) {
@@ -170,6 +169,12 @@ final class SignupPostRegistrationMailer
         $fields = ['user_id', $tokenColumn];
         $values = [':user_id', ':token'];
         $params = ['user_id' => $userId, 'token' => $tokenColumn === 'token_hash' ? hash('sha256', $rawToken) : $rawToken];
+
+        if (in_array('email', $columns, true)) {
+            $fields[] = 'email';
+            $values[] = ':email';
+            $params['email'] = strtolower($email);
+        }
         if (in_array('expires_at', $columns, true)) {
             $fields[] = 'expires_at';
             $values[] = ':expires_at';
@@ -251,130 +256,6 @@ final class SignupPostRegistrationMailer
             }
         }
         return null;
-    }
-
-    private function storeVerificationToken(int $userId, string $email, string $rawToken): void
-    {
-        $candidateTables = [
-            'email_verification_tokens',
-            'user_email_verification_tokens',
-            'user_verification_tokens',
-        ];
-
-        $table = null;
-        foreach ($candidateTables as $candidate) {
-            $statement = $this->pdo->prepare(
-                'SELECT 1
-                 FROM information_schema.TABLES
-                 WHERE TABLE_SCHEMA = DATABASE()
-                   AND TABLE_NAME = :table_name
-                 LIMIT 1'
-            );
-            $statement->execute(['table_name' => $candidate]);
-
-            if ($statement->fetchColumn() !== false) {
-                $table = $candidate;
-                break;
-            }
-        }
-
-        if ($table === null) {
-            throw new RuntimeException('No email-verification token table exists.');
-        }
-
-        $columnStatement = $this->pdo->prepare(
-            'SELECT COLUMN_NAME
-             FROM information_schema.COLUMNS
-             WHERE TABLE_SCHEMA = DATABASE()
-               AND TABLE_NAME = :table_name
-             ORDER BY ORDINAL_POSITION'
-        );
-        $columnStatement->execute(['table_name' => $table]);
-
-        $columns = array_values(
-            array_map('strval', $columnStatement->fetchAll(PDO::FETCH_COLUMN))
-        );
-
-        $tokenColumn = in_array('token_hash', $columns, true)
-            ? 'token_hash'
-            : (in_array('token', $columns, true) ? 'token' : null);
-
-        if ($tokenColumn === null) {
-            throw new RuntimeException(
-                'The email-verification token table has no supported token column.'
-            );
-        }
-
-        $storedToken = $tokenColumn === 'token_hash'
-            ? hash('sha256', $rawToken)
-            : $rawToken;
-
-        $deleteClauses = [];
-        $deleteParameters = [];
-
-        if (in_array('user_id', $columns, true)) {
-            $deleteClauses[] = 'user_id = :delete_user_id';
-            $deleteParameters['delete_user_id'] = $userId;
-        }
-
-        if (in_array('email', $columns, true)) {
-            $deleteClauses[] = 'LOWER(email) = :delete_email';
-            $deleteParameters['delete_email'] = strtolower($email);
-        }
-
-        if ($deleteClauses !== []) {
-            $delete = $this->pdo->prepare(
-                'DELETE FROM `' . $table . '` WHERE '
-                . implode(' OR ', $deleteClauses)
-            );
-            $delete->execute($deleteParameters);
-        }
-
-        $fields = [];
-        $values = [];
-        $parameters = [];
-
-        if (in_array('user_id', $columns, true)) {
-            $fields[] = 'user_id';
-            $values[] = ':user_id';
-            $parameters['user_id'] = $userId;
-        }
-
-        if (in_array('email', $columns, true)) {
-            $fields[] = 'email';
-            $values[] = ':email';
-            $parameters['email'] = strtolower($email);
-        }
-
-        $fields[] = $tokenColumn;
-        $values[] = ':token';
-        $parameters['token'] = $storedToken;
-
-        if (in_array('expires_at', $columns, true)) {
-            $fields[] = 'expires_at';
-            $values[] = ':expires_at';
-            $parameters['expires_at'] = (new DateTimeImmutable('+24 hours'))
-                ->format('Y-m-d H:i:s');
-        }
-
-        if (in_array('created_at', $columns, true)) {
-            $fields[] = 'created_at';
-            $values[] = 'CURRENT_TIMESTAMP';
-        }
-
-        if (in_array('updated_at', $columns, true)) {
-            $fields[] = 'updated_at';
-            $values[] = 'CURRENT_TIMESTAMP';
-        }
-
-        $statement = $this->pdo->prepare(
-            'INSERT INTO `' . $table . '` (`'
-            . implode('`, `', $fields)
-            . '`) VALUES ('
-            . implode(', ', $values)
-            . ')'
-        );
-        $statement->execute($parameters);
     }
 
 }
