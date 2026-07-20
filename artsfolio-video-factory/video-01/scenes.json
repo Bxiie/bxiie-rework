@@ -19,12 +19,12 @@
       },
       {
         "id": "site-name",
-        "action": "highlight_site_name",
+        "action": "show_dashboard",
         "narration": "Your site name appears in the admin sidebar. If you manage more than one site, this quick check prevents edits from landing in the wrong studio."
       },
       {
         "id": "scope",
-        "action": "highlight_admin_main",
+        "action": "show_dashboard",
         "narration": "Your admin area belongs to your site. Changes you make here affect your public pages, artwork, events, messages, and sales settings."
       }
     ]
@@ -33,9 +33,89 @@
     "id": "sidebar",
     "cues": [
       {
-        "id": "overview",
-        "action": "highlight_sidebar",
-        "narration": "The sidebar is your main map. Dashboard brings you back to the operational overview. Content holds your About and Contact material. Artworks is where you search, filter, edit, publish, and organize existing work. Upload Artwork starts a new artwork record. Portfolio Sections controls the groups visitors use to explore your work. Events manages exhibitions, talks, fairs, installations, and other public history. Messages and Email Signups collect visitor responses. Sales and Sales Analytics cover orders and commerce. Settings controls your site identity, visual choices, public behavior, and other configuration. Users, Domains, and Billing handle access and account setup. Onboarding and Help are always nearby when you need them."
+        "id": "map",
+        "action": "show_dashboard",
+        "narration": "The sidebar is your main map."
+      },
+      {
+        "id": "dashboard",
+        "action": "click_dashboard",
+        "narration": "Dashboard brings you back to the operational overview."
+      },
+      {
+        "id": "content",
+        "action": "click_content",
+        "narration": "Content holds your About and Contact material."
+      },
+      {
+        "id": "artworks",
+        "action": "click_artworks",
+        "narration": "Artworks is where you search, filter, edit, publish, and organize existing work."
+      },
+      {
+        "id": "upload",
+        "action": "click_upload_artwork",
+        "narration": "Upload Artwork starts a new artwork record."
+      },
+      {
+        "id": "sections",
+        "action": "click_portfolio_sections",
+        "narration": "Portfolio Sections controls the groups visitors use to explore your work."
+      },
+      {
+        "id": "events",
+        "action": "click_events",
+        "narration": "Events manages exhibitions, talks, fairs, installations, and other public history."
+      },
+      {
+        "id": "messages",
+        "action": "click_messages",
+        "narration": "Messages collects visitor responses."
+      },
+      {
+        "id": "signups",
+        "action": "click_email_signups",
+        "narration": "Email Signups keeps track of people who join your mailing list."
+      },
+      {
+        "id": "sales",
+        "action": "click_sales",
+        "narration": "Sales covers orders, fulfillment, and refunds."
+      },
+      {
+        "id": "stats",
+        "action": "click_stats",
+        "narration": "Stats helps you understand how visitors use your site."
+      },
+      {
+        "id": "settings",
+        "action": "click_settings",
+        "narration": "Settings controls your site identity, visual choices, public behavior, and other configuration."
+      },
+      {
+        "id": "users",
+        "action": "click_users",
+        "narration": "Users controls who can help manage your site."
+      },
+      {
+        "id": "domains",
+        "action": "click_domains",
+        "narration": "Domains connects your public web address."
+      },
+      {
+        "id": "billing",
+        "action": "click_billing",
+        "narration": "Billing manages your ArtsFolio plan and account."
+      },
+      {
+        "id": "onboarding",
+        "action": "click_onboarding",
+        "narration": "Onboarding gathers your setup checklist and guided tour."
+      },
+      {
+        "id": "help",
+        "action": "click_help",
+        "narration": "Help is always nearby when you need instructions or a quick reference."
       }
     ]
   },
@@ -44,7 +124,7 @@
     "cues": [
       {
         "id": "control-room",
-        "action": "dashboard_top",
+        "action": "click_dashboard",
         "narration": "The dashboard is not meant to replace every admin page. Think of it as your control room."
       },
       {
@@ -54,7 +134,7 @@
       },
       {
         "id": "detail",
-        "action": "dashboard_top",
+        "action": "click_dashboard",
         "narration": "When a card points to something that needs work, click through to the full page. The dashboard gives you the signal. The detailed page gives you the tools."
       }
     ]
@@ -79,7 +159,7 @@
       },
       {
         "id": "rhythm",
-        "action": "return_admin",
+        "action": "click_dashboard",
         "narration": "A useful rhythm is simple: edit one area, save it, then look at the public result before moving on."
       }
     ]
@@ -89,17 +169,17 @@
     "cues": [
       {
         "id": "page",
-        "action": "onboarding_page",
+        "action": "click_onboarding",
         "narration": "The Onboarding page gathers the setup tools in one place."
       },
       {
         "id": "resources",
-        "action": "onboarding_resources",
+        "action": "show_onboarding",
         "narration": "The setup checklist helps you move from a new site to a presentable public portfolio. The guided tour walks through the recommended sequence. The function index helps when you know what you want to accomplish but not which page contains the control."
       },
       {
         "id": "reset",
-        "action": "onboarding_reset",
+        "action": "show_onboarding_reset",
         "narration": "You may also see an option to reset onboarding progress. That resets the checklist and tour state. It does not delete your artwork, settings, users, events, messages, or sales data."
       }
     ]
@@ -109,7 +189,7 @@
     "cues": [
       {
         "id": "index",
-        "action": "help_index",
+        "action": "click_help",
         "narration": "Help is available from inside the site, so you do not need to memorize paths or keep a separate manual beside your keyboard."
       },
       {
@@ -129,12 +209,12 @@
     "cues": [
       {
         "id": "settings",
-        "action": "settings_page",
+        "action": "click_settings",
         "narration": "A few habits make ArtsFolio much easier to manage. Change one group of settings at a time."
       },
       {
         "id": "save",
-        "action": "highlight_save",
+        "action": "show_save",
         "narration": "Save before leaving the page, and read success or validation messages."
       },
       {
@@ -144,7 +224,7 @@
       },
       {
         "id": "drafts",
-        "action": "artworks_page",
+        "action": "click_artworks",
         "narration": "When working with artwork, use drafts for incomplete records and publish only when the title, image, metadata, description, and placement are ready."
       }
     ]
@@ -154,7 +234,7 @@
     "cues": [
       {
         "id": "users",
-        "action": "users_page",
+        "action": "click_users",
         "narration": "Treat your admin area as private workspace. Do not share screenshots containing customer details, email addresses, order information, private notes, or login links. Invite helpers through the Users page instead of sharing your password. Give each person only the access they need, and remove access when their work is finished."
       }
     ]
@@ -164,7 +244,7 @@
     "cues": [
       {
         "id": "summary",
-        "action": "dashboard_top",
+        "action": "click_dashboard",
         "narration": "You now know the basic shape of ArtsFolio: the sidebar is your map, the dashboard is your control room, the public site is your proof, and Onboarding and Help are always nearby. Next, we\u2019ll shape your site identity, branding, About page, Contact page, and visual settings."
       }
     ]

@@ -89,7 +89,7 @@ final class SignupController
         <form method="post" action="/signup" class="auth-form">
             <input type="hidden" name="csrf_token" value="{$csrfToken}">
             <label>Site name<input type="text" name="site_name" required></label>
-            <label>Site slug<input type="text" name="slug" pattern="[a-z0-9-]{3,63}" required></label>
+            <label>Site short name<input type="text" name="slug" pattern="[a-z0-9-]{3,63}" required><small class="form-help">Choose the short name for your ArtsFolio address. For example, “bxiie” creates bxiie.artsfol.io.</small></label>
             <label>Your name<input type="text" name="admin_name" autocomplete="name" value="{$oauthName}"></label>
             {$emailField}
             <label>Signup passcode<input type="text" name="signup_code" value="{$signupCode}" autocomplete="off"></label>

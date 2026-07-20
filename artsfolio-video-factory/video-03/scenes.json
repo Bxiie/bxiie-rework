@@ -1,0 +1,182 @@
+[
+  {
+    "id": "intro",
+    "cues": [
+      {
+        "id": "welcome",
+        "action": "artworks_page",
+        "narration": "Welcome to ArtsFolio Training Video 03: Artwork and Portfolio Management. In this video, we\u2019ll upload artwork, edit its information, control publication and sale settings, organize portfolio sections, and verify the public result."
+      }
+    ]
+  },
+  {
+    "id": "artworks-grid",
+    "cues": [
+      {
+        "id": "overview",
+        "action": "artworks_page",
+        "narration": "Click Artworks in the sidebar. This page is the working catalog for your portfolio and site images."
+      },
+      {
+        "id": "filters",
+        "action": "show_artwork_filters",
+        "narration": "Use the filters to narrow the grid by search text, publication status, sale status, image status, section, and artwork type. Sorting and page-size controls help when your catalog grows."
+      },
+      {
+        "id": "types",
+        "action": "show_type_filter",
+        "narration": "Portfolio artwork and site images live in the same catalog but serve different jobs. Portfolio artwork appears as your work. Site images support logos, headers, backgrounds, About pages, and Contact pages."
+      },
+      {
+        "id": "edit",
+        "action": "open_first_artwork",
+        "narration": "Click Edit on an artwork to open its full record. When you return to the grid, ArtsFolio preserves the filters and options you were using."
+      }
+    ]
+  },
+  {
+    "id": "upload",
+    "cues": [
+      {
+        "id": "page",
+        "action": "upload_page",
+        "narration": "Click Upload Artwork to start a new record. This route is singular behind the scenes, but the sidebar label keeps the task clear."
+      },
+      {
+        "id": "image",
+        "action": "show_upload_image",
+        "narration": "Choose a clear source image. Use the best practical resolution you have, avoid unnecessary compression, and make sure the image is correctly oriented before uploading."
+      },
+      {
+        "id": "identity",
+        "action": "show_upload_identity",
+        "narration": "Enter the title and the year or date information that belongs with the work. Clear, consistent titles make the catalog easier to search and maintain."
+      },
+      {
+        "id": "details",
+        "action": "show_upload_details",
+        "narration": "Add medium, dimensions, description, and other public details. Describe the work for a visitor, not for the database. Keep internal notes separate from public copy."
+      },
+      {
+        "id": "save",
+        "action": "show_upload_save",
+        "narration": "Save the record when the essential information is ready. You can begin as a draft and return later before publishing."
+      }
+    ]
+  },
+  {
+    "id": "editing",
+    "cues": [
+      {
+        "id": "open",
+        "action": "open_first_artwork",
+        "narration": "The edit page gathers artwork information, images, placement, publication, and commerce controls."
+      },
+      {
+        "id": "metadata",
+        "action": "show_edit_metadata",
+        "narration": "Review the title, date, medium, dimensions, and description. Consistent metadata creates a calmer portfolio and makes future filtering much easier."
+      },
+      {
+        "id": "publication",
+        "action": "show_publication_controls",
+        "narration": "Drafts remain available in the admin area without appearing publicly. Publish only after the image, title, metadata, description, and placement are ready."
+      },
+      {
+        "id": "homepage",
+        "action": "show_homepage_control",
+        "narration": "The Home Page option places eligible artwork in the special home-page artwork section. Draft artwork may be assigned there for preparation, but it will not become public until publication rules allow it."
+      },
+      {
+        "id": "sale",
+        "action": "show_sale_controls",
+        "narration": "Sale settings control whether the work is available, its price, inventory, shipping, and any size or product variants. Configuring these fields does not charge anyone and does not require Stripe test mode."
+      },
+      {
+        "id": "save",
+        "action": "show_edit_save",
+        "narration": "Save before leaving the edit page. Read any validation message, then return to the artwork grid or inspect the public page."
+      }
+    ]
+  },
+  {
+    "id": "sections",
+    "cues": [
+      {
+        "id": "page",
+        "action": "sections_page",
+        "narration": "Click Portfolio Sections to organize how visitors browse your work."
+      },
+      {
+        "id": "structure",
+        "action": "show_sections_list",
+        "narration": "Sections can represent bodies of work, media, periods, exhibitions, or any grouping that helps a visitor understand the portfolio."
+      },
+      {
+        "id": "ordering",
+        "action": "show_sections_order",
+        "narration": "Use the ordering controls to establish the sequence shown publicly. The All button can be enabled or suppressed from Settings, depending on how you want visitors to enter the portfolio."
+      },
+      {
+        "id": "assignment",
+        "action": "artworks_page",
+        "narration": "Artwork placement is managed from the artwork record and reflected in the section filters on the grid. One artwork may belong wherever your current ArtsFolio configuration allows."
+      }
+    ]
+  },
+  {
+    "id": "site-images",
+    "cues": [
+      {
+        "id": "filter",
+        "action": "site_images_page",
+        "narration": "Switch the artwork-type filter to Site Images when managing logos, backgrounds, headers, and page imagery."
+      },
+      {
+        "id": "separation",
+        "action": "site_images_page",
+        "narration": "Keeping site assets separate prevents branding graphics from appearing in the public portfolio. They remain available to the settings and content pages that need them."
+      }
+    ]
+  },
+  {
+    "id": "public-check",
+    "cues": [
+      {
+        "id": "portfolio",
+        "action": "public_portfolio",
+        "narration": "Open the public Portfolio page after making changes. Confirm that the expected sections appear and that artwork is placed correctly."
+      },
+      {
+        "id": "detail",
+        "action": "public_first_artwork",
+        "narration": "Open an artwork detail page and check the image, title, metadata, description, sale information, and navigation."
+      },
+      {
+        "id": "home",
+        "action": "public_home",
+        "narration": "Check the home page when you have changed Home Page placement. Thumbnails should remain clean and unwatermarked."
+      },
+      {
+        "id": "mobile",
+        "action": "public_mobile_portfolio",
+        "narration": "Finally, inspect the portfolio at phone size. Images should not stretch, text should remain readable, and section controls should remain easy to tap."
+      },
+      {
+        "id": "return",
+        "action": "artworks_page",
+        "narration": "A reliable rhythm is upload, save as draft, complete the record, publish, assign placement, and verify the public result."
+      }
+    ]
+  },
+  {
+    "id": "closing",
+    "cues": [
+      {
+        "id": "summary",
+        "action": "sections_page",
+        "narration": "You now know how to upload artwork, edit metadata, manage drafts and publication, configure sale information, separate site images, organize portfolio sections, and verify the public portfolio. Next, we\u2019ll manage events and exhibition history."
+      }
+    ]
+  }
+]

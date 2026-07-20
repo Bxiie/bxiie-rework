@@ -1,0 +1,207 @@
+[
+  {
+    "id": "intro",
+    "cues": [
+      {
+        "id": "welcome",
+        "action": "settings_identity",
+        "narration": "Welcome to ArtsFolio Training Video 02: Site Identity, Branding, and Content. In this video, we\u2019ll shape the public face of your site, including its name, navigation labels, typography, colors, images, About page, Contact page, and social links."
+      }
+    ]
+  },
+  {
+    "id": "identity",
+    "cues": [
+      {
+        "id": "page",
+        "action": "settings_identity",
+        "narration": "Start by clicking Settings in the sidebar. The Identity section contains the basic language your visitors see throughout the site."
+      },
+      {
+        "id": "site-title",
+        "action": "show_identity_top",
+        "narration": "The site title appears in your public branding and navigation. The artist name becomes the principal public headline. You can also set the browser-tab title, copyright name, and the email address that receives site notifications."
+      },
+      {
+        "id": "home-intro",
+        "action": "show_home_intro",
+        "narration": "The home introduction is the short statement visitors encounter near the beginning of your site. Keep it clear and specific. A useful introduction says what kind of work you make without trying to squeeze your entire artistic life into one paragraph."
+      },
+      {
+        "id": "labels",
+        "action": "show_navigation_labels",
+        "narration": "Navigation labels let you rename Home, Portfolio, About, and Contact. Slugs control the public web addresses for those pages. Change slugs carefully because existing bookmarks and shared links may point to the old address."
+      },
+      {
+        "id": "visibility",
+        "action": "show_page_visibility",
+        "narration": "You can suppress the About or Contact page, remove the All button from the Portfolio page, or suppress the mailing-list prompt. These switches change public behavior, so preview the site after saving them."
+      }
+    ]
+  },
+  {
+    "id": "typography",
+    "cues": [
+      {
+        "id": "page",
+        "action": "settings_typography",
+        "narration": "Open the Typography section to control how different kinds of text look across the public site."
+      },
+      {
+        "id": "families",
+        "action": "show_typography_families",
+        "narration": "ArtsFolio separates body text, headings, the site title, navigation, artwork titles, metadata, forms, and footer text. This gives you control without requiring custom CSS."
+      },
+      {
+        "id": "sizes",
+        "action": "show_typography_sizes",
+        "narration": "Use the size controls to establish a clear hierarchy. Headings should be prominent, but body text and navigation must remain readable on a phone. Avoid making every element shout at the same volume."
+      },
+      {
+        "id": "preview",
+        "action": "public_home",
+        "narration": "After changing typography, preview the public home page and at least one artwork page. Look for clipped headings, cramped navigation, or text that becomes too small against an image."
+      }
+    ]
+  },
+  {
+    "id": "colors",
+    "cues": [
+      {
+        "id": "page",
+        "action": "settings_colors",
+        "narration": "Open Colors and Backgrounds to control the palette and image surfaces used by your public site."
+      },
+      {
+        "id": "core",
+        "action": "show_core_colors",
+        "narration": "Primary and accent colors establish the visual character. Text and background colors determine readability. Menu and top-bar colors control the public navigation area."
+      },
+      {
+        "id": "surfaces",
+        "action": "show_surface_colors",
+        "narration": "Additional surface colors affect headings, content panels, text panels, and artwork cards. Transparent colors can allow background imagery to show through, but too much transparency can make text difficult to read."
+      },
+      {
+        "id": "contrast",
+        "action": "public_home",
+        "narration": "Always check contrast on the actual public site. Text should remain easy to read without highlighting it with your cursor or leaning toward the screen like a suspicious heron."
+      }
+    ]
+  },
+  {
+    "id": "branding",
+    "cues": [
+      {
+        "id": "page",
+        "action": "settings_branding",
+        "narration": "Branding assets begin with Site Images. This view contains the logos, headers, backgrounds, and page images used by your site."
+      },
+      {
+        "id": "logo",
+        "action": "show_logo_controls",
+        "narration": "Keep logo records available as Site Images so they can be selected by the parts of ArtsFolio that use them. A horizontal logo works well in a wide header, while a square mark is useful in compact locations."
+      },
+      {
+        "id": "background",
+        "action": "show_background_controls",
+        "narration": "Page backgrounds are configured under Colors and Backgrounds. Choose images and colors that leave enough calm space for text and navigation."
+      },
+      {
+        "id": "watermark",
+        "action": "show_watermark_controls",
+        "narration": "Watermarks have their own Settings subpage. They affect eligible public artwork images. Keep them restrained enough that viewers can still evaluate the work. Home-page thumbnails remain unwatermarked."
+      }
+    ]
+  },
+  {
+    "id": "content",
+    "cues": [
+      {
+        "id": "page",
+        "action": "content_page",
+        "narration": "Next, click Content in the sidebar. This page holds the editable writing and selected images for the Home, About, and Contact pages."
+      },
+      {
+        "id": "home",
+        "action": "show_content_home",
+        "narration": "Home page text can also be edited here. Make one thoughtful change at a time, save it, and verify the result before rewriting another part of the site."
+      },
+      {
+        "id": "about",
+        "action": "show_content_about",
+        "narration": "The About section accepts formatted HTML. Use short paragraphs and meaningful headings. The About image picker selects from site images, and opacity controls how strongly that image appears."
+      },
+      {
+        "id": "contact",
+        "action": "show_content_contact",
+        "narration": "The Contact section should tell visitors how to reach you and what kinds of inquiries are welcome. It can use a separate image and opacity setting."
+      },
+      {
+        "id": "social",
+        "action": "show_social_links",
+        "narration": "Add only social links you actively maintain. An abandoned account is less useful than no link at all."
+      },
+      {
+        "id": "save",
+        "action": "show_content_save",
+        "narration": "Save content before leaving the page. ArtsFolio will report whether the update succeeded or whether a field needs attention."
+      }
+    ]
+  },
+  {
+    "id": "site-images",
+    "cues": [
+      {
+        "id": "images",
+        "action": "site_images_page",
+        "narration": "Branding images are managed as site images rather than portfolio artworks. Keep those records available so they can be selected by branding and content controls."
+      },
+      {
+        "id": "separation",
+        "action": "artworks_page",
+        "narration": "Portfolio artworks and site images serve different jobs. Artwork belongs in the public body of your portfolio. Logos, headers, backgrounds, About images, and Contact images support the site itself."
+      }
+    ]
+  },
+  {
+    "id": "verification",
+    "cues": [
+      {
+        "id": "home",
+        "action": "public_home",
+        "narration": "Finish by reviewing the public site. Check the logo, navigation, home introduction, colors, and typography."
+      },
+      {
+        "id": "about",
+        "action": "public_about",
+        "narration": "Open the About page and confirm that the text, image, and opacity work together."
+      },
+      {
+        "id": "contact",
+        "action": "public_contact",
+        "narration": "Open Contact and verify the instructions, image, social links, and form layout."
+      },
+      {
+        "id": "mobile",
+        "action": "public_mobile",
+        "narration": "Then check a phone-sized view. Navigation should remain usable, text should remain readable, and images should not stretch or swallow the page."
+      },
+      {
+        "id": "return",
+        "action": "settings_identity",
+        "narration": "A reliable workflow is edit, save, preview, and then continue. Small verified changes are easier to understand and easier to undo."
+      }
+    ]
+  },
+  {
+    "id": "closing",
+    "cues": [
+      {
+        "id": "summary",
+        "action": "content_page",
+        "narration": "You now know where to manage site identity, typography, colors, branding assets, public writing, social links, and page images. Next, we\u2019ll upload artwork, edit metadata, manage publication status, and organize the portfolio."
+      }
+    ]
+  }
+]
