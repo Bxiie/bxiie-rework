@@ -177,7 +177,38 @@ The System Operations dashboard and health emails include:
 
 An hourly snapshot older than 90 minutes warns and older than 180 minutes is critical. Weekly and monthly checks also become stale when their expected windows are missed.
 
-## 12. Failure investigation
+## 12. Repository locking and stale-lock recovery
+
+All ArtsFolio Restic jobs share `/run/lock/artsfolio-backup.lock`. Hourly backups skip when another job is active; weekly integrity checks and monthly restore tests wait up to 1,800 seconds so scheduled verification is not lost merely because an hourly snapshot overlaps.
+
+After obtaining the local lock, each job runs `restic unlock`. Without `--remove-all`, Restic removes only locks it classifies as stale. This repairs locks left by interrupted processes while preserving active repository locks.
+
+For manual recovery, first prove that no Restic process is active, then load the repository environment and unlock it:
+
+```bash
+sudo pgrep -a restic || true
+sudo systemctl stop artsfolio-backup.timer artsfolio-backup-weekly-check.timer artsfolio-backup-monthly-restore.timer
+cd /var/www/artsfolio
+sudo bash -c '
+  set -Eeuo pipefail
+  runtime_env=$(mktemp /run/artsfolio-restic-env.XXXXXX)
+  trap "rm -f $runtime_env" EXIT
+  php scripts/backup/export_restic_environment.php >$runtime_env
+  chmod 0600 $runtime_env
+  set -a
+  source $runtime_env
+  set +a
+  export RESTIC_CACHE_DIR=/var/cache/artsfolio/restic
+  restic list locks
+  restic unlock
+  restic list locks
+'
+sudo systemctl start artsfolio-backup.timer artsfolio-backup-weekly-check.timer artsfolio-backup-monthly-restore.timer
+```
+
+Do not use `restic unlock --remove-all` unless every repository client is known to be stopped.
+
+## 13. Failure investigation
 
 ```bash
 systemctl list-timers 'artsfolio-backup*' --all

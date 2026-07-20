@@ -2487,6 +2487,16 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Platform and tenant-host help pages retain a dark help-navigation sidebar.
 - Help navigation uses white primary text, light gray supporting text, a white active item, and a visible white keyboard-focus outline.
 - The help controller uses a versioned tenant-admin stylesheet URL to invalidate stale browser caches.
+
+## 2026-07-19 Restic repository lock serialization
+
+- Hourly backup, weekly integrity check, and monthly restore validation share `/run/lock/artsfolio-backup.lock`.
+- Weekly and monthly jobs wait up to 1,800 seconds for the shared lock; hourly backup remains nonblocking.
+- After obtaining the local lock, each job runs `restic unlock` without `--remove-all` to remove only stale repository locks left by interrupted jobs.
+- Manual recovery and verification steps are documented in `docs/dev/backup-restore-cookbook.md`.
+
+<!-- End of Restic repository lock serialization. -->
+
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 

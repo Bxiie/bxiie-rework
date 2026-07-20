@@ -6,6 +6,8 @@ readonly ROOT="${ARTSFOLIO_ROOT:-/var/www/artsfolio}"
 readonly STATE_DIR="${ARTSFOLIO_BACKUP_STATE_DIR:-/var/lib/artsfolio/backup-status}"
 readonly RESTORE_DIR="${ARTSFOLIO_BACKUP_RESTORE_TEST_DIR:-/var/backups/artsfolio/restore-test}"
 readonly CACHE_DIR="${ARTSFOLIO_RESTIC_CACHE_DIR:-/var/cache/artsfolio/restic}"
+readonly LOCK_FILE="${ARTSFOLIO_BACKUP_LOCK_FILE:-/run/lock/artsfolio-backup.lock}"
+readonly LOCK_WAIT_SECONDS="${ARTSFOLIO_BACKUP_LOCK_WAIT_SECONDS:-1800}"
 readonly MONITOR_USER="${ARTSFOLIO_MONITOR_USER:-artsfolio}"
 
 runtime_env=''
@@ -19,6 +21,13 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Serialize restore validation with hourly backups and repository checks.
+exec 9>"$LOCK_FILE"
+flock -w "$LOCK_WAIT_SECONDS" 9 || {
+    echo "[FAIL] Timed out waiting ${LOCK_WAIT_SECONDS}s for the ArtsFolio backup lock." >&2
+    exit 75
+}
+
 runtime_env="$(mktemp /run/artsfolio-restic-env.XXXXXX)"
 chmod 0600 "$runtime_env"
 /usr/bin/php "$ROOT/scripts/backup/export_restic_environment.php" > "$runtime_env"
@@ -29,7 +38,7 @@ set +a
 rm -f "$runtime_env"
 runtime_env=''
 
-for command in restic jq gzip grep runuser; do
+for command in restic jq gzip grep runuser flock; do
     command -v "$command" >/dev/null 2>&1 || {
         echo "[FAIL] Missing command: $command" >&2
         exit 1
@@ -41,6 +50,10 @@ install -d -m 0750 -o root -g artsfolio \
     "$RESTORE_DIR" \
     "$CACHE_DIR"
 export RESTIC_CACHE_DIR="$CACHE_DIR"
+
+# The shared flock excludes local backup activity. Restic unlock removes only
+# stale repository locks left by interrupted jobs.
+restic unlock
 
 work="$(mktemp -d "$RESTORE_DIR/run.XXXXXX")"
 restore_log="$(mktemp /run/artsfolio-restic-restore.XXXXXX.log)"
@@ -95,8 +108,8 @@ jq -n \
         detail: $detail
     }' > "$status_tmp"
 
-chmod 0640 "$status_tmp"
-chown root:artsfolio "$status_tmp"
+chmod 0644 "$status_tmp"
+chown root:root "$status_tmp"
 mv -f "$status_tmp" "$STATE_DIR/monthly.json"
 status_tmp=''
 

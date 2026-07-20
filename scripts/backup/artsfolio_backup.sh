@@ -60,6 +60,10 @@ install -d -m 0750 -o root -g artsfolio \
     "$CACHE_DIR"
 export RESTIC_CACHE_DIR="$CACHE_DIR"
 
+# The process-wide flock proves no other ArtsFolio Restic job is active on this
+# host. Remove only locks Restic itself classifies as stale before continuing.
+restic unlock
+
 started_epoch="$(date +%s)"
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 dump_path="$STAGING_DIR/artsfolio-db-$stamp.sql.gz"
@@ -153,8 +157,8 @@ jq -n \
         duration_seconds: $duration_seconds
     }' > "$status_tmp"
 
-chmod 0640 "$status_tmp"
-chown root:artsfolio "$status_tmp"
+chmod 0644 "$status_tmp"
+chown root:root "$status_tmp"
 mv -f "$status_tmp" "$STATE_DIR/hourly.json"
 status_tmp=''
 

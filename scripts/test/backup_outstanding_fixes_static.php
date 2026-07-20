@@ -54,7 +54,19 @@ if (str_contains($monthly, "grep -q 'CREATE TABLE'")) {
     $failures[] = 'Monthly restore still contains the pipefail/grep -q defect.';
 }
 
+foreach ([$hourly, $weekly, $monthly] as $script) {
+    if (!str_contains($script, 'ARTSFOLIO_BACKUP_LOCK_FILE')) {
+        $failures[] = 'Restic job does not use the shared ArtsFolio backup lock.';
+    }
+    if (!str_contains($script, 'restic unlock')) {
+        $failures[] = 'Restic job does not remove stale repository locks after serialization.';
+    }
+}
+
 foreach ([$weekly, $monthly] as $script) {
+    if (!str_contains($script, 'ARTSFOLIO_BACKUP_LOCK_WAIT_SECONDS')) {
+        $failures[] = 'Scheduled verification job does not wait for the shared backup lock.';
+    }
     if (!str_contains($script, 'runuser -u "$MONITOR_USER"')) {
         $failures[] = 'Scheduled verification job does not run the monitor as the artsfolio account.';
     }
