@@ -352,6 +352,7 @@ run_php scripts/test/signup_invite_template_variants_static.php
 run_php scripts/test/signup_code_invite_variant_status_static.php
 
 run_php scripts/test/signup_complimentary_checkout_static.php
+run_php scripts/test/signup_post_registration_email_static.php
 
 run_php scripts/test/signup_code_auto_invite_static.php
 

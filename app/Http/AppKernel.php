@@ -104,6 +104,7 @@ use App\Platform\Membership\MembershipRepository;
 use App\Platform\Security\RateLimiter;
 use App\Platform\Settings\PlatformSettingsRepository;
 use App\Platform\Signup\SignupCodeRepository;
+use App\Platform\Auth\SignupPostRegistrationMailer;
 use App\Platform\Signup\TenantSignupService;
 use App\Platform\Tenants\TenantAdminRepository;
 use App\Platform\ScaleTesting\ScaleTenantFixtureService;
