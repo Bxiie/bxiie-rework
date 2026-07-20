@@ -47,7 +47,7 @@ final class SignupPostRegistrationMailer
 
         $welcome = false;
         if (!$this->hasPending($email, 'lifecycle.welcome')) {
-            $welcome = $this->queueWelcome($email, $tenantSlug);
+            $welcome = $this->queueWelcome((int) $user['id'], $email, $tenantSlug);
         }
 
         return ['verification' => $verification, 'welcome' => $welcome];
@@ -119,7 +119,7 @@ final class SignupPostRegistrationMailer
         return true;
     }
 
-    private function queueWelcome(string $email, string $tenantSlug): bool
+    private function queueWelcome(int $userId, string $email, string $tenantSlug): bool
     {
         $siteUrl = 'https://' . $tenantSlug . '.artsfol.io';
         $adminUrl = $siteUrl . '/admin';
@@ -139,7 +139,7 @@ final class SignupPostRegistrationMailer
             $body,
             nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8')),
             null,
-            null,
+            $userId,
             null,
             'lifecycle.welcome',
         );
