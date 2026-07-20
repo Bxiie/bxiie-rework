@@ -1,0 +1,152 @@
+[
+  {
+    "id": "intro",
+    "cues": [
+      {
+        "id": "welcome",
+        "action": "events_page",
+        "narration": "Welcome to ArtsFolio Training Video 04: Events and Public History. In this video, we\u2019ll create and edit event records, choose exact or month-and-year dates, add locations and live links, and review the complete event history."
+      }
+    ]
+  },
+  {
+    "id": "list",
+    "cues": [
+      {
+        "id": "overview",
+        "action": "events_page",
+        "narration": "Click Events in the sidebar. This page is the working history of exhibitions, talks, fairs, installations, residencies, and other public activity."
+      },
+      {
+        "id": "records",
+        "action": "events_list",
+        "narration": "Review the existing records before adding another. Consistent titles, dates, and venue names keep the public history from becoming a thicket."
+      },
+      {
+        "id": "ordering",
+        "action": "events_order",
+        "narration": "Events are presented according to their date information and the ordering supported by the page. Accurate dates are therefore part of the design, not merely clerical detail."
+      }
+    ]
+  },
+  {
+    "id": "create",
+    "cues": [
+      {
+        "id": "page",
+        "action": "new_event",
+        "narration": "Choose the control for adding a new event. Begin with a concise title that a visitor will recognize."
+      },
+      {
+        "id": "date-mode",
+        "action": "new_date_text",
+        "narration": "ArtsFolio stores the public event date as flexible text. You can enter a complete date range, a single date, or only a month and year when that is the most accurate historical record."
+      },
+      {
+        "id": "dates",
+        "action": "new_date_text",
+        "narration": "Write the date exactly as you want visitors to read it. Examples include October 8, 2026, June through September 2026, or simply March 2024. Do not invent a day when only the month is known."
+      },
+      {
+        "id": "location",
+        "action": "new_location",
+        "narration": "Add the venue and location information a visitor needs. Avoid private shorthand that only makes sense inside your studio."
+      },
+      {
+        "id": "url",
+        "action": "new_type_work",
+        "narration": "Use event type to identify the activity, such as a solo exhibition, group exhibition, artist talk, residency, or collection milestone. The work field can name artwork associated with the event."
+      },
+      {
+        "id": "description",
+        "action": "new_description",
+        "narration": "Use the description for useful public context. Keep private logistics, internal notes, and personal contact information out of this field."
+      },
+      {
+        "id": "save",
+        "action": "new_save",
+        "narration": "Save when the essential information is complete, and read any validation message before leaving the page."
+      }
+    ]
+  },
+  {
+    "id": "edit",
+    "cues": [
+      {
+        "id": "open",
+        "action": "edit_event",
+        "narration": "Open an existing event to review its complete record."
+      },
+      {
+        "id": "title",
+        "action": "edit_title",
+        "narration": "Check the title for clarity and consistency with exhibition materials or institutional listings."
+      },
+      {
+        "id": "dates",
+        "action": "edit_date_text",
+        "narration": "Review the public date text carefully. Keep formatting consistent across the history while preserving uncertainty when the exact day is not known."
+      },
+      {
+        "id": "location",
+        "action": "edit_location",
+        "narration": "Confirm venue and location names. Consistent naming prevents one institution from appearing as several unrelated places."
+      },
+      {
+        "id": "url",
+        "action": "edit_type_work",
+        "narration": "Confirm the event type and any associated work names. Consistent language makes the public history easier to scan and understand."
+      },
+      {
+        "id": "description",
+        "action": "edit_description",
+        "narration": "Read the description as a visitor would. It should explain the event without sounding like a database export wearing a necktie."
+      },
+      {
+        "id": "save",
+        "action": "edit_save",
+        "narration": "Save the edited event and confirm that ArtsFolio reports success."
+      }
+    ]
+  },
+  {
+    "id": "review",
+    "cues": [
+      {
+        "id": "history",
+        "action": "events_page",
+        "narration": "Return to the Events list after saving. Review the records together as an exhibition history rather than as isolated entries."
+      },
+      {
+        "id": "ordering",
+        "action": "events_order",
+        "narration": "Check the order of the records and make sure dates are formatted consistently. Important exhibitions and milestones should be easy to find."
+      },
+      {
+        "id": "status",
+        "action": "events_status",
+        "narration": "Review the status controls for each event. Use the available status carefully so incomplete or internal records are not treated as finished."
+      },
+      {
+        "id": "consistency",
+        "action": "events_list",
+        "narration": "Scan venue names, locations, event types, and associated work names for duplicates or spelling variations. Consistency keeps the history readable and credible."
+      },
+      {
+        "id": "return",
+        "action": "events_page",
+        "narration": "A reliable workflow is record the event, verify the public date text, save it, return to the list, and review its place in the complete history."
+      }
+    ]
+  },
+  {
+    "id": "closing",
+    "cues": [
+      {
+        "id": "summary",
+        "action": "events_page",
+        "narration": "You now know how to create and edit events, use exact or month-and-year dates, manage locations and live links, and review your exhibition history. Next, we\u2019ll review messages, contact submissions, and email signups."
+      }
+    ]
+  }
+]

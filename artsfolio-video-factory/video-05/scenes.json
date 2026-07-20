@@ -1,0 +1,157 @@
+[
+  {
+    "id": "intro",
+    "cues": [
+      {
+        "id": "welcome",
+        "action": "messages_page",
+        "narration": "Welcome to ArtsFolio Training Video 05: Messages, Contact Submissions, and Email Signups. In this video, we\u2019ll review visitor messages, test the public contact form, manage mailing-list signups, and protect private information."
+      }
+    ]
+  },
+  {
+    "id": "messages",
+    "cues": [
+      {
+        "id": "overview",
+        "action": "messages_page",
+        "narration": "Click Messages in the sidebar. This page collects submissions from your public Contact page."
+      },
+      {
+        "id": "list",
+        "action": "messages_list",
+        "narration": "Review sender information, the submitted message, and the date received directly in the list. There is no separate message-detail page."
+      },
+      {
+        "id": "privacy",
+        "action": "messages_list",
+        "narration": "Treat the message list as private workspace because submissions may contain names, email addresses, phone numbers, and personal details."
+      },
+      {
+        "id": "clear",
+        "action": "messages_clear",
+        "narration": "Use Clear carefully when removing old or test submissions. Confirm that the records are no longer needed before clearing the list."
+      },
+      {
+        "id": "export",
+        "action": "messages_export",
+        "narration": "Export CSV creates a downloadable copy of the message list. Store that file securely and delete it when it is no longer needed."
+      }
+    ]
+  },
+  {
+    "id": "contact-test",
+    "cues": [
+      {
+        "id": "page",
+        "action": "public_contact",
+        "narration": "Open the public Contact page and review it as a visitor would."
+      },
+      {
+        "id": "form",
+        "action": "contact_form",
+        "narration": "Check that the form fields are clearly labeled, easy to complete, and appropriate for the kinds of inquiries you want to receive."
+      },
+      {
+        "id": "instructions",
+        "action": "contact_content",
+        "narration": "Contact instructions should explain what visitors can ask about, such as exhibitions, commissions, purchases, press, or studio visits."
+      },
+      {
+        "id": "privacy",
+        "action": "contact_content",
+        "narration": "Do not place private phone numbers, home addresses, or personal schedules on the public page unless you deliberately want them published."
+      },
+      {
+        "id": "submit",
+        "action": "contact_submit",
+        "narration": "When testing the form, use clearly marked test information. After submission, confirm that the visitor receives a sensible success message and that the message appears in the admin area."
+      },
+      {
+        "id": "verify",
+        "action": "messages_page",
+        "narration": "Return to Messages and confirm that the test submission arrived. Delete or clearly label test records so they are not mistaken for real inquiries."
+      }
+    ]
+  },
+  {
+    "id": "signups",
+    "cues": [
+      {
+        "id": "page",
+        "action": "signups_page",
+        "narration": "Click Email Signups to review people who joined your mailing list."
+      },
+      {
+        "id": "list",
+        "action": "signups_list",
+        "narration": "The signup list may include an email address, name, source, status, and signup date. Use this information only for the purpose the visitor agreed to."
+      },
+      {
+        "id": "status",
+        "action": "signups_status",
+        "narration": "Respect inactive, unsubscribed, or suppressed records. Do not manually reactivate someone who has asked not to receive email."
+      },
+      {
+        "id": "source",
+        "action": "signups_list",
+        "narration": "Source information can help you understand where people joined, but it should not become a surveillance scrapbook. Collect only what is useful."
+      },
+      {
+        "id": "export",
+        "action": "signups_controls",
+        "narration": "When export or management tools are available, handle the resulting file carefully. Mailing lists are private records, not studio confetti."
+      }
+    ]
+  },
+  {
+    "id": "public-signup",
+    "cues": [
+      {
+        "id": "home",
+        "action": "public_home",
+        "narration": "Review the mailing-list prompt on the public site. It should explain what the visitor is joining without exaggeration or mystery."
+      },
+      {
+        "id": "form",
+        "action": "public_signup_form",
+        "narration": "Check that the signup form is readable, works on a phone, and does not request more information than you need."
+      },
+      {
+        "id": "settings",
+        "action": "settings_identity",
+        "narration": "The mailing-list prompt can be suppressed from Settings when you are not actively collecting signups."
+      }
+    ]
+  },
+  {
+    "id": "workflow",
+    "cues": [
+      {
+        "id": "routine",
+        "action": "messages_page",
+        "narration": "A useful routine is to review new messages regularly, respond outside ArtsFolio when appropriate, update their status, and keep test submissions separate from real inquiries."
+      },
+      {
+        "id": "privacy",
+        "action": "signups_page",
+        "narration": "For email signups, honor consent, protect exported files, and remove access when a helper no longer needs it."
+      },
+      {
+        "id": "mobile",
+        "action": "public_contact_mobile",
+        "narration": "Finally, inspect the Contact page and signup controls at phone size. Labels should remain readable, fields should fit the screen, and buttons should remain easy to tap."
+      }
+    ]
+  },
+  {
+    "id": "closing",
+    "cues": [
+      {
+        "id": "summary",
+        "action": "messages_page",
+        "narration": "You now know how to review contact messages, test the public form, manage email signups, and protect visitor information. Next, we\u2019ll cover sales, orders, analytics, and refunds."
+      }
+    ]
+  }
+]
