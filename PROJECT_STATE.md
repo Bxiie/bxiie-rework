@@ -2495,6 +2495,15 @@ Shopping cart phase 3 adds the public buyer runtime for variant-aware carts. Ten
 - Internal slug storage and validation remain unchanged.
 - Regression coverage: `scripts/test/signup_site_short_name_copy_static.php`.
 
+
+## Signup post-registration email
+
+- Successful tenant signup queues both email verification and a welcome message.
+- The welcome message includes the public site URL and direct `/admin` URL.
+- Duplicate pending verification and welcome messages are suppressed.
+- Existing accounts can be repaired with `scripts/admin/queue_signup_post_registration_email.php`.
+- Regression coverage: `scripts/test/signup_post_registration_email_static.php`.
+
 # End of file.
 - Shopping cart Phase 5 is complete: `App\Tenant\Sales\AbandonedCartEmailQueueService` queues abandoned-cart reminders at 1, 3, and 7 days for active known-owner carts with at least one still-available variant item. Reminder links restore the canonical tenant cart through `/cart/bridge` using a signed email bridge token. The recurring worker job type is `sales.cart.queue_abandoned_reminders`; the manual script remains `scripts/email/queue_abandoned_cart_emails.php` and queues `email_outbox` rows only.
 

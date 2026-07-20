@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Platform;
 
+use App\Platform\Auth\SignupPostRegistrationMailer;
+
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\Support\SessionCookie;
@@ -28,7 +30,7 @@ final class SignupController
         private readonly ?SessionRepository $sessions = null,
         private readonly ?SessionTokenService $sessionTokens = null,
         private readonly ?PlatformSettingsRepository $settings = null,
-    ) {
+        private readonly ?SignupPostRegistrationMailer $postRegistrationMailer = null,) {
     }
 
     public function show(Request $request): Response
@@ -142,7 +144,18 @@ HTML);
                 selectedPlanSlug: (string) ($_POST['selected_plan'] ?? ''),
             );
 
-            unset($_SESSION['artsfolio_oauth_profile'], $_SESSION['artsfolio_oauth_user_id']);
+            
+            if ($this->postRegistrationMailer !== null) {
+                try {
+                    $this->postRegistrationMailer->queueForEmail(
+                        (string) ($_POST['admin_email'] ?? $_POST['email'] ?? ''),
+                        (string) ($result['tenant_slug'] ?? $_POST['slug'] ?? $_POST['site_slug'] ?? ''),
+                    );
+                } catch (\Throwable $exception) {
+                    error_log('ArtsFolio signup post-registration email queue failed: ' . $exception->getMessage());
+                }
+            }
+unset($_SESSION['artsfolio_oauth_profile'], $_SESSION['artsfolio_oauth_user_id']);
         } catch (\Throwable $e) {
             error_log('Tenant signup failed: ' . $e->getMessage());
 

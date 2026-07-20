@@ -110,6 +110,7 @@ use App\Platform\Monitoring\OperationsMonitorRepository;
 use App\Platform\Security\RateLimiter;
 use App\Platform\Settings\PlatformSettingsRepository;
 use App\Platform\Signup\SignupCodeRepository;
+use App\Platform\Auth\SignupPostRegistrationMailer;
 use App\Platform\Signup\TenantSignupService;
 use App\Platform\Tenants\TenantAdminRepository;
 use App\Platform\ScaleTesting\ScaleTenantFixtureService;
@@ -205,8 +206,8 @@ return static function (Router $router, array $context): void {
         return Response::html(AuthPage::pageMessage('Password updated', 'Your password has been updated. You can now sign in with your new password.'));
     });
     $router->get('/pricing', fn (Request $request): Response => (new PricingController($pdo, new PlatformSettingsRepository($pdo)))->index($request));
-    $router->get('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo, new PlatformSettingsRepository($pdo), new SignupCodeRepository($pdo)), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService(), new PlatformSettingsRepository($pdo)))->show($request));
-    $router->post('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo, new PlatformSettingsRepository($pdo), new SignupCodeRepository($pdo)), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService(), new PlatformSettingsRepository($pdo)))->submit($request));
+    $router->get('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo, new PlatformSettingsRepository($pdo), new SignupCodeRepository($pdo)), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService(), new PlatformSettingsRepository($pdo), new SignupPostRegistrationMailer($pdo, new \App\Platform\Email\EmailOutboxRepository($pdo))))->show($request));
+    $router->post('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo, new PlatformSettingsRepository($pdo), new SignupCodeRepository($pdo)), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService(), new PlatformSettingsRepository($pdo), new SignupPostRegistrationMailer($pdo, new \App\Platform\Email\EmailOutboxRepository($pdo))))->submit($request));
     $router->get('/', fn (Request $request): Response => $marketingController->home($request));
     $router->get('/directory', fn (Request $request): Response => (new DirectoryController($pdo))->index($request));
     $router->get('/contact', fn (Request $request): Response => $marketingController->contact($request));
