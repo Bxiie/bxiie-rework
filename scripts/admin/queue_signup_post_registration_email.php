@@ -20,7 +20,8 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 $pdo = Database::connect($root);
 $mailer = new SignupPostRegistrationMailer($pdo, new EmailOutboxRepository($pdo));
 try {
-    $result = $mailer->queueForEmail($email, $tenantSlug);
+    $replaceOtherTenantPending = $tenantSlug !== null && trim($tenantSlug) !== '';
+    $result = $mailer->queueForEmail($email, $tenantSlug, $replaceOtherTenantPending);
 } catch (Throwable $exception) {
     fwrite(STDERR, '[FAIL] ' . $exception->getMessage() . "\n");
     exit(1);
