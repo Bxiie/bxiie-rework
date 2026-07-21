@@ -782,9 +782,17 @@ HTML;
             $name = $this->escape((string) ($tenant['display_name'] ?? $tenant['slug'] ?? 'Artist site'));
             $summary = $this->escape((string) ($tenant['summary'] ?? 'Artist portfolio on ArtsFolio.'));
             $href = $this->escape((string) ($tenant['href'] ?? '#'));
+            $thumbnail = '';
+            $thumbnailUuid = trim((string) ($tenant['thumbnail_media_uuid'] ?? ''));
+            if ($thumbnailUuid !== '') {
+                $src = $this->escape((string) ($tenant['href'] ?? '#') . '/media?uuid=' . rawurlencode($thumbnailUuid) . '&variant=thumb');
+                $alt = $this->escape((string) ($tenant['thumbnail_title'] ?? $name));
+                $thumbnail = '<div class="directory-card-thumb"><img src="' . $src . '" alt="' . $alt . '" loading="lazy"></div>';
+            }
 
             $html .= <<<HTML
-<a class="tenant-card" href="{$href}">
+<a class="tenant-card directory-card" href="{$href}">
+    {$thumbnail}
     <h3>{$name}</h3>
     <p>{$summary}</p>
     <span>Visit site</span>
@@ -840,6 +848,8 @@ HTML;
                     t.slug,
                     t.name AS display_name,
                     COALESCE(summary.setting_value, '') AS summary,
+                    thumbnail_media.uuid AS thumbnail_media_uuid,
+                    thumbnail_artwork.title AS thumbnail_title,
                     COALESCE(primary_domain.hostname, fallback_domain.hostname, CONCAT(t.slug, '.artsfol.io')) AS domain
                 FROM tenants t
                 INNER JOIN {$settingsTable} opt
@@ -849,6 +859,16 @@ HTML;
                 LEFT JOIN {$settingsTable} summary
                     ON summary.tenant_id = t.id
                    AND summary.setting_key = 'platform_directory_summary'
+                LEFT JOIN {$settingsTable} selected_thumbnail
+                    ON selected_thumbnail.tenant_id = t.id
+                   AND selected_thumbnail.setting_key = 'platform_directory_thumbnail_artwork_id'
+                LEFT JOIN artworks thumbnail_artwork
+                    ON thumbnail_artwork.tenant_id = t.id
+                   AND thumbnail_artwork.id = CAST(NULLIF(selected_thumbnail.setting_value, '') AS UNSIGNED)
+                   AND thumbnail_artwork.status = 'published'
+                LEFT JOIN media_assets thumbnail_media
+                    ON thumbnail_media.id = thumbnail_artwork.primary_media_id
+                   AND thumbnail_media.is_private = 0
                 LEFT JOIN tenant_domains primary_domain
                     ON primary_domain.tenant_id = t.id
                    AND primary_domain.is_primary = TRUE

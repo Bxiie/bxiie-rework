@@ -4359,3 +4359,9 @@ body.tenant-admin-page.platform-help-page .tenant-admin-sidebar nav a[aria-curre
         grid-template-columns: 1fr;
     }
 }
+
+
+/* Mobile tenant-admin hamburger navigation. */
+.tenant-admin-menu-toggle{display:none}
+@media(max-width:900px){.tenant-admin-shell{display:block;position:relative}.tenant-admin-menu-toggle{display:flex;align-items:center;gap:.55rem;margin:12px 16px 0;padding:11px 15px;border:0;border-radius:999px;background:#111;color:#fff;font:inherit;font-weight:800;cursor:pointer}.tenant-admin-sidebar{display:none;margin:10px 16px 0;border-radius:18px;border-right:0;box-shadow:0 18px 50px rgba(0,0,0,.24)}body.tenant-admin-menu-open .tenant-admin-sidebar{display:block}}
+/* End mobile tenant-admin hamburger navigation. */

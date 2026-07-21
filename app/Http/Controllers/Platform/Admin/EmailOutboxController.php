@@ -43,10 +43,11 @@ final class EmailOutboxController
                 : '<span class="admin-muted">None recorded</span>';
 
             $statusClass = $status === 'failed' ? ' status-failed' : '';
+            $statusTimestamp = (string) ($email['sent_at'] ?? $email['failed_at'] ?? $email['updated_at'] ?? $email['created_at'] ?? '');
 
             $rows .= '<tr class="email-outbox-row' . $statusClass . '">'
                 . '<td>' . $this->escape((string) $email['id']) . '</td>'
-                . '<td>' . $this->escape($status) . '</td>'
+                . '<td>' . $this->escape($status) . '<br><small class="admin-muted">' . $this->escape($statusTimestamp) . ' UTC</small></td>'
                 . '<td>' . $this->escape((string) $email['recipient_email']) . '</td>'
                 . '<td>' . $this->escape((string) $email['subject']) . '</td>'
                 . '<td>' . $this->escape((string) ($email['template_key'] ?? '')) . '</td>'
@@ -69,7 +70,7 @@ final class EmailOutboxController
     <thead>
         <tr>
             <th>ID</th>
-            <th>Status</th>
+            <th>Status / timestamp</th>
             <th>Recipient</th>
             <th>Subject</th>
             <th>Template</th>

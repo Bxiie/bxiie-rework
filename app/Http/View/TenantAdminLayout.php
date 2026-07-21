@@ -82,7 +82,8 @@ final class TenantAdminLayout
 </header>
 
 <div class="tenant-admin-shell">
-    <aside class="tenant-admin-sidebar" aria-label="Tenant admin navigation">
+    <button class="tenant-admin-menu-toggle" type="button" aria-controls="tenant-admin-sidebar" aria-expanded="false"><span aria-hidden="true">☰</span><span>Admin menu</span></button>
+    <aside class="tenant-admin-sidebar" id="tenant-admin-sidebar" aria-label="Tenant admin navigation">
         <a class="tenant-admin-sidebar-upload" href="/admin/artwork/upload">
             <span aria-hidden="true">＋</span>
             <strong>Upload Artwork</strong>
@@ -113,6 +114,17 @@ final class TenantAdminLayout
         <a href="https://artsfol.io/contact">Contact artsfol.io</a>
     </nav>
 </footer>
+<script>
+(() => {
+ const button=document.querySelector('.tenant-admin-menu-toggle');
+ const sidebar=document.getElementById('tenant-admin-sidebar');
+ if(!button||!sidebar)return;
+ const close=()=>{document.body.classList.remove('tenant-admin-menu-open');button.setAttribute('aria-expanded','false');};
+ button.addEventListener('click',()=>{const open=document.body.classList.toggle('tenant-admin-menu-open');button.setAttribute('aria-expanded',open?'true':'false');});
+ sidebar.addEventListener('click',event=>{if(event.target.closest('a')&&window.matchMedia('(max-width: 900px)').matches)close();});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape')close();});
+})();
+</script>
 </body>
 </html>
 HTML;
