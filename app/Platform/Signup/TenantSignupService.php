@@ -7,6 +7,7 @@ namespace App\Platform\Signup;
 use App\Platform\Settings\PlatformSettingsRepository;
 use App\Platform\Email\BrandedEmail;
 use App\Platform\Email\EditableEmailTemplate;
+use App\Platform\Email\EmailTemplateCatalog;
 use App\Platform\Email\TemplateRenderer;
 use PDO;
 use RuntimeException;
@@ -637,11 +638,14 @@ final class TenantSignupService
             dirname(__DIR__, 3) . '/template/email',
         );
 
-        $schedule = [
-            ['tenant_admin_welcome_6h', 'lifecycle/tenant_admin_welcome_6h.txt', 21600],
-            ['tenant_admin_feature_deep_dive_1d', 'lifecycle/tenant_admin_feature_deep_dive_1d.txt', 86400],
-            ['tenant_admin_weekly_checkin', 'lifecycle/tenant_admin_weekly_checkin.txt', 604800],
-        ];
+        $schedule = [];
+        foreach (glob(dirname(__DIR__, 3) . '/template/email/lifecycle/*.{txt,md,html}', GLOB_BRACE) ?: [] as $absolutePath) {
+            if (!is_file($absolutePath) || str_starts_with(basename($absolutePath), '._')) continue;
+            $templatePath = 'lifecycle/' . basename($absolutePath);
+            if (!EmailTemplateCatalog::isActive($this->settings, $templatePath)) continue;
+            $timing = EmailTemplateCatalog::signupSchedule($this->settings, $templatePath);
+            $schedule[] = [EmailTemplateCatalog::templateKeyForPath($templatePath), $templatePath, $timing['minutes'] * 60];
+        }
 
         foreach ($schedule as [$templateKey, $templatePath, $delaySeconds]) {
             if ($this->lifecycleEmailExists($tenantId, $userId, $templateKey)) {

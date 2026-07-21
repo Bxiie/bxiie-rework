@@ -65,6 +65,42 @@ final class EmailTemplateCatalog
         return null;
     }
 
+    /** @return array{minutes:int,recurring:bool} */
+    public static function signupSchedule(PlatformSettingsRepository $settings, string $path): array
+    {
+        $defaults = [
+            'lifecycle/tenant_admin_welcome_6h.txt' => 360,
+            'lifecycle/tenant_admin_feature_deep_dive_1d.txt' => 1440,
+            'lifecycle/tenant_admin_weekly_checkin.txt' => 10080,
+        ];
+        $minutes = (int) $settings->get(self::scheduleMinutesKey($path), (string) ($defaults[$path] ?? 0));
+        return ['minutes' => max(0, min(5256000, $minutes)), 'recurring' => $settings->get(self::scheduleRecurringKey($path), '0') === '1'];
+    }
+
+    public static function scheduleMinutesKey(string $path): string
+    {
+        return 'email_template.signup_minutes.' . hash('sha256', $path);
+    }
+
+    public static function scheduleRecurringKey(string $path): string
+    {
+        return 'email_template.signup_recurring.' . hash('sha256', $path);
+    }
+
+    public static function isSignupTemplate(string $path): bool
+    {
+        return str_starts_with($path, 'lifecycle/') && in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), ['txt', 'md', 'html'], true);
+    }
+
+    public static function templateKeyForPath(string $path): string
+    {
+        foreach (self::definitions() as $definedPath => $definition) {
+            if ($definedPath === $path && isset($definition['keys'][0])) return (string) $definition['keys'][0];
+        }
+        $stem = strtolower((string) preg_replace('/[^a-z0-9]+/i', '_', pathinfo($path, PATHINFO_FILENAME)));
+        return 'lifecycle.' . trim($stem, '_');
+    }
+
     public static function settingKey(string $path): string
     {
         return 'email_template.active.' . hash('sha256', $path);

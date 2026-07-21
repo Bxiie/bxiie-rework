@@ -7,6 +7,7 @@
 declare(strict_types=1);
 
 use App\Platform\Email\EmailOutboxRepository;
+use App\Platform\Email\RecurringLifecycleEmailScheduler;
 use App\Platform\Email\EmailSenderFactory;
 use App\Platform\Settings\PlatformSettingsRepository;
 use App\Support\Database;
@@ -38,6 +39,7 @@ try {
     artsfolio_worker_heartbeat($workerName, 'running', ['email_id' => (int) $email['id']]);
     echo $sender->send($email) . PHP_EOL;
     $outbox->markSent((int) $email['id']);
+    (new RecurringLifecycleEmailScheduler($pdo, new PlatformSettingsRepository($pdo)))->queueNext($email);
     artsfolio_worker_heartbeat($workerName, 'alive', ['last_email_id' => (int) $email['id']]);
     echo "Marked email {$email['id']} as sent.\n";
 } catch (\Throwable $e) {
