@@ -654,7 +654,7 @@ HTML;
 </head>
 <body>
 <header class="platform-header">
-    <a class="platform-brand" href="/">ArtsFolio</a>
+    <a class="platform-brand logo-brand" href="/" aria-label="ArtsFol.io home"><img src="/assets/artsfol-wordmark.png" alt="ArtsFol.io"></a>
     {$canonicalNav}
 </header>
 <main>
