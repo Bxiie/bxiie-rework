@@ -159,11 +159,30 @@ return static function (Router $router, array $context): void {
     $router->get('/assets/platform-custom.css', fn (Request $request): Response => (new PlatformCssController(new PlatformSettingsRepository($pdo)))->show($request));
         $router->get('/tenant.css', fn (Request $request): Response => (new TenantCssController($tenantSettings))->show($request, $tenant));
         $router->get('/', fn (Request $request): Response => $tenantController->home($request, $tenant));
-        $router->get('/portfolio', fn (Request $request): Response => $tenantController->portfolio($request, $tenant));
+        // Keep the historical default route working while also mounting the
+        // tenant's saved public portfolio slug. Existing bookmarks therefore
+        // remain valid after an artist renames the portfolio URL.
+        $portfolioHandler = fn (Request $request): Response => $tenantController->portfolio($request, $tenant);
+        $router->get('/portfolio', $portfolioHandler);
+        if ($portfolioSlug !== 'portfolio') {
+            // Build the configurable path before registering it. The route
+            // inventory intentionally snapshots literal routes only.
+            $portfolioPath = '/' . $portfolioSlug;
+            $router->get($portfolioPath, $portfolioHandler);
+        }
         $router->post('/curation/add', fn (Request $request): Response => $curationController->add($request, $tenant, $currentUser));
         $router->get('/messages', fn (Request $request): Response => $curationController->messages($request, $tenant, $currentUser));
         $router->get('/artwork/{slug}', fn (Request $request, array $params): Response => $tenantController->artwork($request, $tenant, (string) $params['slug']));
-        $router->get('/about', fn (Request $request): Response => $tenantController->about($request, $tenant));
+        // Mount the saved About slug in addition to the backward-compatible
+        // default route used by older links and external bookmarks.
+        $aboutHandler = fn (Request $request): Response => $tenantController->about($request, $tenant);
+        $router->get('/about', $aboutHandler);
+        if ($aboutSlug !== 'about') {
+            // Build the configurable path before registering it. The route
+            // inventory intentionally snapshots literal routes only.
+            $aboutPath = '/' . $aboutSlug;
+            $router->get($aboutPath, $aboutHandler);
+        }
         $router->get('/caddy/ask', fn (Request $request): Response => (new CaddyAskController($pdo))->ask($request));
 
         // ARTSFOLIO_TENANT_CANONICAL_OAUTH_ROUTES
@@ -351,8 +370,20 @@ return static function (Router $router, array $context): void {
         $router->post('/admin/settings/stripe/connect', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo), $pdo))->connectStripe($request, $tenant, $currentUser));
         $router->get('/admin/settings/stripe/return', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo), $pdo))->stripeConnectReturn($request, $tenant, $currentUser));
         $router->get('/admin/settings/stripe/refresh', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo), $pdo))->stripeConnectRefresh($request, $tenant, $currentUser));
-        $router->get('/contact', fn (Request $request): Response => $tenantController->contact($request, $tenant));
-        $router->post('/contact', fn (Request $request): Response => $contactController->submit($request, $tenant));
+        // GET and POST must share the configured Contact slug. Keeping the
+        // default route avoids breaking old forms, bookmarks, and indexed URLs.
+        $contactPageHandler = fn (Request $request): Response => $tenantController->contact($request, $tenant);
+        $contactSubmitHandler = fn (Request $request): Response => $contactController->submit($request, $tenant);
+        $router->get('/contact', $contactPageHandler);
+        $router->post('/contact', $contactSubmitHandler);
+        if ($contactSlug !== 'contact') {
+            // Reuse one resolved path for both display and submission. Keeping
+            // concatenation outside router calls prevents the static route
+            // inventory from mistaking this for a literal root route.
+            $contactPath = '/' . $contactSlug;
+            $router->get($contactPath, $contactPageHandler);
+            $router->post($contactPath, $contactSubmitHandler);
+        }
         $router->get('/signup', fn (Request $request): Response => new Response('', 303, ['Location' => '/' . $contactSlug]));
         $router->post('/signup', fn (Request $request): Response => $signupController->submit($request, $tenant));
         $tenantSalesController = new TenantSalesController(new SalesRepository($pdo), new TenantSettingsRepository($pdo), new PlatformSettingsRepository($pdo), new CsrfTokenService(), $pdo);

@@ -398,6 +398,7 @@ run_if_exists scripts/test/artwork_ajax_pagination_static.php
 run_if_exists scripts/test/artwork_placement_column_filters_static.php
 
 run_if_exists scripts/test/portfolio_section_actions_static.php
+run_if_exists scripts/test/custom_public_page_slugs_static.php
 run_if_exists scripts/test/tenant_admin_artwork_contact_defaults_static.php
 run_if_exists scripts/test/tenant_admin_sidebar_upload_static.php
 

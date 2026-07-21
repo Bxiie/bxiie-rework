@@ -3128,3 +3128,20 @@ Tenant-admin sales order review pages render `sales_orders.shipping_address_json
 - The generic tenant-admin final sidebar color layer excludes `.platform-help-page`.
 - Help pages use a later white-on-dark sidebar rule.
 - The help stylesheet URL is versioned to invalidate stale caches.
+
+## Tenant custom public page routes (2026-07-21)
+
+- Tenant custom public page slugs are mounted as live routes for Portfolio, About, and Contact.
+- Historical `/portfolio`, `/about`, and `/contact` routes remain active for backward compatibility.
+- Contact GET and POST handlers are both mounted at the configured Contact slug.
+- Static regression coverage: `scripts/test/custom_public_page_slugs_static.php`.
+
+<!-- End of file. -->
+
+## Dynamic tenant route inventory compatibility (2026-07-21)
+
+- Dynamic tenant page paths are assigned to variables before router registration.
+- This prevents `scripts/test/route_inventory.php` from parsing a concatenated custom POST path as the literal root path `/`.
+- No committed route-inventory snapshot change is required because custom-slug routes are runtime-configured rather than fixed route literals.
+
+<!-- End of file. -->
