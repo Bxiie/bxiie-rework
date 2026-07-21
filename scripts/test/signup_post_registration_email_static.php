@@ -16,8 +16,10 @@ $checks = [
     'verification message is queued' => str_contains($service, "'auth.email_verification_request'"),
     'welcome message is queued' => str_contains($service, "'lifecycle.welcome'"),
     'welcome includes admin URL' => str_contains($service, '$adminUrl = $siteUrl . \'/admin\''),
-    'duplicate pending messages are suppressed' => str_contains($service, 'hasPending('),
-    'recovery command exists' => str_contains($recovery, 'queueForEmail($email, $tenantSlug)'),
+    'duplicate pending messages are tenant scoped' => str_contains($service, 'hasPending($email, \'auth.email_verification_request\', $tenantId)'),
+    'selected tenant is stored on verification outbox row' => str_contains($service, 'tenantId: ($tenant[\'id\'] ?? 0) > 0'),
+    'explicit recovery cancels other tenant pending mail' => str_contains($service, 'cancelPendingForOtherTenants('),
+    'recovery command explicitly replaces other tenant pending mail' => str_contains($recovery, 'queueForEmail($email, $tenantSlug, $replaceOtherTenantPending)'),
     'welcome template includes admin placeholder' => str_contains($welcome, '{{ admin_url }}'),
 ];
 foreach ($checks as $label => $passed) {

@@ -23,7 +23,7 @@ final class SignupPostRegistrationMailer
     }
 
     /** @return array{verification:bool,welcome:bool} */
-    public function queueForEmail(string $email, ?string $tenantSlug = null): array
+    public function queueForEmail(string $email, ?string $tenantSlug = null, bool $replaceOtherTenantPending = false): array
     {
         $email = strtolower(trim($email));
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -36,19 +36,32 @@ final class SignupPostRegistrationMailer
         }
 
         $tenantSlug = trim((string) $tenantSlug);
-        $tenant = $this->findTenantContext((int) $user['id'], $tenantSlug !== '' ? $tenantSlug : null);
+        $tenantWasExplicit = $tenantSlug !== '';
+        $requestedTenantSlug = $tenantSlug;
+        $tenant = $this->findTenantContext((int) $user['id'], $tenantWasExplicit ? $tenantSlug : null);
         $tenantSlug = trim((string) ($tenant['slug'] ?? $tenantSlug));
         if ($tenantSlug === '') {
+            if ($tenantWasExplicit) {
+                throw new RuntimeException('That user is not a member of tenant: ' . $requestedTenantSlug);
+            }
             throw new RuntimeException('No tenant membership was found for that user.');
+        }
+        $tenantId = (int) ($tenant['id'] ?? 0);
+        if ($tenantId <= 0) {
+            throw new RuntimeException('The selected tenant could not be resolved.');
+        }
+
+        if ($tenantWasExplicit && $replaceOtherTenantPending) {
+            $this->cancelPendingForOtherTenants($email, (int) $user['id'], $tenantId);
         }
 
         $verification = false;
-        if (!$this->isVerified($user) && !$this->hasPending($email, 'auth.email_verification_request')) {
+        if (!$this->isVerified($user) && !$this->hasPending($email, 'auth.email_verification_request', $tenantId)) {
             $verification = $this->queueVerification($user, $email, $tenant);
         }
 
         $welcome = false;
-        if (!$this->hasPending($email, 'lifecycle.welcome')) {
+        if (!$this->hasPending($email, 'lifecycle.welcome', $tenantId)) {
             $welcome = $this->queueWelcome($user, $email, $tenant);
         }
 
@@ -250,7 +263,7 @@ final class SignupPostRegistrationMailer
         $this->pdo->prepare($sql)->execute($params);
     }
 
-    private function hasPending(string $email, string $templateKey): bool
+    private function hasPending(string $email, string $templateKey, int $tenantId): bool
     {
         foreach (['email_outbox', 'email_outbox_messages'] as $table) {
             if (!$this->tableExists($table)) {
@@ -263,6 +276,11 @@ final class SignupPostRegistrationMailer
                 return false;
             }
             $where = ["LOWER(`{$emailColumn}`) = :email", "`{$keyColumn}` = :template_key"];
+            $params = ['email' => $email, 'template_key' => $templateKey];
+            if (in_array('tenant_id', $columns, true)) {
+                $where[] = '`tenant_id` = :tenant_id';
+                $params['tenant_id'] = $tenantId;
+            }
             if (in_array('status', $columns, true)) {
                 $where[] = "`status` IN ('pending','queued','sending')";
             }
@@ -270,10 +288,44 @@ final class SignupPostRegistrationMailer
                 $where[] = '`sent_at` IS NULL';
             }
             $statement = $this->pdo->prepare("SELECT 1 FROM `{$table}` WHERE " . implode(' AND ', $where) . ' LIMIT 1');
-            $statement->execute(['email' => $email, 'template_key' => $templateKey]);
+            $statement->execute($params);
             return $statement->fetchColumn() !== false;
         }
         return false;
+    }
+
+    private function cancelPendingForOtherTenants(string $email, int $userId, int $tenantId): void
+    {
+        foreach (['email_outbox', 'email_outbox_messages'] as $table) {
+            if (!$this->tableExists($table)) {
+                continue;
+            }
+            $columns = $this->columns($table);
+            $emailColumn = $this->firstColumn($columns, ['recipient_email', 'to_email', 'email', 'recipient']);
+            $keyColumn = $this->firstColumn($columns, ['template_key', 'message_type', 'category']);
+            if ($emailColumn === null || $keyColumn === null || !in_array('tenant_id', $columns, true) || !in_array('status', $columns, true)) {
+                continue;
+            }
+            $where = [
+                "LOWER(`{$emailColumn}`) = :email",
+                "`{$keyColumn}` IN ('auth.email_verification_request','lifecycle.welcome')",
+                '`tenant_id` <> :tenant_id',
+                "`status` IN ('pending','queued')",
+            ];
+            $params = ['email' => $email, 'tenant_id' => $tenantId];
+            if (in_array('user_id', $columns, true)) {
+                $where[] = '`user_id` = :user_id';
+                $params['user_id'] = $userId;
+            }
+            $sets = ["`status` = 'cancelled'"];
+            if (in_array('updated_at', $columns, true)) {
+                $sets[] = '`updated_at` = UTC_TIMESTAMP()';
+            }
+            $statement = $this->pdo->prepare(
+                "UPDATE `{$table}` SET " . implode(', ', $sets) . ' WHERE ' . implode(' AND ', $where)
+            );
+            $statement->execute($params);
+        }
     }
 
     private function template(string $relativePath): string
