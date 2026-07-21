@@ -99,7 +99,7 @@ final class PasswordAuthController
     <link rel="stylesheet" href="/assets/platform.css?v=20260708-logo-aspect">
 </head>
 <body class="platform-page">
-<header class="platform-header"><a class="platform-logo" href="/"><img src="/assets/artsfol-wordmark.png" alt="ArtsFolio"></a><nav><a href="/admin">Platform admin</a><a href="/directory">Directory</a><a href="/help">Help</a></nav></header>
+<header class="platform-header"><a class="platform-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a><nav><a href="/admin">Platform admin</a><a href="/directory">Directory</a><a href="/help">Help</a></nav></header>
 <main class="platform-main">
 <section class="platform-page-heading"><p class="eyebrow">Account</p><h1>My ArtsFolio account</h1><p>This page confirms the active browser session and gives you a clean launch point into platform or tenant administration.</p></section>
 <section class="platform-section docs-section"><h2>Signed in as</h2><p><strong>Email:</strong> {$email}</p><p><strong>Display name:</strong> {$displayName}</p><p><a class="button primary" href="/admin">Open platform admin</a> <a class="button secondary" href="/help/getting-started">Read setup help</a></p><form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{$csrf}"><button type="submit">Logout</button></form></section>

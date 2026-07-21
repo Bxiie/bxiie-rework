@@ -126,8 +126,8 @@ h1 {
 /* ArtsFolio logo aspect-ratio guard for branded error pages. */
 .error-logo,
 .error-logo-link img,
-img.error-logo[src$="/assets/artsfol-wordmark.png"],
-img.error-logo[src$="/assets/artsfol-wordmark.png"] {
+img.error-logo[src$="/assets/logo_2.png"],
+img.error-logo[src$="/assets/logo.png"] {
     display: block !important;
     width: auto !important;
     height: auto !important;

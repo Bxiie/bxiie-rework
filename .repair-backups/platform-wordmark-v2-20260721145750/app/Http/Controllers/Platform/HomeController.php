@@ -108,7 +108,7 @@ HTML;
     <link rel="stylesheet" href="/assets/platform-custom.css">
 </head>
 <body>
-<header class="platform-header"><a class="platform-brand logo-brand" href="/"><img src="/assets/artsfol-wordmark.png" alt="ArtsFolio"></a>{$canonicalNav}</header>
+<header class="platform-header"><a class="platform-brand logo-brand" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>{$canonicalNav}</header>
 <main>{$body}</main>
 <footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer>
 <script src="/assets/platform.js" defer></script></body>

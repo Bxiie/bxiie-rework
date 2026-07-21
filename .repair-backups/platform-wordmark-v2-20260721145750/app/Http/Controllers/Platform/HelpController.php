@@ -404,7 +404,7 @@ HTML;
 </head>
 <body class="tenant-admin-page platform-help-page">
 <header class="platform-header platform-help-header">
-    <a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/artsfol-wordmark.png" alt="ArtsFolio"></a>
+    <a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>
     {$canonicalNav}
 </header>
 <div class="tenant-admin-shell">

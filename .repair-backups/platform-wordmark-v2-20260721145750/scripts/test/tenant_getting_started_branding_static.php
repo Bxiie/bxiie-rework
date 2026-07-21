@@ -22,7 +22,7 @@ if ($source === false) {
 }
 
 $required = [
-    '/assets/artsfol-wordmark.png' => 'platform logo asset',
+    '/assets/logo_2.png' => 'platform logo asset',
     'platform-brand' => 'platform branding header class',
     'Tenant setup powered by ArtsFolio' => 'platform handoff copy',
     'aria-label="ArtsFolio platform branding"' => 'accessible platform branding label',

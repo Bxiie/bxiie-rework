@@ -112,8 +112,8 @@
 /* ArtsFolio logo aspect-ratio guard for login and signup pages. */
 .auth-logo,
 .auth-logo-link img,
-img.auth-logo[src$="/assets/artsfol-wordmark.png"],
-img.auth-logo[src$="/assets/artsfol-wordmark.png"] {
+img.auth-logo[src$="/assets/logo_2.png"],
+img.auth-logo[src$="/assets/logo.png"] {
     display: block !important;
     width: auto !important;
     height: auto !important;

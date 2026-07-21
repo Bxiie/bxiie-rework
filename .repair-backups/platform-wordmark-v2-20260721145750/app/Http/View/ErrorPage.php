@@ -165,7 +165,7 @@ final class ErrorPage
             return [
                 'name' => $tenant->name !== '' ? $tenant->name : $tenant->slug,
                 'home_url' => '/',
-                'logo_url' => '/assets/artsfol-wordmark.png',
+                'logo_url' => '/assets/logo_2.png',
                 'footer' => 'Powered by ArtsFolio',
                 'body_class' => 'tenant-error-page',
             ];
@@ -174,7 +174,7 @@ final class ErrorPage
         return [
             'name' => 'ArtsFolio',
             'home_url' => 'https://artsfol.io/',
-            'logo_url' => '/assets/artsfol-wordmark.png',
+            'logo_url' => '/assets/logo_2.png',
             'footer' => 'ArtsFolio',
             'body_class' => 'platform-error-page',
         ];

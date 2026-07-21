@@ -31,7 +31,7 @@ $required = [
     'logo URL helper' => 'artsfolioLogoUrl',
     'logo HTML helper' => 'logoHtml',
     'absolute fallback URL' => 'https://artsfol.io',
-    'logo asset' => 'logo_2.png',
+    'logo asset' => 'artsfol-wordmark.png',
     'medium logo injection' => "self::logoHtml('medium')",
 ];
 

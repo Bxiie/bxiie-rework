@@ -78,7 +78,7 @@ final class SignupController
 <main class="auth-page">
     <section class="auth-card">
         <a href="/" class="auth-logo-link" aria-label="ArtsFolio home">
-            <img src="/assets/artsfol-wordmark.png" alt="ArtsFolio" class="auth-logo">
+            <img src="/assets/logo_2.png" alt="ArtsFolio" class="auth-logo">
         </a>
         <p class="auth-eyebrow">Start your site</p>
         <h1>Create an ArtsFolio site</h1>
@@ -232,7 +232,7 @@ unset($_SESSION['artsfolio_oauth_profile'], $_SESSION['artsfolio_oauth_user_id']
             : '';
 
         return Response::html(<<<HTML
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Signup passcode required | ArtsFolio</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/auth.css?v=20260708-logo-aspect"></head><body><main class="auth-page"><section class="auth-card"><a href="/" class="auth-logo-link"><img src="/assets/artsfol-wordmark.png" alt="ArtsFolio" class="auth-logo"></a><p class="auth-eyebrow">Private signup</p><h1>Enter your signup passcode</h1><p class="auth-copy">A passcode is required before new site details can be entered.</p>{$errorHtml}<form method="get" action="/signup" class="auth-form"><label>Signup passcode<input type="text" name="code" autocomplete="off" required autofocus></label><button type="submit">Continue</button></form></section></main></body></html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Signup passcode required | ArtsFolio</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/auth.css?v=20260708-logo-aspect"></head><body><main class="auth-page"><section class="auth-card"><a href="/" class="auth-logo-link"><img src="/assets/logo_2.png" alt="ArtsFolio" class="auth-logo"></a><p class="auth-eyebrow">Private signup</p><h1>Enter your signup passcode</h1><p class="auth-copy">A passcode is required before new site details can be entered.</p>{$errorHtml}<form method="get" action="/signup" class="auth-form"><label>Signup passcode<input type="text" name="code" autocomplete="off" required autofocus></label><button type="submit">Continue</button></form></section></main></body></html>
 HTML);
     }
 

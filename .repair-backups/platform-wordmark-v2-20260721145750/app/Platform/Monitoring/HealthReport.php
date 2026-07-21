@@ -126,7 +126,7 @@ final class HealthReport
         $safeHost = htmlspecialchars($this->hostName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $safeStarted = htmlspecialchars($this->startedAt, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $safeUrl = htmlspecialchars($adminUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-        $logo = htmlspecialchars(rtrim((string) (getenv('ARTSFOLIO_PUBLIC_URL') ?: 'https://artsfol.io'), '/') . '/assets/artsfol-wordmark.png', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $logo = htmlspecialchars(rtrim((string) (getenv('ARTSFOLIO_PUBLIC_URL') ?: 'https://artsfol.io'), '/') . '/assets/logo_2.png', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
         $sections = [];
         foreach ([HealthMetric::CRIT, HealthMetric::WARN, HealthMetric::OK, HealthMetric::INFO] as $severity) {

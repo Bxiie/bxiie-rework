@@ -19,7 +19,7 @@ $checks = [
     'homepage assignment migration' => [$root . '/database/migrations/0033_homepage_artwork_assignments.sql', 'homepage_artwork_assignments'],
     'signup passcode preprompt' => [$root . '/app/Http/Controllers/Platform/SignupController.php', 'ARTSFOLIO_SIGNUP_PASSCODE_PREPROMPT'],
     'signup required helper' => [$root . '/app/Platform/Signup/TenantSignupService.php', 'requiresSignupCode'],
-    'email logo correct path' => [$root . '/app/Platform/Email/BrandedEmail.php', '/assets/artsfol-wordmark.png'],
+    'email logo correct path' => [$root . '/app/Platform/Email/BrandedEmail.php', '/assets/logo_2.png'],
     'smtp multipart html' => [$root . '/app/Platform/Email/SmtpEmailSender.php', 'multipart/alternative'],
 ];
 foreach ($checks as $label => [$file, $needle]) {

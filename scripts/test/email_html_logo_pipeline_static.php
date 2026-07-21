@@ -37,7 +37,7 @@ $brandedNeedles = [
     'render method' => 'public static function render',
     'body_html payload' => "'body_html'",
     'logo helper' => 'logoHtml',
-    'logo asset' => 'logo_2.png',
+    'logo asset' => 'artsfol-wordmark.png',
     'medium logo injection' => "self::logoHtml('medium')",
 ];
 

@@ -37,7 +37,7 @@ $checks = [
     'reset token field' => [$authPage, 'name="token"'],
     'SMTP multipart output' => [$smtp, 'multipart/alternative'],
     'SMTP HTML part' => [$smtp, 'Content-Type: text/html; charset=UTF-8'],
-    'BrandedEmail logo asset' => [$branded, 'logo_2.png'],
+    'BrandedEmail logo asset' => [$branded, 'artsfol-wordmark.png'],
 ];
 
 foreach ($checks as $label => [$source, $needle]) {
@@ -56,8 +56,8 @@ use App\Platform\Email\SmtpEmailSender;
 $payload = BrandedEmail::render('Reset your ArtsFolio password', "Use this link:
 
 https://artsfol.io/password/reset?token=test");
-if (strpos($payload['body_html'], 'logo_2.png') === false) {
-    fwrite(STDERR, "Branded reset email HTML is missing logo_2.png
+if (strpos($payload['body_html'], 'artsfol-wordmark.png') === false) {
+    fwrite(STDERR, "Branded reset email HTML is missing artsfol-wordmark.png
 ");
     exit(1);
 }
@@ -70,7 +70,7 @@ $message = $sender->buildMessageForTest([
     'body_html' => $payload['body_html'],
 ]);
 
-if (strpos($message, 'multipart/alternative') === false || strpos($message, 'logo_2.png') === false) {
+if (strpos($message, 'multipart/alternative') === false || strpos($message, 'artsfol-wordmark.png') === false) {
     fwrite(STDERR, "SMTP message does not include multipart HTML logo body
 ");
     exit(1);

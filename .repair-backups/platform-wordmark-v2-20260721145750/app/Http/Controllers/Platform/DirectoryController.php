@@ -202,7 +202,7 @@ HTML;
 <!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"><title>{$title}</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/assets/platform.css?v=20260708-logo-aspect"><link rel="stylesheet" href="/assets/platform-custom.css"><link rel="stylesheet" href="/assets/tenant-admin.css?v=20260708-logo-aspect"><script src="/assets/directory-pagination.js" defer></script></head>
-<body><header class="platform-header"><a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/artsfol-wordmark.png" alt="ArtsFolio"></a>{$canonicalNav}</header><main>{$body}</main><footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer></body></html>
+<body><header class="platform-header"><a class="platform-brand logo-brand compact-logo" href="/"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>{$canonicalNav}</header><main>{$body}</main><footer class="platform-footer"><span>{$platformCopyright}</span><nav><a href="/help">Help</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav></footer></body></html>
 HTML;
     }
 

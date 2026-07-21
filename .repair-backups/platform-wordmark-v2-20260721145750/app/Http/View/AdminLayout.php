@@ -74,7 +74,7 @@ final class AdminLayout
 </head>
 <body class="platform-admin-page">
 <header class="platform-admin-topbar" aria-label="Platform admin header">
-    <a class="platform-admin-logo" href="/platform/admin" aria-label="ArtsFolio platform admin"><img src="/assets/artsfol-wordmark.png" alt="ArtsFolio"></a>
+    <a class="platform-admin-logo" href="/platform/admin" aria-label="ArtsFolio platform admin"><img src="/assets/logo_2.png" alt="ArtsFolio"></a>
     <div class="platform-admin-identity"><strong>Platform Admin</strong><span>Global ArtsFolio operations, not a tenant site</span><span>{$identity}</span></div>
     {$canonicalNav}
     <form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{$csrf}"><button type="submit">Log out</button></form>
