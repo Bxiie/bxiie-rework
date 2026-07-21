@@ -70,6 +70,20 @@ final class EmailVerificationService
                 'email' => strtolower(trim((string) $token['email'])),
             ]);
 
+            // The primary users table is the source used by signup and admin
+            // screens. Keep it synchronized with the identity record.
+            $userStmt = $this->pdo->prepare(
+                "UPDATE users
+                 SET email_verified_at = COALESCE(email_verified_at, CURRENT_TIMESTAMP),
+                     updated_at = CURRENT_TIMESTAMP
+                 WHERE id = :user_id
+                   AND LOWER(email) = :email"
+            );
+            $userStmt->execute([
+                'user_id' => (int) $token['user_id'],
+                'email' => strtolower(trim((string) $token['email'])),
+            ]);
+
             $this->tokens->consume((int) $token['id']);
 
             $this->pdo->commit();

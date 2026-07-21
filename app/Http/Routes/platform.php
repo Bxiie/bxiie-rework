@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\MeController;
 use App\Http\Controllers\Api\AdminApiController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\TenantMeController;
 use App\Http\Controllers\Auth\PasswordAuthController;
 use App\Http\Controllers\Auth\UserTimezoneController;
@@ -93,6 +94,8 @@ use App\Platform\Jobs\JobAttemptRepository;
 use App\Platform\Workers\WorkerHeartbeatRepository;
 use App\Platform\Auth\OAuth\BearerTokenRepository;
 use App\Platform\Auth\OAuth\BearerTokenService;
+use App\Platform\Auth\Email\EmailVerificationService;
+use App\Platform\Auth\Email\EmailVerificationTokenRepository;
 use App\Platform\Auth\Password\PasswordAuthService;
 use App\Platform\Auth\Password\PasswordResetService;
 use App\Platform\Auth\Password\PasswordResetTokenRepository;
@@ -131,6 +134,7 @@ use App\Tenant\Artwork\ArtworkUploadService;
 /** @return Closure(Router, array<string,mixed>): void */
 return static function (Router $router, array $context): void {
     extract($context, EXTR_SKIP);
+    $router->get('/verify-email', fn (Request $request): Response => (new EmailVerificationController(new EmailVerificationService($pdo, new UserRepository($pdo), new EmailVerificationTokenRepository($pdo))))->verify($request));
     $router->get('/admin', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin']));
     $router->get('/admin/pricing', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/pricing']));
     $router->get('/admin/settings', fn (Request $request): Response => new Response('', 302, ['Location' => '/platform/admin/platform-settings']));
