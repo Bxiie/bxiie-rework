@@ -19,7 +19,7 @@ final class EmailVerificationService
     ) {
     }
 
-    public function createVerificationTokenForEmail(string $email): ?array
+    public function createVerificationTokenForEmail(string $email, ?int $tenantId = null): ?array
     {
         $user = $this->users->findByEmail($email);
 
@@ -34,12 +34,14 @@ final class EmailVerificationService
             userId: (int) $user['id'],
             email: (string) $user['email'],
             tokenHash: $tokenHash,
+            tenantId: $tenantId,
         );
 
         return [
             'token_id' => $tokenId,
             'user_id' => (int) $user['id'],
             'email' => (string) $user['email'],
+            'tenant_id' => $tenantId,
             'verification_token' => $rawToken,
             'token_hash' => $tokenHash,
         ];
@@ -91,6 +93,7 @@ final class EmailVerificationService
             return [
                 'user_id' => (int) $token['user_id'],
                 'email' => (string) $token['email'],
+                'tenant_id' => isset($token['tenant_id']) ? (int) $token['tenant_id'] : null,
             ];
         } catch (\Throwable $e) {
             $this->pdo->rollBack();

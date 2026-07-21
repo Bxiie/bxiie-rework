@@ -125,7 +125,7 @@ final class SignupPostRegistrationMailer
     {
         $userId = (int) ($user['id'] ?? 0);
         $rawToken = bin2hex(random_bytes(32));
-        $this->storeToken($userId, $email, $rawToken);
+        $this->storeToken($userId, (int) ($tenant['id'] ?? 0), $email, $rawToken);
         $url = 'https://artsfol.io' . $this->verificationPath
             . (str_contains($this->verificationPath, '?') ? '&' : '?')
             . 'token=' . rawurlencode($rawToken);
@@ -134,6 +134,7 @@ final class SignupPostRegistrationMailer
             'verification_url' => $url,
         ]);
         $message = $this->editableTemplate()->render('auth/email-verification-request.md', $values);
+        $this->assertNoUnresolvedTokens($message['body'], 'auth/email-verification-request.md');
         $subject = $message['subject'] !== 'ArtsFolio' ? $message['subject'] : 'Verify your ArtsFolio email address';
         $bodies = BrandedEmail::render($subject, $message['body']);
 
@@ -162,6 +163,7 @@ final class SignupPostRegistrationMailer
             'admin_url' => $adminUrl,
         ]);
         $message = $this->editableTemplate()->render('lifecycle/welcome.md', $values);
+        $this->assertNoUnresolvedTokens($message['body'], 'lifecycle/welcome.md');
         $subject = $message['subject'] !== 'ArtsFolio' ? $message['subject'] : 'Welcome to ArtsFolio';
         $bodies = BrandedEmail::render($subject, $message['body']);
 
@@ -199,14 +201,36 @@ final class SignupPostRegistrationMailer
             $tenantName = $tenantSlug !== '' ? $tenantSlug : 'your ArtsFolio site';
         }
 
+        $platformUrl = rtrim((string) (getenv('ARTSFOLIO_PUBLIC_URL') ?: 'https://artsfol.io'), '/');
+        $siteUrl = $tenantSlug !== '' ? 'https://' . $tenantSlug . '.artsfol.io' : $platformUrl;
+        $adminUrl = $siteUrl . ($tenantSlug !== '' ? '/admin' : '');
+
         return array_merge([
             'recipient_name' => $recipientName,
             'recipient_email' => $email,
             'tenant_name' => $tenantName,
             'tenant_slug' => $tenantSlug,
-            'site_url' => $tenantSlug !== '' ? 'https://' . $tenantSlug . '.artsfol.io' : 'https://artsfol.io',
-            'admin_url' => $tenantSlug !== '' ? 'https://' . $tenantSlug . '.artsfol.io/admin' : 'https://artsfol.io',
+            'site_url' => $siteUrl,
+            'admin_url' => $adminUrl,
+            'tenant_admin_url' => $adminUrl,
+            'tour_url' => $siteUrl . '/admin/getting-started',
+            'help_url' => $platformUrl . '/help',
+            'functions_url' => $platformUrl . '/help/tenant-admin-functions',
+            'videos_url' => $platformUrl . '/help/training-videos',
         ], $extra);
+    }
+
+    private function assertNoUnresolvedTokens(string $body, string $templatePath): void
+    {
+        if (preg_match_all('/\{\{\s*[A-Za-z0-9_.-]+\s*\}\}/', $body, $matches) < 1) {
+            return;
+        }
+
+        $tokens = array_values(array_unique(array_map('trim', $matches[0] ?? [])));
+        throw new RuntimeException(
+            'Refusing to queue email with unresolved template tokens in '
+            . $templatePath . ': ' . implode(', ', $tokens)
+        );
     }
 
     private function editableTemplate(): EditableEmailTemplate
@@ -217,7 +241,7 @@ final class SignupPostRegistrationMailer
         );
     }
 
-    private function storeToken(int $userId, string $email, string $rawToken): void
+    private function storeToken(int $userId, int $tenantId, string $email, string $rawToken): void
     {
         $table = null;
         foreach (['email_verification_tokens', 'user_email_verification_tokens', 'user_verification_tokens'] as $candidate) {
@@ -236,10 +260,26 @@ final class SignupPostRegistrationMailer
             throw new RuntimeException('The email-verification token table has an unsupported shape.');
         }
 
-        $this->pdo->prepare("DELETE FROM `{$table}` WHERE user_id = :user_id")->execute(['user_id' => $userId]);
+        $deleteWhere = ['user_id = :user_id'];
+        $deleteParams = ['user_id' => $userId];
+        if (in_array('tenant_id', $columns, true)) {
+            if ($tenantId <= 0) {
+                throw new RuntimeException('A tenant is required for an email-verification token.');
+            }
+            $deleteWhere[] = 'tenant_id = :tenant_id';
+            $deleteParams['tenant_id'] = $tenantId;
+        }
+        $this->pdo->prepare("DELETE FROM `{$table}` WHERE " . implode(' AND ', $deleteWhere))->execute($deleteParams);
+
         $fields = ['user_id', $tokenColumn];
         $values = [':user_id', ':token'];
         $params = ['user_id' => $userId, 'token' => $tokenColumn === 'token_hash' ? hash('sha256', $rawToken) : $rawToken];
+
+        if (in_array('tenant_id', $columns, true)) {
+            $fields[] = 'tenant_id';
+            $values[] = ':tenant_id';
+            $params['tenant_id'] = $tenantId;
+        }
 
         if (in_array('email', $columns, true)) {
             $fields[] = 'email';

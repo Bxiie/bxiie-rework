@@ -631,3 +631,7 @@ run_php scripts/test/homepage_special_section_static.php
 run_php scripts/test/public_variant_detail_homepage_edit_static.php
 run_php scripts/test/homepage_unwatermarked_thumbnails_static.php
 run_php scripts/test/help_sidebar_final_layer_static.php
+
+[ -f scripts/test/email_verification_tenant_scope_static.php ] && php scripts/test/email_verification_tenant_scope_static.php
+
+[ -f scripts/test/welcome_email_complete_tokens_static.php ] && php scripts/test/welcome_email_complete_tokens_static.php

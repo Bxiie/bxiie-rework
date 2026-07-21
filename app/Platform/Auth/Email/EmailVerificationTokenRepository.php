@@ -16,16 +16,32 @@ final class EmailVerificationTokenRepository
     ) {
     }
 
-    public function create(int $userId, string $email, string $tokenHash, int $ttlSeconds = 86400): int
+    public function create(int $userId, string $email, string $tokenHash, ?int $tenantId = null, int $ttlSeconds = 86400): int
     {
+        if ($tenantId !== null && $tenantId <= 0) {
+            throw new \InvalidArgumentException('tenantId must be positive when supplied.');
+        }
+
+        $deleteSql = $tenantId === null
+            ? 'DELETE FROM email_verification_tokens WHERE user_id = :user_id AND tenant_id IS NULL AND consumed_at IS NULL'
+            : 'DELETE FROM email_verification_tokens WHERE user_id = :user_id AND tenant_id = :tenant_id AND consumed_at IS NULL';
+        $delete = $this->pdo->prepare($deleteSql);
+        $deleteParams = ['user_id' => $userId];
+        if ($tenantId !== null) {
+            $deleteParams['tenant_id'] = $tenantId;
+        }
+        $delete->execute($deleteParams);
+
         $stmt = $this->pdo->prepare(
             "INSERT INTO email_verification_tokens (
                 user_id,
+                tenant_id,
                 email,
                 token_hash,
                 expires_at
             ) VALUES (
                 :user_id,
+                :tenant_id,
                 :email,
                 :token_hash,
                 DATE_ADD(CURRENT_TIMESTAMP, INTERVAL :ttl_seconds SECOND)
@@ -34,6 +50,7 @@ final class EmailVerificationTokenRepository
 
         $stmt->execute([
             'user_id' => $userId,
+            'tenant_id' => $tenantId,
             'email' => strtolower(trim($email)),
             'token_hash' => $tokenHash,
             'ttl_seconds' => $ttlSeconds,
