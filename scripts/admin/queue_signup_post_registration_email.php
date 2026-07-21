@@ -23,6 +23,7 @@ try {
     $result = $mailer->queueForEmail($email, $tenantSlug);
 } catch (Throwable $exception) {
     fwrite(STDERR, '[FAIL] ' . $exception->getMessage() . "\n");
+    fwrite(STDERR, $exception->getTraceAsString() . "\n");
     exit(1);
 }
 

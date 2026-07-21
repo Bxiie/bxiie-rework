@@ -1,6 +1,9 @@
 {{logo}}
 
-# Verify your ArtsFolio email address
+{{ tenant_name }}
+
+{{ recipient_name }}
+{{ recipient_email }}
 
 Please verify your ArtsFolio email address:
 
