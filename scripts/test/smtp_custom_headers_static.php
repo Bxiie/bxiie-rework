@@ -58,14 +58,14 @@ $message = $sender->buildMessageForTest([
     'recipient_email' => 'test@example.test',
     'subject' => 'SMTP header test',
     'body_text' => "Hello\nWorld",
-    'body_html' => '<p>HTML body with logo_2.png.</p>',
+    'body_html' => '<p>HTML body with artsfol-wordmark.png.</p>',
 ]);
 
 $requiredRawFragments = [
     'X-PM-Message-Stream: broadcasts',
     'Content-Type: multipart/alternative',
     'Content-Type: text/html; charset=UTF-8',
-    'logo_2.png',
+    'artsfol-wordmark.png',
 ];
 
 foreach ($requiredRawFragments as $fragment) {
@@ -80,7 +80,7 @@ foreach ($requiredRawFragments as $fragment) {
 $normalizedMessage = str_replace(["\r\n", "\r"], "\n", $message);
 $requiredNormalizedFragments = [
     "Hello\nWorld",
-    '<p>HTML body with logo_2.png.</p>',
+    '<p>HTML body with artsfol-wordmark.png.</p>',
 ];
 
 foreach ($requiredNormalizedFragments as $fragment) {
