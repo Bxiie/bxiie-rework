@@ -43,11 +43,11 @@ final class EmailOutboxController
                 : '<span class="admin-muted">None recorded</span>';
 
             $statusClass = $status === 'failed' ? ' status-failed' : '';
-            $statusTimestamp = (string) ($email['sent_at'] ?? $email['failed_at'] ?? $email['updated_at'] ?? $email['created_at'] ?? '');
+            $statusTimestamp = $this->displayUtcTime((string) ($email['sent_at'] ?? $email['failed_at'] ?? $email['updated_at'] ?? $email['created_at'] ?? ''));
 
             $rows .= '<tr class="email-outbox-row' . $statusClass . '">'
                 . '<td>' . $this->escape((string) $email['id']) . '</td>'
-                . '<td>' . $this->escape($status) . '<br><small class="admin-muted">' . $this->escape($statusTimestamp) . ' UTC</small></td>'
+                . '<td>' . $this->escape($status) . '<br><small class="admin-muted">' . $this->escape($statusTimestamp) . '</small></td>'
                 . '<td>' . $this->escape((string) $email['recipient_email']) . '</td>'
                 . '<td>' . $this->escape((string) $email['subject']) . '</td>'
                 . '<td>' . $this->escape((string) ($email['template_key'] ?? '')) . '</td>'
@@ -93,6 +93,42 @@ HTML,
                 '/admin/platform-settings' => 'Settings',
             ],
         ));
+    }
+
+
+    /**
+     * Email outbox timestamps are stored as UTC database values.
+     */
+    private function displayUtcTime(string $raw): string
+    {
+        $raw = trim($raw);
+        if ($raw === '') {
+            return '';
+        }
+
+        try {
+            $value = new \DateTimeImmutable($raw, new \DateTimeZone('UTC'));
+            $timezone = new \DateTimeZone($this->displayTimezone());
+        } catch (\Throwable) {
+            return $raw;
+        }
+
+        return $value->setTimezone($timezone)->format('M j, Y g:i:s A T');
+    }
+
+    /**
+     * Bootstrap exposes the signed-in user's selected IANA time zone here.
+     */
+    private function displayTimezone(): string
+    {
+        $timezone = (string) ($GLOBALS['artsfolio_user_timezone'] ?? date_default_timezone_get());
+
+        try {
+            new \DateTimeZone($timezone);
+            return $timezone;
+        } catch (\Throwable) {
+            return 'UTC';
+        }
     }
 
     private function escape(string $value): string
