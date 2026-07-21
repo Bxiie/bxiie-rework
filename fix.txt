@@ -2,6 +2,12 @@
 
 ##
 
+- update video URLs on help page
+- scrub text of editorial and todo notices
+- on template page, allow display and selection of minutes after signup to send emails, with repeat.  Allow creation of new templates.  Allow rename of templates.
+
+##
+
 - logging into any login form should route the user to their correct admin page.
 - accessing an unused artsfol.io domain name should redirect to the artsfol/io home page
 

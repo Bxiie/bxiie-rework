@@ -102,8 +102,10 @@ final class SignupPostRegistrationMailer
             . 'token=' . rawurlencode($rawToken);
         $body = strtr($this->template('auth/email-verification-request.md'), [
             '{{ verification_url }}' => $url,
+            '{{verification_url}}' => $url,
             '{{VERIFICATION_URL}}' => $url,
             '{{ recipient_email }}' => $email,
+            '{{recipient_email}}' => $email,
             '{{RECIPIENT_EMAIL}}' => $email,
         ]);
         $this->outbox->queue(

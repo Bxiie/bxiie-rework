@@ -108,6 +108,7 @@ Excluded
 - Git object database
 - Runtime storage, uploads, logs, caches, sessions, queues, and generated data
 - Bundle output and prior compressed archives
+- ArtsFolio video factory source and generated training-video assets
 - Patch/update backups and editor backup files
 - Composer vendor and Node dependency trees
 - Secrets, environment files, certificates, and private keys
@@ -173,6 +174,7 @@ fi
 tar \
     --exclude-vcs \
     --exclude='./bundle' \
+    --exclude='./artsfolio-video-factory' \
     --exclude='./storage' \
     --exclude='./vendor' \
     --exclude='./node_modules' \
