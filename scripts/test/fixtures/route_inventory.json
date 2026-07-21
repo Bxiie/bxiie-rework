@@ -472,6 +472,21 @@
     {
         "scope": "platform",
         "method": "POST",
+        "path": "/platform/admin/email-templates/create"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
+        "path": "/platform/admin/email-templates/rename"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
+        "path": "/platform/admin/email-templates/schedule"
+    },
+    {
+        "scope": "platform",
+        "method": "POST",
         "path": "/platform/admin/email-templates/status"
     },
     {

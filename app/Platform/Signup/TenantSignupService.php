@@ -638,13 +638,29 @@ final class TenantSignupService
             dirname(__DIR__, 3) . '/template/email',
         );
 
-        $schedule = [];
+        $scheduleByPath = [
+            'lifecycle/tenant_admin_welcome_6h.txt' => 'tenant_admin_welcome_6h',
+            'lifecycle/tenant_admin_feature_deep_dive_1d.txt' => 'tenant_admin_feature_deep_dive_1d',
+            'lifecycle/tenant_admin_weekly_checkin.txt' => 'tenant_admin_weekly_checkin',
+        ];
+
         foreach (glob(dirname(__DIR__, 3) . '/template/email/lifecycle/*.{txt,md,html}', GLOB_BRACE) ?: [] as $absolutePath) {
-            if (!is_file($absolutePath) || str_starts_with(basename($absolutePath), '._')) continue;
+            if (!is_file($absolutePath) || str_starts_with(basename($absolutePath), '._')) {
+                continue;
+            }
+
             $templatePath = 'lifecycle/' . basename($absolutePath);
-            if (!EmailTemplateCatalog::isActive($this->settings, $templatePath)) continue;
+            $scheduleByPath[$templatePath] ??= EmailTemplateCatalog::templateKeyForPath($templatePath);
+        }
+
+        $schedule = [];
+        foreach ($scheduleByPath as $templatePath => $templateKey) {
+            if (!EmailTemplateCatalog::isActive($this->settings, $templatePath)) {
+                continue;
+            }
+
             $timing = EmailTemplateCatalog::signupSchedule($this->settings, $templatePath);
-            $schedule[] = [EmailTemplateCatalog::templateKeyForPath($templatePath), $templatePath, $timing['minutes'] * 60];
+            $schedule[] = [$templateKey, $templatePath, $timing['minutes'] * 60];
         }
 
         foreach ($schedule as [$templateKey, $templatePath, $delaySeconds]) {

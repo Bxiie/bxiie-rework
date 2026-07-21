@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Platform\Auth;
 
+use App\Platform\Email\BrandedEmail;
+use App\Platform\Email\EditableEmailTemplate;
 use App\Platform\Email\EmailOutboxRepository;
+use App\Platform\Email\TemplateRenderer;
 use DateTimeImmutable;
 use PDO;
 use RuntimeException;
@@ -33,21 +36,20 @@ final class SignupPostRegistrationMailer
         }
 
         $tenantSlug = trim((string) $tenantSlug);
-        if ($tenantSlug === '') {
-            $tenantSlug = (string) $this->findTenantSlug((int) $user['id']);
-        }
+        $tenant = $this->findTenantContext((int) $user['id'], $tenantSlug !== '' ? $tenantSlug : null);
+        $tenantSlug = trim((string) ($tenant['slug'] ?? $tenantSlug));
         if ($tenantSlug === '') {
             throw new RuntimeException('No tenant membership was found for that user.');
         }
 
         $verification = false;
         if (!$this->isVerified($user) && !$this->hasPending($email, 'auth.email_verification_request')) {
-            $verification = $this->queueVerification((int) $user['id'], $email);
+            $verification = $this->queueVerification($user, $email, $tenant);
         }
 
         $welcome = false;
         if (!$this->hasPending($email, 'lifecycle.welcome')) {
-            $welcome = $this->queueWelcome((int) $user['id'], $email, $tenantSlug);
+            $welcome = $this->queueWelcome($user, $email, $tenant);
         }
 
         return ['verification' => $verification, 'welcome' => $welcome];
@@ -62,7 +64,8 @@ final class SignupPostRegistrationMailer
         return is_array($row) ? $row : null;
     }
 
-    private function findTenantSlug(int $userId): ?string
+    /** @return array{id:int,slug:string,name:string}|null */
+    private function findTenantContext(int $userId, ?string $preferredSlug = null): ?array
     {
         foreach (['tenant_memberships', 'memberships', 'tenant_users'] as $table) {
             if (!$this->tableExists($table)) {
@@ -72,12 +75,23 @@ final class SignupPostRegistrationMailer
             if (!in_array('user_id', $columns, true) || !in_array('tenant_id', $columns, true)) {
                 continue;
             }
-            $statement = $this->pdo->prepare(
-                "SELECT t.slug FROM `{$table}` m JOIN tenants t ON t.id = m.tenant_id WHERE m.user_id = :user_id ORDER BY t.id LIMIT 1"
-            );
-            $statement->execute(['user_id' => $userId]);
-            $slug = $statement->fetchColumn();
-            return is_string($slug) && trim($slug) !== '' ? trim($slug) : null;
+            $sql = "SELECT t.id, t.slug, t.name FROM `{$table}` m JOIN tenants t ON t.id = m.tenant_id WHERE m.user_id = :user_id";
+            $params = ['user_id' => $userId];
+            if ($preferredSlug !== null && trim($preferredSlug) !== '') {
+                $sql .= ' AND t.slug = :tenant_slug';
+                $params['tenant_slug'] = trim($preferredSlug);
+            }
+            $sql .= ' ORDER BY t.id LIMIT 1';
+            $statement = $this->pdo->prepare($sql);
+            $statement->execute($params);
+            $row = $statement->fetch(PDO::FETCH_ASSOC);
+            if (is_array($row)) {
+                return [
+                    'id' => (int) ($row['id'] ?? 0),
+                    'slug' => trim((string) ($row['slug'] ?? '')),
+                    'name' => trim((string) ($row['name'] ?? '')),
+                ];
+            }
         }
         return null;
     }
@@ -93,59 +107,101 @@ final class SignupPostRegistrationMailer
         return array_key_exists('email_verified', $user) && (int) $user['email_verified'] === 1;
     }
 
-    private function queueVerification(int $userId, string $email): bool
+    /** @param array<string,mixed> $user @param array{id:int,slug:string,name:string}|null $tenant */
+    private function queueVerification(array $user, string $email, ?array $tenant): bool
     {
+        $userId = (int) ($user['id'] ?? 0);
         $rawToken = bin2hex(random_bytes(32));
         $this->storeToken($userId, $email, $rawToken);
         $url = 'https://artsfol.io' . $this->verificationPath
             . (str_contains($this->verificationPath, '?') ? '&' : '?')
             . 'token=' . rawurlencode($rawToken);
-        $body = strtr($this->template('auth/email-verification-request.md'), [
-            '{{ verification_url }}' => $url,
-            '{{verification_url}}' => $url,
-            '{{VERIFICATION_URL}}' => $url,
-            '{{ recipient_email }}' => $email,
-            '{{recipient_email}}' => $email,
-            '{{RECIPIENT_EMAIL}}' => $email,
+
+        $values = $this->templateValues($user, $email, $tenant, [
+            'verification_url' => $url,
         ]);
+        $message = $this->editableTemplate()->render('auth/email-verification-request.md', $values);
+        $subject = $message['subject'] !== 'ArtsFolio' ? $message['subject'] : 'Verify your ArtsFolio email address';
+        $bodies = BrandedEmail::render($subject, $message['body']);
+
         $this->outbox->queue(
-            $email,
-            'Verify your ArtsFolio email address',
-            $body,
-            nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8')),
-            null,
-            null,
-            null,
-            'auth.email_verification_request',
+            recipientEmail: $email,
+            subject: $subject,
+            bodyText: $bodies['body_text'],
+            bodyHtml: $bodies['body_html'],
+            recipientName: $values['recipient_name'],
+            tenantId: ($tenant['id'] ?? 0) > 0 ? (int) $tenant['id'] : null,
+            userId: $userId,
+            templateKey: 'auth.email_verification_request',
         );
         return true;
     }
 
-    private function queueWelcome(int $userId, string $email, string $tenantSlug): bool
+    /** @param array<string,mixed> $user @param array{id:int,slug:string,name:string}|null $tenant */
+    private function queueWelcome(array $user, string $email, ?array $tenant): bool
     {
+        $userId = (int) ($user['id'] ?? 0);
+        $tenantSlug = trim((string) ($tenant['slug'] ?? ''));
         $siteUrl = 'https://' . $tenantSlug . '.artsfol.io';
         $adminUrl = $siteUrl . '/admin';
-        $body = strtr($this->template('lifecycle/welcome.md'), [
-            '{{ recipient_email }}' => $email,
-            '{{RECIPIENT_EMAIL}}' => $email,
-            '{{ tenant_slug }}' => $tenantSlug,
-            '{{TENANT_SLUG}}' => $tenantSlug,
-            '{{ site_url }}' => $siteUrl,
-            '{{SITE_URL}}' => $siteUrl,
-            '{{ admin_url }}' => $adminUrl,
-            '{{ADMIN_URL}}' => $adminUrl,
+        $values = $this->templateValues($user, $email, $tenant, [
+            'site_url' => $siteUrl,
+            'admin_url' => $adminUrl,
         ]);
+        $message = $this->editableTemplate()->render('lifecycle/welcome.md', $values);
+        $subject = $message['subject'] !== 'ArtsFolio' ? $message['subject'] : 'Welcome to ArtsFolio';
+        $bodies = BrandedEmail::render($subject, $message['body']);
+
         $this->outbox->queue(
-            $email,
-            'Welcome to ArtsFolio',
-            $body,
-            nl2br(htmlspecialchars($body, ENT_QUOTES, 'UTF-8')),
-            null,
-            $userId,
-            null,
-            'lifecycle.welcome',
+            recipientEmail: $email,
+            subject: $subject,
+            bodyText: $bodies['body_text'],
+            bodyHtml: $bodies['body_html'],
+            recipientName: $values['recipient_name'],
+            tenantId: ($tenant['id'] ?? 0) > 0 ? (int) $tenant['id'] : null,
+            userId: $userId,
+            templateKey: 'lifecycle.welcome',
         );
         return true;
+    }
+
+    /** @param array<string,mixed> $user @param array{id:int,slug:string,name:string}|null $tenant @param array<string,string> $extra @return array<string,string> */
+    private function templateValues(array $user, string $email, ?array $tenant, array $extra = []): array
+    {
+        $recipientName = '';
+        foreach (['display_name', 'name', 'full_name', 'username'] as $field) {
+            $candidate = trim((string) ($user[$field] ?? ''));
+            if ($candidate !== '') {
+                $recipientName = $candidate;
+                break;
+            }
+        }
+        if ($recipientName === '') {
+            $recipientName = strstr($email, '@', true) ?: 'there';
+        }
+
+        $tenantSlug = trim((string) ($tenant['slug'] ?? ''));
+        $tenantName = trim((string) ($tenant['name'] ?? ''));
+        if ($tenantName === '') {
+            $tenantName = $tenantSlug !== '' ? $tenantSlug : 'your ArtsFolio site';
+        }
+
+        return array_merge([
+            'recipient_name' => $recipientName,
+            'recipient_email' => $email,
+            'tenant_name' => $tenantName,
+            'tenant_slug' => $tenantSlug,
+            'site_url' => $tenantSlug !== '' ? 'https://' . $tenantSlug . '.artsfol.io' : 'https://artsfol.io',
+            'admin_url' => $tenantSlug !== '' ? 'https://' . $tenantSlug . '.artsfol.io/admin' : 'https://artsfol.io',
+        ], $extra);
+    }
+
+    private function editableTemplate(): EditableEmailTemplate
+    {
+        return new EditableEmailTemplate(
+            new TemplateRenderer(),
+            dirname(__DIR__, 3) . '/template/email',
+        );
     }
 
     private function storeToken(int $userId, string $email, string $rawToken): void

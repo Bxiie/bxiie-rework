@@ -1,10 +1,12 @@
 ## Now
 
+- update video URLs on help page
+- scrub all text of editorial and todo notices that are not meant for the user or admin.
+- on phones, the sidebar admin navigation should be collapsed to a hamburger.
+
 ##
 
-- update video URLs on help page
-- scrub text of editorial and todo notices
-- on template page, allow display and selection of minutes after signup to send emails, with repeat.  Allow creation of new templates.  Allow rename of templates.
+- On email template page, allow display and selection of minutes after signup to send emails, with recurring setting.  Allow creation of new templates.  Allow rename of templates.
 
 ##
 
