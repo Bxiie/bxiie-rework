@@ -635,3 +635,5 @@ run_php scripts/test/help_sidebar_final_layer_static.php
 [ -f scripts/test/email_verification_tenant_scope_static.php ] && php scripts/test/email_verification_tenant_scope_static.php
 
 [ -f scripts/test/welcome_email_complete_tokens_static.php ] && php scripts/test/welcome_email_complete_tokens_static.php
+
+[ -f scripts/test/email_renderer_owned_tokens_static.php ] && php scripts/test/email_renderer_owned_tokens_static.php

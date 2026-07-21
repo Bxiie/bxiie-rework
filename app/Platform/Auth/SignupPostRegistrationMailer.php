@@ -222,7 +222,15 @@ final class SignupPostRegistrationMailer
 
     private function assertNoUnresolvedTokens(string $body, string $templatePath): void
     {
-        if (preg_match_all('/\{\{\s*[A-Za-z0-9_.-]+\s*\}\}/', $body, $matches) < 1) {
+        // BrandedEmail expands these presentation tokens after editable-template
+        // values have been substituted. They are valid at this stage.
+        $bodyWithoutRendererTokens = str_replace(
+            ['{{logo}}', '{{ logo }}', '{{logo-small}}', '{{ logo-small }}', '{{logo-large}}', '{{ logo-large }}'],
+            '',
+            $body,
+        );
+
+        if (preg_match_all('/\{\{\s*[A-Za-z0-9_.-]+\s*\}\}/', $bodyWithoutRendererTokens, $matches) < 1) {
             return;
         }
 
