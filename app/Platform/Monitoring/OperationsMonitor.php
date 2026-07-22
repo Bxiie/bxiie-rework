@@ -82,7 +82,14 @@ final class OperationsMonitor
         $ntp = trim((string) $this->command("timedatectl show -p NTPSynchronized --value 2>/dev/null || echo unknown"));
         $this->add('server.clock.ntp_synchronized', $ntp === 'yes' ? HealthMetric::OK : ($ntp === 'unknown' ? HealthMetric::INFO : HealthMetric::WARN), 'yes', $ntp);
 
-        $this->add('server.reboot_required', file_exists('/var/run/reboot-required') ? HealthMetric::WARN : HealthMetric::OK, 'no', file_exists('/var/run/reboot-required') ? 'yes' : 'no');
+        $rebootRequired = file_exists('/run/reboot-required') || file_exists('/var/run/reboot-required');
+        $this->add(
+            'server.reboot_required',
+            $rebootRequired ? HealthMetric::WARN : HealthMetric::OK,
+            'no',
+            $rebootRequired ? 'yes' : 'no',
+            $rebootRequired ? $this->rebootRequiredReason() : ''
+        );
     }
 
     private function collectServiceMetrics(): void
@@ -513,6 +520,44 @@ final class OperationsMonitor
         }
         return number_format($value, 2) . ' ' . $units[$unit];
     }
-}
 
-// End of file.
+
+    /**
+     * Explain why Debian/Ubuntu requires a reboot.
+     */
+    private function rebootRequiredReason(): string
+    {
+        foreach (['/run/reboot-required.pkgs', '/var/run/reboot-required.pkgs'] as $packageFile) {
+            if (!is_file($packageFile) || !is_readable($packageFile)) {
+                continue;
+            }
+
+            $packages = file(
+                $packageFile,
+                FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES
+            );
+
+            if ($packages === false) {
+                continue;
+            }
+
+            $packages = array_values(array_unique(array_filter(
+                array_map(
+                    static fn (string $package): string => trim($package),
+                    $packages
+                ),
+                static fn (string $package): bool => $package !== ''
+            )));
+
+            if ($packages !== []) {
+                return "The operating system requires a reboot to finish updating:\n- "
+                    . implode("\n- ", $packages);
+            }
+        }
+
+        return 'The operating system created the reboot-required marker, '
+            . 'but did not identify a package in reboot-required.pkgs.';
+    }
+
+    // ARTSFOLIO_REBOOT_REQUIRED_REASON_V2
+}

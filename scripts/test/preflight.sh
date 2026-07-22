@@ -642,3 +642,4 @@ run_php scripts/test/help_sidebar_final_layer_static.php
 run_php scripts/test/platform_polish_four_pack_static.php
 
 run_php scripts/test/email_outbox_selected_timezone_static.php
+run_php scripts/test/reboot_required_reason_static.php
