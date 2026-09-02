@@ -69,7 +69,27 @@ final class JobsController
             $attemptRows = '<tr><td colspan="7">No attempt history found.</td></tr>';
         }
 
-        $body = '<dl>'
+        $csrf = AdminLayout::escape($this->csrf?->getOrCreate() ?? '');
+        $returnTo = AdminLayout::escape('/platform/admin/jobs/' . $jobId);
+        $actions = <<<HTML
+<form class="admin-inline-form" method="post" action="/platform/admin/jobs/action">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <input type="hidden" name="job_id" value="{$jobId}">
+    <input type="hidden" name="job_admin_action" value="requeue">
+    <input type="hidden" name="return_to" value="{$returnTo}">
+    <button type="submit">Requeue</button>
+</form>
+<form class="admin-inline-form" method="post" action="/platform/admin/jobs/action">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <input type="hidden" name="job_id" value="{$jobId}">
+    <input type="hidden" name="job_admin_action" value="cancel">
+    <input type="hidden" name="return_to" value="{$returnTo}">
+    <button type="submit">Cancel</button>
+</form>
+HTML;
+
+        $body = '<p>' . $actions . '</p>'
+            . '<dl>'
             . '<dt>ID</dt><dd>' . AdminLayout::escape((string) $job['id']) . '</dd>'
             . '<dt>Tenant</dt><dd>' . AdminLayout::escape((string) ($job['tenant_slug'] ?? $job['tenant_id'] ?? '')) . '</dd>'
             . '<dt>Type</dt><dd>' . AdminLayout::escape((string) $job['job_type']) . '</dd>'
@@ -130,7 +150,14 @@ final class JobsController
             return Response::html('<h1>Invalid job action</h1>', 422);
         }
 
-        return new Response('', 302, ['Location' => '/platform/admin/jobs']);
+        return new Response('', 302, ['Location' => $this->returnTo('/platform/admin/jobs')]);
+    }
+
+    /** Only allows redirecting back into the platform jobs screens (list or detail). */
+    private function returnTo(string $fallback): string
+    {
+        $returnTo = (string) ($_POST['return_to'] ?? '');
+        return str_starts_with($returnTo, '/platform/admin/jobs') ? $returnTo : $fallback;
     }
 
     public function index(Request $request, ?array $currentUser): Response

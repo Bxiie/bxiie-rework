@@ -96,26 +96,43 @@ try {
 
         case 'analytics.rollup':
             $handler = new AnalyticsRollupJobHandler(new AnalyticsRollupService($pdo));
-            echo $handler->handle($job['payload']) . "\n";
-            $jobs->enqueueSingleton('analytics.rollup', ['days' => (int) ($job['payload']['days'] ?? 3)], null, 300, (int) $job['id']);
+            try {
+                echo $handler->handle($job['payload']) . "\n";
+            } finally {
+                // Re-enqueue the next cycle even on failure so one transient error
+                // does not permanently stop this recurring job. enqueueSingleton
+                // excludes $job['id'] from its own existing-job check, so this is
+                // safe to call while the current row is still 'running'.
+                $jobs->enqueueSingleton('analytics.rollup', ['days' => (int) ($job['payload']['days'] ?? 3)], null, 300, (int) $job['id']);
+            }
             $jobs->markComplete((int) $job['id']);
             break;
 
         case 'sales.cart.queue_abandoned_reminders':
             $handler = new QueueAbandonedCartEmailsJobHandler(new AbandonedCartEmailQueueService($pdo, $root));
-            echo $handler->handle($job['payload']) . "
-";
             $interval = max(3600, (int) ($job['payload']['interval_seconds'] ?? 3600));
             $limit = max(1, min(1000, (int) ($job['payload']['limit_per_stage'] ?? 200)));
-            $jobs->enqueueSingleton('sales.cart.queue_abandoned_reminders', ['interval_seconds' => $interval, 'limit_per_stage' => $limit], null, $interval, (int) $job['id']);
+            try {
+                echo $handler->handle($job['payload']) . "
+";
+            } finally {
+                // See analytics.rollup above: always re-enqueue the next cycle.
+                $jobs->enqueueSingleton('sales.cart.queue_abandoned_reminders', ['interval_seconds' => $interval, 'limit_per_stage' => $limit], null, $interval, (int) $job['id']);
+            }
             $jobs->markComplete((int) $job['id']);
             break;
 
         case 'sales.inventory.release_expired':
             $handler = new ReleaseExpiredSalesReservationsJobHandler(new SalesRepository($pdo));
-            echo $handler->handle($job['payload']) . "\n";
             $interval = max(60, (int) ($job['payload']['interval_seconds'] ?? 300));
-            $jobs->enqueueSingleton('sales.inventory.release_expired', ['interval_seconds' => $interval], null, $interval, (int) $job['id']);
+            try {
+                echo $handler->handle($job['payload']) . "\n";
+            } finally {
+                // See analytics.rollup above: always re-enqueue the next cycle.
+                // This job's handle() also retries transient deadlocks internally
+                // (SalesRepository::withDeadlockRetry) before it ever reaches here.
+                $jobs->enqueueSingleton('sales.inventory.release_expired', ['interval_seconds' => $interval], null, $interval, (int) $job['id']);
+            }
             $jobs->markComplete((int) $job['id']);
             break;
 

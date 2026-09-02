@@ -14,6 +14,7 @@ final class EmailSignupService
     public function __construct(
         private readonly EmailSignupRepository $signups,
         private readonly SignupNotificationService $notifications,
+        private readonly ?SpamScoreService $spamScore = null,
     ) {
     }
 
@@ -32,6 +33,12 @@ final class EmailSignupService
         $alreadyActive = $existing !== null
             && in_array((string) ($existing['consent_status'] ?? ''), ['pending', 'confirmed'], true);
 
+        // Only score genuinely new addresses; an existing subscriber's original
+        // score is preserved by EmailSignupRepository::upsert() regardless.
+        $spamProbability = $existing === null
+            ? $this->spamScore?->score($tenant, $email, $name, $source, $ipAddress)['probability']
+            : null;
+
         $signupId = $this->signups->upsert(
             tenant: $tenant,
             email: $email,
@@ -42,6 +49,7 @@ final class EmailSignupService
             country: $country,
             region: $region,
             city: $city,
+            spamProbability: $spamProbability,
         );
 
         if (!$alreadyActive) {

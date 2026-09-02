@@ -117,6 +117,7 @@ use App\Tenant\Artwork\ArtworkReadRepository;
 use App\Tenant\Signup\SignupNotificationService;
 use App\Tenant\Signup\EmailSignupService;
 use App\Tenant\Signup\EmailSignupRepository;
+use App\Tenant\Signup\SpamScoreService;
 use App\Tenant\Contact\ContactNotificationService;
 use App\Tenant\Contact\ContactMessageService;
 use App\Tenant\Contact\ContactMessageRepository;
@@ -363,7 +364,7 @@ return static function (Router $router, array $context): void {
         $router->get('/admin/email-signups.csv', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->export($request, $tenant, $currentUser));
         $router->post('/admin/email-signups/consent', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->updateConsent($request, $tenant, $currentUser));
         $router->post('/admin/email-signups/update', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->update($request, $tenant, $currentUser));
-        $router->post('/admin/email-signups/import', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->import($request, $tenant, $currentUser));
+        $router->post('/admin/email-signups/import', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo), new SpamScoreService(new EmailSignupRepository($pdo))))->import($request, $tenant, $currentUser));
         $router->post('/admin/email-signups/delete', fn (Request $request): Response => (new TenantAdminEmailSignupsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new EmailSignupRepository($pdo), $csrf, new AuditLogRepository($pdo)))->delete($request, $tenant, $currentUser));
         $router->get('/admin/settings', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo), $pdo))->edit($request, $tenant, $currentUser));
         $router->post('/admin/settings', fn (Request $request): Response => (new TenantAdminSettingsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, $csrf, new AuditLogRepository($pdo), $pdo))->update($request, $tenant, $currentUser));

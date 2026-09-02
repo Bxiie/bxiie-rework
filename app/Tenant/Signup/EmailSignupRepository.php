@@ -60,7 +60,12 @@ final class EmailSignupRepository
         ?string $city = null,
         string $consentStatus = 'pending',
         ?string $notes = null,
+        ?int $spamProbability = null,
     ): int {
+        // spam_probability is intentionally left out of the conflict-update
+        // clause below: it is only ever set for a genuinely new signup, and a
+        // repeat signup by an already-known address should not overwrite the
+        // original score.
         $stmt = $this->pdo->prepare(
             'INSERT INTO email_signups (
                 tenant_id,
@@ -74,6 +79,7 @@ final class EmailSignupRepository
                 region,
                 city,
                 consent_status,
+                spam_probability,
                 updated_at
             ) VALUES (
                 :tenant_id,
@@ -87,6 +93,7 @@ final class EmailSignupRepository
                 :region,
                 :city,
                 :consent_status,
+                :spam_probability,
                 CURRENT_TIMESTAMP
             )
             ON DUPLICATE KEY UPDATE
@@ -117,6 +124,7 @@ final class EmailSignupRepository
             'region' => $region,
             'city' => $city,
             'consent_status' => $consentStatus,
+            'spam_probability' => $spamProbability,
         ]);
 
         $insertId = (int) $this->pdo->lastInsertId();
@@ -179,6 +187,24 @@ final class EmailSignupRepository
             'tenant_id' => $tenant->tenantId,
             'id' => $signupId,
         ]);
+    }
+
+    /** Counts signups from the same IP in the last $withinMinutes, for SpamScoreService's velocity check. */
+    public function recentSignupCountForIp(TenantContext $tenant, string $ipAddress, int $withinMinutes): int
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT COUNT(*)
+             FROM email_signups
+             WHERE tenant_id = :tenant_id
+               AND ip_address = :ip_address
+               AND created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL :minutes MINUTE)'
+        );
+        $stmt->bindValue('tenant_id', $tenant->tenantId, PDO::PARAM_INT);
+        $stmt->bindValue('ip_address', $ipAddress, PDO::PARAM_STR);
+        $stmt->bindValue('minutes', $withinMinutes, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn();
     }
 
     public function delete(TenantContext $tenant, int $signupId): void

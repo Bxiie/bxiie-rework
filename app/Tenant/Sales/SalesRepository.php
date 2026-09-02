@@ -924,35 +924,64 @@ final class SalesRepository
 
     public function releaseExpiredReservations(): int
     {
-        $this->pdo->beginTransaction();
-        try {
-            $orders = $this->pdo->prepare(
-                'UPDATE sales_orders o
-                 SET o.payment_status = "checkout_expired", o.updated_at = UTC_TIMESTAMP()
-                 WHERE o.payment_status = "checkout_pending"
-                   AND EXISTS (
-                       SELECT 1
-                       FROM sales_inventory_reservations r
-                       WHERE r.order_id = o.id
-                         AND r.status = "reserved"
-                         AND r.expires_at <= UTC_TIMESTAMP()
-                   )'
-            );
-            $orders->execute();
+        // This job's UPDATEs range-scan the same (status, expires_at) index that
+        // checkout's expireReservationsWithinTransaction() scans on every checkout
+        // attempt, so InnoDB gap-lock collisions with a concurrent checkout are
+        // expected occasionally. SQLSTATE 40001 is transient; MariaDB's own error
+        // text says to restart the transaction, so retry a bounded number of times
+        // before giving up.
+        return $this->withDeadlockRetry(function (): int {
+            $this->pdo->beginTransaction();
+            try {
+                $orders = $this->pdo->prepare(
+                    'UPDATE sales_orders o
+                     SET o.payment_status = "checkout_expired", o.updated_at = UTC_TIMESTAMP()
+                     WHERE o.payment_status = "checkout_pending"
+                       AND EXISTS (
+                           SELECT 1
+                           FROM sales_inventory_reservations r
+                           WHERE r.order_id = o.id
+                             AND r.status = "reserved"
+                             AND r.expires_at <= UTC_TIMESTAMP()
+                       )'
+                );
+                $orders->execute();
 
-            $expired = $this->pdo->prepare(
-                'UPDATE sales_inventory_reservations
-                 SET status = "expired", released_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP()
-                 WHERE status = "reserved" AND expires_at <= UTC_TIMESTAMP()'
-            );
-            $expired->execute();
-            $count = $expired->rowCount();
-            $this->pdo->commit();
-            return $count;
-        } catch (\Throwable $e) {
-            $this->pdo->rollBack();
-            throw $e;
+                $expired = $this->pdo->prepare(
+                    'UPDATE sales_inventory_reservations
+                     SET status = "expired", released_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP()
+                     WHERE status = "reserved" AND expires_at <= UTC_TIMESTAMP()'
+                );
+                $expired->execute();
+                $count = $expired->rowCount();
+                $this->pdo->commit();
+                return $count;
+            } catch (\Throwable $e) {
+                $this->pdo->rollBack();
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Runs $operation, retrying on MariaDB/MySQL deadlock (SQLSTATE 40001) with a
+     * short jittered backoff. $operation must be safe to run again from scratch,
+     * i.e. it must fully roll back its own transaction before rethrowing.
+     */
+    private function withDeadlockRetry(callable $operation, int $maxAttempts = 3): mixed
+    {
+        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            try {
+                return $operation();
+            } catch (\PDOException $e) {
+                if ($e->getCode() !== '40001' || $attempt >= $maxAttempts) {
+                    throw $e;
+                }
+                usleep(random_int(50_000, 150_000) * $attempt);
+            }
         }
+
+        throw new RuntimeException('Unreachable: deadlock retry loop exited without returning or throwing.');
     }
 
     private function expireReservationsWithinTransaction(): void

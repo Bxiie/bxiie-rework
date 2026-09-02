@@ -115,6 +115,7 @@ use App\Tenant\Artwork\ArtworkReadRepository;
 use App\Tenant\Signup\SignupNotificationService;
 use App\Tenant\Signup\EmailSignupService;
 use App\Tenant\Signup\EmailSignupRepository;
+use App\Tenant\Signup\SpamScoreService;
 use App\Tenant\Contact\ContactNotificationService;
 use App\Tenant\Contact\ContactMessageService;
 use App\Tenant\Contact\ContactMessageRepository;
@@ -280,10 +281,12 @@ $suspendedTenant = $tenantResolver->suspendedTenantForHost($request->server('HTT
             $pdo,
         );
 
+        $emailSignupRepository = new EmailSignupRepository($pdo);
         $signupController = new SignupController(
             new EmailSignupService(
-                new EmailSignupRepository($pdo),
+                $emailSignupRepository,
                 new SignupNotificationService($emailOutbox, $tenantSettings),
+                new SpamScoreService($emailSignupRepository),
             ),
             $csrf,
             new RateLimiter($pdo),

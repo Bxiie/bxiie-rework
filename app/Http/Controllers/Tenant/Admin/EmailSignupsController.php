@@ -21,6 +21,7 @@ use App\Support\Flash\FlashMessages;
 use App\Support\Pagination\Pagination;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Signup\EmailSignupRepository;
+use App\Tenant\Signup\SpamScoreService;
 
 /**
  * Handles tenant-admin email signup search, sort, import, export, edit, and delete actions.
@@ -32,6 +33,7 @@ final class EmailSignupsController
         private readonly EmailSignupRepository $signups,
         private readonly ?CsrfTokenService $csrf = null,
         private readonly ?AuditLogRepository $auditLog = null,
+        private readonly ?SpamScoreService $spam = null,
     ) {
     }
 
@@ -63,6 +65,7 @@ final class EmailSignupsController
             $email = $this->escape((string) $signup['email']);
             $status = $this->escape((string) $signup['consent_status']);
             $created = $this->escape((string) $signup['created_at']);
+            $spamProbability = $this->formatSpamProbability($signup['spam_probability'] ?? null);
 
             $actions = <<<HTML
 <form method="post" action="/admin/email-signups/consent" class="admin-inline-form">
@@ -77,16 +80,11 @@ final class EmailSignupsController
     <input type="hidden" name="status" value="unsubscribed">
     <button type="submit">Unsubscribe</button>
 </form>
-<form method="post" action="/admin/email-signups/delete" class="admin-inline-form" onsubmit="return confirm('Delete this email address from the list?');">
-    <input type="hidden" name="csrf_token" value="{$csrf}">
-    <input type="hidden" name="signup_id" value="{$id}">
-    <input type="hidden" name="return_to" value="{$returnTo}">
-    <button type="submit" class="danger">Delete</button>
-</form>
+<button type="button" class="danger" data-role="email-signup-delete" data-signup-id="{$id}" data-csrf-token="{$csrf}">Delete</button>
 HTML;
 
             $rows .= <<<HTML
-<tr>
+<tr id="email-signup-row-{$id}">
     <td>{$id}</td>
     <td>{$email}</td>
     <td>
@@ -101,6 +99,7 @@ HTML;
         </form>
     </td>
     <td>{$source}<br><small>IP: {$ip}<br>Location: {$location}</small></td>
+    <td>{$spamProbability}</td>
     <td>{$status}</td>
     <td>{$created}</td>
     <td>{$actions}</td>
@@ -109,7 +108,7 @@ HTML;
         }
 
         if ($rows === '') {
-            $rows = '<tr><td colspan="7">No email signups found.</td></tr>';
+            $rows = '<tr><td colspan="8">No email signups found.</td></tr>';
         }
 
         $tenantName = $this->escape($tenant->name);
@@ -165,6 +164,7 @@ HTML;
             <th><a href="/admin/email-signups?q={$this->url($query)}&sort=email&dir={$nextDir}">Email</a></th>
             <th>Name / Source / Notes</th>
             <th><a href="/admin/email-signups?q={$this->url($query)}&sort=source&dir={$nextDir}">Source / IP / Location</a></th>
+            <th>Spam probability</th>
             <th><a href="/admin/email-signups?q={$this->url($query)}&sort=consent_status&dir={$nextDir}">Consent</a></th>
             <th><a href="/admin/email-signups?q={$this->url($query)}&sort=created_at&dir={$nextDir}">Created</a></th>
             <th>Actions</th>
@@ -172,6 +172,50 @@ HTML;
     </thead>
     <tbody>{$rows}</tbody>
 </table></div>
+<script>
+(function () {
+    document.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-role="email-signup-delete"]');
+        if (!button) {
+            return;
+        }
+
+        if (!window.confirm('Delete this email address from the list?')) {
+            return;
+        }
+
+        var signupId = button.getAttribute('data-signup-id');
+        var csrfToken = button.getAttribute('data-csrf-token');
+        button.disabled = true;
+
+        fetch('/admin/email-signups/delete', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+            body: 'csrf_token=' + encodeURIComponent(csrfToken) + '&signup_id=' + encodeURIComponent(signupId),
+        }).then(function (response) {
+            return response.json().catch(function () { return {ok: false}; }).then(function (data) {
+                return {response: response, data: data};
+            });
+        }).then(function (result) {
+            if (!result.response.ok || !result.data.ok) {
+                throw new Error('delete_failed');
+            }
+            var row = document.getElementById('email-signup-row-' + signupId);
+            if (row && row.parentNode) {
+                row.parentNode.removeChild(row);
+            }
+        }).catch(function () {
+            window.alert('Could not delete this email address. Please try again.');
+            button.disabled = false;
+        });
+    });
+})();
+</script>
 HTML,
             nav: [
                 '/admin' => 'Dashboard',
@@ -228,22 +272,40 @@ HTML,
 
     public function delete(Request $request, TenantContext $tenant, ?array $currentUser): Response
     {
+        $isAjax = $request->server('HTTP_X_REQUESTED_WITH') === 'XMLHttpRequest';
+
         if (!$this->canManage($currentUser, $tenant)) {
+            if ($isAjax) {
+                return Response::json(['ok' => false, 'error' => 'unauthorized'], 403);
+            }
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
         if (!$this->validCsrf()) {
+            if ($isAjax) {
+                return Response::json(['ok' => false, 'error' => 'invalid_csrf'], 403);
+            }
             return Response::invalidCsrf();
         }
 
         $signupId = (int) ($_POST['signup_id'] ?? 0);
         if ($signupId <= 0) {
+            if ($isAjax) {
+                return Response::json(['ok' => false, 'error' => 'invalid_id'], 422);
+            }
             return Response::html('<h1>Invalid signup id</h1>', 422);
         }
 
         $this->signups->delete($tenant, $signupId);
-        FlashMessages::success('Email address deleted from list.');
         $this->auditAction($request, $tenant, $currentUser, 'tenant.email_signup.deleted', (string) $signupId);
 
+        if ($isAjax) {
+            // No flash message here: the row is removed from the DOM in place,
+            // and a flash would only appear after a full page reload the
+            // operator no longer performs (see class docblock / delete button).
+            return Response::json(['ok' => true]);
+        }
+
+        FlashMessages::success('Email address deleted from list.');
         return new Response('', 303, ['Location' => $this->returnTo('/admin/email-signups')]);
     }
 
@@ -281,13 +343,21 @@ HTML,
                 continue;
             }
 
+            $name = $this->csvValue($row, $map, 'name');
+            $source = $this->csvValue($row, $map, 'source') ?: $defaultSource;
+            $isNewAddress = $this->signups->findByEmail($tenant, $email) === null;
+            $spamProbability = $isNewAddress
+                ? $this->spam?->score($tenant, $email, $name, $source, null)['probability']
+                : null;
+
             $this->signups->upsert(
                 tenant: $tenant,
                 email: $email,
-                name: $this->csvValue($row, $map, 'name'),
-                source: $this->csvValue($row, $map, 'source') ?: $defaultSource,
+                name: $name,
+                source: $source,
                 consentStatus: $this->safeConsent($this->csvValue($row, $map, 'consent_status')),
                 notes: $this->csvValue($row, $map, 'notes'),
+                spamProbability: $spamProbability,
             );
             $imported++;
         }
@@ -361,6 +431,27 @@ HTML,
     private function validCsrf(): bool
     {
         return $this->csrf !== null && $this->csrf->validate($_POST['csrf_token'] ?? null);
+    }
+
+    /**
+     * Renders SpamScoreService's stored heuristic score. Rows created before
+     * this feature (or by paths that don't score, if any remain) have no
+     * value and show a neutral placeholder rather than a false "0%".
+     */
+    private function formatSpamProbability(mixed $value): string
+    {
+        if ($value === null) {
+            return '<span class="admin-muted">Not scored</span>';
+        }
+
+        $probability = max(0, min(100, (int) $value));
+        $color = match (true) {
+            $probability >= 50 => '#9b1c1c',
+            $probability >= 25 => '#8a6d1a',
+            default => '#2f6b2f',
+        };
+
+        return '<span style="font-weight:700;color:' . $color . '">' . $probability . '%</span>';
     }
 
     /** @param array<string,mixed> $row */

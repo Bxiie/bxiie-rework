@@ -233,6 +233,10 @@ run_if_exists scripts/test/tenant_custom_captcha_static.php
 
 run_if_exists scripts/test/email_signup_duplicate_notification_static.php
 
+run_if_exists scripts/test/email_signup_spam_probability_static.php
+
+run_if_exists scripts/test/email_signup_ajax_delete_static.php
+
 run_if_exists scripts/test/worker_dns_tenant_static.php
 
 run_if_exists scripts/test/phase4_worker_scaling_static.php
@@ -411,6 +415,10 @@ run_if_exists scripts/test/phase7_sales_inventory_static.php
 run_if_exists scripts/test/phase9_monitoring_static.php
 
 run_if_exists scripts/test/background_job_concurrency_static.php
+
+run_if_exists scripts/test/queue_deadlock_recovery_static.php
+
+run_if_exists scripts/test/job_detail_actions_static.php
 
 run_if_exists scripts/test/analytics_rollup_freshness_static.php
 
