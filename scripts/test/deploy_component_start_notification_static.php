@@ -10,6 +10,8 @@ $checks = [
     'deploy invokes explicit component-start notification' => '--component-started="PHP-FPM,Caddy,email worker instances,background worker instances"',
     'deploy uses notification-only exit behavior' => '--notification-only',
     'deploy runs monitor as service account' => 'sudo -u artsfolio env ARTSFOLIO_ENV_FILE="$ENV_FILE" /usr/bin/php scripts/ops/monitor_artsfolio.php',
+    'deploy refuses root execution' => 'Do not run deploy_production.sh as root or with sudo.',
+    'deploy tells operator to run as checkout user' => 'Run it as the artsfolio checkout user: ./scripts/deploy/deploy_production.sh',
 ];
 foreach ($checks as $label => $needle) {
     if (!str_contains($deploy, $needle)) {
