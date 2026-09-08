@@ -107,8 +107,10 @@ section "Verify env file"
 test -f "$ENV_FILE"
 
 section "PHP syntax checks"
-find app public scripts config -name '*.php' -print0 | xargs -0 -n1 php -l > /tmp/artsfolio-php-lint.log
-tail -n 5 /tmp/artsfolio-php-lint.log
+LINT_LOG="$(mktemp /tmp/artsfolio-php-lint.XXXXXX)"
+find app public scripts config -name '*.php' -print0 | xargs -0 -n1 php -l > "$LINT_LOG"
+tail -n 5 "$LINT_LOG"
+rm -f "$LINT_LOG"
 
 section "Run migrations"
 ARTSFOLIO_ENV_FILE="$ENV_FILE" php scripts/database/migrate.php
