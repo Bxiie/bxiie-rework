@@ -79,8 +79,6 @@ $checks = [
         "'hashtags'",
     ],
     'app/Tenant/Social/InstagramClient.php' => [
-        'instagram_business_basic',
-        'instagram_business_content_publish',
         'graph.instagram.com',
         '/media_publish',
         'media_type',
@@ -250,6 +248,15 @@ $oauthClient = is_file($root . '/app/Tenant/Social/TenantInstagramOAuthClient.ph
 foreach (['ARTSFOLIO_INSTAGRAM_CLIENT_ID', 'ARTSFOLIO_INSTAGRAM_CLIENT_SECRET', 'getenv('] as $forbidden) {
     if (str_contains($oauthClient, $forbidden)) {
         $failures[] = 'TenantInstagramOAuthClient must not read process-wide Instagram credentials: ' . $forbidden;
+    }
+}
+
+$publishingClient = is_file($root . '/app/Tenant/Social/InstagramClient.php')
+    ? (file_get_contents($root . '/app/Tenant/Social/InstagramClient.php') ?: '')
+    : '';
+foreach (['ARTSFOLIO_INSTAGRAM_CLIENT_ID', 'ARTSFOLIO_INSTAGRAM_CLIENT_SECRET', 'authorizationUrl(', 'exchangeCode('] as $forbidden) {
+    if (str_contains($publishingClient, $forbidden)) {
+        $failures[] = 'InstagramClient must remain publishing-only: ' . $forbidden;
     }
 }
 
