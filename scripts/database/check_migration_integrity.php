@@ -116,6 +116,13 @@ $expected = [
             'artworks' => ['social_caption', 'social_hashtags'],
         ],
     ],
+    '0071_social_instagram_hardening.sql' => [
+        'tables' => [],
+        'columns' => [
+            'social_connections' => ['is_default'],
+            'social_posts' => ['social_connection_id'],
+        ],
+    ],
 ];
 
 $appliedStmt = $pdo->query("SELECT migration FROM schema_migrations");
