@@ -30,47 +30,110 @@ final class SocialRepository
         return in_array((string) $stmt->fetchColumn(), ['studio', 'pro', 'collective'], true);
     }
 
+    /** Returns the provider account currently selected for new posts. */
     public function connection(int $tenantId, string $provider = 'instagram'): ?array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM social_connections WHERE tenant_id = :tenant_id AND provider = :provider LIMIT 1');
+        $stmt = $this->pdo->prepare('SELECT * FROM social_connections WHERE tenant_id = :tenant_id AND provider = :provider AND is_default = 1 ORDER BY id DESC LIMIT 1');
         $stmt->execute(['tenant_id' => $tenantId, 'provider' => $provider]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ?: null;
     }
 
-    public function saveConnection(int $tenantId, string $provider, string $externalAccountId, ?string $username, string $tokenCiphertext, ?string $expiresAt, string $scopes, int $userId): void
+    /** Returns an exact tenant-owned connection used by an already-scheduled post. */
+    public function connectionById(int $tenantId, int $connectionId): ?array
     {
-        $stmt = $this->pdo->prepare(
-            "INSERT INTO social_connections (
-                tenant_id, provider, external_account_id, username, token_ciphertext,
-                token_expires_at, granted_scopes, status, connected_by_user_id, created_at, updated_at
-             ) VALUES (
-                :tenant_id, :provider, :external_account_id, :username, :token_ciphertext,
-                :token_expires_at, :granted_scopes, 'active', :connected_by_user_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-             ) ON DUPLICATE KEY UPDATE
-                external_account_id = VALUES(external_account_id), username = VALUES(username),
-                token_ciphertext = VALUES(token_ciphertext), token_expires_at = VALUES(token_expires_at),
-                granted_scopes = VALUES(granted_scopes), status = 'active', last_error = NULL,
-                connected_by_user_id = VALUES(connected_by_user_id), updated_at = CURRENT_TIMESTAMP"
-        );
-        $stmt->execute([
-            'tenant_id' => $tenantId,
-            'provider' => $provider,
-            'external_account_id' => $externalAccountId,
-            'username' => $username,
-            'token_ciphertext' => $tokenCiphertext,
-            'token_expires_at' => $expiresAt,
-            'granted_scopes' => $scopes,
-            'connected_by_user_id' => $userId,
-        ]);
+        $stmt = $this->pdo->prepare('SELECT * FROM social_connections WHERE tenant_id = :tenant_id AND id = :id LIMIT 1');
+        $stmt->execute(['tenant_id' => $tenantId, 'id' => $connectionId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
     }
 
+    /**
+     * Creates or refreshes one provider account and makes it the default for new posts.
+     * Existing scheduled posts remain bound to their original social_connection_id.
+     */
+    public function saveConnection(int $tenantId, string $provider, string $externalAccountId, ?string $username, string $tokenCiphertext, ?string $expiresAt, string $scopes, int $userId): int
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $clear = $this->pdo->prepare('UPDATE social_connections SET is_default = 0, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND provider = :provider AND is_default = 1');
+            $clear->execute(['tenant_id' => $tenantId, 'provider' => $provider]);
+
+            $find = $this->pdo->prepare('SELECT id FROM social_connections WHERE tenant_id = :tenant_id AND provider = :provider AND external_account_id = :external_account_id LIMIT 1 FOR UPDATE');
+            $find->execute(['tenant_id' => $tenantId, 'provider' => $provider, 'external_account_id' => $externalAccountId]);
+            $existingId = $find->fetchColumn();
+
+            if ($existingId !== false) {
+                $connectionId = (int) $existingId;
+                $stmt = $this->pdo->prepare(
+                    "UPDATE social_connections
+                     SET username = :username,
+                         token_ciphertext = :token_ciphertext,
+                         token_expires_at = :token_expires_at,
+                         granted_scopes = :granted_scopes,
+                         status = 'active',
+                         is_default = 1,
+                         last_error = NULL,
+                         connected_by_user_id = :connected_by_user_id,
+                         updated_at = CURRENT_TIMESTAMP
+                     WHERE tenant_id = :tenant_id AND id = :id"
+                );
+                $stmt->execute([
+                    'username' => $username,
+                    'token_ciphertext' => $tokenCiphertext,
+                    'token_expires_at' => $expiresAt,
+                    'granted_scopes' => $scopes,
+                    'connected_by_user_id' => $userId,
+                    'tenant_id' => $tenantId,
+                    'id' => $connectionId,
+                ]);
+            } else {
+                $stmt = $this->pdo->prepare(
+                    "INSERT INTO social_connections (
+                        tenant_id, provider, external_account_id, username, token_ciphertext,
+                        token_expires_at, granted_scopes, status, is_default, connected_by_user_id,
+                        created_at, updated_at
+                     ) VALUES (
+                        :tenant_id, :provider, :external_account_id, :username, :token_ciphertext,
+                        :token_expires_at, :granted_scopes, 'active', 1, :connected_by_user_id,
+                        CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                     )"
+                );
+                $stmt->execute([
+                    'tenant_id' => $tenantId,
+                    'provider' => $provider,
+                    'external_account_id' => $externalAccountId,
+                    'username' => $username,
+                    'token_ciphertext' => $tokenCiphertext,
+                    'token_expires_at' => $expiresAt,
+                    'granted_scopes' => $scopes,
+                    'connected_by_user_id' => $userId,
+                ]);
+                $connectionId = (int) $this->pdo->lastInsertId();
+            }
+
+            $this->pdo->commit();
+            return $connectionId;
+        } catch (\Throwable $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    /** Disconnects only the currently selected account, without changing posts bound to other accounts. */
     public function disconnect(int $tenantId, string $provider = 'instagram'): void
     {
-        $stmt = $this->pdo->prepare("UPDATE social_connections SET status = 'revoked', token_ciphertext = '', updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND provider = :provider");
-        $stmt->execute(['tenant_id' => $tenantId, 'provider' => $provider]);
-        $pending = $this->pdo->prepare("UPDATE social_posts SET status = 'authorization_required', last_error = 'Instagram account disconnected.', updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND provider = :provider AND status IN ('draft','scheduled','failed')");
-        $pending->execute(['tenant_id' => $tenantId, 'provider' => $provider]);
+        $connection = $this->connection($tenantId, $provider);
+        if (!$connection) {
+            return;
+        }
+        $connectionId = (int) $connection['id'];
+        $stmt = $this->pdo->prepare("UPDATE social_connections SET status = 'revoked', is_default = 0, token_ciphertext = '', updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND id = :id");
+        $stmt->execute(['tenant_id' => $tenantId, 'id' => $connectionId]);
+        $pending = $this->pdo->prepare("UPDATE social_posts SET status = 'authorization_required', next_attempt_at = NULL, last_error = 'Instagram account disconnected.', updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND social_connection_id = :connection_id AND status IN ('draft','scheduled','failed')");
+        $pending->execute(['tenant_id' => $tenantId, 'connection_id' => $connectionId]);
     }
 
     public function templates(int $tenantId, string $provider = 'instagram'): array
@@ -225,15 +288,15 @@ final class SocialRepository
         $stmt->execute(['caption' => $caption !== '' ? $caption : null, 'hashtags' => $hashtags !== '' ? $hashtags : null, 'tenant_id' => $tenantId, 'id' => $artworkId]);
     }
 
-    public function createPost(int $tenantId, int $sourceArtworkId, int $templateId, string $caption, string $hashtags, string $status, ?string $scheduledAt, array $snapshot, int $userId): int
+    public function createPost(int $tenantId, int $socialConnectionId, int $sourceArtworkId, int $templateId, string $caption, string $hashtags, string $status, ?string $scheduledAt, array $snapshot, int $userId): int
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO social_posts (uuid, tenant_id, provider, source_artwork_id, template_id, caption, hashtags, snapshot_json, status, scheduled_at, next_attempt_at, created_by_user_id, updated_by_user_id, created_at, updated_at)
-             VALUES (:uuid, :tenant_id, 'instagram', :source_artwork_id, :template_id, :caption, :hashtags, :snapshot_json, :status, :scheduled_at, :next_attempt_at, :user_id, :user_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+            "INSERT INTO social_posts (uuid, tenant_id, provider, social_connection_id, source_artwork_id, template_id, caption, hashtags, snapshot_json, status, scheduled_at, next_attempt_at, created_by_user_id, updated_by_user_id, created_at, updated_at)
+             VALUES (:uuid, :tenant_id, 'instagram', :social_connection_id, :source_artwork_id, :template_id, :caption, :hashtags, :snapshot_json, :status, :scheduled_at, :next_attempt_at, :user_id, :user_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
         );
         $stmt->execute([
-            'uuid' => $this->uuidV4(), 'tenant_id' => $tenantId, 'source_artwork_id' => $sourceArtworkId,
-            'template_id' => $templateId, 'caption' => $caption, 'hashtags' => $hashtags,
+            'uuid' => $this->uuidV4(), 'tenant_id' => $tenantId, 'social_connection_id' => $socialConnectionId,
+            'source_artwork_id' => $sourceArtworkId, 'template_id' => $templateId, 'caption' => $caption, 'hashtags' => $hashtags,
             'snapshot_json' => json_encode($snapshot, JSON_THROW_ON_ERROR), 'status' => $status,
             'scheduled_at' => $scheduledAt, 'next_attempt_at' => $scheduledAt, 'user_id' => $userId,
         ]);
@@ -249,7 +312,7 @@ final class SocialRepository
 
     public function history(int $tenantId, int $limit = 100): array
     {
-        $stmt = $this->pdo->prepare("SELECT sp.*, a.title AS artwork_title FROM social_posts sp LEFT JOIN artworks a ON a.id = sp.source_artwork_id AND a.tenant_id = sp.tenant_id WHERE sp.tenant_id = :tenant_id ORDER BY sp.created_at DESC, sp.id DESC LIMIT :limit_count");
+        $stmt = $this->pdo->prepare("SELECT sp.*, a.title AS artwork_title, sc.username AS instagram_username, sc.external_account_id AS instagram_account_id FROM social_posts sp LEFT JOIN artworks a ON a.id = sp.source_artwork_id AND a.tenant_id = sp.tenant_id LEFT JOIN social_connections sc ON sc.id = sp.social_connection_id AND sc.tenant_id = sp.tenant_id WHERE sp.tenant_id = :tenant_id ORDER BY sp.created_at DESC, sp.id DESC LIMIT :limit_count");
         $stmt->bindValue('tenant_id', $tenantId, PDO::PARAM_INT);
         $stmt->bindValue('limit_count', max(1, min(500, $limit)), PDO::PARAM_INT);
         $stmt->execute();
@@ -273,14 +336,14 @@ final class SocialRepository
 
     public function cancelPost(int $tenantId, int $postId, int $userId): bool
     {
-        $stmt = $this->pdo->prepare("UPDATE social_posts SET status = 'cancelled', updated_by_user_id = :user_id, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND id = :id AND status IN ('draft','scheduled','failed','authorization_required')");
+        $stmt = $this->pdo->prepare("UPDATE social_posts SET status = 'cancelled', next_attempt_at = NULL, updated_by_user_id = :user_id, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND id = :id AND status IN ('draft','scheduled','failed','authorization_required')");
         $stmt->execute(['user_id' => $userId, 'tenant_id' => $tenantId, 'id' => $postId]);
         return $stmt->rowCount() === 1;
     }
 
     public function duePosts(int $limit = 10): array
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM social_posts WHERE status IN ('scheduled','failed') AND COALESCE(next_attempt_at, scheduled_at) <= UTC_TIMESTAMP() ORDER BY COALESCE(next_attempt_at, scheduled_at), id LIMIT :limit_count");
+        $stmt = $this->pdo->prepare("SELECT * FROM social_posts WHERE ((status = 'scheduled' AND scheduled_at <= UTC_TIMESTAMP()) OR (status = 'failed' AND next_attempt_at IS NOT NULL AND next_attempt_at <= UTC_TIMESTAMP())) ORDER BY COALESCE(next_attempt_at, scheduled_at), id LIMIT :limit_count");
         $stmt->bindValue('limit_count', max(1, min(50, $limit)), PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
@@ -288,7 +351,7 @@ final class SocialRepository
 
     public function claimPost(int $postId): bool
     {
-        $stmt = $this->pdo->prepare("UPDATE social_posts SET status = 'publishing', publish_attempts = publish_attempts + 1, updated_at = CURRENT_TIMESTAMP WHERE id = :id AND status IN ('scheduled','failed') AND COALESCE(next_attempt_at, scheduled_at) <= UTC_TIMESTAMP()");
+        $stmt = $this->pdo->prepare("UPDATE social_posts SET status = 'publishing', publish_attempts = publish_attempts + 1, updated_at = CURRENT_TIMESTAMP WHERE id = :id AND ((status = 'scheduled' AND scheduled_at <= UTC_TIMESTAMP()) OR (status = 'failed' AND next_attempt_at IS NOT NULL AND next_attempt_at <= UTC_TIMESTAMP()))");
         $stmt->execute(['id' => $postId]);
         return $stmt->rowCount() === 1;
     }
@@ -317,6 +380,13 @@ final class SocialRepository
         $stmt->execute(['token_hash' => hash('sha256', $plainToken)]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ?: null;
+    }
+
+    /** Stores Meta's publication ID before any follow-up request can fail. */
+    public function rememberRemotePostId(int $postId, string $remoteId): void
+    {
+        $stmt = $this->pdo->prepare("UPDATE social_posts SET remote_post_id = :remote_id, updated_at = CURRENT_TIMESTAMP WHERE id = :id AND status = 'publishing'");
+        $stmt->execute(['remote_id' => $remoteId, 'id' => $postId]);
     }
 
     public function markPublished(int $postId, string $remoteId, ?string $permalink): void
