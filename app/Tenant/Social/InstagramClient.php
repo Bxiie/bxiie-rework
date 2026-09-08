@@ -106,14 +106,35 @@ final class InstagramClient
         return $this->requiredId($response, 'Instagram published media');
     }
 
-    public function permalink(string $mediaId, string $token): ?string
+    /**
+     * Confirms that Meta exposes the media object returned by /media_publish.
+     * The caller persists the media ID before invoking this method, so a failed
+     * confirmation can be retried without publishing a duplicate post.
+     *
+     * @return array{id:string,permalink:?string,timestamp:?string}
+     */
+    public function publishedMedia(string $mediaId, string $token): array
     {
         $response = $this->request('GET', self::GRAPH_BASE . '/' . rawurlencode($mediaId), [
-            'fields' => 'permalink',
+            'fields' => 'id,permalink,timestamp',
             'access_token' => $token,
         ]);
+        $confirmedId = trim((string) ($response['id'] ?? ''));
+        if ($confirmedId === '' || $confirmedId !== $mediaId) {
+            throw new RuntimeException('Instagram published media could not be confirmed.');
+        }
         $permalink = trim((string) ($response['permalink'] ?? ''));
-        return $permalink !== '' ? $permalink : null;
+        $timestamp = trim((string) ($response['timestamp'] ?? ''));
+        return [
+            'id' => $confirmedId,
+            'permalink' => $permalink !== '' ? $permalink : null,
+            'timestamp' => $timestamp !== '' ? $timestamp : null,
+        ];
+    }
+
+    public function permalink(string $mediaId, string $token): ?string
+    {
+        return $this->publishedMedia($mediaId, $token)['permalink'];
     }
 
     public function publishingLimit(string $igUserId, string $token): ?array
