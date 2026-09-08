@@ -60,7 +60,9 @@ $checks = [
     'app/Tenant/Social/SocialPermissionService.php' => [
         "PUBLISH_PERMISSION = 'social.publish'",
         "['tenant_owner', 'tenant_admin', 'owner', 'admin']",
+        "if (!$this->activeTenantMembership($tenant->tenantId, $userId))",
         "['editor']",
+        'return $this->hasExplicitPermission($tenant->tenantId, $userId, self::PUBLISH_PERMISSION);',
     ],
     'app/Tenant/Social/SocialTokenCipher.php' => [
         'sodium_crypto_secretbox',
@@ -190,6 +192,17 @@ foreach ($checks as $file => $needles) {
             $failures[] = "{$file} missing marker: {$needle}";
         }
     }
+}
+
+// Tenant owners/admins must follow the canonical role-based admin contract.
+// Membership gating is reserved for Editors, who also require social.publish.
+$permissionService = is_file($root . '/app/Tenant/Social/SocialPermissionService.php')
+    ? (file_get_contents($root . '/app/Tenant/Social/SocialPermissionService.php') ?: '')
+    : '';
+$adminRoleCheck = strpos($permissionService, "hasTenantRole($tenant->tenantId, $userId, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])");
+$membershipCheck = strpos($permissionService, '!$this->activeTenantMembership($tenant->tenantId, $userId)');
+if ($adminRoleCheck === false || $membershipCheck === false || $adminRoleCheck > $membershipCheck) {
+    $failures[] = 'SocialPermissionService gates owner/admin access behind tenant_memberships instead of canonical tenant roles.';
 }
 
 // Internal notes must not be exposed as a social caption template placeholder.
