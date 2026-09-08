@@ -11,6 +11,7 @@ $failures = [];
 
 $requiredFiles = [
     'database/migrations/0070_social_instagram_publishing.sql',
+    'database/migrations/0071_social_instagram_hardening.sql',
     'app/Tenant/Social/SocialRepository.php',
     'app/Tenant/Social/SocialPermissionService.php',
     'app/Tenant/Social/SocialTokenCipher.php',
@@ -48,6 +49,13 @@ $checks = [
         'social_hashtags',
         'social.publish_due',
     ],
+    'database/migrations/0071_social_instagram_hardening.sql' => [
+        'is_default',
+        'DROP INDEX uq_social_connection_tenant_provider',
+        'uq_social_connection_account',
+        'social_connection_id',
+        'fk_social_post_connection',
+    ],
     'app/Tenant/Social/SocialPermissionService.php' => [
         "PUBLISH_PERMISSION = 'social.publish'",
         "['tenant_owner', 'tenant_admin', 'owner', 'admin']",
@@ -73,6 +81,15 @@ $checks = [
         'media_type',
         'CAROUSEL',
         'content_publishing_limit',
+        'publishedMedia',
+        "'fields' => 'id,permalink,timestamp'",
+    ],
+    'app/Tenant/Social/SocialRepository.php' => [
+        'connectionById',
+        'social_connection_id',
+        'rememberRemotePostId',
+        "status = 'failed' AND next_attempt_at IS NOT NULL",
+        "is_default = 1",
     ],
     'app/Tenant/Social/SocialPublishingService.php' => [
         'createDerivative',
@@ -81,6 +98,10 @@ $checks = [
         'markPublished',
         'authorization_required',
         'social.instagram.status',
+        'connectionById',
+        'rememberRemotePostId',
+        'publishedMedia',
+        "trim((string) (\$post['remote_post_id'] ?? ''))",
     ],
     'app/Http/Controllers/Tenant/SocialFrontController.php' => [
         '/admin/social/compose',
@@ -91,6 +112,9 @@ $checks = [
         '/social/media/',
         'Studio, Professional, and Collective',
         'Internal artwork notes are intentionally unavailable',
+        'social_connection_id',
+        'Editing this post does not reassign it to another account.',
+        'valid, unambiguous future schedule date and time',
     ],
     'app/Http/Controllers/Tenant/SocialPermissionAdminController.php' => [
         '/admin/social/editor-permission',
@@ -124,8 +148,10 @@ $checks = [
     ],
     'scripts/database/check_migration_integrity.php' => [
         '0070_social_instagram_publishing.sql',
+        '0071_social_instagram_hardening.sql',
         'social_connections',
         "'artworks' => ['social_caption', 'social_hashtags']",
+        "'social_posts' => ['social_connection_id']",
     ],
     'app/Platform/Email/EmailTemplateCatalog.php' => [
         'social/instagram-status.txt',
@@ -153,6 +179,15 @@ $renderer = is_file($root . '/app/Tenant/Social/SocialTemplateRenderer.php')
     : '';
 if (preg_match('/[\x27\x22]notes(?:_html)?[\x27\x22]\s*=>/', $renderer) === 1) {
     $failures[] = 'SocialTemplateRenderer exposes artwork notes as a placeholder.';
+}
+
+// Never regress to tenant/provider-only uniqueness, which would let a reconnect
+// overwrite the account identity of already-scheduled posts.
+$hardening = is_file($root . '/database/migrations/0071_social_instagram_hardening.sql')
+    ? (file_get_contents($root . '/database/migrations/0071_social_instagram_hardening.sql') ?: '')
+    : '';
+if (str_contains($hardening, 'ADD UNIQUE KEY uq_social_connection_tenant_provider')) {
+    $failures[] = 'Social connection hardening reintroduced tenant/provider-only uniqueness.';
 }
 
 if ($failures !== []) {
