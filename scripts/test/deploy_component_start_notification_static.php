@@ -12,11 +12,17 @@ $checks = [
     'deploy runs monitor as service account' => 'sudo -u artsfolio env ARTSFOLIO_ENV_FILE="$ENV_FILE" /usr/bin/php scripts/ops/monitor_artsfolio.php',
     'deploy refuses root execution' => 'Do not run deploy_production.sh as root or with sudo.',
     'deploy tells operator to run as checkout user' => 'Run it as the artsfolio checkout user: ./scripts/deploy/deploy_production.sh',
+    'deploy creates a unique PHP lint log' => 'LINT_LOG="$(mktemp /tmp/artsfolio-php-lint.XXXXXX)"',
+    'deploy writes lint output to the unique log' => '> "$LINT_LOG"',
+    'deploy removes the unique lint log' => 'rm -f "$LINT_LOG"',
 ];
 foreach ($checks as $label => $needle) {
     if (!str_contains($deploy, $needle)) {
         throw new RuntimeException($label . ': missing ' . $needle);
     }
+}
+if (str_contains($deploy, '> /tmp/artsfolio-php-lint.log')) {
+    throw new RuntimeException('deploy still writes to the fixed shared PHP lint log path');
 }
 foreach ([
     "'component-started:'",
