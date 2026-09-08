@@ -29,17 +29,21 @@ final class SocialPublishingService
         $result = ['checked' => 0, 'published' => 0, 'failed' => 0];
         foreach ($this->repository->duePosts($limit) as $post) {
             $postId = (int) $post['id'];
+            $tenantId = (int) $post['tenant_id'];
             ++$result['checked'];
             if (!$this->repository->claimPost($postId)) {
                 continue;
             }
-            $claimed = $this->repository->post((int) $post['tenant_id'], $postId) ?? $post;
+            $claimed = $this->repository->post($tenantId, $postId) ?? $post;
             try {
                 $this->publishPost($claimed);
                 ++$result['published'];
             } catch (Throwable $e) {
                 ++$result['failed'];
-                $this->handleFailure($claimed, $e);
+                // Reload because /media_publish may have returned a remote ID that
+                // was durably stored after this worker's original claim snapshot.
+                $latest = $this->repository->post($tenantId, $postId) ?? $claimed;
+                $this->handleFailure($latest, $e);
             }
         }
         return $result;
@@ -50,15 +54,26 @@ final class SocialPublishingService
         $postId = (int) $post['id'];
         $tenantId = (int) $post['tenant_id'];
         $attempt = max(1, (int) ($post['publish_attempts'] ?? 1));
-        $connection = $this->repository->connection($tenantId, 'instagram');
+        $connectionId = (int) ($post['social_connection_id'] ?? 0);
+        $connection = $connectionId > 0 ? $this->repository->connectionById($tenantId, $connectionId) : null;
         if (!$connection || (string) ($connection['status'] ?? '') !== 'active' || trim((string) ($connection['token_ciphertext'] ?? '')) === '') {
-            throw new \RuntimeException('Instagram authorization is required before this post can be published.');
+            throw new \RuntimeException('Instagram authorization is required for the account bound to this post.');
         }
 
         $token = $this->cipher->decrypt((string) $connection['token_ciphertext']);
         $igUserId = trim((string) ($connection['external_account_id'] ?? ''));
         if ($igUserId === '') {
             throw new \RuntimeException('Connected Instagram account ID is missing.');
+        }
+
+        // A prior attempt may have succeeded at /media_publish and failed only
+        // while confirming the returned media object. Never publish again when
+        // Meta has already given this post a remote media ID.
+        $remoteId = trim((string) ($post['remote_post_id'] ?? ''));
+        if ($remoteId !== '') {
+            $published = $this->instagram->publishedMedia($remoteId, $token);
+            $this->completePublishedPost($post, $attempt, $published);
+            return;
         }
 
         $this->assertPublishingQuotaAvailable($igUserId, $token);
@@ -106,9 +121,28 @@ final class SocialPublishingService
             ? $containerIds[0]
             : $this->instagram->createCarouselContainer($igUserId, $token, $containerIds, $this->finalCaption($post));
         $remoteId = $this->instagram->publishContainer($igUserId, $token, $creationId);
-        $permalink = $this->instagram->permalink($remoteId, $token);
+
+        // This write must happen before any follow-up API request. If the worker
+        // crashes or confirmation fails, the next attempt confirms this exact
+        // media object instead of calling /media_publish a second time.
+        $this->repository->rememberRemotePostId($postId, $remoteId);
+        $published = $this->instagram->publishedMedia($remoteId, $token);
+        $this->completePublishedPost($post, $attempt, $published);
+    }
+
+    /** @param array{id:string,permalink:?string,timestamp:?string} $published */
+    private function completePublishedPost(array $post, int $attempt, array $published): void
+    {
+        $postId = (int) $post['id'];
+        $tenantId = (int) $post['tenant_id'];
+        $remoteId = (string) $published['id'];
+        $permalink = $published['permalink'];
         $this->repository->markPublished($postId, $remoteId, $permalink);
-        $this->repository->recordAttempt($postId, $attempt, 'published', null, 'Instagram publication confirmed.', ['remote_post_id' => $remoteId, 'permalink' => $permalink]);
+        $this->repository->recordAttempt($postId, $attempt, 'published', null, 'Instagram publication confirmed.', [
+            'remote_post_id' => $remoteId,
+            'permalink' => $permalink,
+            'timestamp' => $published['timestamp'],
+        ]);
         $this->queueNotification($tenantId, $post, true, 'Published to Instagram', $permalink ?: 'Instagram publication completed.');
     }
 
@@ -135,10 +169,11 @@ final class SocialPublishingService
         $tenantId = (int) $post['tenant_id'];
         $attempt = max(1, (int) ($post['publish_attempts'] ?? 1));
         $authorization = $e instanceof InstagramApiException ? $e->authorizationFailure() : str_contains(strtolower($e->getMessage()), 'authorization');
-        $retryable = $e instanceof InstagramApiException ? $e->retryable() : $this->looksLikeTransientNetworkFailure($e);
+        $hasRemoteId = trim((string) ($post['remote_post_id'] ?? '')) !== '';
+        $retryable = $hasRemoteId || ($e instanceof InstagramApiException ? $e->retryable() : $this->looksLikeTransientNetworkFailure($e));
         $providerCode = $e instanceof InstagramApiException ? $e->providerCode : null;
         $providerResponse = $e instanceof InstagramApiException ? $this->safeProviderResponse($e->providerResponse) : null;
-        $shouldRetry = $retryable && $attempt < 4;
+        $shouldRetry = !$authorization && $retryable && $attempt < 4;
         $this->repository->markPublishFailure($postId, $e->getMessage(), $authorization, $shouldRetry);
         $this->repository->recordAttempt($postId, $attempt, $authorization ? 'authorization_required' : ($shouldRetry ? 'retrying' : 'failed'), $providerCode, $e->getMessage(), $providerResponse);
         if ($authorization || !$shouldRetry) {
