@@ -14,6 +14,8 @@
         return response.json();
     };
 
+    const csrfFromPage = () => document.querySelector('input[name="csrf_token"]')?.value || '';
+
     const artworkIdFromRow = (row) => {
         const match = (row?.id || '').match(/^artwork-(\d+)$/);
         return match ? Number(match[1]) : 0;
@@ -60,6 +62,14 @@
         const idInput = form?.querySelector('input[name="id"]');
         const artworkId = Number(idInput?.value || 0);
         if (!form || !artworkId) return;
+
+        // Remove the redundant outer "Artworks" title on the edit page while
+        // preserving the page's specific "Edit artwork" heading.
+        const outerHeading = document.querySelector('.tenant-admin-panel > h1');
+        if (outerHeading?.textContent?.trim().toLowerCase() === 'artworks') {
+            outerHeading.remove();
+        }
+
         const context = await json('/social/context?artwork_id=' + encodeURIComponent(artworkId));
         if (!context?.allowed) return;
 
@@ -71,7 +81,6 @@
             <label>Social Caption<br><textarea rows="5" data-social-caption-field></textarea></label>
             <label>Artwork hashtags<br><input type="text" data-social-hashtags-field placeholder="#sculpture #vermontartist"></label>
             <p><a class="admin-button social-instagram-button" href="${context.compose_url}">Post to Instagram</a></p>`;
-        const preview = form.previousElementSibling;
         form.insertBefore(card, form.firstChild);
         card.querySelector('[data-social-caption-field]').value = context.social_caption || '';
         card.querySelector('[data-social-hashtags-field]').value = context.social_hashtags || '';
@@ -80,12 +89,15 @@
             if (form.dataset.socialMetadataSaved === '1') return;
             event.preventDefault();
             const data = new FormData();
-            data.set('csrf_token', context.csrf_token || '');
+            data.set('csrf_token', csrfFromPage());
             data.set('artwork_id', String(artworkId));
             data.set('social_caption', card.querySelector('[data-social-caption-field]').value);
             data.set('social_hashtags', card.querySelector('[data-social-hashtags-field]').value);
             try {
-                await fetch('/admin/social/artwork-metadata', {method: 'POST', credentials: 'same-origin', body: data, headers: {'Accept': 'application/json'}});
+                const response = await fetch('/admin/social/artwork-metadata', {method: 'POST', credentials: 'same-origin', body: data, headers: {'Accept': 'application/json'}});
+                if (!response.ok) {
+                    console.warn('ArtsFolio social metadata save failed; artwork save will continue.');
+                }
             } finally {
                 form.dataset.socialMetadataSaved = '1';
                 form.submit();
@@ -102,7 +114,8 @@
         if (!main || main.querySelector('.social-instagram-button')) return;
         const button = socialButton(context.compose_url);
         button.textContent = 'Post to Instagram';
-        const imageParagraph = main.querySelector('p:has(img)');
+        const image = main.querySelector('img');
+        const imageParagraph = image?.closest('p');
         const wrapper = document.createElement('p');
         wrapper.className = 'social-public-artwork-action';
         wrapper.appendChild(button);
@@ -152,12 +165,17 @@
             });
             const crop = card.querySelector('[data-social-crop]');
             const image = card.querySelector('img');
+            const x = card.querySelector('input[name^="crop_x"]');
+            const y = card.querySelector('input[name^="crop_y"]');
             const applyCropPreview = () => {
                 if (!crop || !image) return;
                 image.style.aspectRatio = crop.value === 'square' ? '1 / 1' : crop.value === 'portrait' ? '4 / 5' : crop.value === 'landscape' ? '1.91 / 1' : 'auto';
                 image.style.objectFit = crop.value === 'original' ? 'contain' : 'cover';
+                image.style.objectPosition = `${Number(x?.value || 0.5) * 100}% ${Number(y?.value || 0.5) * 100}%`;
             };
             crop?.addEventListener('change', applyCropPreview);
+            x?.addEventListener('input', applyCropPreview);
+            y?.addEventListener('input', applyCropPreview);
             applyCropPreview();
         });
         normalizeOrder();
