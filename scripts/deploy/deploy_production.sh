@@ -122,7 +122,10 @@ section "Health check"
 ARTSFOLIO_ENV_FILE="$ENV_FILE" ./scripts/deploy/healthcheck.sh
 
 section "Component start notification"
-ARTSFOLIO_ENV_FILE="$ENV_FILE" php scripts/ops/monitor_artsfolio.php \
+# The monitor timer/service runs as the artsfolio account. Run the deploy-time
+# notification under that same account so its shared lock file has consistent
+# ownership and does not collide with Linux sticky-directory protections in /tmp.
+sudo -u artsfolio env ARTSFOLIO_ENV_FILE="$ENV_FILE" /usr/bin/php scripts/ops/monitor_artsfolio.php \
   --component-started="PHP-FPM,Caddy,email worker instances,background worker instances" \
   --notification-only
 
