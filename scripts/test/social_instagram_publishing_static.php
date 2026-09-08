@@ -21,6 +21,7 @@ $requiredFiles = [
     'app/Tenant/Social/SocialPublishingService.php',
     'app/Http/Controllers/Tenant/SocialFrontController.php',
     'app/Http/Controllers/Tenant/SocialComposeApiController.php',
+    'app/Http/Controllers/Tenant/SocialConfirmationController.php',
     'app/Http/Controllers/Tenant/SocialPermissionAdminController.php',
     'public/assets/social-publishing.js',
     'docs/dev/social-instagram-publishing.md',
@@ -116,6 +117,20 @@ $checks = [
         'Editing this post does not reassign it to another account.',
         'valid, unambiguous future schedule date and time',
     ],
+    'app/Http/Controllers/Tenant/SocialComposeApiController.php' => [
+        "trim((string) (\$post['remote_post_id'] ?? '')) !== ''",
+        'Editable social post not found.',
+    ],
+    'app/Http/Controllers/Tenant/SocialConfirmationController.php' => [
+        '/admin/social/confirmation-state',
+        '/admin/social/retry-confirmation',
+        'remote_post_id IS NOT NULL',
+        'publish_attempts = 0',
+        'cannot be canceled',
+        'can no longer be edited',
+        'connectionById',
+        'social.publish_due',
+    ],
     'app/Http/Controllers/Tenant/SocialPermissionAdminController.php' => [
         '/admin/social/editor-permission',
         'Tenant admin access required.',
@@ -126,6 +141,9 @@ $checks = [
         'Instagram carousels may contain at most 10 images.',
         '/admin/social/compose-state',
         '/admin/social/render-template',
+        '/admin/social/confirmation-state',
+        '/admin/social/retry-confirmation',
+        'Retry confirmation',
         "toLowerCase() === 'artworks'",
     ],
     'scripts/workers/run_once.php' => [
@@ -136,6 +154,7 @@ $checks = [
     'public/index.php' => [
         'SocialFrontController',
         'SocialComposeApiController',
+        'SocialConfirmationController',
         'SocialPermissionAdminController',
         '/assets/social-publishing.js',
     ],
