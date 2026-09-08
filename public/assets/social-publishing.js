@@ -105,6 +105,65 @@
         });
     }
 
+    async function enhanceUserPermissions() {
+        if (window.location.pathname !== '/admin/users') return;
+        const csrf = csrfFromPage();
+        if (!csrf) return;
+
+        const detailRows = Array.from(document.querySelectorAll('tr.tenant-user-details'));
+        for (const detailRow of detailRows) {
+            const userId = Number(detailRow.cells[0]?.textContent?.trim() || 0);
+            const roles = (detailRow.cells[3]?.textContent || '').toLowerCase();
+            if (!userId || !roles.split(',').map((role) => role.trim()).includes('editor')) continue;
+
+            const stateResponse = await fetch('/admin/social/editor-permission?user_id=' + encodeURIComponent(userId), {
+                credentials: 'same-origin',
+                headers: {'Accept': 'application/json'}
+            });
+            if (!stateResponse.ok) continue;
+            const state = await stateResponse.json();
+
+            const actionsRow = detailRow.nextElementSibling;
+            const actions = actionsRow?.querySelector('.tenant-user-actions');
+            if (!actions || actions.querySelector('[data-social-editor-permission]')) continue;
+
+            const wrapper = document.createElement('label');
+            wrapper.className = 'social-editor-permission-control';
+            wrapper.dataset.socialEditorPermission = '1';
+            wrapper.innerHTML = '<input type="checkbox"> Publish to social media <small aria-live="polite"></small>';
+            const checkbox = wrapper.querySelector('input');
+            const status = wrapper.querySelector('small');
+            checkbox.checked = state.social_publish === true;
+            checkbox.addEventListener('change', async () => {
+                checkbox.disabled = true;
+                status.textContent = ' Saving…';
+                const data = new FormData();
+                data.set('csrf_token', csrf);
+                data.set('user_id', String(userId));
+                data.set('enabled', checkbox.checked ? '1' : '0');
+                try {
+                    const response = await fetch('/admin/social/editor-permission', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        body: data,
+                        headers: {'Accept': 'application/json'}
+                    });
+                    const payload = await response.json().catch(() => ({}));
+                    if (!response.ok || payload.ok !== true) {
+                        checkbox.checked = !checkbox.checked;
+                        throw new Error(payload.message || 'Permission could not be saved.');
+                    }
+                    status.textContent = ' Saved';
+                } catch (error) {
+                    status.textContent = ' ' + (error?.message || 'Save failed');
+                } finally {
+                    checkbox.disabled = false;
+                }
+            });
+            actions.appendChild(wrapper);
+        }
+    }
+
     async function enhancePublicArtwork() {
         const match = window.location.pathname.match(/^\/artwork\/([^/]+)$/);
         if (!match) return;
@@ -142,6 +201,16 @@
                 if (field) field.value = String(index);
             });
         };
+
+        // Scheduled posts are snapshots. Restore their saved carousel order
+        // before attaching handlers so reopening Compose never silently changes
+        // which image is first or the ordering of the remaining images.
+        if (grid) {
+            const selected = selectedCards().sort((left, right) => Number(left.dataset.order || 9999) - Number(right.dataset.order || 9999));
+            const unselected = cards().filter((card) => !card.querySelector('input[type="checkbox"]')?.checked);
+            [...selected, ...unselected].forEach((card) => grid.appendChild(card));
+        }
+
         cards().forEach((card) => {
             const checkbox = card.querySelector('input[type="checkbox"]');
             checkbox?.addEventListener('change', () => {
@@ -200,6 +269,8 @@
             .social-media-card label { display:block; }
             .social-artwork-metadata-card textarea,.social-artwork-metadata-card input { width:100%;max-width:60rem; }
             .social-public-artwork-action { margin:.75rem 0 1.5rem; }
+            .social-editor-permission-control { display:flex;gap:.4rem;align-items:center;padding:.45rem .65rem;border:1px solid #ccc;border-radius:.35rem; }
+            .social-editor-permission-control small { min-width:4rem; }
         `;
         document.head.appendChild(style);
     }
@@ -209,6 +280,7 @@
         enhanceAdminNavigation();
         enhanceArtworkGrid();
         enhanceArtworkEditor();
+        enhanceUserPermissions();
         enhancePublicArtwork();
         enhanceCompose();
     });
