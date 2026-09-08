@@ -16,6 +16,8 @@ Migration `database/migrations/0070_social_instagram_publishing.sql` adds:
 - `social_publish_attempts`
 - `social_media_tokens`
 
+Migration `database/migrations/0071_social_instagram_hardening.sql` adds durable provider-account binding. It changes social connection uniqueness from one row per tenant/provider to one row per tenant/provider/external account, adds `social_connections.is_default`, and adds `social_posts.social_connection_id`. This lets the initial UI expose one default Instagram account while preserving the data model for multiple accounts later.
+
 The social provider layer lives under `app/Tenant/Social/`. `SocialRepository` owns tenant-scoped persistence, `SocialPermissionService` owns the `social.publish` capability, `SocialTemplateRenderer` renders caption placeholders, `SocialImageService` creates publication-only JPEG derivatives, `InstagramClient` encapsulates Meta HTTP calls, and `SocialPublishingService` runs due posts from the background worker.
 
 The browser-facing social routes are isolated in `SocialFrontController`, `SocialComposeApiController`, and `SocialPermissionAdminController`. `public/index.php` dispatches those routes before the legacy tenant route registrar and progressively injects `public/assets/social-publishing.js` into ordinary rendered tenant pages.
@@ -60,6 +62,14 @@ Social publishing is enabled only when the tenant's current plan slug is `studio
 
 Internal artwork notes are not available to the template engine. Template placeholders are limited to intentionally publishable artwork/tenant metadata.
 
+## Instagram account identity
+
+A successful OAuth connection makes that account the default account for new posts. Reconnecting the same Instagram account refreshes that account's stored encrypted token. Connecting a different account creates or reactivates a separate `social_connections` row and makes it the new default.
+
+Every new `social_posts` row stores the exact `social_connection_id` used when it is submitted. Editing or rescheduling a pending post does not change that binding. Therefore connecting a different Instagram account cannot silently redirect an already scheduled publication. The Compose page surfaces the bound account when editing a pending post.
+
+Disconnecting Instagram revokes only the currently selected account and moves pending posts bound to that account to `authorization_required`. Posts bound to another stored account are not rewritten.
+
 ## Caption templates
 
 A tenant receives a default template on first use. Additional named templates are stored in `social_templates`. A portfolio section may select a template through `social_section_templates`.
@@ -101,17 +111,21 @@ Supported placeholders currently include:
 
 All scheduled timestamps are persisted as UTC. Compose displays and accepts times in the signed-in ArtsFolio user's configured IANA time zone through `UserTimezoneContext`.
 
-A submitted social post is a snapshot. `social_posts.snapshot_json`, its rendered caption, hashtags, template ID, and ordered `social_post_items` preserve the submitted state. Later artwork edits do not mutate the scheduled post. An explicit Edit action rewrites the pending snapshot before publishing begins.
+Schedule conversion accepts a local wall-clock time only when exactly one UTC instant maps to it. Nonexistent spring-forward times and ambiguous fall-back times are rejected rather than silently normalized to a different instant.
+
+A submitted social post is a snapshot. `social_posts.snapshot_json`, its bound social connection, rendered caption, hashtags, template ID, and ordered `social_post_items` preserve the submitted state. Later artwork edits do not mutate the scheduled post. An explicit Edit action rewrites the pending content snapshot before publishing begins while preserving the original account binding.
 
 Pending states are `draft`, `scheduled`, `failed`, and `authorization_required`. `publishing` is claimed atomically and cannot be edited or canceled. Final successful state is `published`; user cancellation is `cancelled`.
 
-## Background worker
+## Background worker and publication idempotency
 
 Migration 0070 seeds the first `social.publish_due` background job. `scripts/workers/run_once.php` handles it and always schedules its next iteration through `BackgroundJobRepository::enqueueSingleton()`.
 
-The default dispatcher interval is 60 seconds. Each pass claims due `social_posts` using a conditional status update. This prevents two background workers from intentionally publishing the same post through the ordinary worker path.
+The default dispatcher interval is 60 seconds. Each pass claims due `social_posts` using a conditional status update. A `failed` post is due only when `next_attempt_at` is non-null and has arrived. Final failures therefore do not loop forever merely because their original `scheduled_at` is in the past.
 
 Transient provider rate-limit/server failures are retried with bounded backoff. Authentication failures transition to `authorization_required`. Final failure and successful publication both queue email notifications to tenant owners/admins and editors who have `social.publish`.
+
+The `/media_publish` boundary is handled specially. As soon as Meta returns a published media ID, ArtsFolio stores it in `social_posts.remote_post_id` before making another provider request. ArtsFolio then confirms that exact media object with a GET request. If confirmation fails or the worker stops after Meta accepted the post, a retry sees the stored remote ID and performs confirmation only. It does not call `/media_publish` again, preventing duplicate Instagram posts caused by an uncertain response boundary.
 
 ## Image derivatives and carousel behavior
 
@@ -143,8 +157,8 @@ sudo journalctl -u 'artsfolio-background-worker@*.service' --since '30 minutes a
 Inspect social queue state without exposing tokens:
 
 ```sql
-SELECT id, tenant_id, status, scheduled_at, next_attempt_at, publish_attempts,
-       remote_post_id, LEFT(last_error, 240) AS last_error
+SELECT id, tenant_id, social_connection_id, status, scheduled_at, next_attempt_at,
+       publish_attempts, remote_post_id, LEFT(last_error, 240) AS last_error
 FROM social_posts
 ORDER BY id DESC
 LIMIT 50;
@@ -152,7 +166,7 @@ LIMIT 50;
 
 Never print or log `social_connections.token_ciphertext`, access tokens, client secrets, or the social token key.
 
-If all scheduled posts stop, first verify that a `social.publish_due` background job is queued/running and that background workers are healthy. If one tenant reports `authorization_required`, reconnect that tenant's Instagram account instead of globally restarting or rotating credentials.
+If all scheduled posts stop, first verify that a `social.publish_due` background job is queued/running and that background workers are healthy. If one tenant reports `authorization_required`, reconnect the specific account bound to that post instead of globally restarting or rotating credentials.
 
 ## Deployment
 
@@ -161,11 +175,12 @@ Production deployment order is:
 1. Add the Meta client values and newly generated social keys to `/etc/artsfolio/artsfolio.env`.
 2. Register the production OAuth callback with Meta.
 3. Deploy the branch through the normal ArtsFolio production deployment workflow.
-4. Migration 0070 creates social tables and seeds the dispatcher.
-5. Preflight validates source-level integration.
-6. Background workers restart through `scripts/deploy/deploy_production.sh`.
-7. Connect a test Creator/Business account and make a controlled publication before broad tenant rollout.
+4. Migration 0070 creates the initial social tables and seeds the dispatcher.
+5. Migration 0071 adds account identity binding and multi-account-ready connection uniqueness.
+6. Preflight validates source-level integration and migration integrity.
+7. Background workers restart through `scripts/deploy/deploy_production.sh`.
+8. Connect a test Creator/Business account and make a controlled publication before broad tenant rollout.
 
-The migration is additive. Existing artwork, tenant, sales, email, and media rows are not rewritten except for the two nullable artwork social columns.
+The migrations are additive to existing application data. Migration 0071 backfills existing social posts to the previously configured tenant/provider connection, allowing systems that already applied 0070 to upgrade without rewriting 0070 or invalidating its migration checksum.
 
 <!-- End of file. -->
