@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\AppKernel;
 use App\Http\Controllers\Tenant\SocialFrontController;
+use App\Http\Controllers\Tenant\SocialPermissionAdminController;
 use App\Http\Request;
 use App\Http\View\ErrorPage;
 
@@ -38,6 +39,14 @@ register_shutdown_function(static function (): void {
 
 session_start();
 $request = Request::fromGlobals();
+
+// Permission management is tenant-admin-only and intentionally checked before
+// the broader social route surface, where permitted editors may compose posts.
+$permissionResponse = (new SocialPermissionAdminController($root))->handle($request);
+if ($permissionResponse !== null) {
+    $permissionResponse->send();
+    exit;
+}
 
 // Social publishing uses an isolated route surface so Meta's canonical OAuth
 // callback and temporary media URLs can be handled before tenant route guards.
