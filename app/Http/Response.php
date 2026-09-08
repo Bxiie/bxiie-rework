@@ -58,6 +58,22 @@ final class Response
         return self::error(419, $message);
     }
 
+    /** Exposes immutable response state for narrow response decorators. */
+    public function body(): string
+    {
+        return $this->body;
+    }
+
+    public function status(): int
+    {
+        return $this->status;
+    }
+
+    public function headers(): array
+    {
+        return $this->headers;
+    }
+
     public function send(): void
     {
         http_response_code($this->status);

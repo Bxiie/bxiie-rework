@@ -2,9 +2,19 @@
 
 Instagram publishing is available to ArtsFolio Studio, Professional, and Collective tenants. It requires an Instagram Creator or Business account.
 
+## Configure the tenant's Meta app
+
+Each ArtsFolio tenant uses its own Meta app credentials. Open **Tenant Admin → Instagram** and configure **Meta App credentials** before connecting Instagram.
+
+Enter the tenant's Meta **App ID** and **App Secret**. ArtsFolio stores the App ID as tenant settings data and encrypts the App Secret before database persistence. The App Secret is never displayed after it is saved; leaving the secret field blank later keeps the existing stored secret.
+
+Register the **OAuth Redirect URI** displayed by ArtsFolio in the tenant's Meta app. The production default is `https://artsfol.io/social/instagram/callback`. All tenant-owned Meta apps may use the same callback because ArtsFolio signs tenant identity into the OAuth state and restores the initiating tenant when Meta returns.
+
+ArtsFolio's platform social encryption and OAuth-state keys remain platform-managed. The Meta App ID and App Secret do not belong in the ArtsFolio server environment.
+
 ## Connect Instagram
 
-Open **Tenant Admin → Instagram** and choose **Connect Instagram**. Complete Meta's authorization flow for the professional Instagram account you want ArtsFolio to publish to.
+After the tenant's Meta app credentials are saved, choose **Connect Instagram**. Complete Meta's authorization flow for the professional Instagram account you want ArtsFolio to publish to.
 
 ArtsFolio does not ask for or store the Instagram password. The connection may require reauthorization later if Meta expires or revokes the access token.
 
@@ -79,8 +89,8 @@ The success message includes the Instagram result/permalink when available. Fail
 
 ## If publishing stops
 
-Check **Tenant Admin → Instagram** first. A single account showing authorization problems normally needs reconnection rather than a server restart.
+Check **Tenant Admin → Instagram** first. A single account showing authorization problems normally needs reconnection rather than a server restart. If OAuth cannot start, verify that tenant's Meta App ID, App Secret, and registered callback URI.
 
-If several tenants are affected at once, a platform administrator should verify the ArtsFolio background workers, Meta application credentials, and queue state.
+If several tenants are affected at once, a platform administrator should verify the ArtsFolio background workers, platform social encryption/state keys, callback configuration, and queue state. Tenant Meta App credentials should not be shared globally.
 
 <!-- End of file. -->

@@ -18,23 +18,25 @@ Migration `database/migrations/0070_social_instagram_publishing.sql` adds:
 
 Migration `database/migrations/0071_social_instagram_hardening.sql` adds durable provider-account binding. It changes social connection uniqueness from one row per tenant/provider to one row per tenant/provider/external account, adds `social_connections.is_default`, and adds `social_posts.social_connection_id`. This lets the initial UI expose one default Instagram account while preserving the data model for multiple accounts later.
 
-The social provider layer lives under `app/Tenant/Social/`. `SocialRepository` owns tenant-scoped persistence, `SocialPermissionService` owns the `social.publish` capability, `SocialTemplateRenderer` renders caption placeholders, `SocialImageService` creates publication-only JPEG derivatives, `InstagramClient` encapsulates Meta HTTP calls, and `SocialPublishingService` runs due posts from the background worker.
+The social provider layer lives under `app/Tenant/Social/`. `SocialRepository` owns tenant-scoped persistence, `SocialPermissionService` owns the `social.publish` capability, `SocialTemplateRenderer` renders caption placeholders, `SocialImageService` creates publication-only JPEG derivatives, `InstagramClient` encapsulates authenticated publishing calls, `TenantInstagramOAuthClient` performs OAuth for one tenant-owned Meta app, and `SocialPublishingService` runs due posts from the background worker.
 
-The browser-facing social routes are isolated in `SocialFrontController`, `SocialComposeApiController`, and `SocialPermissionAdminController`. `public/index.php` dispatches those routes before the legacy tenant route registrar and progressively injects `public/assets/social-publishing.js` into ordinary rendered tenant pages.
+The browser-facing social routes are isolated in `SocialInstagramCredentialsController`, `SocialFrontController`, `SocialComposeApiController`, and `SocialPermissionAdminController`. `public/index.php` dispatches the tenant credential/OAuth controller before the legacy social route surface so `/admin/social/connect` and `/social/instagram/callback` cannot fall back to platform-wide Meta credentials.
 
 ## Meta application configuration
 
-Instagram publishing uses Instagram API with Instagram Login. The Meta application must be configured for Instagram Creator and Business accounts and must receive production approval/access required by Meta before third-party tenants can publish.
+Instagram publishing uses Instagram API with Instagram Login. Each tenant owns and configures its own Meta application. A tenant administrator enters the Meta App ID and App Secret on **Tenant Admin → Instagram**.
 
-Configure these environment variables in `/etc/artsfolio/artsfolio.env`:
+The tenant App ID is stored in `tenant_settings.instagram_client_id`. The App Secret is encrypted with `SocialTokenCipher` before being stored in `tenant_settings.instagram_client_secret_ciphertext`. The plaintext App Secret is never rendered back to the browser. Leaving the secret field blank during a later save preserves the existing encrypted secret.
+
+Platform environment configuration contains only the shared callback URI and ArtsFolio's own cryptographic keys:
 
 ```text
-ARTSFOLIO_INSTAGRAM_CLIENT_ID=...
-ARTSFOLIO_INSTAGRAM_CLIENT_SECRET=...
 ARTSFOLIO_INSTAGRAM_REDIRECT_URI=https://artsfol.io/social/instagram/callback
 ARTSFOLIO_SOCIAL_TOKEN_KEY=...
 ARTSFOLIO_SOCIAL_STATE_KEY=...
 ```
+
+Do not define platform-wide `ARTSFOLIO_INSTAGRAM_CLIENT_ID` or `ARTSFOLIO_INSTAGRAM_CLIENT_SECRET` values. OAuth must always instantiate `TenantInstagramOAuthClient` from the initiating tenant's saved credentials.
 
 Generate the token key:
 
@@ -48,15 +50,17 @@ Generate a separate state-signing key:
 openssl rand -hex 32
 ```
 
-Never commit either secret. `ARTSFOLIO_SOCIAL_TOKEN_KEY` is a long-lived encryption key. Changing or losing it makes existing encrypted Instagram access tokens unreadable and requires tenant reconnection.
+Never commit either platform secret. `ARTSFOLIO_SOCIAL_TOKEN_KEY` is a long-lived encryption key. Changing or losing it makes existing encrypted Instagram access tokens and tenant Meta App Secrets unreadable and requires tenant reconfiguration/reconnection.
 
-The Instagram OAuth callback registered at Meta must exactly match `ARTSFOLIO_INSTAGRAM_REDIRECT_URI`. The current implementation requests `instagram_business_basic` and `instagram_business_content_publish`.
+Every tenant-owned Meta application registers the same production callback URI. OAuth state carries the tenant ID, tenant slug, initiating user ID, return host, expiration, and nonce under an HMAC signature. On callback ArtsFolio resolves the tenant again and verifies that the resolved tenant ID matches the signed state before decrypting that tenant's App Secret and exchanging the authorization code.
+
+The current implementation requests `instagram_business_basic` and `instagram_business_content_publish`.
 
 ## Security model
 
-ArtsFolio never stores an Instagram password. OAuth access tokens are encrypted with libsodium secretbox before database persistence. Temporary publication media URLs use a random 256-bit token; only the SHA-256 token hash is stored. The media URL is tenant-host-bound and expires after two hours.
+ArtsFolio never stores an Instagram password. Tenant Meta App Secrets and Instagram access tokens are encrypted with libsodium secretbox before database persistence. Temporary publication media URLs use a random 256-bit token; only the SHA-256 token hash is stored. The media URL is tenant-host-bound and expires after two hours.
 
-Social routes require an active tenant membership. Owners/admins receive publishing permission automatically. Editors require an explicit `tenant_user_permissions` row with `permission_key = 'social.publish'`. The admin-only `/admin/social/editor-permission` endpoint manages this capability.
+Owners/admins receive publishing permission automatically from the canonical tenant-role contract. Editors require an active tenant membership plus an explicit `tenant_user_permissions` row with `permission_key = 'social.publish'`. The admin-only `/admin/social/editor-permission` endpoint manages this capability.
 
 Social publishing is enabled only when the tenant's current plan slug is `studio`, `pro`, or `collective`.
 
@@ -164,7 +168,9 @@ ORDER BY id DESC
 LIMIT 50;
 ```
 
-Never print or log `social_connections.token_ciphertext`, access tokens, client secrets, or the social token key.
+Never print or log `social_connections.token_ciphertext`, tenant `instagram_client_secret_ciphertext`, decrypted access tokens, decrypted client secrets, or the platform social token key.
+
+If one tenant cannot begin OAuth, verify that tenant's saved Meta App ID and App Secret and confirm that the callback URI shown in Tenant Admin exactly matches the Meta app configuration. If all tenants are affected, verify `ARTSFOLIO_SOCIAL_TOKEN_KEY`, `ARTSFOLIO_SOCIAL_STATE_KEY`, the shared callback URI, and application routing before changing any tenant credentials.
 
 If all scheduled posts stop, first verify that a `social.publish_due` background job is queued/running and that background workers are healthy. If one tenant reports `authorization_required`, reconnect the specific account bound to that post instead of globally restarting or rotating credentials.
 
@@ -172,15 +178,15 @@ If all scheduled posts stop, first verify that a `social.publish_due` background
 
 Production deployment order is:
 
-1. Add the Meta client values and newly generated social keys to `/etc/artsfolio/artsfolio.env`.
-2. Register the production OAuth callback with Meta.
-3. Deploy the branch through the normal ArtsFolio production deployment workflow.
-4. Migration 0070 creates the initial social tables and seeds the dispatcher.
-5. Migration 0071 adds account identity binding and multi-account-ready connection uniqueness.
-6. Preflight validates source-level integration and migration integrity.
-7. Background workers restart through `scripts/deploy/deploy_production.sh`.
+1. Configure `ARTSFOLIO_INSTAGRAM_REDIRECT_URI`, `ARTSFOLIO_SOCIAL_TOKEN_KEY`, and `ARTSFOLIO_SOCIAL_STATE_KEY` in `/etc/artsfolio/artsfolio.env`.
+2. Deploy through the normal ArtsFolio production deployment workflow.
+3. Migration 0070 creates the initial social tables and seeds the dispatcher.
+4. Migration 0071 adds account identity binding and multi-account-ready connection uniqueness.
+5. Preflight validates source-level integration and migration integrity.
+6. Background workers restart through `scripts/deploy/deploy_production.sh`.
+7. For each tenant, configure that tenant's Meta App ID/App Secret in Tenant Admin and register the displayed callback URI in its Meta app.
 8. Connect a test Creator/Business account and make a controlled publication before broad tenant rollout.
 
-The migrations are additive to existing application data. Migration 0071 backfills existing social posts to the previously configured tenant/provider connection, allowing systems that already applied 0070 to upgrade without rewriting 0070 or invalidating its migration checksum.
+The migrations are additive to existing application data. Tenant-owned Meta app credentials require no schema migration because they use the existing `tenant_settings` key/value store; the App Secret value is encrypted before persistence.
 
 <!-- End of file. -->
