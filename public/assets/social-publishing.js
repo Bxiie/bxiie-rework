@@ -182,7 +182,7 @@
         else main.prepend(wrapper);
     }
 
-    function enhanceCompose() {
+    async function enhanceCompose() {
         const form = document.querySelector('[data-social-compose]');
         if (!form) return;
         const caption = form.querySelector('[data-social-caption]');
@@ -201,6 +201,27 @@
                 if (field) field.value = String(index);
             });
         };
+
+        // Restore all saved snapshot media controls, including focus coordinates.
+        const postId = Number(form.querySelector('input[name="post_id"]')?.value || 0);
+        if (postId > 0) {
+            const savedState = await json('/admin/social/compose-state?post_id=' + encodeURIComponent(postId));
+            for (const saved of savedState?.items || []) {
+                const checkbox = form.querySelector(`input[name="media_artwork_ids[]"][value="${saved.artwork_id}"]`);
+                const card = checkbox?.closest('[data-social-media-card]');
+                if (!card) continue;
+                checkbox.checked = true;
+                card.dataset.order = String(saved.sort_order);
+                const order = card.querySelector('[data-social-order]');
+                const crop = card.querySelector('[data-social-crop]');
+                const x = card.querySelector('input[name^="crop_x"]');
+                const y = card.querySelector('input[name^="crop_y"]');
+                if (order) order.value = String(saved.sort_order);
+                if (crop) crop.value = saved.crop_mode || 'original';
+                if (x) x.value = String(saved.crop_x ?? 0.5);
+                if (y) y.value = String(saved.crop_y ?? 0.5);
+            }
+        }
 
         // Scheduled posts are snapshots. Restore their saved carousel order
         // before attaching handlers so reopening Compose never silently changes
@@ -250,11 +271,16 @@
         normalizeOrder();
 
         const templateSelect = form.querySelector('[data-social-template]');
-        templateSelect?.addEventListener('change', () => {
-            const option = templateSelect.selectedOptions[0];
-            if (!option || !caption) return;
-            if (caption.value.trim() !== '' && !window.confirm('Replace the current editable caption with the selected template text?')) return;
-            caption.value = option.dataset.template || '';
+        templateSelect?.addEventListener('change', async () => {
+            if (!caption) return;
+            if (caption.value.trim() !== '' && !window.confirm('Replace the current editable caption with the selected template?')) return;
+            const artworkId = Number(form.querySelector('input[name="artwork_id"]')?.value || 0);
+            const templateId = Number(templateSelect.value || 0);
+            const rendered = await json('/admin/social/render-template?artwork_id=' + encodeURIComponent(artworkId) + '&template_id=' + encodeURIComponent(templateId));
+            if (!rendered?.ok) return;
+            caption.value = rendered.caption || '';
+            const hashtags = form.querySelector('textarea[name="hashtags"]');
+            if (hashtags && rendered.hashtags) hashtags.value = rendered.hashtags;
             updateCount();
         });
     }
