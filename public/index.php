@@ -6,6 +6,7 @@ use App\Http\AppKernel;
 use App\Http\Controllers\Tenant\SocialComposeApiController;
 use App\Http\Controllers\Tenant\SocialConfirmationController;
 use App\Http\Controllers\Tenant\SocialFrontController;
+use App\Http\Controllers\Tenant\SocialInstagramCredentialsController;
 use App\Http\Controllers\Tenant\SocialPermissionAdminController;
 use App\Http\Request;
 use App\Http\View\ErrorPage;
@@ -41,6 +42,15 @@ register_shutdown_function(static function (): void {
 
 session_start();
 $request = Request::fromGlobals();
+
+// Tenant-owned Meta app credentials and Instagram OAuth must be resolved before
+// the broader social controller, whose legacy OAuth routes are intentionally
+// shadowed by this tenant-scoped credential boundary.
+$instagramCredentialResponse = (new SocialInstagramCredentialsController($root))->handle($request);
+if ($instagramCredentialResponse !== null) {
+    $instagramCredentialResponse->send();
+    exit;
+}
 
 // Permission management is tenant-admin-only and intentionally checked before
 // the broader social route surface, where permitted editors may compose posts.
