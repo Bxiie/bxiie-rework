@@ -1,0 +1,9 @@
+{{logo}}
+
+Subject: {{subject}}
+
+{{body}}
+
+This message is generated when an ArtsFolio Instagram publication succeeds or reaches a final failure/authorization-required state.
+
+Recipients are tenant owners/admins and editors who have Publish to social media permission.

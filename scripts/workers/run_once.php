@@ -13,6 +13,7 @@ use App\Platform\Domains\ApacheVhostRenderer;
 use App\Platform\Domains\ApacheVhostWritePlanner;
 use App\Platform\Domains\DomainArtifactRepository;
 use App\Platform\Domains\DnsVerifier;
+use App\Platform\Email\EmailOutboxRepository;
 use App\Platform\Jobs\BackgroundJobRepository;
 use App\Platform\Jobs\Handlers\AnalyticsRollupJobHandler;
 use App\Platform\Jobs\Handlers\RenderVhostJobHandler;
@@ -27,6 +28,11 @@ use App\Platform\Tenancy\TenantDomainRepository;
 use App\Support\Database;
 use App\Tenant\Sales\AbandonedCartEmailQueueService;
 use App\Tenant\Sales\SalesRepository;
+use App\Tenant\Social\InstagramClient;
+use App\Tenant\Social\SocialImageService;
+use App\Tenant\Social\SocialPublishingService;
+use App\Tenant\Social\SocialRepository;
+use App\Tenant\Social\SocialTokenCipher;
 
 $root = dirname(__DIR__, 2);
 require_once $root . '/scripts/workers/heartbeat.php';
@@ -78,7 +84,6 @@ try {
             $jobs->markComplete((int) $job['id']);
             break;
 
-
         case 'scale_tenants.seed':
             $handler = new ScaleTenantFixtureJobHandler(new ScaleTenantFixtureService($pdo, $root));
             echo $handler->handle($job['payload']) . "\n";
@@ -92,7 +97,6 @@ try {
             echo $handler->handle($payload) . "\n";
             $jobs->markComplete((int) $job['id']);
             break;
-
 
         case 'analytics.rollup':
             $handler = new AnalyticsRollupJobHandler(new AnalyticsRollupService($pdo));
@@ -113,8 +117,7 @@ try {
             $interval = max(3600, (int) ($job['payload']['interval_seconds'] ?? 3600));
             $limit = max(1, min(1000, (int) ($job['payload']['limit_per_stage'] ?? 200)));
             try {
-                echo $handler->handle($job['payload']) . "
-";
+                echo $handler->handle($job['payload']) . "\n";
             } finally {
                 // See analytics.rollup above: always re-enqueue the next cycle.
                 $jobs->enqueueSingleton('sales.cart.queue_abandoned_reminders', ['interval_seconds' => $interval, 'limit_per_stage' => $limit], null, $interval, (int) $job['id']);
@@ -132,6 +135,34 @@ try {
                 // This job's handle() also retries transient deadlocks internally
                 // (SalesRepository::withDeadlockRetry) before it ever reaches here.
                 $jobs->enqueueSingleton('sales.inventory.release_expired', ['interval_seconds' => $interval], null, $interval, (int) $job['id']);
+            }
+            $jobs->markComplete((int) $job['id']);
+            break;
+
+        case 'social.publish_due':
+            $interval = max(60, (int) ($job['payload']['interval_seconds'] ?? 60));
+            $batchSize = max(1, min(50, (int) ($job['payload']['batch_size'] ?? 10)));
+            $handler = new SocialPublishingService(
+                $pdo,
+                new SocialRepository($pdo),
+                new SocialTokenCipher(),
+                new InstagramClient(),
+                new SocialImageService($root),
+                new EmailOutboxRepository($pdo),
+            );
+            try {
+                $result = $handler->publishDue($batchSize);
+                echo 'Social publishing: checked=' . $result['checked'] . ', published=' . $result['published'] . ', failed=' . $result['failed'] . "\n";
+            } finally {
+                // Keep the social scheduler alive even after provider/network
+                // failure. Per-post retry state remains in social_posts.
+                $jobs->enqueueSingleton(
+                    'social.publish_due',
+                    ['interval_seconds' => $interval, 'batch_size' => $batchSize],
+                    null,
+                    $interval,
+                    (int) $job['id'],
+                );
             }
             $jobs->markComplete((int) $job['id']);
             break;
