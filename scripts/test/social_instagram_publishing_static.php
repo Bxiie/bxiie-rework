@@ -60,7 +60,7 @@ $checks = [
     'app/Tenant/Social/SocialPermissionService.php' => [
         "PUBLISH_PERMISSION = 'social.publish'",
         "['tenant_owner', 'tenant_admin', 'owner', 'admin']",
-        "if (!$this->activeTenantMembership($tenant->tenantId, $userId))",
+        'if (!$this->activeTenantMembership($tenant->tenantId, $userId))',
         "['editor']",
         'return $this->hasExplicitPermission($tenant->tenantId, $userId, self::PUBLISH_PERMISSION);',
     ],
@@ -199,8 +199,12 @@ foreach ($checks as $file => $needles) {
 $permissionService = is_file($root . '/app/Tenant/Social/SocialPermissionService.php')
     ? (file_get_contents($root . '/app/Tenant/Social/SocialPermissionService.php') ?: '')
     : '';
-$adminRoleCheck = strpos($permissionService, "hasTenantRole($tenant->tenantId, $userId, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])");
-$membershipCheck = strpos($permissionService, '!$this->activeTenantMembership($tenant->tenantId, $userId)');
+$adminRoleNeedle = <<<'PHP'
+hasTenantRole($tenant->tenantId, $userId, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])
+PHP;
+$membershipNeedle = '!$this->activeTenantMembership($tenant->tenantId, $userId)';
+$adminRoleCheck = strpos($permissionService, $adminRoleNeedle);
+$membershipCheck = strpos($permissionService, $membershipNeedle);
 if ($adminRoleCheck === false || $membershipCheck === false || $adminRoleCheck > $membershipCheck) {
     $failures[] = 'SocialPermissionService gates owner/admin access behind tenant_memberships instead of canonical tenant roles.';
 }
