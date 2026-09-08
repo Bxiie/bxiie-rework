@@ -181,6 +181,47 @@
         else main.prepend(wrapper);
     }
 
+    async function enhanceConfirmationHistory() {
+        if (window.location.pathname !== '/admin/social') return;
+        const state = await json('/admin/social/confirmation-state');
+        const csrf = csrfFromPage();
+        if (!state?.ok || !csrf) return;
+
+        for (const post of state.posts || []) {
+            const postId = Number(post.post_id || 0);
+            if (!postId || post.status === 'publishing') continue;
+            const input = document.querySelector(`input[name="post_id"][value="${postId}"]`);
+            const actionCell = input?.closest('td');
+            if (!actionCell) continue;
+
+            actionCell.replaceChildren();
+            if (post.can_retry) {
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = '/admin/social/retry-confirmation';
+                form.style.display = 'inline';
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrf_token';
+                csrfInput.value = csrf;
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'post_id';
+                idInput.value = String(postId);
+                const button = document.createElement('button');
+                button.type = 'submit';
+                button.textContent = 'Retry confirmation';
+                form.append(csrfInput, idInput, button);
+                actionCell.appendChild(form);
+            } else {
+                const note = document.createElement('span');
+                const account = post.username ? ` @${post.username}` : '';
+                note.textContent = `Reconnect${account} to retry confirmation.`;
+                actionCell.appendChild(note);
+            }
+        }
+    }
+
     async function enhanceCompose() {
         const form = document.querySelector('[data-social-compose]');
         if (!form) return;
@@ -307,6 +348,7 @@
         enhanceArtworkEditor();
         enhanceUserPermissions();
         enhancePublicArtwork();
+        enhanceConfirmationHistory();
         enhanceCompose();
     });
 })();
