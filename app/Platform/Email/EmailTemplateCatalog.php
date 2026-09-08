@@ -41,6 +41,7 @@ final class EmailTemplateCatalog
             'sales/abandoned-cart-24h.md' => ['description' => 'Alternate twenty-four-hour abandoned-cart reminder.', 'keys' => ['sales.abandoned_cart_24h']],
             'sales/abandoned-cart-3d.md' => ['description' => 'Second abandoned-cart reminder sent approximately three days after abandonment.', 'keys' => ['sales.abandoned_cart_3d']],
             'sales/abandoned-cart-7d.md' => ['description' => 'Final abandoned-cart reminder sent approximately seven days after abandonment.', 'keys' => ['sales.abandoned_cart_7d']],
+            'social/instagram-status.txt' => ['description' => 'Notifies authorized tenant users when an Instagram publication succeeds or reaches a final failure state.', 'keys' => ['social.instagram.status']],
         ];
     }
 
