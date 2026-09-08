@@ -159,10 +159,14 @@ final class SocialInstagramCredentialsController
             return Response::error(422, 'Meta App Secret is too long.');
         }
 
-        $this->settings->set($tenant, 'instagram_client_id', $clientId);
-        if ($clientSecret !== '') {
-            $this->settings->set($tenant, 'instagram_client_secret_ciphertext', $this->cipher->encrypt($clientSecret));
+        try {
+            $newCiphertext = $clientSecret !== '' ? $this->cipher->encrypt($clientSecret) : $existingCiphertext;
+        } catch (RuntimeException $e) {
+            return Response::error(503, 'Instagram credential storage is not ready: ' . $e->getMessage());
         }
+
+        $this->settings->set($tenant, 'instagram_client_id', $clientId);
+        $this->settings->set($tenant, 'instagram_client_secret_ciphertext', $newCiphertext);
 
         return new Response('', 303, ['Location' => '/admin/social?notice=instagram-app-saved']);
     }
