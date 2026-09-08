@@ -9,6 +9,7 @@ $monitor = (string) file_get_contents($root . '/scripts/ops/monitor_artsfolio.ph
 $checks = [
     'deploy invokes explicit component-start notification' => '--component-started="PHP-FPM,Caddy,email worker instances,background worker instances"',
     'deploy uses notification-only exit behavior' => '--notification-only',
+    'deploy runs monitor as service account' => 'sudo -u artsfolio env ARTSFOLIO_ENV_FILE="$ENV_FILE" /usr/bin/php scripts/ops/monitor_artsfolio.php',
 ];
 foreach ($checks as $label => $needle) {
     if (!str_contains($deploy, $needle)) {
