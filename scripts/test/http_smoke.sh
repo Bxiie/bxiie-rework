@@ -20,8 +20,7 @@ assert_redirect_location() {
     echo "Expected Location: ${expected_location}" >&2
     echo "Actual Location: ${location}" >&2
     echo "Response headers:" >&2
-    printf '%s
-' "${headers}" >&2
+    printf '%s\n' "${headers}" >&2
     echo "Server log:" >&2
     cat "${LOG_FILE}" >&2
     exit 1
@@ -44,7 +43,8 @@ cd "${PROJECT_ROOT}"
 PORT="${ARTSFOLIO_HTTP_SMOKE_PORT:-18080}"
 ENV_FILE="${ARTSFOLIO_ENV_FILE:-.env.local}"
 BASE_URL="http://127.0.0.1:${PORT}"
-LOG_FILE="/tmp/artsfolio-http-smoke-${PORT}.log"
+LOG_FILE="$(mktemp "/tmp/artsfolio-http-smoke-${PORT}.XXXXXX.log")"
+BODY_FILE="$(mktemp "/tmp/artsfolio-http-smoke-body.XXXXXX.txt")"
 TENANT_HOST="${ARTSFOLIO_SMOKE_TENANT_HOST:-bxiie.com}"
 if [[ -n "${ARTSFOLIO_SMOKE_TENANT_TITLE:-}" ]]; then
   TENANT_EXPECTED_TITLE="${ARTSFOLIO_SMOKE_TENANT_TITLE}"
@@ -57,6 +57,7 @@ cleanup() {
     kill "${SERVER_PID}" >/dev/null 2>&1 || true
     wait "${SERVER_PID}" 2>/dev/null || true
   fi
+  rm -f "${LOG_FILE}" "${BODY_FILE}" >/dev/null 2>&1 || true
 }
 
 trap cleanup EXIT
@@ -132,13 +133,13 @@ assert_status() {
   local expected_status="$4"
 
   local status
-  status="$(curl -sS -o /tmp/artsfolio-http-smoke-body.txt -w "%{http_code}" -H "Host: ${host}" -H "X-ArtsFolio-Test-Probe: http-smoke" "${BASE_URL}${path}")"
+  status="$(curl -sS -o "${BODY_FILE}" -w "%{http_code}" -H "Host: ${host}" -H "X-ArtsFolio-Test-Probe: http-smoke" "${BASE_URL}${path}")"
 
   if [[ "${status}" != "${expected_status}" ]]; then
     echo "FAILED: ${description}" >&2
     echo "Expected status: ${expected_status}" >&2
     echo "Actual status: ${status}" >&2
-    cat /tmp/artsfolio-http-smoke-body.txt >&2
+    cat "${BODY_FILE}" >&2
     echo "Server log:" >&2
     cat "${LOG_FILE}" >&2
     exit 1
