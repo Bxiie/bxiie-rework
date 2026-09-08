@@ -142,4 +142,16 @@ CREATE TABLE IF NOT EXISTS social_media_tokens (
     CONSTRAINT fk_social_media_token_item FOREIGN KEY (social_post_item_id) REFERENCES social_post_items(id) ON DELETE CASCADE
 );
 
+-- The worker handler re-enqueues the next cycle. This seed guarantees the first
+-- dispatcher exists after migration without requiring a manual production step.
+INSERT INTO background_jobs (tenant_id, job_type, payload, status, attempts, available_at, created_at)
+SELECT NULL, 'social.publish_due', JSON_OBJECT('interval_seconds', 60, 'batch_size', 10), 'queued', 0,
+       DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 60 SECOND), CURRENT_TIMESTAMP
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM background_jobs
+    WHERE job_type = 'social.publish_due'
+      AND status IN ('queued','running')
+);
+
 -- End of file.
