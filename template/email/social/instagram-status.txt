@@ -1,3 +1,5 @@
+{{logo}}
+
 Subject: {{subject}}
 
 {{body}}
