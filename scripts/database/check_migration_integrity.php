@@ -101,6 +101,21 @@ $expected = [
             'operations_monitor_state' => ['last_component_states_json'],
         ],
     ],
+    '0070_social_instagram_publishing.sql' => [
+        'tables' => [
+            'social_connections',
+            'social_templates',
+            'social_section_templates',
+            'tenant_user_permissions',
+            'social_posts',
+            'social_post_items',
+            'social_publish_attempts',
+            'social_media_tokens',
+        ],
+        'columns' => [
+            'artworks' => ['social_caption', 'social_hashtags'],
+        ],
+    ],
 ];
 
 $appliedStmt = $pdo->query("SELECT migration FROM schema_migrations");
@@ -110,7 +125,6 @@ $applied = array_fill_keys(array_map(
 ), true);
 
 $problems = [];
-
 
 $migrationFiles = [];
 foreach (glob($root . '/database/migrations/*.sql') ?: [] as $file) {
