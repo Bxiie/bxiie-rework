@@ -175,8 +175,7 @@ run_if_exists scripts/workers/email_run_once.php
 
 else
 
-printf '[PASS] Skipping SMTP send smoke test. Set ARTSFOLIO_PREFLIGHT_SEND_EMAIL=1 only with a safe SMTP sink.
-'
+printf '[PASS] Skipping SMTP send smoke test. Set ARTSFOLIO_PREFLIGHT_SEND_EMAIL=1 only with a safe SMTP sink.\n'
 
 fi
 
@@ -440,8 +439,6 @@ run_php scripts/test/oauth_button_branding_static.php
 
 run_php scripts/test/user_timezone_preferences_static.php
 
-printf '[PASS] Preflight completed successfully.\n'
-
 php scripts/test/watermark_runtime_static.php
 php scripts/test/background_watermark_exclusion_static.php
 php scripts/test/nav_background_watermark_exclusion_static.php
@@ -455,199 +452,64 @@ run_php scripts/test/email_outbox_utc_static.php
 
 php scripts/test/oauth_lifecycle_tenant_nav_static.php
 
-# End of file.
 run_php scripts/test/platform_user_status_auth_static.php
 run_php scripts/test/platform_operations_timezone_static.php
 php scripts/test/artwork_edit_notes_grid_stock_static.php
 run_php scripts/test/analytics_bot_filter_static.php
 
-# Sales checkout shipping-contact regression.
 php scripts/test/sales_shipping_contact_collection_static.php
 
-# End of file.
-
-# Encrypted off-site backup operations regression.
 run_php scripts/test/backup_operations_static.php
-
-# End of file.
-
-# Platform-admin Restic credential regression.
 run_php scripts/test/restic_platform_settings_static.php
-
-# End of file.
-
-# Backup reliability regression.
 run_php scripts/test/backup_outstanding_fixes_static.php
-
-# End of file.
-
-# Platform backup controls regression.
 php scripts/test/platform_backup_controls_static.php
-
-# End of file.
-
-# Email logo tokens, Stripe description, and operations-copy regression.
 run_php scripts/test/email_logo_tokens_and_stripe_description_static.php
-
-# End of file.
-
-# Redundant backup navigation button regression.
 run_php scripts/test/backup_navigation_buttons_removed_static.php
-
-# End of file.
-
-# Plan-specific commission and Stripe-fee regression.
 run_php scripts/test/plan_commission_stripe_fees_static.php
-
-# End of file.
-
-# Backup page administrator-time-zone regression.
 run_php scripts/test/backup_admin_timezone_static.php
-
-# End of file.
-
-# Dedicated Tenant Admin Onboarding tab regression.
 run_php scripts/test/tenant_onboarding_tab_static.php
-
-# End of file.
-
-# Default Tenant Admin contrast regression.
 run_php scripts/test/new_tenant_admin_contrast_static.php
-
-# End of file.
-
-# Public visibility and delayed mailing-list prompt regression.
 run_php scripts/test/public_visibility_and_signup_prompt_static.php
-
-# End of file.
-
-# Operations run detail and tenant trial display regression.
 run_php scripts/test/operations_run_and_trial_details_static.php
-
-# End of file.
-
-# New-tenant documented Custom CSS regression.
 run_php scripts/test/new_tenant_custom_css_seed_static.php
-
-# End of file.
-
-# Platform Operations route constructor regression.
 run_php scripts/test/platform_operations_route_constructor_static.php
-
-# End of file.
-
-# Signup-code trial duration regression.
 run_php scripts/test/signup_code_trial_duration_static.php
-
-# End of file.
-
-# Tenant password-forgot closure dependency regression.
 run_php scripts/test/tenant_password_forgot_guard_capture_static.php
-
-# End of file.
-
-# Tenant-aware timezone layout regression.
 run_php scripts/test/tenant_timezone_layout_static.php
-
-# End of file.
-
-# Template source, login destination, and unknown-domain regression.
 run_php scripts/test/template_login_unknown_domain_static.php
-
-# End of file.
-
-# Caddy ask authorization for first-level ArtsFolio subdomains.
 run_php scripts/test/caddy_ask_platform_subdomains_static.php
-
-# End of file.
-
-# Tenant billing complimentary status and billing-start date.
 run_php scripts/test/tenant_billing_comp_status_static.php
-
-# End of file.
-
-# Neutral default tenant CSS without repository footer markers.
 run_php scripts/test/default_tenant_css_cleanup_static.php
-
-# End of file.
-
-# Draft-only tenant contributor workflow.
 run_php scripts/test/tenant_contributor_access_static.php
-
-# Artwork upload portfolio-section assignment.
 run_php scripts/test/upload_artwork_section_assignment_static.php
-
-# End of file.
-
-# Authorized public preview of unpublished artwork media.
 run_php scripts/test/unpublished_preview_media_static.php
-
-# End of file.
-
-# Clear checkbox-to-label association across admin forms.
 run_php scripts/test/admin_checkbox_clarity_static.php
-
-# End of file.
-
-# Text and image watermark support.
 run_php scripts/test/image_watermark_static.php
-
-# Artwork section names in admin grid and unpublished portfolio shortcuts.
 run_php scripts/test/artwork_grid_sections_and_preview_shortcuts_static.php
-
-# End of file.
-
-# Image watermark invocation and transparent compositing.
 run_php scripts/test/image_watermark_render_call_static.php
-
-# End of file.
-
-# Public watermarking must remain active during unpublished preview.
 run_php scripts/test/watermark_preview_decoupling_static.php
-
-# End of file.
-
-# Watermark image resolution from the saved tenant media UUID.
 run_php scripts/test/watermark_image_lookup_static.php
-
-# End of file.
-
-# Trim transparent watermark padding before scaling.
 run_php scripts/test/watermark_transparent_canvas_trim_static.php
-
-# End of file.
-
-# Image watermark sizing and enlargement.
 run_php scripts/test/watermark_image_scale_static.php
-
-# End of file.
-
-# Center and vertically stack image/text watermarks.
 run_php scripts/test/centered_stacked_watermarks_static.php
-
-# End of file.
-
-# Artwork type filter on the tenant Artworks grid.
 run_php scripts/test/artworks_type_filter_static.php
-
-# End of file.
-
-# Event definition month/year picker.
 run_php scripts/test/event_month_year_picker_static.php
-
-# End of file.
 run_php scripts/test/homepage_special_section_static.php
 run_php scripts/test/public_variant_detail_homepage_edit_static.php
 run_php scripts/test/homepage_unwatermarked_thumbnails_static.php
 run_php scripts/test/help_sidebar_final_layer_static.php
 
 [ -f scripts/test/email_verification_tenant_scope_static.php ] && php scripts/test/email_verification_tenant_scope_static.php
-
 [ -f scripts/test/welcome_email_complete_tokens_static.php ] && php scripts/test/welcome_email_complete_tokens_static.php
-
 [ -f scripts/test/email_renderer_owned_tokens_static.php ] && php scripts/test/email_renderer_owned_tokens_static.php
 
 run_php scripts/test/platform_polish_four_pack_static.php
-
 run_php scripts/test/email_outbox_selected_timezone_static.php
 run_php scripts/test/reboot_required_reason_static.php
+
+section '== Social publishing regression =='
+run_php scripts/test/social_instagram_publishing_static.php
+
+printf '[PASS] Preflight completed successfully.\n'
+
+# End of file.
