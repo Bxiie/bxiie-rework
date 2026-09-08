@@ -22,12 +22,23 @@ final class SocialPermissionService
     public function canPublish(?array $currentUser, TenantContext $tenant): bool
     {
         $userId = (int) ($currentUser['user_id'] ?? 0);
-        if ($userId < 1 || !$this->activeTenantMembership($tenant->tenantId, $userId)) {
+        if ($userId < 1) {
             return false;
         }
 
+        // Tenant owners/admins use the same role-based authorization contract as
+        // ArtsFolio's canonical tenant-admin middleware. Legacy tenants may have
+        // valid role assignments without a tenant_memberships row, so requiring
+        // membership here would incorrectly hide social controls from an admin
+        // who is already authorized everywhere else under /admin.
         if ($this->hasTenantRole($tenant->tenantId, $userId, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
             return true;
+        }
+
+        // Editors are intentionally narrower: they must remain active tenant
+        // members, hold the editor role, and have the explicit social capability.
+        if (!$this->activeTenantMembership($tenant->tenantId, $userId)) {
+            return false;
         }
 
         if (!$this->hasTenantRole($tenant->tenantId, $userId, ['editor'])) {
