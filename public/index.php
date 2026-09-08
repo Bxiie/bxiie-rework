@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\AppKernel;
+use App\Http\Controllers\Tenant\SocialComposeApiController;
 use App\Http\Controllers\Tenant\SocialFrontController;
 use App\Http\Controllers\Tenant\SocialPermissionAdminController;
 use App\Http\Request;
@@ -45,6 +46,14 @@ $request = Request::fromGlobals();
 $permissionResponse = (new SocialPermissionAdminController($root))->handle($request);
 if ($permissionResponse !== null) {
     $permissionResponse->send();
+    exit;
+}
+
+// Read-only Compose helpers restore immutable scheduled-post snapshot state and
+// render a newly selected caption template against the current source artwork.
+$composeApiResponse = (new SocialComposeApiController($root))->handle($request);
+if ($composeApiResponse !== null) {
+    $composeApiResponse->send();
     exit;
 }
 
