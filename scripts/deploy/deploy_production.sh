@@ -8,6 +8,16 @@ ENV_FILE="/etc/artsfolio/artsfolio.env"
 DEPLOY_STARTED_AT="$(date -Is)"
 DEPLOY_STAGE="initializing"
 
+# Git operations must run as the checkout owner. Running the entire deploy under
+# sudo causes newly-added files/directories to become root-owned, which makes a
+# later normal deploy unable to update them. The script elevates only the
+# individual service-management operations that actually require root.
+if [ "$(id -u)" -eq 0 ]; then
+  echo "ERROR: Do not run deploy_production.sh as root or with sudo." >&2
+  echo "Run it as the artsfolio checkout user: ./scripts/deploy/deploy_production.sh" >&2
+  exit 2
+fi
+
 finish_deploy() {
   local exit_code="$?"
   local finished_at
