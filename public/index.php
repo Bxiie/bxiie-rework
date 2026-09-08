@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\AppKernel;
 use App\Http\Controllers\Tenant\SocialComposeApiController;
+use App\Http\Controllers\Tenant\SocialConfirmationController;
 use App\Http\Controllers\Tenant\SocialFrontController;
 use App\Http\Controllers\Tenant\SocialPermissionAdminController;
 use App\Http\Request;
@@ -46,6 +47,14 @@ $request = Request::fromGlobals();
 $permissionResponse = (new SocialPermissionAdminController($root))->handle($request);
 if ($permissionResponse !== null) {
     $permissionResponse->send();
+    exit;
+}
+
+// Once Meta returns a remote media ID, content must never be edited, canceled,
+// or published again. This guard also exposes confirmation-only recovery state.
+$confirmationResponse = (new SocialConfirmationController($root))->handle($request);
+if ($confirmationResponse !== null) {
+    $confirmationResponse->send();
     exit;
 }
 
