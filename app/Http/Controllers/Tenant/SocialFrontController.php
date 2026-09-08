@@ -9,7 +9,6 @@ use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Auth\Session\SessionRepository;
 use App\Platform\Auth\Session\SessionTokenService;
-use App\Platform\Email\EmailOutboxRepository;
 use App\Platform\Tenancy\TenantContext;
 use App\Platform\Tenancy\TenantResolver;
 use App\Support\Database;
@@ -164,24 +163,26 @@ final class SocialFrontController
             $id = (int) $post['id'];
             $status = $this->e((string) $post['status']);
             $when = $this->e((string) ($post['published_at'] ?: $post['scheduled_at'] ?: $post['created_at']));
+            $account = trim((string) ($post['instagram_username'] ?? ''));
+            $account = $account !== '' ? '@' . $this->e($account) : 'Instagram account';
             $link = trim((string) ($post['remote_permalink'] ?? '')) !== '' ? '<a href="' . $this->e((string) $post['remote_permalink']) . '" target="_blank" rel="noopener">Instagram post</a>' : '';
             $actions = '';
             if (in_array((string) $post['status'], ['draft','scheduled','failed','authorization_required'], true)) {
                 $actions = '<a href="/admin/social/compose?post_id=' . $id . '">Edit</a> <form method="post" action="/admin/social/cancel" style="display:inline"><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="post_id" value="' . $id . '"><button type="submit">Cancel</button></form>';
             }
             $error = trim((string) ($post['last_error'] ?? '')) !== '' ? '<br><small>' . $this->e((string) $post['last_error']) . '</small>' : '';
-            $historyRows .= '<tr><td>' . $this->e((string) ($post['artwork_title'] ?? 'Artwork')) . '</td><td>' . $status . $error . '</td><td>' . $when . '</td><td>' . $link . '</td><td>' . $actions . '</td></tr>';
+            $historyRows .= '<tr><td>' . $this->e((string) ($post['artwork_title'] ?? 'Artwork')) . '</td><td>' . $account . '</td><td>' . $status . $error . '</td><td>' . $when . '</td><td>' . $link . '</td><td>' . $actions . '</td></tr>';
         }
         if ($historyRows === '') {
-            $historyRows = '<tr><td colspan="5">No Instagram posts have been submitted yet.</td></tr>';
+            $historyRows = '<tr><td colspan="6">No Instagram posts have been submitted yet.</td></tr>';
         }
 
         $placeholders = '{title}, {artist_name}, {year}, {medium}, {dimensions}, {year_medium_dimensions}, {description}, {social_caption}, {social_or_description}, {artwork_url}, {website}, {site_url}, {portfolio_url}, {portfolio_name}, {section_name}, {section_names}, {price}, {availability}, {copyright_year}, {copyright_holder}, {default_hashtags}, {artwork_hashtags}, {hashtags}';
-        $body = '<p><a href="/admin">&larr; Tenant Admin</a></p><h1>Instagram</h1><section class="admin-card"><h2>Connection</h2>' . $connectionHtml . '<p>ArtsFolio requires an Instagram Creator or Business account. Passwords are never stored.</p></section>'
+        $body = '<p><a href="/admin">&larr; Tenant Admin</a></p><h1>Instagram</h1><section class="admin-card"><h2>Connection</h2>' . $connectionHtml . '<p>ArtsFolio requires an Instagram Creator or Business account. Passwords are never stored. Scheduled posts stay bound to the account selected when they were scheduled, even if another account is connected later.</p></section>'
             . '<section class="admin-card"><h2>Publishing defaults</h2><form method="post" action="/admin/social/defaults"><input type="hidden" name="csrf_token" value="' . $csrf . '"><label>Default hashtags<br><textarea name="default_hashtags" rows="3">' . $defaultHashtags . '</textarea></label><p><button type="submit">Save defaults</button></p></form></section>'
             . '<section><h2>Caption templates</h2><p>Available placeholders: <code>' . $this->e($placeholders) . '</code>. Internal artwork notes are intentionally unavailable.</p><div class="tenant-admin-action-grid">' . $templateCards . '</div></section>'
             . '<section class="admin-card"><h2>Template by portfolio section</h2><p>If an artwork belongs to multiple sections with conflicting templates, Compose uses the tenant default and surfaces all templates for explicit selection.</p><table class="admin-table"><thead><tr><th>Section</th><th>Instagram template</th></tr></thead><tbody>' . $sectionRows . '</tbody></table></section>'
-            . '<section class="admin-card"><h2>Scheduled &amp; history</h2><table class="admin-table"><thead><tr><th>Artwork</th><th>Status</th><th>Time</th><th>Instagram</th><th>Actions</th></tr></thead><tbody>' . $historyRows . '</tbody></table></section>';
+            . '<section class="admin-card"><h2>Scheduled &amp; history</h2><table class="admin-table"><thead><tr><th>Artwork</th><th>Account</th><th>Status</th><th>Time</th><th>Instagram</th><th>Actions</th></tr></thead><tbody>' . $historyRows . '</tbody></table></section>';
         return Response::html($this->adminPage($tenant, 'Instagram', $body), 200, ['Cache-Control' => 'private, no-store']);
     }
 
@@ -294,7 +295,26 @@ final class SocialFrontController
             $utc = new DateTimeImmutable((string) $existing['scheduled_at'], new DateTimeZone('UTC'));
             $scheduledLocal = $utc->setTimezone(new DateTimeZone((string) ($GLOBALS['artsfolio_user_timezone'] ?? 'UTC')))->format('Y-m-d\TH:i');
         }
-        $body = '<p><a href="/admin/social">&larr; Instagram settings &amp; history</a></p><h1>Instagram Compose</h1><p><strong>' . $this->e((string) $artwork['title']) . '</strong></p><form method="post" action="/admin/social/post" data-social-compose><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="artwork_id" value="' . $artworkId . '"><input type="hidden" name="post_id" value="' . $postId . '"><label>Template<br><select name="template_id" data-social-template>' . $templateOptions . '</select></label><label>Caption<br><textarea name="caption" rows="14" data-social-caption required>' . $this->e($caption) . '</textarea></label><p><span data-social-character-count>0</span> characters</p><label>Hashtags<br><textarea name="hashtags" rows="3">' . $this->e($hashtags) . '</textarea></label><h2>Carousel media</h2><p>Select up to 10 images. Images from the same portfolio section are listed first. Crop settings create a non-destructive JPEG publication derivative.</p><div class="social-media-grid" data-social-media-grid>' . $mediaCards . '</div><label>Schedule date/time (' . $this->e((string) ($GLOBALS['artsfolio_user_timezone'] ?? 'UTC')) . ')<br><input type="datetime-local" name="scheduled_local" value="' . $this->e($scheduledLocal) . '"></label><p><button type="submit" name="action" value="post_now" onclick="return confirm(\'Publish this post to Instagram now?\');">Post Now</button> <button type="submit" name="action" value="schedule">Schedule Post</button></p></form>';
+
+        $accountNotice = '';
+        if ($existing) {
+            $bound = $this->social->connectionById($tenant->tenantId, (int) ($existing['social_connection_id'] ?? 0));
+            $current = $this->social->connection($tenant->tenantId);
+            if ($bound) {
+                $boundName = trim((string) ($bound['username'] ?? ''));
+                $boundLabel = $boundName !== '' ? '@' . $boundName : 'the originally selected Instagram account';
+                $accountNotice = '<p class="admin-notice"><strong>Publishing account:</strong> ' . $this->e($boundLabel) . '. Editing this post does not reassign it to another account.';
+                if ((string) ($bound['status'] ?? '') !== 'active') {
+                    $accountNotice .= ' This account requires authorization before the post can publish.';
+                } elseif ($current && (int) $current['id'] !== (int) $bound['id']) {
+                    $currentName = trim((string) ($current['username'] ?? ''));
+                    $accountNotice .= ' The current default account' . ($currentName !== '' ? ' is @' . $this->e($currentName) : ' is different') . ', but this scheduled post remains bound to its original account.';
+                }
+                $accountNotice .= '</p>';
+            }
+        }
+
+        $body = '<p><a href="/admin/social">&larr; Instagram settings &amp; history</a></p><h1>Instagram Compose</h1><p><strong>' . $this->e((string) $artwork['title']) . '</strong></p>' . $accountNotice . '<form method="post" action="/admin/social/post" data-social-compose><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="artwork_id" value="' . $artworkId . '"><input type="hidden" name="post_id" value="' . $postId . '"><label>Template<br><select name="template_id" data-social-template>' . $templateOptions . '</select></label><label>Caption<br><textarea name="caption" rows="14" data-social-caption required>' . $this->e($caption) . '</textarea></label><p><span data-social-character-count>0</span> characters</p><label>Hashtags<br><textarea name="hashtags" rows="3">' . $this->e($hashtags) . '</textarea></label><h2>Carousel media</h2><p>Select up to 10 images. Images from the same portfolio section are listed first. Crop settings create a non-destructive JPEG publication derivative.</p><div class="social-media-grid" data-social-media-grid>' . $mediaCards . '</div><label>Schedule date/time (' . $this->e((string) ($GLOBALS['artsfolio_user_timezone'] ?? 'UTC')) . ')<br><input type="datetime-local" name="scheduled_local" value="' . $this->e($scheduledLocal) . '"></label><p><button type="submit" name="action" value="post_now" onclick="return confirm(\'Publish this post to Instagram now?\');">Post Now</button> <button type="submit" name="action" value="schedule">Schedule Post</button></p></form>';
         return Response::html($this->adminPage($tenant, 'Instagram Compose', $body), 200, ['Cache-Control' => 'private, no-store']);
     }
 
@@ -318,14 +338,28 @@ final class SocialFrontController
         usort($ordered, static fn (array $a, array $b): int => $a['order'] <=> $b['order']);
         $action = (string) ($_POST['action'] ?? 'schedule');
         $scheduledAt = $action === 'post_now' ? gmdate('Y-m-d H:i:s') : $this->scheduledUtc((string) ($_POST['scheduled_local'] ?? ''));
-        if ($scheduledAt === null) return Response::error(422, 'Choose a valid future schedule date and time.');
+        if ($scheduledAt === null) return Response::error(422, 'Choose a valid, unambiguous future schedule date and time.');
         $status = 'scheduled';
         $userId = (int) ($currentUser['user_id'] ?? 0);
         $postId = max(0, (int) ($_POST['post_id'] ?? 0));
         if ($postId > 0) {
             $this->replacePendingPost($tenant->tenantId, $postId, $artworkId, $templateId, $caption, $hashtags, $scheduledAt, $userId, $ordered);
         } else {
-            $postId = $this->social->createPost($tenant->tenantId, $artworkId, $templateId, $caption, $hashtags, $status, $scheduledAt, ['source_artwork_id' => $artworkId, 'caption' => $caption, 'hashtags' => $hashtags, 'scheduled_at' => $scheduledAt], $userId);
+            $connection = $this->social->connection($tenant->tenantId);
+            if (!$connection || (string) ($connection['status'] ?? '') !== 'active') {
+                return Response::error(422, 'Connect an active Instagram Creator or Business account before scheduling a post.');
+            }
+            $connectionId = (int) $connection['id'];
+            $snapshot = [
+                'source_artwork_id' => $artworkId,
+                'social_connection_id' => $connectionId,
+                'instagram_account_id' => (string) ($connection['external_account_id'] ?? ''),
+                'instagram_username' => (string) ($connection['username'] ?? ''),
+                'caption' => $caption,
+                'hashtags' => $hashtags,
+                'scheduled_at' => $scheduledAt,
+            ];
+            $postId = $this->social->createPost($tenant->tenantId, $connectionId, $artworkId, $templateId, $caption, $hashtags, $status, $scheduledAt, $snapshot, $userId);
             $this->addPostItems($tenant->tenantId, $postId, $ordered);
         }
         $this->ensurePublisherJob($action === 'post_now' ? 0 : 60);
@@ -363,10 +397,24 @@ final class SocialFrontController
 
     private function replacePendingPost(int $tenantId, int $postId, int $artworkId, int $templateId, string $caption, string $hashtags, string $scheduledAt, int $userId, array $ordered): void
     {
+        $existing = $this->social->post($tenantId, $postId);
+        if (!$existing) throw new \RuntimeException('Instagram post was not found.');
+        $connectionId = (int) ($existing['social_connection_id'] ?? 0);
+        $bound = $connectionId > 0 ? $this->social->connectionById($tenantId, $connectionId) : null;
+        $snapshot = [
+            'source_artwork_id' => $artworkId,
+            'social_connection_id' => $connectionId,
+            'instagram_account_id' => (string) ($bound['external_account_id'] ?? ''),
+            'instagram_username' => (string) ($bound['username'] ?? ''),
+            'caption' => $caption,
+            'hashtags' => $hashtags,
+            'scheduled_at' => $scheduledAt,
+        ];
+
         $this->pdo->beginTransaction();
         try {
             $stmt = $this->pdo->prepare("UPDATE social_posts SET source_artwork_id = :artwork_id, template_id = :template_id, caption = :caption, hashtags = :hashtags, snapshot_json = :snapshot_json, status = 'scheduled', scheduled_at = :scheduled_at, next_attempt_at = :scheduled_at, last_error = NULL, updated_by_user_id = :user_id, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND id = :id AND status IN ('draft','scheduled','failed','authorization_required')");
-            $stmt->execute(['artwork_id' => $artworkId, 'template_id' => $templateId, 'caption' => $caption, 'hashtags' => $hashtags, 'snapshot_json' => json_encode(['source_artwork_id' => $artworkId, 'caption' => $caption, 'hashtags' => $hashtags, 'scheduled_at' => $scheduledAt], JSON_THROW_ON_ERROR), 'scheduled_at' => $scheduledAt, 'user_id' => $userId, 'tenant_id' => $tenantId, 'id' => $postId]);
+            $stmt->execute(['artwork_id' => $artworkId, 'template_id' => $templateId, 'caption' => $caption, 'hashtags' => $hashtags, 'snapshot_json' => json_encode($snapshot, JSON_THROW_ON_ERROR), 'scheduled_at' => $scheduledAt, 'user_id' => $userId, 'tenant_id' => $tenantId, 'id' => $postId]);
             if ($stmt->rowCount() !== 1) throw new \RuntimeException('This post can no longer be edited because publishing has already started.');
             $delete = $this->pdo->prepare('DELETE FROM social_post_items WHERE tenant_id = :tenant_id AND social_post_id = :post_id');
             $delete->execute(['tenant_id' => $tenantId, 'post_id' => $postId]);
@@ -395,15 +443,41 @@ final class SocialFrontController
         (new \App\Platform\Jobs\BackgroundJobRepository($this->pdo))->enqueueSingleton('social.publish_due', ['interval_seconds' => 60, 'batch_size' => 10], null, max(0, $delaySeconds));
     }
 
+    /**
+     * Converts a local datetime only when exactly one UTC instant maps to it.
+     * This rejects both nonexistent spring-forward times and ambiguous fall-back times.
+     */
     private function scheduledUtc(string $local): ?string
     {
         $local = trim($local);
-        if ($local === '') return null;
+        if ($local === '' || preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $local) !== 1) return null;
         try {
             $timezone = new DateTimeZone((string) ($GLOBALS['artsfolio_user_timezone'] ?? 'UTC'));
-            $date = new DateTimeImmutable($local, $timezone);
-            if ($date->getTimestamp() < time() - 30) return null;
-            return $date->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
+            $naive = DateTimeImmutable::createFromFormat('!Y-m-d\TH:i', $local, new DateTimeZone('UTC'));
+            if (!$naive || $naive->format('Y-m-d\TH:i') !== $local) return null;
+
+            $naiveTimestamp = $naive->getTimestamp();
+            $transitions = $timezone->getTransitions($naiveTimestamp - 172800, $naiveTimestamp + 172800);
+            $offsets = [];
+            foreach ($transitions as $transition) {
+                $offsets[(int) $transition['offset']] = true;
+            }
+            if ($offsets === []) {
+                $offsets[$timezone->getOffset($naive)] = true;
+            }
+
+            $candidates = [];
+            foreach (array_keys($offsets) as $offset) {
+                $utcTimestamp = $naiveTimestamp - (int) $offset;
+                $candidate = (new DateTimeImmutable('@' . $utcTimestamp))->setTimezone($timezone);
+                if ($candidate->format('Y-m-d\TH:i') === $local) {
+                    $candidates[$utcTimestamp] = true;
+                }
+            }
+            if (count($candidates) !== 1) return null;
+            $utcTimestamp = (int) array_key_first($candidates);
+            if ($utcTimestamp < time() - 30) return null;
+            return gmdate('Y-m-d H:i:s', $utcTimestamp);
         } catch (Throwable) {
             return null;
         }
