@@ -61,6 +61,8 @@ final class SocialPublishingService
             throw new \RuntimeException('Connected Instagram account ID is missing.');
         }
 
+        $this->assertPublishingQuotaAvailable($igUserId, $token);
+
         $items = $this->repository->postItems($tenantId, $postId);
         if ($items === [] || count($items) > 10) {
             throw new \RuntimeException('Instagram posts require between one and ten images.');
@@ -110,13 +112,30 @@ final class SocialPublishingService
         $this->queueNotification($tenantId, $post, true, 'Published to Instagram', $permalink ?: 'Instagram publication completed.');
     }
 
+    private function assertPublishingQuotaAvailable(string $igUserId, string $token): void
+    {
+        $limit = $this->instagram->publishingLimit($igUserId, $token);
+        $row = is_array($limit['data'][0] ?? null) ? $limit['data'][0] : (is_array($limit) ? $limit : []);
+        $usage = isset($row['quota_usage']) ? (int) $row['quota_usage'] : null;
+        $config = is_array($row['config'] ?? null) ? $row['config'] : [];
+        $total = isset($config['quota_total']) ? (int) $config['quota_total'] : null;
+        if ($usage !== null && $total !== null && $total > 0 && $usage >= $total) {
+            throw new InstagramApiException(
+                'Instagram API publishing limit has been reached. ArtsFolio will retry automatically.',
+                'publishing_limit',
+                429,
+                $limit ?? [],
+            );
+        }
+    }
+
     private function handleFailure(array $post, Throwable $e): void
     {
         $postId = (int) $post['id'];
         $tenantId = (int) $post['tenant_id'];
         $attempt = max(1, (int) ($post['publish_attempts'] ?? 1));
         $authorization = $e instanceof InstagramApiException ? $e->authorizationFailure() : str_contains(strtolower($e->getMessage()), 'authorization');
-        $retryable = $e instanceof InstagramApiException ? $e->retryable() : false;
+        $retryable = $e instanceof InstagramApiException ? $e->retryable() : $this->looksLikeTransientNetworkFailure($e);
         $providerCode = $e instanceof InstagramApiException ? $e->providerCode : null;
         $providerResponse = $e instanceof InstagramApiException ? $this->safeProviderResponse($e->providerResponse) : null;
         $shouldRetry = $retryable && $attempt < 4;
@@ -125,6 +144,17 @@ final class SocialPublishingService
         if ($authorization || !$shouldRetry) {
             $this->queueNotification($tenantId, $post, false, 'Instagram publication failed', $e->getMessage());
         }
+    }
+
+    private function looksLikeTransientNetworkFailure(Throwable $e): bool
+    {
+        $message = strtolower($e->getMessage());
+        foreach (['network request failed', 'timed out', 'timeout', 'could not resolve host', 'connection reset', 'connection refused'] as $needle) {
+            if (str_contains($message, $needle)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function finalCaption(array $post): string
