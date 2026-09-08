@@ -54,7 +54,11 @@ final class SocialComposeApiController
         if ($path === '/admin/social/compose-state') {
             $postId = max(0, (int) ($_GET['post_id'] ?? 0));
             $post = $this->social->post($tenant->tenantId, $postId);
-            if (!$post || !in_array((string) $post['status'], ['draft', 'scheduled', 'failed', 'authorization_required'], true)) {
+            if (
+                !$post
+                || trim((string) ($post['remote_post_id'] ?? '')) !== ''
+                || !in_array((string) $post['status'], ['draft', 'scheduled', 'failed', 'authorization_required'], true)
+            ) {
                 return Response::error(404, 'Editable social post not found.');
             }
             $items = [];
