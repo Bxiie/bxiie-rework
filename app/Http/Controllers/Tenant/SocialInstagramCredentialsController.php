@@ -63,6 +63,7 @@ final class SocialInstagramCredentialsController
             ['GET', '/admin/social'],
             ['POST', '/admin/social/app-credentials'],
             ['GET', '/admin/social/connect'],
+            ['POST', '/admin/social/disconnect'],
         ], true)) {
             return null;
         }
@@ -83,15 +84,24 @@ final class SocialInstagramCredentialsController
             return Response::error(403, 'Instagram publishing is available on Studio, Professional, and Collective plans.');
         }
 
+        $isTenantAdmin = $this->permissions->isTenantAdmin($currentUser, $tenant);
+
         return match ([$request->method(), $path]) {
-            ['GET', '/admin/social'] => $this->settingsPage($request, $tenant),
-            ['POST', '/admin/social/app-credentials'] => $this->saveCredentials($tenant),
-            ['GET', '/admin/social/connect'] => $this->connect($tenant, $currentUser),
+            ['GET', '/admin/social'] => $this->settingsPage($request, $tenant, $isTenantAdmin),
+            ['POST', '/admin/social/app-credentials'] => $isTenantAdmin
+                ? $this->saveCredentials($tenant)
+                : Response::error(403, 'Tenant administrator access is required to change Meta App credentials.'),
+            ['GET', '/admin/social/connect'] => $isTenantAdmin
+                ? $this->connect($tenant, $currentUser)
+                : Response::error(403, 'Tenant administrator access is required to connect Instagram.'),
+            ['POST', '/admin/social/disconnect'] => $isTenantAdmin
+                ? $this->disconnect($tenant)
+                : Response::error(403, 'Tenant administrator access is required to disconnect Instagram.'),
             default => null,
         };
     }
 
-    private function settingsPage(Request $request, TenantContext $tenant): Response
+    private function settingsPage(Request $request, TenantContext $tenant, bool $isTenantAdmin): Response
     {
         $base = (new SocialFrontController($this->root))->handle($request);
         if ($base === null || $base->status() !== 200) {
@@ -100,11 +110,13 @@ final class SocialInstagramCredentialsController
 
         $body = $base->body();
         $needle = '<section class="admin-card"><h2>Publishing defaults</h2>';
-        $card = $this->credentialsCard($tenant);
-        if (str_contains($body, $needle)) {
-            $body = str_replace($needle, $card . $needle, $body, $count);
-        } else {
-            $body = str_replace('</main>', $card . '</main>', $body, $count);
+        if ($isTenantAdmin) {
+            $card = $this->credentialsCard($tenant);
+            if (str_contains($body, $needle)) {
+                $body = str_replace($needle, $card . $needle, $body, $count);
+            } else {
+                $body = str_replace('</main>', $card . '</main>', $body, $count);
+            }
         }
 
         return new Response($body, $base->status(), $base->headers());
@@ -189,6 +201,15 @@ final class SocialInstagramCredentialsController
             }
             return Response::error(503, 'Instagram connection is not ready: ' . $e->getMessage());
         }
+    }
+
+    private function disconnect(TenantContext $tenant): Response
+    {
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::invalidCsrf();
+        }
+        $this->social->disconnect($tenant->tenantId);
+        return new Response('', 303, ['Location' => '/admin/social?notice=instagram-disconnected']);
     }
 
     private function oauthCallback(): Response
