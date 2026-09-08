@@ -25,7 +25,7 @@
         const link = document.createElement('a');
         link.href = url;
         link.className = 'admin-button social-instagram-button';
-        link.textContent = 'Instagram';
+        link.textContent = 'Post to Instagram';
         link.setAttribute('aria-label', 'Post to Instagram');
         return link;
     };
@@ -172,7 +172,6 @@
         const main = document.querySelector('.site-main');
         if (!main || main.querySelector('.social-instagram-button')) return;
         const button = socialButton(context.compose_url);
-        button.textContent = 'Post to Instagram';
         const image = main.querySelector('img');
         const imageParagraph = image?.closest('p');
         const wrapper = document.createElement('p');
