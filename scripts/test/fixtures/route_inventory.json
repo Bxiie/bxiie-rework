@@ -627,6 +627,16 @@
     {
         "scope": "tenant",
         "method": "GET",
+        "path": "/admin/artwork/bulk"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
+        "path": "/admin/artwork/bulk/sample.csv"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
         "path": "/admin/artwork/upload"
     },
     {
@@ -758,6 +768,16 @@
         "scope": "tenant",
         "method": "GET",
         "path": "/admin/portfolio-sections/order"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
+        "path": "/admin/release-groups"
+    },
+    {
+        "scope": "tenant",
+        "method": "GET",
+        "path": "/admin/release-groups/edit"
     },
     {
         "scope": "tenant",
@@ -962,6 +982,11 @@
     {
         "scope": "tenant",
         "method": "POST",
+        "path": "/admin/artwork/bulk"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/admin/artwork/upload"
     },
     {
@@ -983,6 +1008,11 @@
         "scope": "tenant",
         "method": "POST",
         "path": "/admin/artworks/placement"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/artworks/schedule"
     },
     {
         "scope": "tenant",
@@ -1088,6 +1118,16 @@
         "scope": "tenant",
         "method": "POST",
         "path": "/admin/portfolio-sections/order"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/release-groups/create"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/release-groups/save"
     },
     {
         "scope": "tenant",
