@@ -6,6 +6,10 @@ $root = dirname(__DIR__, 2);
 $controller = (string) file_get_contents(
     $root . '/app/Http/Controllers/Tenant/Admin/EventsController.php'
 );
+$publicController = (string) file_get_contents(
+    $root . '/app/Http/Controllers/Tenant/HomeController.php'
+);
+$publicCss = (string) file_get_contents($root . '/public/assets/site.css');
 
 $failures = [];
 
@@ -38,6 +42,26 @@ if (
     $failures[] = 'Day-level or plain event date input remains.';
 }
 
+foreach ([
+    'eventDisplayDate',
+    "format('F Y')",
+    'class=\"event-notes\"',
+] as $marker) {
+    if (!str_contains($publicController, $marker)) {
+        $failures[] = "Public event rendering missing marker: {$marker}";
+    }
+}
+
+foreach (['.event-notes', 'font: inherit', 'font-size: inherit', 'line-height: inherit'] as $marker) {
+    if (!str_contains($publicCss, $marker)) {
+        $failures[] = "Public event notes typography missing marker: {$marker}";
+    }
+}
+
+if (str_contains($publicController, '<div class=\"prose small\">{$notes}</div>')) {
+    $failures[] = 'Public event notes still use the mismatched prose-small typography.';
+}
+
 if ($failures !== []) {
     fwrite(STDERR, "[FAIL] Event month/year picker check failed:\n");
     foreach ($failures as $failure) {
@@ -46,6 +70,6 @@ if ($failures !== []) {
     exit(1);
 }
 
-echo "[PASS] Event definitions accept month and year without requiring a day.\n";
+echo "[PASS] Event definitions and public display use month/year with consistent notes typography.\n";
 
 // End of file.
