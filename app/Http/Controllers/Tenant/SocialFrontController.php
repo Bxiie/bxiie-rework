@@ -168,16 +168,21 @@ final class SocialFrontController
         $historyRows = '';
         foreach ($this->social->history($tenant->tenantId) as $post) {
             $id = (int) $post['id'];
-            $status = $this->e((string) $post['status']);
+            $remoteId = trim((string) ($post['remote_post_id'] ?? ''));
+            $awaitingConfirmation = $remoteId !== '' && in_array((string) $post['status'], ['publishing','failed','authorization_required'], true);
+            $status = $this->e($awaitingConfirmation ? 'confirmation pending' : (string) $post['status']);
             $when = $this->e((string) ($post['published_at'] ?: $post['scheduled_at'] ?: $post['created_at']));
             $account = trim((string) ($post['instagram_username'] ?? ''));
             $account = $account !== '' ? '@' . $this->e($account) : 'Instagram account';
             $link = trim((string) ($post['remote_permalink'] ?? '')) !== '' ? '<a href="' . $this->e((string) $post['remote_permalink']) . '" target="_blank" rel="noopener">Instagram post</a>' : '';
             $actions = '';
-            if (in_array((string) $post['status'], ['draft','scheduled','failed','authorization_required'], true)) {
+            if ($remoteId === '' && in_array((string) $post['status'], ['draft','scheduled','failed','authorization_required'], true)) {
                 $actions = '<a href="/admin/social/compose?post_id=' . $id . '">Edit</a> <form method="post" action="/admin/social/cancel" style="display:inline"><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="post_id" value="' . $id . '"><button type="submit">Cancel</button></form>';
             }
-            $error = trim((string) ($post['last_error'] ?? '')) !== '' ? '<br><small>' . $this->e((string) $post['last_error']) . '</small>' : '';
+            $lastError = trim((string) ($post['last_error'] ?? ''));
+            $error = $lastError !== ''
+                ? '<br><small>' . $this->e(($awaitingConfirmation ? 'Instagram accepted the publication request. ArtsFolio is retrying confirmation: ' : '') . $lastError) . '</small>'
+                : '';
             $historyRows .= '<tr><td>' . $this->e((string) ($post['artwork_title'] ?? 'Artwork')) . '</td><td>' . $account . '</td><td>' . $status . $error . '</td><td>' . $when . '</td><td>' . $link . '</td><td>' . $actions . '</td></tr>';
         }
         if ($historyRows === '') {
