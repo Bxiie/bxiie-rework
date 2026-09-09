@@ -114,12 +114,16 @@ final class SocialPublishingService
                 $carousel ? null : $this->finalCaption($post),
             );
             $this->repository->updateItemContainer($tenantId, (int) $item['id'], $containerId);
+            $this->waitUntilContainerReady($containerId, $token);
             $containerIds[] = $containerId;
         }
 
         $creationId = count($containerIds) === 1
             ? $containerIds[0]
             : $this->instagram->createCarouselContainer($igUserId, $token, $containerIds, $this->finalCaption($post));
+        if (count($containerIds) > 1) {
+            $this->waitUntilContainerReady($creationId, $token);
+        }
         $remoteId = $this->instagram->publishContainer($igUserId, $token, $creationId);
 
         // This write must happen before any follow-up API request. If the worker
@@ -128,6 +132,24 @@ final class SocialPublishingService
         $this->repository->rememberRemotePostId($postId, $remoteId);
         $published = $this->instagram->publishedMedia($remoteId, $token);
         $this->completePublishedPost($post, $attempt, $published);
+    }
+
+    private function waitUntilContainerReady(string $containerId, string $token): void
+    {
+        for ($attempt = 0; $attempt < 15; ++$attempt) {
+            $container = $this->instagram->containerStatus($containerId, $token);
+            if ($container['status_code'] === 'FINISHED') {
+                return;
+            }
+            if (in_array($container['status_code'], ['ERROR', 'EXPIRED'], true)) {
+                $detail = $container['status'] !== '' ? ': ' . $container['status'] : '';
+                throw new \RuntimeException('Instagram media container could not be published' . $detail);
+            }
+            if ($attempt < 14) {
+                usleep(2_000_000);
+            }
+        }
+        throw new InstagramApiException('Instagram media is still processing. ArtsFolio will retry automatically.', '9007', 400, []);
     }
 
     /** @param array{id:string,permalink:?string,timestamp:?string} $published */

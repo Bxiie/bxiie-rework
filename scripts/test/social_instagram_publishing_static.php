@@ -85,6 +85,9 @@ $checks = [
         'CAROUSEL',
         'content_publishing_limit',
         'publishedMedia',
+        'containerStatus',
+        "'fields' => 'status_code,status'",
+        "\$this->providerCode === '9007'",
         "'fields' => 'id,permalink,timestamp'",
     ],
     'app/Tenant/Social/SocialRepository.php' => [
@@ -106,6 +109,10 @@ $checks = [
         'connectionById',
         'rememberRemotePostId',
         'publishedMedia',
+        'waitUntilContainerReady',
+        "status_code'] === 'FINISHED'",
+        "['ERROR', 'EXPIRED']",
+        "Instagram media is still processing. ArtsFolio will retry automatically.",
         "trim((string) (\$post['remote_post_id'] ?? ''))",
     ],
     'app/Http/Controllers/Tenant/SocialFrontController.php' => [

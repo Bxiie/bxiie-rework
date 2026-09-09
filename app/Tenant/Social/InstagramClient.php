@@ -106,6 +106,19 @@ final class InstagramClient
         return $this->requiredId($response, 'Instagram published media');
     }
 
+    /** @return array{status_code:string,status:string} */
+    public function containerStatus(string $containerId, string $token): array
+    {
+        $response = $this->request('GET', self::GRAPH_BASE . '/' . rawurlencode($containerId), [
+            'fields' => 'status_code,status',
+            'access_token' => $token,
+        ]);
+        return [
+            'status_code' => strtoupper(trim((string) ($response['status_code'] ?? ''))),
+            'status' => trim((string) ($response['status'] ?? '')),
+        ];
+    }
+
     /**
      * Confirms that Meta exposes the media object returned by /media_publish.
      * The caller persists the media ID before invoking this method, so a failed
@@ -245,7 +258,7 @@ final class InstagramApiException extends RuntimeException
 
     public function retryable(): bool
     {
-        return $this->httpStatus === 429 || $this->httpStatus >= 500;
+        return $this->providerCode === '9007' || $this->httpStatus === 429 || $this->httpStatus >= 500;
     }
 }
 
