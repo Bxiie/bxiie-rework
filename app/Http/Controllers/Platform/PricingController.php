@@ -64,6 +64,13 @@ final class PricingController
     color: rgba(255,255,255,.64) !important;
 }
 
+.professional-pricing > article:nth-of-type(2) p.price {
+    color: #111111 !important;
+    background: #ffffff !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
+}
+
 .professional-pricing > article:nth-of-type(2) a.button,
 .professional-pricing > article:nth-of-type(2) button,
 .professional-pricing > article:nth-of-type(2) .button {
