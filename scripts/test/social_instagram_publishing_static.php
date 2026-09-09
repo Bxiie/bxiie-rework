@@ -157,6 +157,10 @@ $checks = [
     ],
     'public/assets/social-publishing.js' => [
         'Post to Instagram',
+        "link.className = 'button admin-button social-instagram-button'",
+        "const context = await json('/social/context');",
+        "row.querySelector('.artwork-grid-thumbnail-link img')",
+        'display:inline-flex;align-items:center;justify-content:center',
         'Publish to social media',
         'Instagram carousels may contain at most 10 images.',
         '/admin/social/compose-state',
@@ -177,6 +181,7 @@ $checks = [
         'SocialConfirmationController',
         'SocialPermissionAdminController',
         '/assets/social-publishing.js',
+        '/assets/social-publishing.js?v=20260909',
     ],
     '.env.example' => [
         'ARTSFOLIO_INSTAGRAM_CLIENT_ID',
