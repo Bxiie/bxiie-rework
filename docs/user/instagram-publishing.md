@@ -14,6 +14,8 @@ When you have publishing permission, **Post to Instagram** is available from:
 
 Selecting it opens **Instagram Compose**.
 
+If the artwork already appeared in a published Instagram post—including as a secondary carousel image—Compose displays a warning. Publishing again is allowed, but it creates another Instagram post.
+
 ## Social Caption and hashtags
 
 The artwork editor includes a **Social Caption** field. Use it when you want social-media wording that differs from the artwork's formal gallery description.
@@ -21,6 +23,8 @@ The artwork editor includes a **Social Caption** field. Use it when you want soc
 Artwork-specific hashtags can also be saved there. Compose combines them with the account's default hashtags.
 
 Private/Internal Notes are never included in Instagram posts.
+
+Duplicate hashtags are removed before the post is stored. Hashtag matching is case-insensitive, so `#Art` and `#art` are treated as the same hashtag.
 
 ## Compose
 
