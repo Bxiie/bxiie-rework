@@ -10,6 +10,7 @@ use App\Http\Middleware\RequireTenantRoleBrowser;
 use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Directory\TenantDirectoryProfileRepository;
+use App\Platform\Jobs\BackgroundJobRepository;
 use App\Platform\Tenancy\TenantContext;
 use App\Platform\Audit\AuditLogRepository;
 use App\Support\Pagination\Pagination;
@@ -17,6 +18,8 @@ use App\Tenant\Sales\ArtworkSaleAdminForm;
 use PDO;
 use App\Http\View\AdminLayout;
 use Throwable;
+use DateTimeImmutable;
+use DateTimeZone;
 
 final class ArtworksController
 {
@@ -351,6 +354,22 @@ HTML;
         $selectedSectionIds = $this->artworkSectionIds($tenant, $id);
         $selectedTypeCodes = $this->artworkTypeCodes($id);
         $homePageSelected = $this->artworkIsOnHomePage($tenant, $id);
+        $currentReleaseGroup = $this->artworkReleaseGroup($tenant->tenantId, $id);
+        $releaseGroupOptions = '<option value="">No release group</option>';
+        foreach ($this->releaseGroups($tenant->tenantId, $currentReleaseGroup ? (int) $currentReleaseGroup['id'] : 0) as $group) {
+            $groupId = (int) $group['id'];
+            $groupLabel = (string) $group['name'] . ' (' . (string) $group['status'] . ')';
+            $groupSelected = $currentReleaseGroup && $groupId === (int) $currentReleaseGroup['id'] ? ' selected' : '';
+            $releaseGroupOptions .= '<option value="' . $groupId . '"' . $groupSelected . '>' . htmlspecialchars($groupLabel, ENT_QUOTES, 'UTF-8') . '</option>';
+        }
+        $scheduledPublishLocal = '';
+        if (!empty($artwork['scheduled_publish_at'])) {
+            $scheduledPublishLocal = (new DateTimeImmutable((string) $artwork['scheduled_publish_at'], new DateTimeZone('UTC')))
+                ->setTimezone(new DateTimeZone((string) ($GLOBALS['artsfolio_user_timezone'] ?? 'UTC')))
+                ->format('Y-m-d\TH:i');
+        }
+        $scheduledPublishLocal = htmlspecialchars($scheduledPublishLocal, ENT_QUOTES, 'UTF-8');
+        $publicationTimezone = htmlspecialchars((string) ($GLOBALS['artsfolio_user_timezone'] ?? 'UTC'), ENT_QUOTES, 'UTF-8');
         $artworkPreview = '';
         $primaryMediaUuid = trim((string) ($artwork['primary_media_uuid'] ?? ''));
         if ($primaryMediaUuid !== '') {
@@ -428,6 +447,16 @@ HTML;
                 </select>
             </label>
         </p>
+        <fieldset class="admin-card artwork-publication-controls">
+            <legend>Website publication</legend>
+            <p class="form-help">Schedule this artwork by itself, or assign it to a Release Group. These options cannot be used together. Release Groups publish to your website only.</p>
+            <label>Release group<br>
+                <select name="release_group_id">{$releaseGroupOptions}</select>
+            </label>
+            <label>Individual publication date/time ({$publicationTimezone})<br>
+                <input type="datetime-local" name="scheduled_publish_local" value="{$scheduledPublishLocal}">
+            </label>
+        </fieldset>
         <p>
             <label>Sale status<br>
                 <select name="sale_status">
@@ -493,6 +522,30 @@ HTML;
         }
 
         $status = in_array(($_POST['status'] ?? 'draft'), ['draft', 'published', 'archived'], true) ? (string) $_POST['status'] : 'draft';
+        $releaseGroupId = max(0, (int) ($_POST['release_group_id'] ?? 0));
+        try {
+            $scheduledPublishAt = $this->scheduledPublicationUtc((string) ($_POST['scheduled_publish_local'] ?? ''));
+        } catch (\InvalidArgumentException $exception) {
+            return Response::html('<h1>Invalid publication schedule</h1><p>' . htmlspecialchars($exception->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>', 422);
+        }
+        if ($releaseGroupId > 0 && $scheduledPublishAt !== null) {
+            return Response::html('<h1>Choose one publication method</h1><p>Select either a Release Group or an individual publication date and time, not both.</p>', 422);
+        }
+        $selectedReleaseGroup = $releaseGroupId > 0 ? $this->releaseGroup($tenant->tenantId, $releaseGroupId) : null;
+        if ($releaseGroupId > 0 && !$selectedReleaseGroup) {
+            return Response::html('<h1>Invalid release group</h1><p>Select a release group belonging to this site.</p>', 422);
+        }
+        $currentReleaseGroup = $this->artworkReleaseGroup($tenant->tenantId, $id);
+        $activeReleaseSelected = $selectedReleaseGroup && in_array((string) $selectedReleaseGroup['status'], ['draft', 'scheduled'], true);
+        $historicalReleasePreserved = $selectedReleaseGroup && $currentReleaseGroup
+            && (int) $selectedReleaseGroup['id'] === (int) $currentReleaseGroup['id']
+            && in_array((string) $selectedReleaseGroup['status'], ['deployed', 'cancelled'], true);
+        if ($selectedReleaseGroup && !$activeReleaseSelected && !$historicalReleasePreserved) {
+            return Response::html('<h1>Release group is not available</h1><p>Choose a draft or scheduled release group.</p>', 422);
+        }
+        if ($scheduledPublishAt !== null || $activeReleaseSelected) {
+            $status = 'draft';
+        }
         $saleStatus = in_array(($_POST['sale_status'] ?? 'nfs'), ['nfs', 'for_sale', 'sold'], true) ? (string) $_POST['sale_status'] : 'nfs';
         $price = $saleStatus === 'nfs' ? null : trim((string) ($_POST['price'] ?? ''));
         $notes = (string) ($_POST['notes'] ?? '');
@@ -508,6 +561,7 @@ HTML;
                  medium = :medium,
                  description = :description,
                  status = :status,
+                 scheduled_publish_at = :scheduled_publish_at,
                  sale_status = :sale_status,
                  price = :price, notes = :notes, notes_html = :notes_html,
                  is_one_off = :is_one_off,
@@ -524,6 +578,7 @@ HTML;
                 'medium' => trim((string) ($_POST['medium'] ?? '')) ?: null,
                 'description' => trim((string) ($_POST['description'] ?? '')) ?: null,
                 'status' => $status,
+                'scheduled_publish_at' => $activeReleaseSelected ? null : $scheduledPublishAt,
                 'sale_status' => $saleStatus,
                 'notes' => $notes,
                 'notes_html' => $notesHtml,
@@ -535,6 +590,7 @@ HTML;
             ]);
 
             $this->replaceArtworkTypes($id, $_POST['artwork_types'] ?? []);
+            $this->replaceArtworkReleaseGroup($tenant->tenantId, $id, $releaseGroupId, $historicalReleasePreserved);
             $this->replaceArtworkSections($tenant, $id, $_POST['section_ids'] ?? []);
             $this->replaceHomepageAssignment(
                 $tenant,
@@ -556,6 +612,7 @@ HTML;
                     500
                 );
             }
+            (new BackgroundJobRepository($this->pdo))->enqueueSingleton('artwork.publish_due', ['interval_seconds' => 60], null, 0);
         } catch (\Throwable $exception) {
             $this->logAdminArtworkEditFailure($tenant->tenantId, $id, 'Artwork admin update save failed', $exception);
             return Response::html('<h1>Artwork could not be saved</h1><p>The artwork update failed. The exact error has been written to <code>storage/logs/admin_artwork_edit.log</code>.</p><p><a href="/admin/artworks/edit?id=' . $id . '">Return to artwork editor</a></p>', 500);
@@ -1100,6 +1157,51 @@ HTML;
         $row = $stmt->fetch();
 
         return $row ?: null;
+    }
+
+    /** @return array<int,array<string,mixed>> */
+    private function releaseGroups(int $tenantId, int $currentGroupId): array
+    {
+        $stmt = $this->pdo->prepare("SELECT id, name, status, scheduled_at FROM artwork_release_groups WHERE tenant_id = :tenant_id AND (status IN ('draft','scheduled') OR id = :current_group_id) ORDER BY LOWER(name), id");
+        $stmt->execute(['tenant_id' => $tenantId, 'current_group_id' => $currentGroupId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    private function artworkReleaseGroup(int $tenantId, int $artworkId): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT g.id, g.name, g.status, g.scheduled_at FROM artwork_release_group_items i JOIN artwork_release_groups g ON g.id = i.release_group_id AND g.tenant_id = i.tenant_id WHERE i.tenant_id = :tenant_id AND i.artwork_id = :artwork_id LIMIT 1');
+        $stmt->execute(['tenant_id' => $tenantId, 'artwork_id' => $artworkId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+    private function releaseGroup(int $tenantId, int $groupId): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT id, name, status, scheduled_at FROM artwork_release_groups WHERE tenant_id = :tenant_id AND id = :id LIMIT 1');
+        $stmt->execute(['tenant_id' => $tenantId, 'id' => $groupId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+    private function replaceArtworkReleaseGroup(int $tenantId, int $artworkId, int $groupId, bool $preserveHistorical): void
+    {
+        if ($preserveHistorical) return;
+        if ($groupId < 1) {
+            $stmt = $this->pdo->prepare('DELETE FROM artwork_release_group_items WHERE tenant_id = :tenant_id AND artwork_id = :artwork_id');
+            $stmt->execute(['tenant_id' => $tenantId, 'artwork_id' => $artworkId]);
+            return;
+        }
+        $stmt = $this->pdo->prepare('INSERT INTO artwork_release_group_items (release_group_id, tenant_id, artwork_id) VALUES (:group_id, :tenant_id, :artwork_id) ON DUPLICATE KEY UPDATE release_group_id = VALUES(release_group_id)');
+        $stmt->execute(['group_id' => $groupId, 'tenant_id' => $tenantId, 'artwork_id' => $artworkId]);
+    }
+
+    private function scheduledPublicationUtc(string $value): ?string
+    {
+        if (trim($value) === '') return null;
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d\TH:i', trim($value), new DateTimeZone((string) ($GLOBALS['artsfolio_user_timezone'] ?? 'UTC')));
+        $errors = DateTimeImmutable::getLastErrors();
+        if (!$date || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
+            throw new \InvalidArgumentException('Enter a valid publication date and time.');
+        }
+        return $date->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
     }
 
     private function logAdminArtworkEditFailure(int $tenantId, int $artworkId, string $message, \Throwable $exception): void

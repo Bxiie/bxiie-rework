@@ -50,7 +50,7 @@ Before sharing your site widely, confirm these pieces are ready:
 
 ## Bulk upload and website release scheduling
 
-The Artworks page includes **Bulk upload** and **Release Groups & scheduling**.
+The Artworks page includes **Bulk upload** and **Release Groups & scheduling**. The normal **Edit Artwork** page also has a **Website publication** section where you can assign that artwork to a draft or scheduled Release Group, or schedule it for individual publication. Choose only one of those options.
 
 - Bulk upload accepts a selected directory containing `artworks.csv` and the image files named by its `filename` column. Download the sample spreadsheet from the bulk-upload page before preparing a batch.
 - `publish_at` schedules one draft artwork for website publication. Use the displayed site timezone and the `YYYY-MM-DD HH:MM` format in CSV imports.
