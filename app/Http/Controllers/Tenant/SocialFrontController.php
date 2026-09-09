@@ -321,6 +321,14 @@ final class SocialFrontController
     private function submitPost(TenantContext $tenant, ?array $currentUser): Response
     {
         if (!$this->validCsrf()) return Response::invalidCsrf();
+        $postId = max(0, (int) ($_POST['post_id'] ?? 0));
+        if ($postId > 0) {
+            $existing = $this->social->post($tenant->tenantId, $postId);
+            if (!$existing) return Response::notFound();
+            if (trim((string) ($existing['remote_post_id'] ?? '')) !== '') {
+                return Response::error(409, 'This post can no longer be edited because it may already be published on Instagram.');
+            }
+        }
         $artworkId = max(0, (int) ($_POST['artwork_id'] ?? 0));
         $artwork = $this->social->artwork($tenant->tenantId, $artworkId);
         if (!$artwork) return Response::error(404, 'Artwork not found.');
@@ -341,7 +349,6 @@ final class SocialFrontController
         if ($scheduledAt === null) return Response::error(422, 'Choose a valid, unambiguous future schedule date and time.');
         $status = 'scheduled';
         $userId = (int) ($currentUser['user_id'] ?? 0);
-        $postId = max(0, (int) ($_POST['post_id'] ?? 0));
         if ($postId > 0) {
             $this->replacePendingPost($tenant->tenantId, $postId, $artworkId, $templateId, $caption, $hashtags, $scheduledAt, $userId, $ordered);
         } else {
@@ -413,7 +420,7 @@ final class SocialFrontController
 
         $this->pdo->beginTransaction();
         try {
-            $stmt = $this->pdo->prepare("UPDATE social_posts SET source_artwork_id = :artwork_id, template_id = :template_id, caption = :caption, hashtags = :hashtags, snapshot_json = :snapshot_json, status = 'scheduled', scheduled_at = :scheduled_at, next_attempt_at = :scheduled_at, last_error = NULL, updated_by_user_id = :user_id, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND id = :id AND status IN ('draft','scheduled','failed','authorization_required')");
+            $stmt = $this->pdo->prepare("UPDATE social_posts SET source_artwork_id = :artwork_id, template_id = :template_id, caption = :caption, hashtags = :hashtags, snapshot_json = :snapshot_json, status = 'scheduled', scheduled_at = :scheduled_at, next_attempt_at = :scheduled_at, last_error = NULL, updated_by_user_id = :user_id, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND id = :id AND status IN ('draft','scheduled','failed','authorization_required') AND (remote_post_id IS NULL OR remote_post_id = '')");
             $stmt->execute(['artwork_id' => $artworkId, 'template_id' => $templateId, 'caption' => $caption, 'hashtags' => $hashtags, 'snapshot_json' => json_encode($snapshot, JSON_THROW_ON_ERROR), 'scheduled_at' => $scheduledAt, 'user_id' => $userId, 'tenant_id' => $tenantId, 'id' => $postId]);
             if ($stmt->rowCount() !== 1) throw new \RuntimeException('This post can no longer be edited because publishing has already started.');
             $delete = $this->pdo->prepare('DELETE FROM social_post_items WHERE tenant_id = :tenant_id AND social_post_id = :post_id');

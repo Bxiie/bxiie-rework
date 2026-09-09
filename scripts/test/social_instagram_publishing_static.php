@@ -93,6 +93,8 @@ $checks = [
         'rememberRemotePostId',
         "status = 'failed' AND next_attempt_at IS NOT NULL",
         "is_default = 1",
+        "status = 'cancelled'",
+        "AND (remote_post_id IS NULL OR remote_post_id = '')",
     ],
     'app/Tenant/Social/SocialPublishingService.php' => [
         'createDerivative',
@@ -118,6 +120,9 @@ $checks = [
         'social_connection_id',
         'Editing this post does not reassign it to another account.',
         'valid, unambiguous future schedule date and time',
+        "trim((string) (\$existing['remote_post_id'] ?? '')) !== ''",
+        "Response::error(409, 'This post can no longer be edited because it may already be published on Instagram.')",
+        "AND (remote_post_id IS NULL OR remote_post_id = '')",
     ],
     'app/Http/Controllers/Tenant/SocialComposeApiController.php' => [
         "trim((string) (\$post['remote_post_id'] ?? '')) !== ''",
@@ -224,6 +229,32 @@ $hardening = is_file($root . '/database/migrations/0071_social_instagram_hardeni
     : '';
 if (str_contains($hardening, 'ADD UNIQUE KEY uq_social_connection_tenant_provider')) {
     $failures[] = 'Social connection hardening reintroduced tenant/provider-only uniqueness.';
+}
+
+// Direct form submissions must validate CSRF and tenant ownership before
+// checking the remote publication boundary. SQL guards close the race between
+// that request-level check and the edit/cancel updates.
+$frontController = is_file($root . '/app/Http/Controllers/Tenant/SocialFrontController.php')
+    ? (file_get_contents($root . '/app/Http/Controllers/Tenant/SocialFrontController.php') ?: '')
+    : '';
+$submitStart = strpos($frontController, 'private function submitPost');
+$csrfGuard = $submitStart === false ? false : strpos($frontController, 'if (!$this->validCsrf()) return Response::invalidCsrf();', $submitStart);
+$tenantLookup = $submitStart === false ? false : strpos($frontController, '$this->social->post($tenant->tenantId, $postId)', $submitStart);
+$remoteGuard = $submitStart === false ? false : strpos($frontController, "trim((string) (\$existing['remote_post_id'] ?? '')) !== ''", $submitStart);
+$conflict = $submitStart === false ? false : strpos($frontController, 'Response::error(409', $submitStart);
+if ($csrfGuard === false || $tenantLookup === false || $remoteGuard === false || $conflict === false
+    || !($csrfGuard < $tenantLookup && $tenantLookup < $remoteGuard && $remoteGuard < $conflict)) {
+    $failures[] = 'Direct POST edit guard must verify CSRF and tenant ownership before returning 409 for a remote post.';
+}
+
+$repository = is_file($root . '/app/Tenant/Social/SocialRepository.php')
+    ? (file_get_contents($root . '/app/Tenant/Social/SocialRepository.php') ?: '')
+    : '';
+if (preg_match("/SET status = 'cancelled'.*AND \\(remote_post_id IS NULL OR remote_post_id = ''\\)/", $repository) !== 1) {
+    $failures[] = 'SocialRepository::cancelPost() must not cancel a post with a remote post ID.';
+}
+if (preg_match("/SET source_artwork_id = :artwork_id.*AND \\(remote_post_id IS NULL OR remote_post_id = ''\\)/", $frontController) !== 1) {
+    $failures[] = 'SocialFrontController::replacePendingPost() must not edit a post with a remote post ID.';
 }
 
 if ($failures !== []) {
