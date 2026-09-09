@@ -33,6 +33,7 @@ use App\Tenant\Social\SocialImageService;
 use App\Tenant\Social\SocialPublishingService;
 use App\Tenant\Social\SocialRepository;
 use App\Tenant\Social\SocialTokenCipher;
+use App\Tenant\Artwork\ArtworkPublicationService;
 
 $root = dirname(__DIR__, 2);
 require_once $root . '/scripts/workers/heartbeat.php';
@@ -163,6 +164,17 @@ try {
                     $interval,
                     (int) $job['id'],
                 );
+            }
+            $jobs->markComplete((int) $job['id']);
+            break;
+
+        case 'artwork.publish_due':
+            $interval = max(60, (int) ($job['payload']['interval_seconds'] ?? 60));
+            try {
+                $result = (new ArtworkPublicationService($pdo))->publishDue();
+                echo 'Artwork publishing: artworks=' . $result['artworks'] . ', groups=' . $result['groups'] . "\n";
+            } finally {
+                $jobs->enqueueSingleton('artwork.publish_due', ['interval_seconds' => $interval], null, $interval, (int) $job['id']);
             }
             $jobs->markComplete((int) $job['id']);
             break;

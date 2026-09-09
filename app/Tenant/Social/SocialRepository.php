@@ -319,6 +319,13 @@ final class SocialRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
+    public function publishedPostCountForArtwork(int $tenantId, int $artworkId): int
+    {
+        $stmt = $this->pdo->prepare("SELECT COUNT(DISTINCT sp.id) FROM social_posts sp WHERE sp.tenant_id = :tenant_id AND sp.status = 'published' AND sp.remote_post_id IS NOT NULL AND sp.remote_post_id <> '' AND (sp.source_artwork_id = :source_artwork_id OR EXISTS (SELECT 1 FROM social_post_items spi WHERE spi.social_post_id = sp.id AND spi.tenant_id = sp.tenant_id AND spi.artwork_id = :item_artwork_id))");
+        $stmt->execute(['tenant_id' => $tenantId, 'source_artwork_id' => $artworkId, 'item_artwork_id' => $artworkId]);
+        return (int) $stmt->fetchColumn();
+    }
+
     public function post(int $tenantId, int $postId): ?array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM social_posts WHERE tenant_id = :tenant_id AND id = :id LIMIT 1');
