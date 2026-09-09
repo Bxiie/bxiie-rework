@@ -125,10 +125,17 @@ final class PricingController
 
         if (slug === 'studio') {
             card.style.setProperty('color', '#ffffff', 'important');
-            card.querySelectorAll('li, p, small, span').forEach((node) => {
+            card.querySelectorAll('li, p:not(.price), small, span').forEach((node) => {
                 node.style.setProperty('color', 'rgba(255,255,255,.92)', 'important');
                 node.style.setProperty('opacity', '1', 'important');
             });
+            const priceBadge = card.querySelector('p.price');
+            if (priceBadge) {
+                priceBadge.style.setProperty('color', '#111111', 'important');
+                priceBadge.style.setProperty('background', '#ffffff', 'important');
+                priceBadge.style.setProperty('opacity', '1', 'important');
+                priceBadge.style.setProperty('text-shadow', 'none', 'important');
+            }
             card.querySelectorAll('h1,h2,h3').forEach((node) => {
                 node.style.setProperty('color', '#ffffff', 'important');
             });

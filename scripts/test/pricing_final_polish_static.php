@@ -14,6 +14,8 @@ foreach ([
     "action.style.setProperty('color', '#111111', 'important')",
     '.professional-pricing > article:nth-of-type(2) p.price',
     'background: #ffffff !important;',
+    "card.querySelectorAll('li, p:not(.price), small, span')",
+    "priceBadge.style.setProperty('color', '#111111', 'important')",
     "adminHeader.className = '';",
     "adminHeader.textContent = 'Admin users';",
     "adminRow.innerHTML = '<td>Admin users</td><td>1</td><td>3</td><td>10</td><td>Unlimited</td>';",
