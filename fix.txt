@@ -1,5 +1,12 @@
 ## Now
 
+- Warn if image has already been shared on Instagram
+- Create 'Release Groups'.  Images may be assigned to a release group.  The release group may be scheduled for deployment.  If so, at the time of the release deployment, all images in that group are published.
+- Allow scheduling of image publication.
+- Allow bulk upload of images and metadata.  User will select a directory.  Dorectory contains a spreadsheet with metadata, including the filenames.  Image files will be read out of the smae directory.  Allow download of sample spreadsheet.
+
+##
+
 - update video URLs on help page
 - scrub all text of editorial and todo notices that are not meant for the user or admin.
 - on phones, the sidebar admin navigation should be collapsed to a hamburger.
