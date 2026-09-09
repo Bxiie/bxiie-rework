@@ -108,7 +108,9 @@ final class SocialTemplateRenderer
                 continue;
             }
             $key = mb_strtolower($part);
-            $normalized[$key] = '#' . $part;
+            if (!isset($normalized[$key])) {
+                $normalized[$key] = '#' . $part;
+            }
         }
         return implode(' ', array_values($normalized));
     }

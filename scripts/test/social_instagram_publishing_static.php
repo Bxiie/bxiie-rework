@@ -113,6 +113,10 @@ $checks = [
         "status_code'] === 'FINISHED'",
         "['ERROR', 'EXPIRED']",
         "Instagram media is still processing. ArtsFolio will retry automatically.",
+        "preg_replace_callback('/(?<![\\pL\\pN_])#([\\pL\\pN_]+)/u'",
+        "mb_strtolower(\$matches[1])",
+        "if (isset(\$seen[\$key]))",
+        "implode(' ', \$append)",
         "trim((string) (\$post['remote_post_id'] ?? ''))",
     ],
     'app/Http/Controllers/Tenant/SocialFrontController.php' => [

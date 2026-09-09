@@ -218,10 +218,33 @@ final class SocialPublishingService
     {
         $caption = trim((string) ($post['caption'] ?? ''));
         $hashtags = trim((string) ($post['hashtags'] ?? ''));
-        if ($hashtags !== '' && !str_contains($caption, $hashtags)) {
-            $caption = trim($caption . "\n\n" . $hashtags);
+        $seen = [];
+        $caption = preg_replace_callback('/(?<![\pL\pN_])#([\pL\pN_]+)/u', static function (array $matches) use (&$seen): string {
+            $key = mb_strtolower($matches[1]);
+            if (isset($seen[$key])) {
+                return '';
+            }
+            $seen[$key] = true;
+            return $matches[0];
+        }, $caption) ?? $caption;
+
+        $append = [];
+        foreach (preg_split('/\s+/', $hashtags) ?: [] as $hashtag) {
+            if (preg_match('/^#([\pL\pN_]+)$/u', $hashtag, $matches) !== 1) {
+                continue;
+            }
+            $key = mb_strtolower($matches[1]);
+            if (isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            $append[] = $hashtag;
         }
-        return $caption;
+        if ($append !== []) {
+            $caption = trim($caption . "\n\n" . implode(' ', $append));
+        }
+        $caption = (string) preg_replace('/[ \t]{2,}/', ' ', $caption);
+        return trim((string) preg_replace('/[ \t]+(\R|$)/u', '$1', $caption));
     }
 
     private function tenantPublishingHost(int $tenantId): string
