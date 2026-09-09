@@ -336,7 +336,7 @@ final class SocialRepository
 
     public function cancelPost(int $tenantId, int $postId, int $userId): bool
     {
-        $stmt = $this->pdo->prepare("UPDATE social_posts SET status = 'cancelled', next_attempt_at = NULL, updated_by_user_id = :user_id, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND id = :id AND status IN ('draft','scheduled','failed','authorization_required')");
+        $stmt = $this->pdo->prepare("UPDATE social_posts SET status = 'cancelled', next_attempt_at = NULL, updated_by_user_id = :user_id, updated_at = CURRENT_TIMESTAMP WHERE tenant_id = :tenant_id AND id = :id AND status IN ('draft','scheduled','failed','authorization_required') AND (remote_post_id IS NULL OR remote_post_id = '')");
         $stmt->execute(['user_id' => $userId, 'tenant_id' => $tenantId, 'id' => $postId]);
         return $stmt->rowCount() === 1;
     }
