@@ -18,10 +18,8 @@ $requiredFiles = [
     'app/Tenant/Social/SocialTemplateRenderer.php',
     'app/Tenant/Social/SocialImageService.php',
     'app/Tenant/Social/InstagramClient.php',
-    'app/Tenant/Social/TenantInstagramOAuthClient.php',
     'app/Tenant/Social/SocialPublishingService.php',
     'app/Http/Controllers/Tenant/SocialFrontController.php',
-    'app/Http/Controllers/Tenant/SocialInstagramCredentialsController.php',
     'app/Http/Controllers/Tenant/SocialComposeApiController.php',
     'app/Http/Controllers/Tenant/SocialConfirmationController.php',
     'app/Http/Controllers/Tenant/SocialPermissionAdminController.php',
@@ -79,6 +77,8 @@ $checks = [
         "'hashtags'",
     ],
     'app/Tenant/Social/InstagramClient.php' => [
+        'instagram_business_basic',
+        'instagram_business_content_publish',
         'graph.instagram.com',
         '/media_publish',
         'media_type',
@@ -86,14 +86,6 @@ $checks = [
         'content_publishing_limit',
         'publishedMedia',
         "'fields' => 'id,permalink,timestamp'",
-    ],
-    'app/Tenant/Social/TenantInstagramOAuthClient.php' => [
-        'private readonly string $clientId',
-        'private readonly string $clientSecret',
-        'instagram_business_basic,instagram_business_content_publish',
-        'api.instagram.com/oauth/access_token',
-        "'client_id' => trim(\$this->clientId)",
-        "'client_secret' => trim(\$this->clientSecret)",
     ],
     'app/Tenant/Social/SocialRepository.php' => [
         'connectionById',
@@ -119,24 +111,13 @@ $checks = [
         '/admin/social/post',
         '/admin/social/cancel',
         '/admin/social/artwork-metadata',
+        '/social/instagram/callback',
         '/social/media/',
         'Studio, Professional, and Collective',
         'Internal artwork notes are intentionally unavailable',
         'social_connection_id',
         'Editing this post does not reassign it to another account.',
         'valid, unambiguous future schedule date and time',
-    ],
-    'app/Http/Controllers/Tenant/SocialInstagramCredentialsController.php' => [
-        '/admin/social/app-credentials',
-        '/admin/social/connect',
-        '/social/instagram/callback',
-        "'instagram_client_id'",
-        "'instagram_client_secret_ciphertext'",
-        'TenantInstagramOAuthClient',
-        'Save Meta App credentials',
-        'OAuth Redirect URI',
-        'Leave blank to keep stored secret',
-        'ARTSFOLIO_SOCIAL_STATE_KEY',
     ],
     'app/Http/Controllers/Tenant/SocialComposeApiController.php' => [
         "trim((string) (\$post['remote_post_id'] ?? '')) !== ''",
@@ -173,23 +154,18 @@ $checks = [
         "enqueueSingleton(\n                    'social.publish_due'",
     ],
     'public/index.php' => [
-        'SocialInstagramCredentialsController',
         'SocialFrontController',
         'SocialComposeApiController',
         'SocialConfirmationController',
         'SocialPermissionAdminController',
         '/assets/social-publishing.js',
     ],
-    'app/Http/Response.php' => [
-        'public function body(): string',
-        'public function status(): int',
-        'public function headers(): array',
-    ],
     '.env.example' => [
+        'ARTSFOLIO_INSTAGRAM_CLIENT_ID',
+        'ARTSFOLIO_INSTAGRAM_CLIENT_SECRET',
         'ARTSFOLIO_INSTAGRAM_REDIRECT_URI',
         'ARTSFOLIO_SOCIAL_TOKEN_KEY',
         'ARTSFOLIO_SOCIAL_STATE_KEY',
-        'Each tenant configures its own Meta App ID and App Secret',
     ],
     'scripts/database/check_migration_integrity.php' => [
         '0070_social_instagram_publishing.sql',
@@ -231,40 +207,6 @@ $adminRoleCheck = strpos($permissionService, $adminRoleNeedle);
 $membershipCheck = strpos($permissionService, $membershipNeedle);
 if ($adminRoleCheck === false || $membershipCheck === false || $adminRoleCheck > $membershipCheck) {
     $failures[] = 'SocialPermissionService gates owner/admin access behind tenant_memberships instead of canonical tenant roles.';
-}
-
-// OAuth credentials are tenant-owned. The production environment must not
-// expose platform-wide Instagram client ID/secret assignments.
-$envExample = is_file($root . '/.env.example') ? (file_get_contents($root . '/.env.example') ?: '') : '';
-foreach (['ARTSFOLIO_INSTAGRAM_CLIENT_ID=', 'ARTSFOLIO_INSTAGRAM_CLIENT_SECRET='] as $forbidden) {
-    if (str_contains($envExample, $forbidden)) {
-        $failures[] = '.env.example still defines platform-wide Instagram OAuth credentials: ' . $forbidden;
-    }
-}
-
-$oauthClient = is_file($root . '/app/Tenant/Social/TenantInstagramOAuthClient.php')
-    ? (file_get_contents($root . '/app/Tenant/Social/TenantInstagramOAuthClient.php') ?: '')
-    : '';
-foreach (['ARTSFOLIO_INSTAGRAM_CLIENT_ID', 'ARTSFOLIO_INSTAGRAM_CLIENT_SECRET', 'getenv('] as $forbidden) {
-    if (str_contains($oauthClient, $forbidden)) {
-        $failures[] = 'TenantInstagramOAuthClient must not read process-wide Instagram credentials: ' . $forbidden;
-    }
-}
-
-$publishingClient = is_file($root . '/app/Tenant/Social/InstagramClient.php')
-    ? (file_get_contents($root . '/app/Tenant/Social/InstagramClient.php') ?: '')
-    : '';
-foreach (['ARTSFOLIO_INSTAGRAM_CLIENT_ID', 'ARTSFOLIO_INSTAGRAM_CLIENT_SECRET', 'authorizationUrl(', 'exchangeCode('] as $forbidden) {
-    if (str_contains($publishingClient, $forbidden)) {
-        $failures[] = 'InstagramClient must remain publishing-only: ' . $forbidden;
-    }
-}
-
-$frontController = is_file($root . '/public/index.php') ? (file_get_contents($root . '/public/index.php') ?: '') : '';
-$credentialDispatch = strpos($frontController, 'new SocialInstagramCredentialsController');
-$socialDispatch = strpos($frontController, 'new SocialFrontController');
-if ($credentialDispatch === false || $socialDispatch === false || $credentialDispatch > $socialDispatch) {
-    $failures[] = 'Tenant Instagram credential/OAuth routes must dispatch before SocialFrontController.';
 }
 
 // Internal notes must not be exposed as a social caption template placeholder.

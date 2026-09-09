@@ -19,13 +19,6 @@ final class SocialPermissionService
     {
     }
 
-    public function isTenantAdmin(?array $currentUser, TenantContext $tenant): bool
-    {
-        $userId = (int) ($currentUser['user_id'] ?? 0);
-        return $userId > 0
-            && $this->hasTenantRole($tenant->tenantId, $userId, ['tenant_owner', 'tenant_admin', 'owner', 'admin']);
-    }
-
     public function canPublish(?array $currentUser, TenantContext $tenant): bool
     {
         $userId = (int) ($currentUser['user_id'] ?? 0);
@@ -38,7 +31,7 @@ final class SocialPermissionService
         // valid role assignments without a tenant_memberships row, so requiring
         // membership here would incorrectly hide social controls from an admin
         // who is already authorized everywhere else under /admin.
-        if ($this->isTenantAdmin($currentUser, $tenant)) {
+        if ($this->hasTenantRole($tenant->tenantId, $userId, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
             return true;
         }
 

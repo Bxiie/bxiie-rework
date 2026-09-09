@@ -4,8 +4,6 @@ ArtsFolio can publish artwork to a connected Instagram Creator or Business accou
 
 You need tenant-admin access or an Editor account that has been granted **Publish to social media** permission.
 
-Before the first connection, a tenant administrator configures that tenant's own Meta App ID and App Secret under **Tenant Admin → Instagram → Meta App credentials**. ArtsFolio encrypts the App Secret and never displays it again after saving. The Meta app must register the OAuth Redirect URI shown on the Instagram settings page.
-
 ## Start from an artwork
 
 When you have publishing permission, **Post to Instagram** is available from:
