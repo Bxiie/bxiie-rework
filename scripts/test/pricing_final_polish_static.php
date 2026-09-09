@@ -12,6 +12,8 @@ foreach ([
     "['collective', 'Choose Collective', '/signup?plan=collective']",
     "['studio', 'Choose Studio', '/signup?plan=studio']",
     "action.style.setProperty('color', '#111111', 'important')",
+    '.professional-pricing > article:nth-of-type(2) p.price',
+    'background: #ffffff !important;',
     "adminHeader.className = '';",
     "adminHeader.textContent = 'Admin users';",
     "adminRow.innerHTML = '<td>Admin users</td><td>1</td><td>3</td><td>10</td><td>Unlimited</td>';",
