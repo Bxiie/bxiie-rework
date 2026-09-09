@@ -123,6 +123,10 @@ $expected = [
             'social_posts' => ['social_connection_id'],
         ],
     ],
+    '0072_artwork_release_scheduling.sql' => [
+        'tables' => ['artwork_release_groups', 'artwork_release_group_items'],
+        'columns' => ['artworks' => ['scheduled_publish_at']],
+    ],
 ];
 
 $appliedStmt = $pdo->query("SELECT migration FROM schema_migrations");

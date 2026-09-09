@@ -122,7 +122,7 @@ final class ArtworksController
         }
 
         $stmt = $this->pdo->prepare(
-            "SELECT a.id, a.title, a.slug, a.description, a.medium, a.year_created, a.status,
+            "SELECT a.id, a.title, a.slug, a.description, a.medium, a.year_created, a.status, a.scheduled_publish_at,
                     a.sale_status, a.price, COALESCE(a.is_one_off, 1) AS is_one_off,
                     COALESCE(a.inventory_quantity, 1) AS inventory_quantity,
                     (SELECT ts.setting_value FROM tenant_settings ts
@@ -177,6 +177,12 @@ final class ArtworksController
         foreach ($rows as $row) {
             $title = htmlspecialchars((string) $row['title'], ENT_QUOTES, 'UTF-8');
             $status = htmlspecialchars((string) $row['status'], ENT_QUOTES, 'UTF-8');
+            $scheduled = '';
+            if (!empty($row['scheduled_publish_at'])) {
+                $scheduledDate = (new \DateTimeImmutable((string) $row['scheduled_publish_at'], new \DateTimeZone('UTC')))
+                    ->setTimezone(new \DateTimeZone((string) ($GLOBALS['artsfolio_user_timezone'] ?? 'UTC')));
+                $scheduled = '<br><small>Scheduled ' . htmlspecialchars($scheduledDate->format('M j, Y g:i A'), ENT_QUOTES, 'UTF-8') . '</small>';
+            }
             $typeBadges = $this->artworkTypeBadges((string) ($row['artwork_type_codes'] ?? ''));
             $sectionNames = $this->artworkSectionNamesHtml((string) ($row['section_names'] ?? ''));
             $saleStatus = htmlspecialchars((string) $row['sale_status'], ENT_QUOTES, 'UTF-8');
@@ -206,7 +212,7 @@ final class ArtworksController
             $items .= <<<HTML
 <tr id="artwork-{$row['id']}">
     <td><a class="artwork-grid-thumbnail-link" href="/admin/artworks/edit?id={$artworkId}&return_to={$returnToParam}">{$image}</a></td><td><strong>{$title}</strong><br><small>ID {$row['id']} · {$created}</small></td>
-    <td>{$year}</td><td>{$medium}</td><td>{$sectionNames}</td><td class="js-artwork-status">{$status}<br>{$typeBadges}</td>
+    <td>{$year}</td><td>{$medium}</td><td>{$sectionNames}</td><td class="js-artwork-status">{$status}{$scheduled}<br>{$typeBadges}</td>
     <td>{$saleStatus}</td><td>{$price}</td><td>{$notes}</td>
     <td><form method="post" action="/admin/artworks/directory-thumbnail"><input type="hidden" name="id" value="{$artworkId}"><input type="hidden" name="return_to" value="{$returnToValue}"><label><input type="checkbox" name="directory_thumbnail" value="1"{$directoryChecked}{$directoryDisabled} onchange="this.form.submit()"> Directory thumbnail</label><br><small>{$directoryHelp}</small></form></td>
     <td><a class="admin-button" href="/admin/artworks/edit?id={$artworkId}&return_to={$returnToParam}">Edit</a> {$this->statusActionButton($row, $returnToValue)} <form method="post" action="/admin/artworks/delete" class="js-artwork-action" style="display:inline" onsubmit="return confirm('Archive this artwork?');"><input type="hidden" name="id" value="{$row['id']}"><input type="hidden" name="return_to" value="{$returnToValue}"><button type="submit">Archive</button></form></td>
@@ -263,6 +269,14 @@ HTML;
     <a class="admin-button tenant-admin-action-button" href="/admin/artwork/upload">
         <strong>Upload artwork</strong>
         <span>Add a new image, catalog details, publication state, and sales information.</span>
+    </a>
+    <a class="admin-button tenant-admin-action-button" href="/admin/artwork/bulk">
+        <strong>Bulk upload</strong>
+        <span>Import a directory of images and CSV metadata.</span>
+    </a>
+    <a class="admin-button tenant-admin-action-button" href="/admin/release-groups">
+        <strong>Release Groups &amp; scheduling</strong>
+        <span>Schedule individual artworks or publish a collection together.</span>
     </a>
     <a class="admin-button tenant-admin-action-button" href="/admin/artworks/placement">
         <strong>Artwork placement matrix</strong>

@@ -51,6 +51,8 @@ use App\Http\Controllers\Tenant\Admin\GettingStartedController as TenantAdminGet
 use App\Http\Controllers\Tenant\Admin\OnboardingController as TenantAdminOnboardingController;
 use App\Http\Controllers\Tenant\Admin\OnboardingPageController as TenantAdminOnboardingPageController;
 use App\Http\Controllers\Tenant\Admin\ArtworkUploadController as TenantAdminArtworkUploadController;
+use App\Http\Controllers\Tenant\Admin\ArtworkBulkUploadController as TenantAdminArtworkBulkUploadController;
+use App\Http\Controllers\Tenant\Admin\ArtworkReleaseController as TenantAdminArtworkReleaseController;
 use App\Http\Controllers\Tenant\Admin\ArtworksController as TenantAdminArtworksController;
 use App\Http\Controllers\Tenant\Admin\ArtworkPlacementController as TenantAdminArtworkPlacementController;
 use App\Http\Controllers\Tenant\Admin\HomepageArtworksController as TenantAdminHomepageArtworksController;
@@ -235,9 +237,19 @@ return static function (Router $router, array $context): void {
         $router->post('/admin/artworks/status', fn (Request $request): Response => (new TenantAdminArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new AuditLogRepository($pdo)))->updateStatus($request, $tenant, $currentUser));
         $router->post('/admin/artworks/directory-thumbnail', fn (Request $request): Response => (new TenantAdminArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new AuditLogRepository($pdo)))->updateDirectoryThumbnail($request, $tenant, $currentUser));
         $router->post('/admin/artworks/delete', fn (Request $request): Response => (new TenantAdminArtworksController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new AuditLogRepository($pdo)))->delete($request, $tenant, $currentUser));
+        $releaseController = new TenantAdminArtworkReleaseController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new CsrfTokenService());
+        $router->get('/admin/release-groups', fn (Request $request): Response => $releaseController->index($request, $tenant, $currentUser));
+        $router->post('/admin/release-groups/create', fn (Request $request): Response => $releaseController->create($request, $tenant, $currentUser));
+        $router->get('/admin/release-groups/edit', fn (Request $request): Response => $releaseController->edit($request, $tenant, $currentUser));
+        $router->post('/admin/release-groups/save', fn (Request $request): Response => $releaseController->save($request, $tenant, $currentUser));
+        $router->post('/admin/artworks/schedule', fn (Request $request): Response => $releaseController->scheduleArtwork($request, $tenant, $currentUser));
         $router->get('/media', fn (Request $request): Response => (new TenantMediaController($pdo, new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->public($request, $tenant, $currentUser));
         $router->get('/admin/artwork/upload', fn (Request $request): Response => (new TenantAdminArtworkUploadController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), new ArtworkUploadService($pdo), new AuditLogRepository($pdo), $pdo))->form($request, $tenant, $currentUser));
         $router->post('/admin/artwork/upload', fn (Request $request): Response => (new TenantAdminArtworkUploadController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new CsrfTokenService(), new ArtworkUploadService($pdo), new AuditLogRepository($pdo), $pdo))->submit($request, $tenant, $currentUser));
+        $bulkUploadController = new TenantAdminArtworkBulkUploadController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new CsrfTokenService(), new ArtworkUploadService($pdo));
+        $router->get('/admin/artwork/bulk', fn (Request $request): Response => $bulkUploadController->form($request, $tenant, $currentUser));
+        $router->get('/admin/artwork/bulk/sample.csv', fn (Request $request): Response => $bulkUploadController->sample($request, $tenant, $currentUser));
+        $router->post('/admin/artwork/bulk', fn (Request $request): Response => $bulkUploadController->submit($request, $tenant, $currentUser));
         $router->get('/admin/getting-started', fn (Request $request): Response => (new TenantAdminGettingStartedController(new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->index($request, $tenant, $currentUser));
         $router->get('/admin/onboarding', fn (Request $request): Response => (new TenantAdminOnboardingPageController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $tenantSettings, new CsrfTokenService()))->index($request, $tenant, $currentUser));
         $router->post('/admin/onboarding/reset', fn (Request $request): Response => (new TenantAdminOnboardingController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, new CsrfTokenService(), new AuditLogRepository($pdo)))->reset($request, $tenant, $currentUser));

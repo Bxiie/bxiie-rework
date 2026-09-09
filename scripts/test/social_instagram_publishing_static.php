@@ -131,6 +131,8 @@ $checks = [
         'social_connection_id',
         'Editing this post does not reassign it to another account.',
         'valid, unambiguous future schedule date and time',
+        'Already shared on Instagram.',
+        'publishedPostCountForArtwork',
         '<details><summary><strong>Carousel media and crop settings</strong></summary>',
         '<strong>Post submitted.</strong> ArtsFolio is publishing it now.',
         "available_at = LEAST(available_at, CURRENT_TIMESTAMP)",
