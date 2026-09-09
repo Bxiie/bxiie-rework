@@ -42,6 +42,7 @@ final class MarketingController
         <p class="hero-copy">ArtsFolio gives artists a fast, elegant portfolio, collector-ready artwork pages, email capture, contact tools, analytics, and room to grow into sales without rebuilding the whole machine later.</p>
         <div class="hero-actions">
             <a class="button primary" href="/signup">Start your portfolio</a>
+            <a class="button secondary" href="/features">Explore all features</a>
             <a class="button secondary" href="/directory">Explore artists</a>
         </div>
     </div>
@@ -116,6 +117,54 @@ final class MarketingController
 HTML;
 
         return $this->page('ArtsFolio | Artist portfolio and sales platform', $body, 'home');
+    }
+
+    public function features(Request $request): Response
+    {
+        $body = <<<'HTML'
+<section class="platform-hero compact">
+    <div>
+        <p class="eyebrow">Features</p>
+        <h1>One place to publish, promote, and operate your art practice.</h1>
+        <p class="hero-copy">ArtsFolio combines a polished public portfolio with artwork management, scheduled releases, Instagram publishing, collector communication, sales, analytics, and practical administration.</p>
+        <div class="hero-actions"><a class="button primary" href="/signup">Start your portfolio</a><a class="button secondary" href="/pricing">Compare plans</a></div>
+    </div>
+</section>
+
+<section class="platform-section"><p class="eyebrow">Portfolio and publishing</p><h2>Present the work clearly—and release it on your schedule.</h2><div class="feature-grid">
+    <article><h3>Artwork catalog <small>All plans</small></h3><p>Store images, titles, dates, media, descriptions, availability, prices, inventory, and private notes in structured artwork records.</p></article>
+    <article><h3>Portfolio sections <small>All plans</small></h3><p>Organize work into visitor-friendly collections, control placement and order, and choose what appears on the homepage.</p></article>
+    <article><h3>Scheduled publication <small>All plans</small></h3><p>Schedule one draft artwork for future website publication or assemble a Release Group that publishes several artworks together.</p></article>
+    <article><h3>Bulk artwork upload <small>All plans; plan limits apply</small></h3><p>Select a directory containing images and CSV metadata, validate rows, and import a body of work efficiently. A sample spreadsheet is included.</p></article>
+    <article><h3>Events and exhibitions <small>All plans</small></h3><p>Publish exhibitions, open studios, fairs, talks, residencies, installations, and selected career history.</p></article>
+    <article><h3>Branding and content <small>All plans</small></h3><p>Control public labels, About and Contact content, typography, color, logo, page images, watermark defaults, and optional custom CSS.</p></article>
+</div></section>
+
+<section class="platform-section"><p class="eyebrow">Promotion and discovery</p><h2>Share new work without rebuilding every post by hand.</h2><div class="feature-grid">
+    <article><h3>Instagram publishing <small>Studio, Professional, Collective</small></h3><p>Connect an Instagram Creator or Business account, compose captions and deduplicated hashtags, publish now or schedule, create carousels, adjust crops, and review publication history. ArtsFolio warns when an image was shared before.</p></article>
+    <article><h3>Artist directory <small>All plans</small></h3><p>Opt into the ArtsFolio artist directory, write a discovery summary, and choose the artwork that represents your listing.</p></article>
+    <article><h3>Search-ready public pages <small>All plans</small></h3><p>Use clean artwork URLs, useful metadata, structured navigation, and focused public pages that are easy to share.</p></article>
+    <article><h3>Custom domain <small>Professional, Collective</small></h3><p>Use your own domain with guided DNS verification and HTTPS support. Every plan also includes an ArtsFolio subdomain.</p></article>
+</div></section>
+
+<section class="platform-section"><p class="eyebrow">Collectors and sales</p><h2>Turn attention into a conversation—or a purchase.</h2><div class="feature-grid">
+    <article><h3>Contact messages <small>All plans; plan limits apply</small></h3><p>Receive inquiries through the public site, then search, review, update, export, archive, or remove them in admin.</p></article>
+    <article><h3>Email signups <small>All plans; plan limits apply</small></h3><p>Capture subscriber consent, import or export contacts, and manage audience records from the same workspace.</p></article>
+    <article><h3>Online sales <small>Studio, Professional, Collective</small></h3><p>Present sale-ready artwork, manage carts and inventory, connect Stripe for payouts, review orders, and issue carefully controlled refunds. Published fees appear on the Pricing page.</p></article>
+    <article><h3>Sales analytics <small>Studio, Professional, Collective</small></h3><p>Review orders, revenue, payment state, operational status, and sales activity alongside the artwork catalog.</p></article>
+</div></section>
+
+<section class="platform-section"><p class="eyebrow">Operations</p><h2>Tools for running the site after launch.</h2><div class="feature-grid">
+    <article><h3>Traffic analytics <small>All plans</small></h3><p>Review visits, artwork interest, referrers, time patterns, and location rollups to understand how people use the site.</p></article>
+    <article><h3>Users and permissions <small>Plan limits apply</small></h3><p>Invite collaborators, control administrative access, and grant Instagram publishing permission only where needed.</p></article>
+    <article><h3>Audit and diagnostics <small>All plans</small></h3><p>Use audit history, route diagnostics, status messages, and operational checks to understand changes and troubleshoot safely.</p></article>
+    <article><h3>Help and guided setup <small>All plans</small></h3><p>Follow a first-site tour and task-focused help for artwork, publishing, branding, sales, users, domains, billing, discovery, and analytics.</p></article>
+</div></section>
+
+<section class="platform-cta"><h2>Choose the plan that fits the practice you have now.</h2><p>The Pricing page shows current limits, Instagram access, custom-domain access, sales availability, and applicable fees for every plan.</p><a class="button primary" href="/pricing">View plan comparison</a></section>
+HTML;
+
+        return $this->page('Features | ArtsFolio', $body, 'features');
     }
 
     public function directory(Request $request): Response

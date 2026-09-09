@@ -162,6 +162,11 @@
     {
         "scope": "platform",
         "method": "GET",
+        "path": "/features"
+    },
+    {
+        "scope": "platform",
+        "method": "GET",
         "path": "/help"
     },
     {

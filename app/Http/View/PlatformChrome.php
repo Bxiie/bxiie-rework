@@ -23,6 +23,7 @@ final class PlatformChrome
     {
         $items = [
             'home' => ['/', 'Home'],
+            'features' => ['/features', 'Features'],
             'artists' => ['/directory', 'Artists'],
             'pricing' => ['/pricing', 'Pricing'],
             'help' => ['/help', 'Help'],

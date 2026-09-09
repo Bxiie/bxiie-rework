@@ -9,6 +9,8 @@ The public help section at `/help` is the artist-facing guide for setting up and
 - `/help/tenant-admin-functions` lists your admin tools and explains where each job belongs.
 - `/help/branding` explains your settings, logo, colors, typography, custom CSS, About page, Contact page, and site images.
 - `/help/artworks` explains how to upload your art, complete artwork records, publish work, use the Artworks grid, organize sections, and curate the public experience.
+- `/help/artwork-publishing` explains directory-based bulk upload, individual website scheduling, Release Groups, spreadsheet rules, and post-import checks.
+- `/help/instagram-publishing` explains plan access, account connection, captions, hashtags, carousels, immediate and scheduled posts, confirmation, and troubleshooting.
 - `/help/events` explains how to add exhibitions, fairs, talks, open studios, residencies, installations, and selected history.
 - `/help/sales` explains sale-ready artwork, orders, analytics, Stripe checks, and refund safety.
 - `/help/messages-email` explains contact messages, test submissions, email signups, consent, and follow-up.
@@ -45,5 +47,15 @@ Before sharing your site widely, confirm these pieces are ready:
 4. Your sale-ready artworks have prices, inventory, shipping, and Stripe payout setup complete.
 5. You have sent yourself a test contact message and joined your own email list.
 6. Your custom domain opens over HTTPS if you are using one.
+
+## Bulk upload and website release scheduling
+
+The Artworks page includes **Bulk upload** and **Release Groups & scheduling**.
+
+- Bulk upload accepts a selected directory containing `artworks.csv` and the image files named by its `filename` column. Download the sample spreadsheet from the bulk-upload page before preparing a batch.
+- `publish_at` schedules one draft artwork for website publication. Use the displayed site timezone and the `YYYY-MM-DD HH:MM` format in CSV imports.
+- `release_group` assigns an imported image to a named group. Schedule that group from **Release Groups & scheduling** after reviewing its contents.
+- A bulk row must use either `publish_at` or `release_group`, not both.
+- Release Groups publish assigned artwork to the website together. They do not create Instagram posts.
 
 <!-- End of file. -->

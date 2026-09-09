@@ -213,6 +213,7 @@ return static function (Router $router, array $context): void {
     $router->get('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo, new PlatformSettingsRepository($pdo), new SignupCodeRepository($pdo)), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService(), new PlatformSettingsRepository($pdo), new SignupPostRegistrationMailer($pdo, new \App\Platform\Email\EmailOutboxRepository($pdo))))->show($request));
     $router->post('/signup', fn (Request $request): Response => (new PlatformSignupController(new TenantSignupService($pdo, new PlatformSettingsRepository($pdo), new SignupCodeRepository($pdo)), new PasswordHasher(), new CsrfTokenService(), new SessionRepository($pdo), new SessionTokenService(), new PlatformSettingsRepository($pdo), new SignupPostRegistrationMailer($pdo, new \App\Platform\Email\EmailOutboxRepository($pdo))))->submit($request));
     $router->get('/', fn (Request $request): Response => $marketingController->home($request));
+    $router->get('/features', fn (Request $request): Response => $marketingController->features($request));
     $router->get('/directory', fn (Request $request): Response => (new DirectoryController($pdo))->index($request));
     $router->get('/contact', fn (Request $request): Response => $marketingController->contact($request));
     $router->post('/contact', fn (Request $request): Response => $marketingController->contact($request));

@@ -653,3 +653,4 @@ run_php scripts/test/email_outbox_selected_timezone_static.php
 run_php scripts/test/reboot_required_reason_static.php
 run_php scripts/test/social_instagram_publishing_static.php
 run_php scripts/test/artwork_release_bulk_static.php
+run_php scripts/test/platform_features_pricing_help_static.php

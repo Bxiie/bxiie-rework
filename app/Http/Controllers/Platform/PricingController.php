@@ -200,7 +200,8 @@ HTML;
             $description = AdminLayout::escape((string) ($plan['description'] ?: 'ArtsFolio artist portfolio plan.'));
             $artworks = $this->limitLabel($plan['allowed_artworks'] ?? null, 'artworks');
             $emails = $this->limitLabel($plan['allowed_email_addresses'] ?? null, 'email addresses');
-            $customDomain = ((int) $plan['custom_domain_included']) === 1 ? 'Admin users: Custom domain included' : 'ArtsFolio subdomain included';
+            $customDomain = ((int) $plan['custom_domain_included']) === 1 ? 'Custom domain included' : 'ArtsFolio subdomain included; custom domain unavailable';
+            $instagram = $slug !== 'free' ? 'Instagram publishing included' : 'Instagram publishing unavailable';
             $sales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Online checkout available' : 'Online checkout unavailable';
             $workflow = ((int) (($plan['curation_workflow_included'] ?? 0) ?? 0)) === 1
                 ? 'Curation workflow included'
@@ -211,7 +212,7 @@ HTML;
             $freeNotice = $slug === 'free' ? '<li>Includes ArtsFolio notification/link on free tenant pages</li>' : '';
             $cta = $slug === 'pro' || $slug === 'collective' ? '<a class="button secondary" href="/contact">Contact ArtsFolio</a>' : '<a class="button ' . ($slug === 'studio' ? 'primary' : 'secondary') . '" href="/signup">Choose ' . $name . '</a>';
             $html .= <<<HTML
-<article class="pricing-card{$featured}"><p class="eyebrow">{$eyebrow}</p><h2>{$name}</h2><p class="price">{$price}</p><p>{$description}</p><ul><li>{$customDomain}</li><li>{$artworks}</li><li>{$emails}</li><li>{$sales}</li><li>{$workflow}</li>{$fees}<li>Contact form and email list tools</li>{$freeNotice}</ul>{$cta}</article>
+<article class="pricing-card{$featured}"><p class="eyebrow">{$eyebrow}</p><h2>{$name}</h2><p class="price">{$price}</p><p>{$description}</p><ul><li>{$customDomain}</li><li>{$instagram}</li><li>{$artworks}</li><li>{$emails}</li><li>{$sales}</li><li>{$workflow}</li>{$fees}<li>Contact form and email list tools</li>{$freeNotice}</ul>{$cta}</article>
 HTML;
         }
         return $html;
@@ -228,6 +229,7 @@ HTML;
         $artworks = '<tr><td>Allowed artworks</td>';
         $emails = '<tr><td>Allowed email addresses</td>';
         $domains = '<tr><td>Custom domain</td>';
+        $instagram = '<tr><td>Instagram publishing</td>';
         $notice = '<tr><td>ArtsFolio notification/link</td>';
         $sales = '<tr><td>Online checkout</td>';
         $workflow = '<tr><td>Curation workflow</td>';
@@ -238,14 +240,15 @@ HTML;
             $price .= '<td>' . $this->priceLabel((int) $plan['monthly_price_cents']) . '</td>';
             $artworks .= '<td>' . AdminLayout::escape((string) ($plan['allowed_artworks'] ?? 'Configured by plan')) . '</td>';
             $emails .= '<td>' . AdminLayout::escape((string) ($plan['allowed_email_addresses'] ?? 'Configured by plan')) . '</td>';
-            $domains .= '<td>' . (((int) $plan['custom_domain_included']) === 1 ? 'Included' : '-') . '</td>';
+            $domains .= '<td>' . (((int) $plan['custom_domain_included']) === 1 ? 'Included' : 'Not included') . '</td>';
+            $instagram .= '<td>' . (((string) $plan['slug']) !== 'free' ? 'Included' : 'Not included') . '</td>';
             $notice .= '<td>' . (((string) $plan['slug']) === 'free' ? 'Included' : '-') . '</td>';
             $sales .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Included' : '-') . '</td>';
             $workflow .= '<td>' . (((int) (($plan['curation_workflow_included'] ?? 0) ?? 0)) === 1 ? 'Included' : '-') . '</td>';
             $commissionFees .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? $this->commissionLabel($plan) : '-') . '</td>';
             $cardFees .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? $this->cardFeesLabel($plan) : '-') . '</td>';
         }
-        return '<table class="admin-table"><thead><tr><th>Feature</th>' . $heads . '</tr></thead><tbody>' . $price . '</tr>' . $artworks . '</tr>' . $emails . '</tr>' . $domains . '</tr>' . $notice . '</tr>' . $sales . '</tr>' . $workflow . '</tr>' . $commissionFees . '</tr>' . $cardFees . '</tr></tbody></table>';
+        return '<table class="admin-table"><thead><tr><th>Feature</th>' . $heads . '</tr></thead><tbody>' . $price . '</tr>' . $artworks . '</tr>' . $emails . '</tr>' . $domains . '</tr>' . $instagram . '</tr>' . $notice . '</tr>' . $sales . '</tr>' . $workflow . '</tr>' . $commissionFees . '</tr>' . $cardFees . '</tr></tbody></table>';
     }
 
     private function plans(): array
@@ -269,7 +272,7 @@ HTML;
 
     private function fallbackCards(): string
     {
-        return '<article class="pricing-card"><p class="eyebrow">Starter</p><h2>Free</h2><p class="price">$0</p><p>For evaluation, students, and artists publishing a compact first portfolio.</p><ul><li>ArtsFolio subdomain</li><li>Core portfolio pages</li><li>Basic contact form</li><li>Curation workflow not included</li><li>Includes ArtsFolio notification/link on free tenant pages</li></ul><a class="button secondary" href="/signup">Start Free</a></article>';
+        return '<article class="pricing-card"><p class="eyebrow">Starter</p><h2>Free</h2><p class="price">$0</p><p>For evaluation, students, and artists publishing a compact first portfolio.</p><ul><li>ArtsFolio subdomain</li><li>Custom domain unavailable</li><li>Instagram publishing unavailable</li><li>Core portfolio pages</li><li>Basic contact form</li><li>Curation workflow not included</li><li>Includes ArtsFolio notification/link on free tenant pages</li></ul><a class="button secondary" href="/signup">Start Free</a></article>';
     }
 
     private function priceLabel(int $cents): string
