@@ -1583,21 +1583,21 @@ HTML;
         if ($mode === 'table') {
             $html = '<table class="events-table"><tr><th>Date</th><th>Exhibition</th><th>Type</th><th>Location</th><th>Work</th><th>Additional information</th></tr>';
             foreach ($rows as $event) {
-                $date = $this->escape((string) ($event['exhibition_date'] ?? ''));
+                $date = $this->escape($this->eventDisplayDate((string) ($event['exhibition_date'] ?? '')));
                 $name = $this->escape((string) $event['name']);
                 $type = $this->escape((string) ($event['exhibition_type'] ?? ''));
                 $locationRaw = (string) (($event['location'] ?? '') ?: (($event['city'] ?? '') . ', ' . ($event['state_region'] ?? '')));
                 $location = $this->escape(trim($locationRaw, ', '));
                 $work = $this->escape((string) ($event['work_name'] ?? ''));
                 $notes = (string) ($event['notes'] ?? '');
-                $html .= "<tr><td>{$date}</td><td>{$name}</td><td>{$type}</td><td>{$location}</td><td>{$work}</td><td><div class=\"prose small\">{$notes}</div></td></tr>";
+                $html .= "<tr><td>{$date}</td><td>{$name}</td><td>{$type}</td><td>{$location}</td><td>{$work}</td><td><div class=\"event-notes\">{$notes}</div></td></tr>";
             }
             return $html . '</table>';
         }
 
         $html = '';
         foreach ($rows as $event) {
-            $date = $this->escape((string) ($event['exhibition_date'] ?? ''));
+            $date = $this->escape($this->eventDisplayDate((string) ($event['exhibition_date'] ?? '')));
             $name = $this->escape((string) $event['name']);
             $type = $this->escape((string) ($event['exhibition_type'] ?? ''));
             $locationRaw = (string) (($event['location'] ?? '') ?: (($event['city'] ?? '') . ', ' . ($event['state_region'] ?? '')));
@@ -1618,12 +1618,28 @@ HTML;
                 $html .= "<p>{$work}</p>";
             }
             if ($notes !== '') {
-                $html .= "<div class=\"prose small\">{$notes}</div>";
+                $html .= "<div class=\"event-notes\">{$notes}</div>";
             }
             $html .= "</div></article>\n";
         }
 
         return $html;
+    }
+
+    private function eventDisplayDate(string $value): string
+    {
+        $value = trim($value);
+        if (preg_match('/^(\d{4})-(\d{2})(?:-\d{2})?$/', $value, $matches) !== 1) {
+            return $value;
+        }
+
+        $date = \DateTimeImmutable::createFromFormat('!Y-m', $matches[1] . '-' . $matches[2]);
+        $errors = \DateTimeImmutable::getLastErrors();
+        if (!$date || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
+            return $value;
+        }
+
+        return $date->format('F Y');
     }
 
 

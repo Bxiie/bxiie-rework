@@ -288,6 +288,23 @@ h1 {
   font-weight: 700;
 }
 
+.event-notes,
+.event-notes p,
+.event-notes span {
+  font: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+
+.event-notes p:first-child {
+  margin-top: 0;
+}
+
+.event-notes p:last-child {
+  margin-bottom: 0;
+}
+
 /* Delayed email signup modal. */
 .modal {
   position: fixed;
