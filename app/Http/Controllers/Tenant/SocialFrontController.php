@@ -130,6 +130,13 @@ final class SocialFrontController
             $assignments[(int) $assignment['section_id']] = (int) $assignment['template_id'];
         }
         $csrf = $this->e($this->csrf->getOrCreate());
+        $notice = match ((string) ($_GET['notice'] ?? '')) {
+            'post-submitted' => '<p class="admin-notice"><strong>Post submitted.</strong> ArtsFolio is publishing it now. Its live status and any Instagram error appear in the history below.</p>',
+            'post-scheduled' => '<p class="admin-notice"><strong>Post scheduled.</strong> It will publish at the selected time.</p>',
+            'post-cancelled' => '<p class="admin-notice"><strong>Post cancelled.</strong></p>',
+            'confirmation-retry-submitted' => '<p class="admin-notice"><strong>Confirmation retry submitted.</strong> ArtsFolio is checking the existing Instagram post now.</p>',
+            default => '',
+        };
         $defaultHashtags = $this->e((string) $this->settings->get($tenant, 'instagram_default_hashtags', ''));
         $connectionHtml = $connection && (string) ($connection['status'] ?? '') === 'active'
             ? '<p><strong>Connected:</strong> @' . $this->e((string) ($connection['username'] ?? 'Instagram professional account')) . '</p><form method="post" action="/admin/social/disconnect"><input type="hidden" name="csrf_token" value="' . $csrf . '"><button type="submit">Disconnect Instagram</button></form>'
@@ -178,7 +185,7 @@ final class SocialFrontController
         }
 
         $placeholders = '{title}, {artist_name}, {year}, {medium}, {dimensions}, {year_medium_dimensions}, {description}, {social_caption}, {social_or_description}, {artwork_url}, {website}, {site_url}, {portfolio_url}, {portfolio_name}, {section_name}, {section_names}, {price}, {availability}, {copyright_year}, {copyright_holder}, {default_hashtags}, {artwork_hashtags}, {hashtags}';
-        $body = '<p><a href="/admin">&larr; Tenant Admin</a></p><h1>Instagram</h1><section class="admin-card"><h2>Connection</h2>' . $connectionHtml . '<p>ArtsFolio requires an Instagram Creator or Business account. Passwords are never stored. Scheduled posts stay bound to the account selected when they were scheduled, even if another account is connected later.</p></section>'
+        $body = '<p><a href="/admin">&larr; Tenant Admin</a></p><h1>Instagram</h1>' . $notice . '<section class="admin-card"><h2>Connection</h2>' . $connectionHtml . '<p>ArtsFolio requires an Instagram Creator or Business account. Passwords are never stored. Scheduled posts stay bound to the account selected when they were scheduled, even if another account is connected later.</p></section>'
             . '<section class="admin-card"><h2>Publishing defaults</h2><form method="post" action="/admin/social/defaults"><input type="hidden" name="csrf_token" value="' . $csrf . '"><label>Default hashtags<br><textarea name="default_hashtags" rows="3">' . $defaultHashtags . '</textarea></label><p><button type="submit">Save defaults</button></p></form></section>'
             . '<section><h2>Caption templates</h2><p>Available placeholders: <code>' . $this->e($placeholders) . '</code>. Internal artwork notes are intentionally unavailable.</p><div class="tenant-admin-action-grid">' . $templateCards . '</div></section>'
             . '<section class="admin-card"><h2>Template by portfolio section</h2><p>If an artwork belongs to multiple sections with conflicting templates, Compose uses the tenant default and surfaces all templates for explicit selection.</p><table class="admin-table"><thead><tr><th>Section</th><th>Instagram template</th></tr></thead><tbody>' . $sectionRows . '</tbody></table></section>'
@@ -314,7 +321,7 @@ final class SocialFrontController
             }
         }
 
-        $body = '<p><a href="/admin/social">&larr; Instagram settings &amp; history</a></p><h1>Instagram Compose</h1><p><strong>' . $this->e((string) $artwork['title']) . '</strong></p>' . $accountNotice . '<form method="post" action="/admin/social/post" data-social-compose><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="artwork_id" value="' . $artworkId . '"><input type="hidden" name="post_id" value="' . $postId . '"><label>Template<br><select name="template_id" data-social-template>' . $templateOptions . '</select></label><label>Caption<br><textarea name="caption" rows="14" data-social-caption required>' . $this->e($caption) . '</textarea></label><p><span data-social-character-count>0</span> characters</p><label>Hashtags<br><textarea name="hashtags" rows="3">' . $this->e($hashtags) . '</textarea></label><h2>Carousel media</h2><p>Select up to 10 images. Images from the same portfolio section are listed first. Crop settings create a non-destructive JPEG publication derivative.</p><div class="social-media-grid" data-social-media-grid>' . $mediaCards . '</div><label>Schedule date/time (' . $this->e((string) ($GLOBALS['artsfolio_user_timezone'] ?? 'UTC')) . ')<br><input type="datetime-local" name="scheduled_local" value="' . $this->e($scheduledLocal) . '"></label><p><button type="submit" name="action" value="post_now" onclick="return confirm(\'Publish this post to Instagram now?\');">Post Now</button> <button type="submit" name="action" value="schedule">Schedule Post</button></p></form>';
+        $body = '<p><a href="/admin/social">&larr; Instagram settings &amp; history</a></p><h1>Instagram Compose</h1><p><strong>' . $this->e((string) $artwork['title']) . '</strong></p>' . $accountNotice . '<form method="post" action="/admin/social/post" data-social-compose><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="artwork_id" value="' . $artworkId . '"><input type="hidden" name="post_id" value="' . $postId . '"><label>Template<br><select name="template_id" data-social-template>' . $templateOptions . '</select></label><label>Caption<br><textarea name="caption" rows="14" data-social-caption required>' . $this->e($caption) . '</textarea></label><p><span data-social-character-count>0</span> characters</p><label>Hashtags<br><textarea name="hashtags" rows="3">' . $this->e($hashtags) . '</textarea></label><details><summary><strong>Carousel media and crop settings</strong></summary><p>Select up to 10 images. Images from the same portfolio section are listed first. Crop settings create a non-destructive JPEG publication derivative.</p><div class="social-media-grid" data-social-media-grid>' . $mediaCards . '</div></details><label>Schedule date/time (' . $this->e((string) ($GLOBALS['artsfolio_user_timezone'] ?? 'UTC')) . ')<br><input type="datetime-local" name="scheduled_local" value="' . $this->e($scheduledLocal) . '"></label><p><button type="submit" name="action" value="post_now" onclick="return confirm(\'Publish this post to Instagram now?\');">Post Now</button> <button type="submit" name="action" value="schedule">Schedule Post</button></p></form>';
         return Response::html($this->adminPage($tenant, 'Instagram Compose', $body), 200, ['Cache-Control' => 'private, no-store']);
     }
 
@@ -447,7 +454,11 @@ final class SocialFrontController
 
     private function ensurePublisherJob(int $delaySeconds): void
     {
-        (new \App\Platform\Jobs\BackgroundJobRepository($this->pdo))->enqueueSingleton('social.publish_due', ['interval_seconds' => 60, 'batch_size' => 10], null, max(0, $delaySeconds));
+        $jobId = (new \App\Platform\Jobs\BackgroundJobRepository($this->pdo))->enqueueSingleton('social.publish_due', ['interval_seconds' => 60, 'batch_size' => 10], null, max(0, $delaySeconds));
+        if ($delaySeconds <= 0) {
+            $wake = $this->pdo->prepare("UPDATE background_jobs SET available_at = LEAST(available_at, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP WHERE id = :id AND job_type = 'social.publish_due' AND status = 'queued'");
+            $wake->execute(['id' => $jobId]);
+        }
     }
 
     /**
