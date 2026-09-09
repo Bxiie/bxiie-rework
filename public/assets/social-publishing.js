@@ -24,7 +24,7 @@
     const socialButton = (url) => {
         const link = document.createElement('a');
         link.href = url;
-        link.className = 'admin-button social-instagram-button';
+        link.className = 'button admin-button social-instagram-button';
         link.textContent = 'Post to Instagram';
         link.setAttribute('aria-label', 'Post to Instagram');
         return link;
@@ -44,14 +44,13 @@
     async function enhanceArtworkGrid() {
         const rows = Array.from(document.querySelectorAll('tr[id^="artwork-"]'));
         if (rows.length === 0) return;
-        const firstId = artworkIdFromRow(rows[0]);
-        if (!firstId) return;
-        const context = await json('/social/context?artwork_id=' + encodeURIComponent(firstId));
+        const context = await json('/social/context');
         if (!context?.allowed) return;
         rows.forEach((row) => {
             const artworkId = artworkIdFromRow(row);
             const actionCell = row.cells[row.cells.length - 1];
-            if (!artworkId || !actionCell || actionCell.querySelector('.social-instagram-button')) return;
+            const hasImage = Boolean(row.querySelector('.artwork-grid-thumbnail-link img'));
+            if (!artworkId || !hasImage || !actionCell || actionCell.querySelector('.social-instagram-button')) return;
             actionCell.prepend(document.createTextNode(' '));
             actionCell.prepend(socialButton('/admin/social/compose?artwork_id=' + artworkId));
         });
@@ -328,7 +327,7 @@
     function addStyles() {
         const style = document.createElement('style');
         style.textContent = `
-            .social-instagram-button { white-space: nowrap; }
+            .social-instagram-button { display:inline-flex;align-items:center;justify-content:center;padding:.75rem 1rem;border-radius:999px;background:#111;color:#fff;text-decoration:none;font-weight:900;white-space:nowrap; }
             .social-media-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:1rem;margin:1rem 0; }
             .social-media-card { border:1px solid #bbb;padding:.75rem;background:rgba(255,255,255,.75);display:grid;gap:.5rem;align-content:start; }
             .social-media-card img { width:100%;height:180px;object-fit:contain;background:#eee;transition:aspect-ratio .15s ease; }

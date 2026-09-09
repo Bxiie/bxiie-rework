@@ -81,7 +81,7 @@ ob_start(static function (string $html): string {
     if (!str_contains($html, '</body>') || str_contains($html, '/assets/social-publishing.js')) {
         return $html;
     }
-    return str_replace('</body>', '<script src="/assets/social-publishing.js?v=20260908" defer></script></body>', $html);
+    return str_replace('</body>', '<script src="/assets/social-publishing.js?v=20260909" defer></script></body>', $html);
 });
 
 (new AppKernel($root))->run($request);
