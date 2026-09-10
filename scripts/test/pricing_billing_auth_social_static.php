@@ -11,11 +11,13 @@ $root = dirname(__DIR__, 2);
 $checks = [
     'public/index.php' => ["/password/forgot", "->updatePlan(\$request, \$tenant, \$currentUser)", "Location' => '/' . \$contactSlug"],
     'app/Http/Controllers/Platform/Admin/PricingController.php' => ['allow_sales', 'allowed_storage_gb', 'allowed_contact_messages', 'allowed_admin_users'],
-    'app/Http/Controllers/Tenant/Admin/BillingController.php' => ['Feature usage by selected pricing tier', 'updatePlan', 'Complementary plan'],
+    'app/Http/Controllers/Platform/Admin/TenantsController.php' => ['Highest complementary plan', 'complementary_max_plan_id', 'activePlanExists'],
+    'app/Http/Controllers/Tenant/Admin/BillingController.php' => ['Feature usage by selected pricing tier', 'updatePlan', 'Complementary plan', 'complementaryPlanAllows', 'No billing checkout was required'],
     'app/Http/Controllers/Tenant/HomeController.php' => ['socialFooterLinks', 'effectivePlanSlug', 'instagram_url'],
     'app/Http/Controllers/Tenant/SalesController.php' => ['saveCartContact', 'allow_sales', 'customer_email'],
     'scripts/email/queue_abandoned_cart_emails.php' => ['abandoned_1d_email_sent_at', 'abandoned_3d_email_sent_at', 'abandoned_7d_email_sent_at', 'AbandonedCartEmailQueueService'],
     'database/migrations/0028_pricing_billing_auth_social_stabilization.sql' => ['allow_sales', 'complementary', 'customer_email'],
+    'database/migrations/0074_complementary_plan_ceiling.sql' => ['complementary_max_plan_id', 'WHERE complementary = 1'],
 ];
 
 foreach ($checks as $file => $needles) {

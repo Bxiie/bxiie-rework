@@ -57,7 +57,10 @@ final class BillingController
         $summary = $this->e((string) ($plan['description'] ?? 'ArtsFolio artist portfolio plan.'));
         $billing = $this->billingDetails($tenant);
         $billingPanel = $this->billingDetailsPanel($tenant, $billing);
-        $planChangeHelp = $this->planChangeHelp($plan, $billing);
+        $planChangeHelp = $this->planChangeHelp($tenant, $plan, $billing);
+        $billingAcknowledgement = $this->isComplementary($tenant)
+            ? 'Plan changes within your complementary allowance do not require billing. A plan above the allowance opens billing checkout.'
+            : 'Paid upgrades and paid signup require card details and immediate billing. Downgrades and cancellations keep current-plan access until the billing recurrence date.';
 
         $body = <<<HTML
 <section class="admin-billing-summary">
@@ -77,7 +80,7 @@ final class BillingController
       <input type="hidden" name="csrf_token" value="{$csrf}">
       <label>Plan<select name="plan_slug">{$planOptions}</select></label>
       <p class="admin-notice admin-notice-warning">{$planChangeHelp}</p>
-      <label class="admin-checkbox-card"><input type="checkbox" name="understand_billing" value="1" required><span><strong>I understand the billing effect of this plan change.</strong><small>Paid upgrades and paid signup require card details and immediate billing. Downgrades and cancellations keep current-plan access until the billing recurrence date.</small></span></label>
+      <label class="admin-checkbox-card"><input type="checkbox" name="understand_billing" value="1" required><span><strong>I understand the billing effect of this plan change.</strong><small>{$billingAcknowledgement}</small></span></label>
       <label>Type CHANGE PLAN to confirm<input type="text" name="billing_confirmation" pattern="CHANGE PLAN" autocomplete="off" required></label>
       <button type="submit">Confirm plan change</button>
     </form>
@@ -142,6 +145,12 @@ HTML;
         $targetPrice = max(0, (int) ($targetPlan['monthly_price_cents'] ?? 0));
         $billing = $this->billingDetails($tenant);
         $recurrence = $this->recurrenceDate($billing);
+        if ($this->complementaryPlanAllows($tenant, $targetPlan)) {
+            $this->assignPlan($tenant, (int) $targetPlan['id']);
+            $this->setSetting($tenant, 'billing_plan', (string) $targetPlan['slug']);
+            FlashMessages::success('Plan changed within this tenant’s complementary allowance. No billing checkout was required.');
+            return new Response('', 303, ['Location' => '/admin/billing?notice=complementary-plan-changed']);
+        }
         if ($targetPrice === 0 || ($currentPrice > 0 && $targetPrice < $currentPrice)) {
             $this->schedulePlanChange($tenant, $targetPlan, $targetPrice === 0 ? 'cancel' : 'downgrade', $recurrence);
             FlashMessages::success('Plan change scheduled. You keep current-plan features until ' . $this->dateLabel($recurrence) . '.');
@@ -331,8 +340,11 @@ HTML;
         ];
     }
 
-    private function planChangeHelp(array $currentPlan, array $billing): string
+    private function planChangeHelp(TenantContext $tenant, array $currentPlan, array $billing): string
     {
+        if ($this->isComplementary($tenant)) {
+            return 'Your complementary allowance covers plan changes up to the limit selected by the platform administrator. Those changes apply immediately without Stripe Checkout. Selecting a higher plan follows the normal paid-plan billing flow.';
+        }
         $recurs = $this->dateLabel($this->recurrenceDate($billing));
         return 'Paid plans require card details. A paid upgrade updates the Stripe subscription with the target plan Price ID and bills the prorated difference for the days remaining in this billing month immediately when a Stripe subscription item is known; otherwise it starts Stripe Checkout. Moving from Free to a paid plan bills the new plan immediately. Downgrades and cancellations keep current-plan features until ' . $this->e($recurs) . '.';
     }
@@ -747,6 +759,31 @@ private function absoluteTenantUrl(Request $request, string $path): string
         $stmt = $this->pdo->prepare('SELECT complementary FROM tenants WHERE id = :tenant_id LIMIT 1');
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
         return (int) $stmt->fetchColumn() === 1;
+    }
+
+    private function complementaryPlanAllows(TenantContext $tenant, array $targetPlan): bool
+    {
+        if (!$this->columnExists('tenants', 'complementary_max_plan_id')) {
+            return false;
+        }
+        $stmt = $this->pdo->prepare(
+            'SELECT t.complementary, ceiling.display_order AS ceiling_order, ceiling.monthly_price_cents AS ceiling_price
+             FROM tenants t
+             LEFT JOIN plans ceiling ON ceiling.id = t.complementary_max_plan_id
+             WHERE t.id = :tenant_id
+             LIMIT 1'
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId]);
+        $limit = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$limit || (int) $limit['complementary'] !== 1 || $limit['ceiling_order'] === null) {
+            return false;
+        }
+        $targetOrder = (int) ($targetPlan['display_order'] ?? 100);
+        $ceilingOrder = (int) $limit['ceiling_order'];
+        if ($targetOrder !== $ceilingOrder) {
+            return $targetOrder < $ceilingOrder;
+        }
+        return (int) ($targetPlan['monthly_price_cents'] ?? 0) <= (int) $limit['ceiling_price'];
     }
 
     private function status(float $used, float $limit): string

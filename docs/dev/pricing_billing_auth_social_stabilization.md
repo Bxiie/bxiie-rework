@@ -26,7 +26,7 @@ Tenant admins can upgrade or downgrade the selected plan from `/admin/billing`. 
 
 ## Complementary tenants
 
-Platform admins can mark a tenant complementary from the tenant detail screen. Complementary tenants are not billed for platform service, but platform commission still applies to sales.
+Platform admins can mark a tenant complementary from the tenant detail screen and choose the highest plan covered by that waiver. A complementary tenant can change immediately to that plan or any lower plan without entering Stripe Checkout. Selecting a higher plan follows the normal billing flow. Platform commission still applies to sales.
 
 ## Abandoned cart reminders
 
