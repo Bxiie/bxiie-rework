@@ -103,6 +103,7 @@ HTML,
             ? '<p><a class="button secondary" target="_blank" rel="noopener" href="' . $this->escape($tenantUrl) . '">Open tenant site in new tab</a></p>'
             : '<p class="admin-muted">No active tenant subdomain is currently available.</p>';
         $billingDetails = $this->tenantBillingDetails($tenantId);
+        $complementaryPlanOptions = $this->complementaryPlanOptions($tenantId);
         $noticeCode = (string) ($_GET['notice'] ?? '');
         $noticeText = match ($noticeCode) {
             'complementary-updated' => 'Tenant billing override updated.',
@@ -155,6 +156,10 @@ HTML;
             <input type="checkbox" name="complementary" value="1"{$this->complementaryChecked($tenantId)}>
             <span><strong>Complementary tenant</strong><small>No monthly platform service billing. Tenant still pays platform commission and credit-card charges on sales.</small></span>
         </label>
+        <label>Highest complementary plan
+            <select name="complementary_max_plan_id" required>{$complementaryPlanOptions}</select>
+            <small>Plans at or below this level can be selected without opening Stripe billing.</small>
+        </label>
         <div><button type="submit">Save billing override</button></div>
     </form>
 </section>
@@ -190,9 +195,16 @@ HTML,
             return Response::html('<h1>Invalid tenant billing override request</h1>', 422);
         }
         $enabled = isset($_POST['complementary']) ? 1 : 0;
-        $stmt = $this->pdo()->prepare('UPDATE tenants SET complementary = :enabled, updated_at = CURRENT_TIMESTAMP WHERE id = :tenant_id');
-        $stmt->execute(['enabled' => $enabled, 'tenant_id' => $tenantId]);
-        $this->auditLog?->record('platform.tenant.complementary_updated', null, (int) ($currentUser['user_id'] ?? 0), 'tenant', (string) $tenantId, ['complementary' => $enabled], $request->server('REMOTE_ADDR'));
+        $maxPlanId = max(0, (int) ($_POST['complementary_max_plan_id'] ?? 0));
+        if ($enabled === 1 && !$this->activePlanExists($maxPlanId)) {
+            return Response::html('<h1>Invalid complementary plan limit</h1><p>Select an active plan.</p>', 422);
+        }
+        $stmt = $this->pdo()->prepare('UPDATE tenants SET complementary = :enabled, complementary_max_plan_id = :max_plan_id, updated_at = CURRENT_TIMESTAMP WHERE id = :tenant_id');
+        $stmt->bindValue(':enabled', $enabled, \PDO::PARAM_INT);
+        $stmt->bindValue(':max_plan_id', $enabled === 1 ? $maxPlanId : null, $enabled === 1 ? \PDO::PARAM_INT : \PDO::PARAM_NULL);
+        $stmt->bindValue(':tenant_id', $tenantId, \PDO::PARAM_INT);
+        $stmt->execute();
+        $this->auditLog?->record('platform.tenant.complementary_updated', null, (int) ($currentUser['user_id'] ?? 0), 'tenant', (string) $tenantId, ['complementary' => $enabled, 'complementary_max_plan_id' => $enabled === 1 ? $maxPlanId : null], $request->server('REMOTE_ADDR'));
         FlashMessages::success('Tenant billing override updated.');
         return new Response('', 303, ['Location' => '/platform/admin/tenants/' . $tenantId . '?notice=complementary-updated']);
     }
@@ -343,6 +355,32 @@ HTML;
         } catch (\Throwable) {
             return '';
         }
+    }
+
+    private function complementaryPlanOptions(int $tenantId): string
+    {
+        $stmt = $this->pdo()->prepare('SELECT complementary_max_plan_id FROM tenants WHERE id = :tenant_id LIMIT 1');
+        $stmt->execute(['tenant_id' => $tenantId]);
+        $selectedId = (int) ($stmt->fetchColumn() ?: 0);
+        $plans = $this->pdo()->query('SELECT id, name FROM plans WHERE is_active = 1 ORDER BY display_order ASC, monthly_price_cents ASC, id ASC')->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+        if ($selectedId < 1 && $plans !== []) {
+            $selectedId = (int) $plans[count($plans) - 1]['id'];
+        }
+        $options = '';
+        foreach ($plans as $plan) {
+            $id = (int) $plan['id'];
+            $selected = $id === $selectedId ? ' selected' : '';
+            $options .= '<option value="' . $id . '"' . $selected . '>' . $this->escape((string) $plan['name']) . '</option>';
+        }
+        return $options;
+    }
+
+    private function activePlanExists(int $planId): bool
+    {
+        if ($planId < 1) return false;
+        $stmt = $this->pdo()->prepare('SELECT COUNT(*) FROM plans WHERE id = :id AND is_active = 1');
+        $stmt->execute(['id' => $planId]);
+        return (int) $stmt->fetchColumn() === 1;
     }
 
 
