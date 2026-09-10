@@ -214,6 +214,7 @@ HTML;
             $description = AdminLayout::escape((string) ($plan['description'] ?: 'ArtsFolio artist portfolio plan.'));
             $artworks = $this->limitLabel($plan['allowed_artworks'] ?? null, 'artworks');
             $emails = $this->limitLabel($plan['allowed_email_addresses'] ?? null, 'email addresses');
+            $admins = $this->adminUsersLabel($plan);
             $customDomain = ((int) $plan['custom_domain_included']) === 1 ? 'Custom domain included' : 'ArtsFolio subdomain included; custom domain unavailable';
             $instagram = $slug !== 'free' ? 'Instagram publishing included' : 'Instagram publishing unavailable';
             $sales = ((int) ($plan['allow_sales'] ?? 0)) === 1 ? 'Online checkout available' : 'Online checkout unavailable';
@@ -226,7 +227,7 @@ HTML;
             $freeNotice = $slug === 'free' ? '<li>Includes ArtsFolio notification/link on free tenant pages</li>' : '';
             $cta = $slug === 'pro' || $slug === 'collective' ? '<a class="button secondary" href="/contact">Contact ArtsFolio</a>' : '<a class="button ' . ($slug === 'studio' ? 'primary' : 'secondary') . '" href="/signup">Choose ' . $name . '</a>';
             $html .= <<<HTML
-<article class="pricing-card{$featured}"><p class="eyebrow">{$eyebrow}</p><h2>{$name}</h2><p class="price">{$price}</p><p>{$description}</p><ul><li>{$customDomain}</li><li>{$instagram}</li><li>{$artworks}</li><li>{$emails}</li><li>{$sales}</li><li>{$workflow}</li>{$fees}<li>Contact form and email list tools</li>{$freeNotice}</ul>{$cta}</article>
+<article class="pricing-card{$featured}"><p class="eyebrow">{$eyebrow}</p><h2>{$name}</h2><p class="price">{$price}</p><p>{$description}</p><ul><li data-admin-users-added="1">{$admins}</li><li>{$customDomain}</li><li>{$instagram}</li><li>{$artworks}</li><li>{$emails}</li><li>{$sales}</li><li>{$workflow}</li>{$fees}<li>Contact form and email list tools</li>{$freeNotice}</ul>{$cta}</article>
 HTML;
         }
         return $html;
@@ -242,6 +243,7 @@ HTML;
         $price = '<tr><td>Monthly price</td>';
         $artworks = '<tr><td>Allowed artworks</td>';
         $emails = '<tr><td>Allowed email addresses</td>';
+        $admins = '<tr><td>Admin users</td>';
         $domains = '<tr><td>Custom domain</td>';
         $instagram = '<tr><td>Instagram publishing</td>';
         $notice = '<tr><td>ArtsFolio notification/link</td>';
@@ -254,6 +256,7 @@ HTML;
             $price .= '<td>' . $this->priceLabel((int) $plan['monthly_price_cents']) . '</td>';
             $artworks .= '<td>' . AdminLayout::escape((string) ($plan['allowed_artworks'] ?? 'Configured by plan')) . '</td>';
             $emails .= '<td>' . AdminLayout::escape((string) ($plan['allowed_email_addresses'] ?? 'Configured by plan')) . '</td>';
+            $admins .= '<td>' . AdminLayout::escape($this->adminUsersLabel($plan, false)) . '</td>';
             $domains .= '<td>' . (((int) $plan['custom_domain_included']) === 1 ? 'Included' : 'Not included') . '</td>';
             $instagram .= '<td>' . (((string) $plan['slug']) !== 'free' ? 'Included' : 'Not included') . '</td>';
             $notice .= '<td>' . (((string) $plan['slug']) === 'free' ? 'Included' : '-') . '</td>';
@@ -262,7 +265,7 @@ HTML;
             $commissionFees .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? $this->commissionLabel($plan) : '-') . '</td>';
             $cardFees .= '<td>' . (((int) ($plan['allow_sales'] ?? 0)) === 1 ? $this->cardFeesLabel($plan) : '-') . '</td>';
         }
-        return '<table class="admin-table"><thead><tr><th>Feature</th>' . $heads . '</tr></thead><tbody>' . $price . '</tr>' . $artworks . '</tr>' . $emails . '</tr>' . $domains . '</tr>' . $instagram . '</tr>' . $notice . '</tr>' . $sales . '</tr>' . $workflow . '</tr>' . $commissionFees . '</tr>' . $cardFees . '</tr></tbody></table>';
+        return '<table class="admin-table"><thead><tr><th>Feature</th>' . $heads . '</tr></thead><tbody>' . $price . '</tr>' . $artworks . '</tr>' . $emails . '</tr>' . $admins . '</tr>' . $domains . '</tr>' . $instagram . '</tr>' . $notice . '</tr>' . $sales . '</tr>' . $workflow . '</tr>' . $commissionFees . '</tr>' . $cardFees . '</tr></tbody></table>';
     }
 
     private function plans(): array
@@ -275,6 +278,7 @@ HTML;
             . ($columns['description'] ? ', description' : ', NULL AS description')
             . ($columns['allowed_artworks'] ? ', allowed_artworks' : ', NULL AS allowed_artworks')
             . ($columns['allowed_email_addresses'] ? ', allowed_email_addresses' : ', NULL AS allowed_email_addresses')
+            . ($columns['allowed_admin_users'] ? ', allowed_admin_users' : ', NULL AS allowed_admin_users')
             . ($columns['display_order'] ? ', display_order' : ', 100 AS display_order')
             . ($columns['allow_sales'] ? ', allow_sales' : ', 0 AS allow_sales')
             . ($columns['platform_commission_basis_points'] ? ', platform_commission_basis_points' : ', 500 AS platform_commission_basis_points')
@@ -335,7 +339,7 @@ HTML;
 
     private function planColumns(): array
     {
-        $columns = ['description' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'display_order' => false, 'allow_sales' => false, 'platform_commission_basis_points' => false, 'credit_card_fee_basis_points' => false, 'credit_card_fixed_fee_cents' => false];
+        $columns = ['description' => false, 'allowed_artworks' => false, 'allowed_email_addresses' => false, 'allowed_admin_users' => false, 'display_order' => false, 'allow_sales' => false, 'platform_commission_basis_points' => false, 'credit_card_fee_basis_points' => false, 'credit_card_fixed_fee_cents' => false];
         if (!$this->pdo) {
             return $columns;
         }
@@ -396,5 +400,15 @@ HTML;
 
         $count = (int) $value;
         return $count === 1 ? '1 admin user' : $count . ' admin users';
+    }
+
+    private function adminUsersLabel(array $plan, bool $includeLabel = true): string
+    {
+        if ((string) ($plan['slug'] ?? '') === 'collective') {
+            return $includeLabel ? 'Unlimited admin users' : 'Unlimited';
+        }
+
+        $label = $this->formatAdminUsers($plan['allowed_admin_users'] ?? null);
+        return $includeLabel ? $label : preg_replace('/ admin users?$/', '', $label);
     }
 }
