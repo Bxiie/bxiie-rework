@@ -1,5 +1,15 @@
 ## Now
 
+
+##
+
+- Add Instagram integration to pricing page matrix
+- Add custom domain to pricing page matrix
+- Create features page accessible from Artsfol.io home page explaining all features abd functionality of platform.  Call out plan required where applicable.
+- Make sure help system and documentation is up to date
+
+##
+
 - Warn if image has already been shared on Instagram
 - Create 'Release Groups'.  Images may be assigned to a release group.  The release group may be scheduled for deployment.  If so, at the time of the release deployment, all images in that group are published.
 - Allow scheduling of image publication.
