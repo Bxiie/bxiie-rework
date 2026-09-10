@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
 $checks = [
+    'database/migrations/0073_studio_custom_domain_entitlement.sql' => ["WHERE slug = 'studio'", 'custom_domain_included = FALSE'],
     'app/Http/Controllers/Platform/PricingController.php' => ['Instagram publishing', 'Custom domain', "\$instagram .=", "custom_domain_included", 'data-admin-users-added="1"', "=== 'collective'", "'Unlimited admin users'", "'<tr><td>Admin users</td>'"],
     'app/Http/Controllers/Platform/MarketingController.php' => ['public function features', 'href="/features"', 'Studio, Professional, Collective', 'Professional, Collective', 'Release Group', 'Bulk artwork upload'],
     'app/Http/View/PlatformChrome.php' => ["'features' => ['/features', 'Features']"],
