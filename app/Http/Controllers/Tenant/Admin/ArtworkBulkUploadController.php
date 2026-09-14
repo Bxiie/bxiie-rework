@@ -137,15 +137,22 @@ final class ArtworkBulkUploadController
     {
         $handle = fopen($path, 'rb');
         if (!$handle) throw new \RuntimeException('Unable to read artworks.csv.');
-        $headers = array_map(static fn ($v) => strtolower(trim((string) $v)), fgetcsv($handle) ?: []);
+        $headers = array_map([$this, 'normalizeCsvHeader'], fgetcsv($handle, null, ',', '"', '') ?: []);
         $rows = [];
-        while (($values = fgetcsv($handle)) !== false) {
+        while (($values = fgetcsv($handle, null, ',', '"', '')) !== false) {
             if (count(array_filter($values, static fn ($v) => trim((string) $v) !== '')) === 0) continue;
             $values = array_pad($values, count($headers), '');
             $rows[] = array_combine($headers, array_slice($values, 0, count($headers))) ?: [];
         }
         fclose($handle);
         return [$headers, $rows];
+    }
+
+    private function normalizeCsvHeader(mixed $value): string
+    {
+        $header = trim((string) $value);
+        $header = preg_replace('/^\xEF\xBB\xBF/', '', $header) ?? $header;
+        return strtolower(trim($header));
     }
 
     private function scheduledUtc(string $value): ?string
