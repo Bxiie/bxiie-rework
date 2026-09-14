@@ -26,7 +26,7 @@ final class ArtworkBulkUploadController
     {
         if (!$this->allowed($user, $tenant)) return Response::error(403, 'Tenant admin access required.');
         $token = AdminLayout::escape($this->csrf->getOrCreate());
-        $body = '<p><a class="admin-button" href="/admin/artwork/bulk/sample.csv">Download sample spreadsheet</a></p><p>Select one directory containing <code>artworks.csv</code> and every image named in its <code>filename</code> column. CSV is used so the spreadsheet can be edited in Excel, Numbers, Google Sheets, or LibreOffice.</p><form method="post" action="/admin/artwork/bulk" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="' . $token . '"><label>Import directory<br><input type="file" name="directory[]" webkitdirectory directory multiple required></label><button type="submit">Validate and import artworks</button></form>';
+        $body = '<p><a class="admin-button" href="/admin/artwork/bulk/sample.csv">Download sample spreadsheet</a></p><p>Select one directory containing <code>artworks.csv</code> and every image named in its <code>filename</code> column. CSV is used so the spreadsheet can be edited in Excel, Numbers, Google Sheets, or LibreOffice.</p><p class="admin-muted">One import may contain up to 499 images plus the spreadsheet, with each file up to 64 MB and the complete directory up to 512 MB.</p><form method="post" action="/admin/artwork/bulk" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="' . $token . '"><label>Import directory<br><input type="file" name="directory[]" webkitdirectory directory multiple required></label><button type="submit">Validate and import artworks</button></form>';
         return Response::html(AdminLayout::render('Bulk Artwork Upload', $body, 'artworks'));
     }
 
@@ -40,8 +40,16 @@ final class ArtworkBulkUploadController
     public function submit(Request $request, TenantContext $tenant, ?array $user): Response
     {
         if (!$this->allowed($user, $tenant)) return Response::error(403, 'Tenant admin access required.');
+        if ($this->requestExceededPostLimit($request)) {
+            return Response::error(413, 'The selected directory is larger than this server currently accepts. Keep the complete import under ' . ini_get('post_max_size') . ', or split it into smaller directories and try again.');
+        }
         if (!$this->csrf->validate($_POST['csrf_token'] ?? null)) return Response::invalidCsrf();
         $files = $this->files($_FILES['directory'] ?? []);
+        foreach ($files as $file) {
+            if ((int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_INI_SIZE) {
+                return Response::error(413, 'One of the selected files exceeds the per-file upload limit of ' . ini_get('upload_max_filesize') . '.');
+            }
+        }
         $sheet = null;
         $byName = [];
         foreach ($files as $file) {
@@ -102,6 +110,27 @@ final class ArtworkBulkUploadController
             $files[] = ['name' => $name, 'full_path' => (string) (($input['full_path'][$i] ?? $name)), 'type' => $input['type'][$i] ?? '', 'tmp_name' => $input['tmp_name'][$i] ?? '', 'error' => $input['error'][$i] ?? UPLOAD_ERR_NO_FILE, 'size' => $input['size'][$i] ?? 0];
         }
         return $files;
+    }
+
+    private function requestExceededPostLimit(Request $request): bool
+    {
+        if ($_POST !== [] || $_FILES !== []) return false;
+        $contentLength = max(0, (int) ($request->server('CONTENT_LENGTH', '0') ?? '0'));
+        $limit = $this->iniBytes((string) ini_get('post_max_size'));
+        return $contentLength > 0 && $limit > 0 && $contentLength > $limit;
+    }
+
+    private function iniBytes(string $value): int
+    {
+        $value = trim($value);
+        if ($value === '') return 0;
+        $number = (float) $value;
+        return match (strtolower(substr($value, -1))) {
+            'g' => (int) ($number * 1024 * 1024 * 1024),
+            'm' => (int) ($number * 1024 * 1024),
+            'k' => (int) ($number * 1024),
+            default => (int) $number,
+        };
     }
 
     private function csv(string $path): array
