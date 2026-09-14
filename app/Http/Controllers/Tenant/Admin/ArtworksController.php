@@ -14,6 +14,9 @@ use App\Platform\Jobs\BackgroundJobRepository;
 use App\Platform\Tenancy\TenantContext;
 use App\Platform\Audit\AuditLogRepository;
 use App\Support\Pagination\Pagination;
+use App\Support\Flash\FlashMessages;
+use App\Support\Security\CsrfTokenService;
+use App\Tenant\Media\MediaRotationService;
 use App\Tenant\Sales\ArtworkSaleAdminForm;
 use PDO;
 use App\Http\View\AdminLayout;
@@ -28,6 +31,7 @@ final class ArtworksController
         private readonly RequireTenantRoleBrowser $roles,
         private readonly PDO $pdo,
         private readonly AuditLogRepository $auditLog,
+        private readonly CsrfTokenService $csrf,
     ) {
         $this->rememberArtworkGridReturnUrl();
 
@@ -370,6 +374,8 @@ HTML;
         }
         $scheduledPublishLocal = htmlspecialchars($scheduledPublishLocal, ENT_QUOTES, 'UTF-8');
         $publicationTimezone = htmlspecialchars((string) ($GLOBALS['artsfolio_user_timezone'] ?? 'UTC'), ENT_QUOTES, 'UTF-8');
+        $returnTo = $this->safeArtworkReturnTo((string) ($_GET['return_to'] ?? $this->artworkGridReturnUrl()));
+        $returnToValue = htmlspecialchars($returnTo, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $artworkPreview = '';
         $primaryMediaUuid = trim((string) ($artwork['primary_media_uuid'] ?? ''));
         if ($primaryMediaUuid !== '') {
@@ -378,11 +384,19 @@ HTML;
                 ENT_QUOTES,
                 'UTF-8',
             );
+            $rotationCsrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
             $artworkPreview = <<<HTML
     <figure class="artwork-edit-preview">
         <img src="{$previewSrc}" alt="{$title}">
         <figcaption>Current primary artwork image</figcaption>
     </figure>
+    <form method="post" action="/admin/artworks/rotate" class="admin-inline-form artwork-rotation-controls">
+        <input type="hidden" name="csrf_token" value="{$rotationCsrf}">
+        <input type="hidden" name="artwork_id" value="{$id}">
+        <input type="hidden" name="return_to" value="{$returnToValue}">
+        <button type="submit" name="direction" value="left">Rotate left 90°</button>
+        <button type="submit" name="direction" value="right">Rotate right 90°</button>
+    </form>
 HTML;
         } else {
             $artworkPreview = '<p class="admin-muted">This artwork does not currently have a primary image.</p>';
@@ -409,8 +423,6 @@ HTML;
             $saleFieldset = (new ArtworkSaleAdminForm($this->pdo))->render($tenant->tenantId, $artwork);
         $notesValue = htmlspecialchars((string) ($artwork['notes'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $notesHtmlValue = htmlspecialchars((string) ($artwork['notes_html'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-        $returnTo = $this->safeArtworkReturnTo((string) ($_GET['return_to'] ?? $this->artworkGridReturnUrl()));
-        $returnToValue = htmlspecialchars($returnTo, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         } catch (\Throwable $exception) {
             $this->logAdminArtworkEditFailure($tenant->tenantId, (int) ($artwork['id'] ?? 0), 'ArtworkSaleAdminForm render failed', $exception);
             $saleFieldset = '<fieldset class="admin-card admin-warning"><legend>Sales &amp; checkout</legend><p>Sales settings could not be loaded. The rest of the artwork form is still available. Check <code>storage/logs/admin_artwork_edit.log</code>.</p></fieldset>';
@@ -620,6 +632,31 @@ HTML;
 
         $returnTo = $this->safeArtworkReturnTo((string) ($_POST['return_to'] ?? $this->artworkGridReturnUrl()));
         return new Response('', 303, ['Location' => $this->artworkReturnWithNotice($returnTo, 'artwork-saved') . '#artwork-' . $id]);
+    }
+
+    public function rotateImage(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::invalidCsrf();
+        }
+        $artworkId = max(0, (int) ($_POST['artwork_id'] ?? 0));
+        $direction = strtolower(trim((string) ($_POST['direction'] ?? '')));
+        if (!$this->findArtwork($tenant, $artworkId) || !in_array($direction, ['left', 'right'], true)) {
+            return Response::html('<h1>Invalid image rotation</h1><p>Choose an artwork and rotation direction.</p>', 422);
+        }
+        try {
+            (new MediaRotationService($this->pdo, dirname(__DIR__, 5)))->rotateArtworkPrimary($tenant->tenantId, $artworkId, $direction);
+            (new TenantDirectoryProfileRepository($this->pdo))->syncTenant($tenant->tenantId);
+            $this->auditLog->record('tenant.artwork.image_rotated', $tenant->tenantId, (int) ($currentUser['user_id'] ?? 0), 'artwork', (string) $artworkId, ['direction' => $direction], $request->server('REMOTE_ADDR'));
+            FlashMessages::success('Artwork image rotated ' . $direction . '.');
+        } catch (Throwable $exception) {
+            return Response::html('<h1>Could not rotate image</h1><p>' . htmlspecialchars($exception->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>', 422);
+        }
+        $returnTo = $this->safeArtworkReturnTo((string) ($_POST['return_to'] ?? $this->artworkGridReturnUrl()));
+        return new Response('', 303, ['Location' => '/admin/artworks/edit?id=' . $artworkId . '&return_to=' . rawurlencode($returnTo)]);
     }
 
 

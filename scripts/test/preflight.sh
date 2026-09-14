@@ -654,5 +654,6 @@ run_php scripts/test/reboot_required_reason_static.php
 run_php scripts/test/social_instagram_publishing_static.php
 run_php scripts/test/artwork_release_bulk_static.php
 run_php scripts/test/bulk_csv_header_static.php
+run_php scripts/test/artwork_image_rotation_static.php
 run_php scripts/test/platform_features_pricing_help_static.php
 run_php scripts/test/complementary_plan_ceiling_static.php

@@ -1017,6 +1017,11 @@
     {
         "scope": "tenant",
         "method": "POST",
+        "path": "/admin/artworks/rotate"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/admin/artworks/schedule"
     },
     {

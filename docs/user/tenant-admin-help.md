@@ -52,6 +52,8 @@ Before sharing your site widely, confirm these pieces are ready:
 
 The Artworks page includes **Bulk upload** and **Release Groups & scheduling**. The normal **Edit Artwork** page also has a **Website publication** section where you can assign that artwork to a draft or scheduled Release Group, or schedule it for individual publication. Choose only one of those options.
 
+The **Edit Artwork** page shows **Rotate left 90°** and **Rotate right 90°** below the primary image. Rotation creates a new primary media record and regenerates the public image sizes while retaining the previous media record.
+
 Bulk imports may contain up to 499 images plus `artworks.csv`. Each file may be up to 64 MB and the selected directory may total up to 512 MB. For a larger collection, divide it into multiple import directories, each with its own spreadsheet.
 
 - Bulk upload accepts a selected directory containing `artworks.csv` and the image files named by its `filename` column. Download the sample spreadsheet from the bulk-upload page before preparing a batch.
