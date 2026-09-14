@@ -29,7 +29,7 @@ foreach ($required as $marker) {
 
 if (!str_contains(
     $layout,
-    'tenant-admin.css?v=20260712-sidebar-contrast-v2'
+    'tenant-admin.css?v=20260914-artwork-section-lines'
 )) {
     $failures[] = 'Tenant Admin stylesheet cache version was not updated.';
 }
