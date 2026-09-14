@@ -10,6 +10,7 @@ $upload = (string) file_get_contents(
 $edit = (string) file_get_contents(
     $root . '/app/Http/Controllers/Tenant/Admin/ArtworksController.php'
 );
+$layout = (string) file_get_contents($root . '/app/Http/View/TenantAdminLayout.php');
 
 $failures = [];
 
@@ -21,13 +22,20 @@ foreach ([
     'label:has(> input[type="checkbox"])',
     'grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr))',
     '.artwork-portfolio-section-options',
-    '.artwork-portfolio-section-option:focus-within',
-    '.artwork-portfolio-section-option:has(input:checked)',
-    'border: 2px solid',
+    '.tenant-admin-panel fieldset .artwork-portfolio-section-option',
+    '.tenant-admin-panel fieldset .artwork-portfolio-section-option:focus-within',
+    '.tenant-admin-panel fieldset .artwork-portfolio-section-option:has(input:checked)',
+    'border: 2px solid #6f675c !important',
+    'display: flex !important',
+    'width: 1.2rem !important',
 ] as $marker) {
     if (!str_contains($css, $marker)) {
         $failures[] = "tenant-admin.css missing marker: {$marker}";
     }
+}
+
+if (!str_contains($layout, 'tenant-admin.css?v=20260914-artwork-section-lines')) {
+    $failures[] = 'TenantAdminLayout must refresh the tenant-admin stylesheet cache key.';
 }
 
 foreach ([
