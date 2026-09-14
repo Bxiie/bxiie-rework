@@ -7,6 +7,9 @@ $css = (string) file_get_contents($root . '/public/assets/tenant-admin.css');
 $upload = (string) file_get_contents(
     $root . '/app/Http/Controllers/Tenant/Admin/ArtworkUploadController.php'
 );
+$edit = (string) file_get_contents(
+    $root . '/app/Http/Controllers/Tenant/Admin/ArtworksController.php'
+);
 
 $failures = [];
 
@@ -17,9 +20,25 @@ foreach ([
     'gap: .7rem',
     'label:has(> input[type="checkbox"])',
     'grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr))',
+    '.artwork-portfolio-section-options',
+    '.artwork-portfolio-section-option:focus-within',
+    '.artwork-portfolio-section-option:has(input:checked)',
+    'border: 2px solid',
 ] as $marker) {
     if (!str_contains($css, $marker)) {
         $failures[] = "tenant-admin.css missing marker: {$marker}";
+    }
+}
+
+foreach ([
+    'class="artwork-portfolio-section-options"',
+    'class=\"artwork-portfolio-section-option\"',
+    'class="artwork-portfolio-section-option homepage-special-section-option"',
+    '<span>{$sectionName}</span>',
+    '<span>Home Page</span>',
+] as $marker) {
+    if (!str_contains($edit, $marker)) {
+        $failures[] = "ArtworksController missing marker: {$marker}";
     }
 }
 

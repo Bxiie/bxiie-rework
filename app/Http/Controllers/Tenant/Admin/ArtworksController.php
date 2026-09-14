@@ -410,7 +410,7 @@ HTML;
             $sectionId = (int) $section['id'];
             $sectionName = htmlspecialchars((string) $section['name'], ENT_QUOTES, 'UTF-8');
             $checked = in_array($sectionId, $selectedSectionIds, true) ? ' checked' : '';
-            $sectionOptions .= "<label style=\"display:block;margin:.25rem 0;\"><input type=\"checkbox\" name=\"section_ids[]\" value=\"{$sectionId}\"{$checked}> {$sectionName}</label>\n";
+            $sectionOptions .= "<label class=\"artwork-portfolio-section-option\"><input type=\"checkbox\" name=\"section_ids[]\" value=\"{$sectionId}\"{$checked}><span>{$sectionName}</span></label>\n";
         }
 
         if ($sectionOptions === '') {
@@ -487,8 +487,10 @@ HTML;
         <fieldset style="margin:1rem 0;padding:1rem;border:1px solid #ccc;">
             <legend>Portfolio sections</legend>
             <p>Choose where this artwork appears. Home Page is a special section; draft visibility follows the normal portfolio preview rules.</p>
-            <label class="homepage-special-section-option" style="display:block;margin:.25rem 0 .75rem;"><input type="checkbox" name="homepage_selected" value="1"{$homePageChecked}> Home Page</label>
-            {$sectionOptions}
+            <div class="artwork-portfolio-section-options">
+                <label class="artwork-portfolio-section-option homepage-special-section-option"><input type="checkbox" name="homepage_selected" value="1"{$homePageChecked}><span>Home Page</span></label>
+                {$sectionOptions}
+            </div>
         </fieldset>
 
 {$saleFieldset}

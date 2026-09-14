@@ -4354,6 +4354,52 @@ body.tenant-admin-page.platform-help-page .tenant-admin-sidebar nav a[aria-curre
     font-weight: normal;
 }
 
+.artwork-portfolio-section-options {
+    display: grid;
+    gap: .65rem;
+    margin-top: .75rem;
+}
+
+.admin-main fieldset .artwork-portfolio-section-option {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    margin: 0;
+    padding: .8rem .9rem;
+    border: 2px solid color-mix(in srgb, currentColor 30%, transparent);
+    border-radius: .5rem;
+    background: color-mix(in srgb, currentColor 3%, transparent);
+    cursor: pointer;
+}
+
+.admin-main fieldset .artwork-portfolio-section-option:hover {
+    border-color: color-mix(in srgb, currentColor 55%, transparent);
+    background: color-mix(in srgb, currentColor 7%, transparent);
+}
+
+.admin-main fieldset .artwork-portfolio-section-option:focus-within {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+}
+
+.admin-main fieldset .artwork-portfolio-section-option:has(input:checked) {
+    border-color: currentColor;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.artwork-portfolio-section-option input[type="checkbox"] {
+    flex: 0 0 auto;
+    width: 1.2rem;
+    height: 1.2rem;
+    margin: 0;
+}
+
+.artwork-portfolio-section-option > span {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 700;
+}
+
 @media (max-width: 700px) {
     .admin-checkbox-grid {
         grid-template-columns: 1fr;
@@ -4377,4 +4423,3 @@ body.tenant-admin-page.platform-help-page .tenant-admin-sidebar nav a[aria-curre
 .platform-admin-topbar > .platform-admin-logo img {
     display: block;
 }
-
