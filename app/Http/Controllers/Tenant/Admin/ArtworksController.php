@@ -49,6 +49,8 @@ final class ArtworksController
         $q = trim((string) ($_GET['q'] ?? ''));
         $sort = (string) ($_GET['sort'] ?? 'created_desc');
         $statusFilter = (string) ($_GET['status'] ?? '');
+        $showArchived = ($_GET['show_archived'] ?? '') === '1' || $statusFilter === 'archived';
+        $showArchivedChecked = $showArchived ? ' checked' : '';
         $saleFilter = (string) ($_GET['sale_status'] ?? '');
         $imageFilter = (string) ($_GET['image'] ?? '');
         $typeFilter = (string) ($_GET['artwork_type'] ?? '');
@@ -69,13 +71,16 @@ final class ArtworksController
             default => 'a.id DESC',
         };
 
-        $where = "a.tenant_id = :tenant_id AND a.status <> 'archived'";
+        $where = 'a.tenant_id = :tenant_id';
+        if (!$showArchived) {
+            $where .= " AND a.status <> 'archived'";
+        }
         $params = ['tenant_id' => $tenant->tenantId];
         if ($q !== '') {
             $where .= ' AND (a.title LIKE :q OR a.medium LIKE :q OR a.description LIKE :q)';
             $params['q'] = '%' . $q . '%';
         }
-        if (in_array($statusFilter, ['draft', 'published'], true)) {
+        if (in_array($statusFilter, ['draft', 'published', 'archived'], true)) {
             $where .= ' AND a.status = :status_filter';
             $params['status_filter'] = $statusFilter;
         }
@@ -170,6 +175,7 @@ final class ArtworksController
             'q' => $q,
             'sort' => $sort,
             'status' => $statusFilter,
+            'show_archived' => $showArchived ? '1' : '',
             'sale_status' => $saleFilter,
             'image' => $imageFilter,
             'artwork_type' => $typeFilter,
@@ -180,6 +186,7 @@ final class ArtworksController
         $returnToValue = htmlspecialchars($returnTo, ENT_QUOTES, 'UTF-8');
         $returnToParam = rawurlencode($returnTo);
         $items = '';
+        $restoreToken = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
 
         foreach ($rows as $row) {
             $title = htmlspecialchars((string) $row['title'], ENT_QUOTES, 'UTF-8');
@@ -216,13 +223,18 @@ final class ArtworksController
                 $src = htmlspecialchars('/admin/media?uuid=' . rawurlencode((string) $row['media_uuid']) . '&variant=thumb', ENT_QUOTES, 'UTF-8');
                 $image = "<img src=\"{$src}\" alt=\"{$title}\" style=\"max-width:180px;max-height:140px;object-fit:contain;border:1px solid #ddd;background:#fff;\">";
             }
+            $archiveAction = $row['status'] === 'archived'
+                ? '<form method="post" action="/admin/artworks/restore" style="display:inline"><input type="hidden" name="csrf_token" value="' . $restoreToken . '"><input type="hidden" name="id" value="' . $artworkId . '"><button type="submit">Restore as draft</button></form>'
+                : <<<HTML
+<form method="post" action="/admin/artworks/delete" class="js-artwork-action" style="display:inline" onsubmit="return confirm('Archive this artwork?');"><input type="hidden" name="id" value="{$row['id']}"><input type="hidden" name="return_to" value="{$returnToValue}"><button type="submit">Archive</button></form>
+HTML;
             $items .= <<<HTML
 <tr id="artwork-{$row['id']}">
     <td><a class="artwork-grid-thumbnail-link" href="/admin/artworks/edit?id={$artworkId}&return_to={$returnToParam}">{$image}</a></td><td><strong>{$title}</strong><br><small>ID {$row['id']} · {$created}</small></td>
     <td>{$year}</td><td>{$medium}</td><td>{$sectionNames}</td><td class="js-artwork-status">{$status}{$scheduled}<br>{$typeBadges}</td>
     <td>{$saleStatus}</td><td>{$price}</td><td>{$notes}</td>
     <td><form method="post" action="/admin/artworks/directory-thumbnail"><input type="hidden" name="id" value="{$artworkId}"><input type="hidden" name="return_to" value="{$returnToValue}"><label><input type="checkbox" name="directory_thumbnail" value="1"{$directoryChecked}{$directoryDisabled} onchange="this.form.submit()"> Directory thumbnail</label><br><small>{$directoryHelp}</small></form></td>
-    <td><a class="admin-button" href="/admin/artworks/edit?id={$artworkId}&return_to={$returnToParam}">Edit</a> {$this->statusActionButton($row, $returnToValue)} <form method="post" action="/admin/artworks/delete" class="js-artwork-action" style="display:inline" onsubmit="return confirm('Archive this artwork?');"><input type="hidden" name="id" value="{$row['id']}"><input type="hidden" name="return_to" value="{$returnToValue}"><button type="submit">Archive</button></form></td>
+    <td><a class="admin-button" href="/admin/artworks/edit?id={$artworkId}&return_to={$returnToParam}">Edit</a> {$this->statusActionButton($row, $returnToValue)} {$archiveAction}</td>
 </tr>
 HTML;
         }
@@ -261,6 +273,7 @@ HTML;
 
         $notice = match ((string) ($_GET['notice'] ?? '')) {
             'status-updated' => '<p class="notice">Artwork status updated.</p>',
+            'artwork-restored' => '<p class="notice">Artwork restored as a draft. Open Current artworks to review and publish it. Previous release schedules have been cleared.</p>',
             'artwork-archived' => '<p class="notice">Artwork archived.</p>',
             'artwork-saved' => '<p class="notice">Artwork saved.</p>',
             'directory-thumbnail-updated' => '<p class="notice">Directory thumbnail updated.</p>',
@@ -271,6 +284,8 @@ HTML;
         $body = <<<HTML
 <main>
 <div id="artwork-action-notice">{$notice}</div>
+<nav aria-label="Artwork archive views"><a class="admin-button" href="/admin/artworks">Current artworks</a> <a class="admin-button" href="/admin/artworks?status=archived">Archived artworks</a></nav>
+<p class="admin-help">Restore returns archived artwork to Draft without publishing it. Images and portfolio assignments are kept; release schedules are cleared.</p>
 <section data-artwork-pager-root tabindex="-1">
 <section aria-label="Artwork actions" class="tenant-admin-action-grid">
     <a class="admin-button tenant-admin-action-button" href="/admin/artwork/upload">
@@ -296,13 +311,14 @@ HTML;
 </section>
 <form data-artwork-page-form method="get" action="/admin/artworks" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin:1rem 0;">
 <label>Search<br><input type="search" name="q" value="{$e($q)}"></label>
-<label>Status<br><select name="status"><option value="">All</option><option value="draft"{$option($statusFilter,'draft')}>Draft</option><option value="published"{$option($statusFilter,'published')}>Published</option></select></label>
+<label>Status<br><select name="status"><option value="">All</option><option value="draft"{$option($statusFilter,'draft')}>Draft</option><option value="published"{$option($statusFilter,'published')}>Published</option><option value="archived"{$option($statusFilter,'archived')}>Archived</option></select></label>
 <label>Sale<br><select name="sale_status"><option value="">All</option><option value="nfs"{$option($saleFilter,'nfs')}>Not for sale</option><option value="for_sale"{$option($saleFilter,'for_sale')}>For sale</option><option value="sold"{$option($saleFilter,'sold')}>Sold</option></select></label>
 <label>Artwork type<br><select name="artwork_type"><option value="">All artwork types</option><option value="portfolio"{$option($typeFilter,'portfolio')}>Portfolio</option><option value="site"{$option($typeFilter,'site')}>Site</option><option value="both"{$option($typeFilter,'both')}>Portfolio and site</option></select></label>
 <label>Image<br><select name="image"><option value="">All</option><option value="present"{$option($imageFilter,'present')}>Has image</option><option value="missing"{$option($imageFilter,'missing')}>Missing image</option></select></label>
 <label>Section<br><select name="section_id">{$sectionOptions}</select></label>
 <label>Sort<br><select name="sort"><option value="created_desc"{$option($sort,'created_desc')}>Newest</option><option value="name"{$option($sort,'name')}>Name</option><option value="medium"{$option($sort,'medium')}>Medium</option><option value="date"{$option($sort,'date')}>Date/year</option><option value="status"{$option($sort,'status')}>Status</option></select></label>
 <label>Artworks per page<br><select name="per_page">{$pageSizeOptions}</select></label>
+<label><input type="checkbox" name="show_archived" value="1"{$showArchivedChecked}> Show archived items</label>
 <button type="submit">Apply</button><a href="/admin/artworks">Clear</a>
 </form>
 <p><strong>{$summary}</strong></p>{$pager}

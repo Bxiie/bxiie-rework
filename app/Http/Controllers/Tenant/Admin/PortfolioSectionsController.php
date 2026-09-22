@@ -32,11 +32,26 @@ final class PortfolioSectionsController
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
+        $view = in_array(($_GET['view'] ?? ''), ['archived', 'all'], true) ? $_GET['view'] : 'current';
+        $statusWhere = match ($view) {
+            'archived' => " AND status = 'archived'",
+            'all' => '',
+            default => " AND status <> 'archived'",
+        };
+        $token = $this->escape($this->csrf->getOrCreate());
+        $isAdmin = $this->isTenantAdmin($currentUser, $tenant);
+        $archiveNav = '<nav aria-label="Section views">';
+        foreach (['current' => 'Current sections', 'archived' => 'Archived sections', 'all' => 'All sections'] as $key => $label) {
+            $current = $view === $key ? ' aria-current="page"' : '';
+            $archiveNav .= '<a class="admin-button" href="/admin/portfolio-sections?view=' . $key . '"' . $current . '>' . $label . '</a> ';
+        }
+        $archiveNav .= '</nav>';
+
         $stmt = $this->pdo->prepare(
             "SELECT id, name, slug, description, show_as_tab, sort_order, status, created_at, updated_at
              FROM portfolio_sections
              WHERE tenant_id = :tenant_id
-               AND status <> 'archived'
+               {$statusWhere}
              ORDER BY sort_order ASC, name ASC"
         );
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
@@ -50,6 +65,9 @@ final class PortfolioSectionsController
             $showAsTab = ((int) $section['show_as_tab']) === 1 ? 'Yes' : 'No';
             $sortOrder = $this->escape((string) $section['sort_order']);
             $status = $this->escape((string) $section['status']);
+            $restore = $isAdmin && $section['status'] === 'archived'
+                ? '<form method="post" action="/admin/portfolio-sections/restore"><input type="hidden" name="csrf_token" value="' . $token . '"><input type="hidden" name="id" value="' . $id . '"><button type="submit">Restore as hidden</button></form>'
+                : '';
 
             $rows .= <<<HTML
 <tr>
@@ -60,16 +78,18 @@ final class PortfolioSectionsController
     <td>{$status}</td>
     <td>
         <a href="/admin/portfolio-sections/edit?id={$id}">Edit</a>
+        {$restore}
     </td>
 </tr>
 HTML;
         }
 
         if ($rows === '') {
-            $rows = '<tr><td colspan="6">No portfolio sections yet.</td></tr>';
+            $rows = '<tr><td colspan="6">No portfolio sections in this view.</td></tr>';
         }
 
         $notice = match ((string) ($_GET['notice'] ?? '')) {
+            'restored' => '<p class="notice">Section restored as hidden. Open Current sections to review it and set its status to Active when ready.</p>',
             'saved' => '<p class="notice" style="padding:.75rem;background:#eef8ee;border:1px solid #9ac99a;">Portfolio section saved.</p>',
             'archived' => '<p class="notice" style="padding:.75rem;background:#fff4df;border:1px solid #d9b36a;">Portfolio section archived.</p>',
             default => '',
@@ -81,7 +101,7 @@ HTML;
             $notice .= '<p class="notice" role="status">' . $this->escape($flash) . '</p>';
         }
         $alphabetizeAction = '';
-        if ($this->isTenantAdmin($currentUser, $tenant)) {
+        if ($this->isTenantAdmin($currentUser, $tenant) && $view !== 'archived') {
             $token = $this->escape($this->csrf->getOrCreate());
             $alphabetizeAction = <<<HTML
         <form method="post" action="/admin/portfolio-sections/alphabetize" onsubmit="if (!confirm('Alphabetize all listed sections? This replaces their current section order.')) return false; this.elements.confirmed.value = '1';">
@@ -104,6 +124,8 @@ HTML;
 </section>
     {$notice}
     <p>Use sections to group artwork and optionally show selected sections as public portfolio tabs.</p>
+    {$archiveNav}
+    <p class="admin-help">Restore keeps the section and its artwork assignments. Restored sections stay hidden until you make them active.</p>
     {$alphabetizeAction}
     <section aria-label="Portfolio section actions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1.25rem 0 1.5rem;">
         <a class="admin-button" href="/admin/portfolio-sections/edit" style="display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;padding:1rem 1.1rem;border-radius:14px;text-decoration:none;">
@@ -185,18 +207,25 @@ HTML;
         return new Response('', 303, ['Location' => '/admin/portfolio-sections']);
     }
 
-    public function edit(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    public function edit(Request $request, TenantContext $tenant, ?array $currentUser, ?array $submitted = null, ?string $error = null): Response
     {
         if (!$this->canManage($currentUser, $tenant)) {
             return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
         }
 
-        $id = (int) ($_GET['id'] ?? 0);
+        $id = (int) ($submitted['id'] ?? $_GET['id'] ?? 0);
         $section = $id > 0 ? $this->find($tenant, $id) : null;
 
         if ($id > 0 && !$section) {
             return Response::html('<h1>404</h1><p>Portfolio section not found.</p>', 404);
         }
+
+        if ($submitted !== null) {
+            $section = $submitted;
+        }
+        $errorNotice = $error !== null
+            ? '<p class="admin-notice" role="alert">' . $this->escape($error) . '</p>'
+            : '';
 
         $token = $this->escape($this->csrf->getOrCreate());
         $name = $this->escape((string) ($section['name'] ?? ''));
@@ -227,6 +256,7 @@ HTML;
 <main class="admin-main" style="max-width:760px;margin:2rem auto;padding:0 1rem;">
     <p><a href="/admin/portfolio-sections">&larr; Portfolio sections</a></p>
     <h1>Edit Portfolio Section</h1>
+    {$errorNotice}
     <form method="post" action="/admin/portfolio-sections/edit">
         <input type="hidden" name="csrf_token" value="{$token}">
         <input type="hidden" name="id" value="{$id}">
@@ -239,12 +269,11 @@ HTML;
             <button type="submit">Save section</button>
             {$archiveButton}
         </p>
-        <button type="submit" class="button button-primary">Save order</button>
 </form>
 </main>
 HTML;
 
-        return Response::html(AdminLayout::render('Portfolio Sections', $body));
+        return Response::html(AdminLayout::render('Portfolio Sections', $body), $error !== null ? 422 : 200);
     }
 
     public function update(Request $request, TenantContext $tenant, ?array $currentUser): Response
@@ -297,46 +326,69 @@ HTML;
             ? (in_array((string) ($_POST['status'] ?? 'active'), ['active', 'hidden', 'archived'], true) ? (string) $_POST['status'] : 'active')
             : 'hidden';
 
-        if ($existing) {
-            $stmt = $this->pdo->prepare(
-                "UPDATE portfolio_sections
-                 SET name = :name,
-                     slug = :slug,
-                     description = :description,
-                     show_as_tab = :show_as_tab,
-                     sort_order = :sort_order,
-                     status = :status,
-                     updated_at = CURRENT_TIMESTAMP
-                 WHERE id = :id
-                   AND tenant_id = :tenant_id"
+        try {
+            if ($existing) {
+                $stmt = $this->pdo->prepare(
+                    "UPDATE portfolio_sections
+                     SET name = :name,
+                         slug = :slug,
+                         description = :description,
+                         show_as_tab = :show_as_tab,
+                         sort_order = :sort_order,
+                         status = :status,
+                         updated_at = CURRENT_TIMESTAMP
+                     WHERE id = :id
+                       AND tenant_id = :tenant_id"
+                );
+                $stmt->execute([
+                    'id' => $id,
+                    'tenant_id' => $tenant->tenantId,
+                    'name' => $name,
+                    'slug' => $slug,
+                    'description' => $description,
+                    'show_as_tab' => $showAsTab,
+                    'sort_order' => $sortOrder,
+                    'status' => $status,
+                ]);
+            } else {
+                $stmt = $this->pdo->prepare(
+                    "INSERT INTO portfolio_sections (
+                        uuid, tenant_id, name, slug, description, show_as_tab, sort_order, status, created_at, updated_at
+                     ) VALUES (
+                        UUID(), :tenant_id, :name, :slug, :description, :show_as_tab, :sort_order, :status, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                     )"
+                );
+                $stmt->execute([
+                    'tenant_id' => $tenant->tenantId,
+                    'name' => $name,
+                    'slug' => $slug,
+                    'description' => $description,
+                    'show_as_tab' => $showAsTab,
+                    'sort_order' => $sortOrder,
+                    'status' => $status,
+                ]);
+            }
+        } catch (\PDOException $error) {
+            // Include archived sections: the database reserves their tenant slug too.
+            if ((string) $error->getCode() !== '23000') {
+                throw $error;
+            }
+            $conflict = $this->pdo->prepare(
+                'SELECT id FROM portfolio_sections WHERE tenant_id = :tenant_id AND slug = :slug AND id <> :id LIMIT 1'
             );
-            $stmt->execute([
+            $conflict->execute(['tenant_id' => $tenant->tenantId, 'slug' => $slug, 'id' => $id]);
+            if (!$conflict->fetchColumn()) {
+                throw $error;
+            }
+            return $this->edit($request, $tenant, $currentUser, [
                 'id' => $id,
-                'tenant_id' => $tenant->tenantId,
                 'name' => $name,
                 'slug' => $slug,
                 'description' => $description,
                 'show_as_tab' => $showAsTab,
                 'sort_order' => $sortOrder,
                 'status' => $status,
-            ]);
-        } else {
-            $stmt = $this->pdo->prepare(
-                "INSERT INTO portfolio_sections (
-                    uuid, tenant_id, name, slug, description, show_as_tab, sort_order, status, created_at, updated_at
-                 ) VALUES (
-                    UUID(), :tenant_id, :name, :slug, :description, :show_as_tab, :sort_order, :status, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-                 )"
-            );
-            $stmt->execute([
-                'tenant_id' => $tenant->tenantId,
-                'name' => $name,
-                'slug' => $slug,
-                'description' => $description,
-                'show_as_tab' => $showAsTab,
-                'sort_order' => $sortOrder,
-                'status' => $status,
-            ]);
+            ], 'That URL slug is already used by another section, which may be archived. Check the Archived sections view to restore it, or enter a different slug and save again. Your changes have not been saved.');
         }
 
         return new Response('', 303, ['Location' => '/admin/portfolio-sections?notice=saved']);

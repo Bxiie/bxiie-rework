@@ -216,6 +216,9 @@ return static function (Router $router, array $context): void {
         $router->get('/admin/curation', fn (Request $request): Response => $curationController->queue($request, $tenant, $currentUser));
         $router->post('/admin/curation/review', fn (Request $request): Response => $curationController->review($request, $tenant, $currentUser));
         $router->get('/admin/media', fn (Request $request): Response => (new TenantMediaController($pdo, new RequireTenantRoleBrowser(new MembershipRepository($pdo))))->admin($request, $tenant, $currentUser));
+        $archiveController = new \App\Http\Controllers\Tenant\Admin\ArchiveController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), new \App\Tenant\Archive\ArchivedItemRepository($pdo), $csrf);
+        $router->post('/admin/portfolio-sections/restore', fn (Request $request): Response => $archiveController->restore($request, $tenant, $currentUser, 'section'));
+        $router->post('/admin/artworks/restore', fn (Request $request): Response => $archiveController->restore($request, $tenant, $currentUser, 'artwork'));
         $router->get('/admin/portfolio-sections', fn (Request $request): Response => (new TenantAdminPortfolioSectionsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->index($request, $tenant, $currentUser));
         $router->get('/admin/portfolio-sections/edit', fn (Request $request): Response => (new TenantAdminPortfolioSectionsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->edit($request, $tenant, $currentUser));
         $router->post('/admin/portfolio-sections/edit', fn (Request $request): Response => (new TenantAdminPortfolioSectionsController(new RequireTenantRoleBrowser(new MembershipRepository($pdo)), $pdo, $csrf))->update($request, $tenant, $currentUser));

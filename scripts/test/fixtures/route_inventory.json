@@ -1017,6 +1017,11 @@
     {
         "scope": "tenant",
         "method": "POST",
+        "path": "/admin/artworks/restore"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/admin/artworks/rotate"
     },
     {
@@ -1133,6 +1138,11 @@
         "scope": "tenant",
         "method": "POST",
         "path": "/admin/portfolio-sections/order"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/admin/portfolio-sections/restore"
     },
     {
         "scope": "tenant",
