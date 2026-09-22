@@ -177,9 +177,6 @@ final class SettingsController
         $identityContent = <<<HTML
         <fieldset>
             <legend>Identity</legend>
-            <input type="hidden" name="branding_setting_present" value="1">
-            <label class="checkbox-row"><span><input type="checkbox" name="show_artsfolio_branding" value="1"{$brandingChecked}{$brandingDisabled}> Show ArtsFolio branding</span></label>
-            <p class="admin-help">{$brandingHelp}</p>
             <label>Site title / menu and browser brand<input name="site_title" value="{$siteTitle}" required></label>
             <label>Artist name / public home headline<input name="artist_name" value="{$artistName}"></label>
             <label>Browser tab title<input name="browser_title" value="{$browserTitle}"></label>
@@ -204,6 +201,9 @@ final class SettingsController
         </fieldset>
         <fieldset>
             <legend>Public page visibility</legend>
+            <input type="hidden" name="branding_setting_present" value="1">
+            <label class="checkbox-row"><span><input type="checkbox" name="show_artsfolio_branding" value="1"{$brandingChecked}{$brandingDisabled}> Show ArtsFolio branding</span></label>
+            <p class="admin-help">{$brandingHelp}</p>
             <label class="checkbox-row"><span><input type="checkbox" name="suppress_about_page" value="1"{$suppressAboutPage}> Suppress the public About page and navigation link</span></label>
             <label class="checkbox-row"><span><input type="checkbox" name="suppress_contact_page" value="1"{$suppressContactPage}> Suppress the public Contact page and navigation link</span></label>
             <label class="checkbox-row"><span><input type="checkbox" name="hide_portfolio_all_button" value="1"{$hidePortfolioAllButton}> Remove the All section button from the Portfolio page</span></label>

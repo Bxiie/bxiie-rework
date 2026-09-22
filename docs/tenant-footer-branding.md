@@ -1,6 +1,6 @@
 # Public footer branding
 
-Settings → Identity → Show ArtsFolio branding controls the shared attribution on
+Settings → Identity → Public page visibility → Show ArtsFolio branding controls the shared attribution on
 public portfolio, artwork, About, Contact, cart and checkout pages (including their
 error pages). Tenant-admin footers are not changed. The link opens https://artsfol.io/
 in a new window with noopener/noreferrer.
