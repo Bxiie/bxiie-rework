@@ -27,11 +27,10 @@ foreach ($required as $marker) {
     }
 }
 
-if (!str_contains(
-    $layout,
-    'tenant-admin.css?v=20260914-artwork-section-lines'
-)) {
-    $failures[] = 'Tenant Admin stylesheet cache version was not updated.';
+// Later stylesheet releases also invalidate the cached pre-contrast styles.
+if (preg_match('/tenant-admin\.css\?v=(\d{8})-[a-z0-9-]+/', $layout, $version) !== 1
+    || $version[1] < '20260914') {
+    $failures[] = 'Tenant Admin stylesheet cache version predates the contrast fix.';
 }
 
 $finalMarker = strrpos($css, 'Tenant admin final sidebar contrast layer.');
