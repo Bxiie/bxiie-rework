@@ -169,9 +169,17 @@ final class SettingsController
 
         $settingsNav = $this->settingsSubnav($activeSection);
         $sectionAction = '/admin/settings?section=' . rawurlencode($activeSection);
+        $brandingChecked = $this->settings->get($tenant, TenantSettingsRepository::ARTSFOLIO_BRANDING) === '1' ? ' checked' : '';
+        $brandingDisabled = $this->settings->canDisableArtsfolioBranding($tenant) ? '' : ' disabled';
+        $brandingHelp = $brandingDisabled === ''
+            ? 'Show a discreet ArtsFolio link in the footer of every public page. Opens ArtsFolio in a new window.'
+            : 'ArtsFolio branding is required on free/fee plans. Eligible paid plans and complementary tenants can turn it off.';
         $identityContent = <<<HTML
         <fieldset>
             <legend>Identity</legend>
+            <input type="hidden" name="branding_setting_present" value="1">
+            <label class="checkbox-row"><span><input type="checkbox" name="show_artsfolio_branding" value="1"{$brandingChecked}{$brandingDisabled}> Show ArtsFolio branding</span></label>
+            <p class="admin-help">{$brandingHelp}</p>
             <label>Site title / menu and browser brand<input name="site_title" value="{$siteTitle}" required></label>
             <label>Artist name / public home headline<input name="artist_name" value="{$artistName}"></label>
             <label>Browser tab title<input name="browser_title" value="{$browserTitle}"></label>
@@ -420,11 +428,16 @@ HTML;
         $after = [];
 
         foreach ($keys as $key) {
+            // Older forms and unrelated section saves must preserve the default/preference.
+            if ($key === TenantSettingsRepository::ARTSFOLIO_BRANDING && !isset($_POST['branding_setting_present'])) {
+                continue;
+            }
             $before[$key] = $this->settings->get($tenant, $key, '');
             $value = trim((string) ($_POST[$key] ?? ''));
             if (in_array($key, [
                 'platform_directory_opt_in',
                 'watermark_enabled',
+                'show_artsfolio_branding',
                 'suppress_mailing_list_dialog',
                 'suppress_contact_page',
                 'suppress_about_page',
@@ -463,7 +476,7 @@ HTML;
                 $value = $this->safePublicFontSize($value, $this->defaultFontSize($key));
             }
             $this->settings->set($tenant, $key, $value);
-            $after[$key] = $value;
+            $after[$key] = $this->settings->get($tenant, $key);
         }
 
         $this->auditAction($request, $tenant, $currentUser, ['before' => $before, 'after' => $after]);
@@ -683,7 +696,7 @@ HTML;
                 'tenant_css',
             ],
             default => [
-                'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro',
+                'show_artsfolio_branding', 'site_title', 'artist_name', 'browser_title', 'copyright_name', 'site_admin_email', 'home_intro',
                 'home_tab', 'portfolio_tab', 'about_tab', 'contact_tab', 'portfolio_slug', 'about_slug', 'contact_slug',
                 'suppress_mailing_list_dialog', 'suppress_contact_page', 'suppress_about_page', 'hide_portfolio_all_button',
             ],
@@ -1875,7 +1888,6 @@ private function escape(string $value): string
             . '<span>Selected image</span>'
             . $selectedPreview
             . '<strong>' . $this->escape((string) $selectedChoice['label']) . '</strong>'
-            . $selectedDraftWarning
             . '<span class="site-image-picker-change-button">Change image</span>'
             . '</summary>';
 
@@ -1895,7 +1907,6 @@ private function escape(string $value): string
             $cards .= '<label class="' . $cardClass . '">'
                 . '<input type="radio" name="' . $this->escape($fieldName) . '" value="' . $safeUuid . '"' . $checked . '>'
                 . $image
-                . $draftWarning
                 . '<span>' . $safeLabel . '</span>'
                 . '</label>';
         }

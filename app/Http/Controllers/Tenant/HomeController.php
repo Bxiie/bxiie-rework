@@ -231,7 +231,7 @@ HTML;
 $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublishedPreviewEnabled($tenant));
 
         if (!$artwork) {
-            return Response::notFound("Artwork not found: {$slug}");
+            return $this->tenantPageResponse($this->layout($tenant, 'Artwork not found', '<h1>Artwork not found</h1>'), 404);
         }
 
         $notesHtml = $this->artworkNotesHtml($artwork);
@@ -274,7 +274,7 @@ $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublish
     public function about(Request $request, TenantContext $tenant): Response
     {
         if ($this->settingEnabled($tenant, 'suppress_about_page')) {
-            return Response::html('<h1>404</h1><p>Page not found.</p>', 404);
+            return $this->tenantPageResponse($this->layout($tenant, 'Page not found', '<h1>404</h1><p>Page not found.</p>'), 404);
         }
 
         $this->track($request, $tenant, 'about_view');
@@ -297,7 +297,7 @@ $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublish
     public function contact(Request $request, TenantContext $tenant): Response
     {
         if ($this->settingEnabled($tenant, 'suppress_contact_page')) {
-            return Response::html('<h1>404</h1><p>Page not found.</p>', 404);
+            return $this->tenantPageResponse($this->layout($tenant, 'Page not found', '<h1>404</h1><p>Page not found.</p>'), 404);
         }
 
         $this->track($request, $tenant, 'contact_view');
@@ -800,9 +800,9 @@ private function tenantAdminLink(TenantContext $tenant): string
      * Prevent browser, proxy, and CDN reuse across signed-in and anonymous
      * requests. Varying by Cookie also protects authenticated page variants.
      */
-    private function tenantPageResponse(string $html): Response
+    private function tenantPageResponse(string $html, int $status = 200): Response
     {
-        return Response::html($html, 200, [
+        return Response::html($html, $status, [
             'Cache-Control' => 'private, no-store, max-age=0',
             'Pragma' => 'no-cache',
             'Vary' => 'Cookie',
@@ -842,6 +842,7 @@ private function tenantAdminLink(TenantContext $tenant): string
         $footerSignupForm = $mailingListSuppressed ? '' : $this->footerSignupForm($tenant, $contactSlug);
         $mailingListDialog = $mailingListSuppressed ? '' : $this->mailingListDialog($tenant, $contactSlug);
         $previewSwitch = $this->unpublishedPreviewFooterSwitch($tenant);
+        $branding = \App\Http\View\TenantBranding::render($tenant, $this->settings);
         $socialLinks = $this->socialFooterLinks($tenant);
         $platformAdminLink = $this->tenantAdminLink($tenant);
         $cartChrome = $this->cartChrome($tenant);
@@ -877,7 +878,7 @@ private function tenantAdminLink(TenantContext $tenant): string
 </main>
 <footer class="site-footer tenant-public-footer">
     <span>© {$year} {$copyrightName}</span>
-    {$this->artsfolioFreePlanLink($tenant)}
+    {$branding}
     {$socialLinks}
     {$previewSwitch}
     {$footerSignupForm}
@@ -1156,19 +1157,6 @@ HTML;
 
 
     /**
-     * Free tenant pages carry a small ArtsFolio notification/link as part of the free plan disclosure.
-     */
-    private function artsfolioFreePlanLink(TenantContext $tenant): string
-    {
-        $plan = strtolower($this->effectivePlanSlug($tenant));
-        if (!in_array($plan, ['free', 'starter'], true)) {
-            return '';
-        }
-
-        return '<span class="tenant-powered-by"><a href="https://artsfol.io/" rel="noopener">Created with ArtsFolio</a></span>';
-    }
-
-    /**
      * Builds tenant social links from content settings.
      */
     private function socialFooterLinks(TenantContext $tenant): string
@@ -1187,24 +1175,6 @@ HTML;
         }
 
         return $links === [] ? '' : '<nav class="tenant-social-links" aria-label="Social links">' . implode(' ', $links) . '</nav>';
-    }
-
-    /**
-     * Returns the database-selected plan before falling back to legacy tenant settings.
-     */
-    private function effectivePlanSlug(TenantContext $tenant): string
-    {
-        try {
-            $stmt = $this->pdo->prepare('SELECT p.slug FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id WHERE tpa.tenant_id = :tenant_id AND tpa.status IN ("trial", "active", "manual") ORDER BY tpa.id DESC LIMIT 1');
-            $stmt->execute(['tenant_id' => $tenant->tenantId]);
-            $slug = $stmt->fetchColumn();
-            if (is_string($slug) && $slug !== '') {
-                return $slug;
-            }
-        } catch (Throwable) {
-        }
-
-        return (string) $this->settings->get($tenant, 'billing_plan', 'studio');
     }
 
     /**

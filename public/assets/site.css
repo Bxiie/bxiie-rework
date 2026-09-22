@@ -1841,3 +1841,14 @@ body article.pricing-card.featured h3 {
     flex: 0 0 auto !important;
 }
 /* End ArtsFolio logo aspect-ratio guard. */
+
+/* Shared discreet attribution on public portfolio and commerce pages. */
+html body .site-footer .tenant-powered-by,
+html body .site-footer .tenant-powered-by a {
+  font-size: 0.8rem !important;
+  font-weight: 400;
+  color: inherit;
+}
+html body .site-footer .tenant-powered-by a { text-decoration: none; }
+html body .site-footer .tenant-powered-by a:hover,
+html body .site-footer .tenant-powered-by a:focus-visible { text-decoration: underline; }

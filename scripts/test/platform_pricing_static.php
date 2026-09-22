@@ -28,8 +28,7 @@ $checks = [
         "record('platform.tenant.status_changed', $" . 'tenantId',
     ],
     'app/Http/Controllers/Tenant/HomeController.php' => [
-        'artsfolioFreePlanLink',
-        'Created with ArtsFolio',
+        'TenantBranding::render',
     ],
     'database/migrations/0023_pricing_limits_commission.sql' => [
         'allowed_artworks',

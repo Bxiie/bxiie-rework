@@ -35,7 +35,7 @@ final class SalesController
         try {
 
             if (!$this->verifyCsrf()) {
-                return Response::html('<h1>Security check failed</h1><p>Please return to the artwork page and try again.</p>', 422);
+                return $this->tenantPageResponse($tenant, 'Security check failed', '<h1>Security check failed</h1><p>Please return to the artwork page and try again.</p>', 422);
             }
             if (!$this->salesEnabled($tenant)) {
                 return $this->tenantPageResponse($tenant, 'Checkout unavailable', '<h1>Checkout unavailable</h1><p>Online sales are not enabled for this artist plan.</p><p><a href="/cart">Return to cart</a></p>', 403);
@@ -49,14 +49,14 @@ final class SalesController
             $variant = $variantId > 0 ? $this->sales->variantForPurchase($tenant, $artworkId, $variantId) : null;
 
             if (!$artwork || (string) ($artwork['sale_status'] ?? '') !== 'for_sale' || !$config || (int) ($config['checkout_enabled'] ?? 0) !== 1) {
-                return Response::html('<h1>Artwork unavailable</h1><p>This artwork is not currently available for online purchase.</p>', 422);
+                return $this->tenantPageResponse($tenant, 'Artwork unavailable', '<h1>Artwork unavailable</h1><p>This artwork is not currently available for online purchase.</p>', 422);
             }
             if (!$variant) {
                 $variants = $this->sales->variantsForArtwork($tenant, $artworkId, true);
                 $variant = $variants[0] ?? null;
             }
             if (!$variant) {
-                return Response::html('<h1>Variant unavailable</h1><p>Please choose another option for this artwork.</p>', 422);
+                return $this->tenantPageResponse($tenant, 'Variant unavailable', '<h1>Variant unavailable</h1><p>Please choose another option for this artwork.</p>', 422);
             }
             if ((string) ($config['sale_kind'] ?? 'one_off') === 'one_off') {
                 $quantity = 1;
@@ -64,12 +64,12 @@ final class SalesController
 
             $available = max(0, (int) ($variant['available_quantity'] ?? 0));
             if ($quantity > $available) {
-                return Response::html('<h1>Quantity unavailable</h1><p>Another buyer may currently have this option reserved in checkout. Please try again shortly.</p>', 409);
+                return $this->tenantPageResponse($tenant, 'Quantity unavailable', '<h1>Quantity unavailable</h1><p>Another buyer may currently have this option reserved in checkout. Please try again shortly.</p>', 409);
             }
 
             $priceCents = (int) ($variant['price_cents'] ?? 0) > 0 ? (int) $variant['price_cents'] : (int) ($config['base_price_cents'] ?? 0);
             if ($priceCents <= 0) {
-                return Response::html('<h1>Price unavailable</h1><p>This artwork needs a numeric price before checkout can be used.</p>', 422);
+                return $this->tenantPageResponse($tenant, 'Price unavailable', '<h1>Price unavailable</h1><p>This artwork needs a numeric price before checkout can be used.</p>', 422);
             }
 
             $shipping = $this->shippingForVariant($config, $variant);
@@ -77,7 +77,7 @@ final class SalesController
             $resolved = $identity->resolveCartForRequest($tenant, $request, true);
             $cart = $resolved['cart'];
             if (!is_array($cart)) {
-                return Response::html('<h1>Cart unavailable</h1><p>Please try again.</p>', 500);
+                return $this->tenantPageResponse($tenant, 'Cart unavailable', '<h1>Cart unavailable</h1><p>Please try again.</p>', 500);
             }
             $this->sales->addVariantItem($cart, $artwork, $variant, $quantity, $priceCents, $shipping);
 
@@ -86,7 +86,7 @@ final class SalesController
         } catch (Throwable $e) {
             $this->logCartAddFailure($tenant, $request, $e);
 
-            return Response::html('<h1>Cart error</h1><p>The item could not be added to the cart. The exact error has been written to <code>storage/logs/cart_add.log</code> or <code>/tmp/artsfolio_cart_add.log</code> with the marker <code>[ArtsFolio cart/add]</code>.</p><p><a href="javascript:history.back()">Return to artwork</a></p>', 500);
+            return $this->tenantPageResponse($tenant, 'Cart error', '<h1>Cart error</h1><p>The item could not be added to the cart. The exact error has been written to <code>storage/logs/cart_add.log</code> or <code>/tmp/artsfolio_cart_add.log</code> with the marker <code>[ArtsFolio cart/add]</code>.</p><p><a href="javascript:history.back()">Return to artwork</a></p>', 500);
         }
     }
 
@@ -571,6 +571,7 @@ final class SalesController
     private function tenantPage(TenantContext $tenant, string $title, string $body): string
     {
         $siteTitle = $this->e((string) $this->tenantSettings->get($tenant, 'site_title', $tenant->name));
+        $branding = \App\Http\View\TenantBranding::render($tenant, $this->tenantSettings);
         $browserTitle = $this->e($title . ' · ' . html_entity_decode($siteTitle, ENT_QUOTES, 'UTF-8'));
         $homeTab = $this->e((string) $this->tenantSettings->get($tenant, 'home_tab', 'Home'));
         $portfolioTab = $this->e((string) $this->tenantSettings->get($tenant, 'portfolio_tab', 'Portfolio'));
@@ -609,6 +610,7 @@ final class SalesController
 <main class="site-main tenant-content-surface cart-page-surface">
 {$body}
 </main>
+<footer class="site-footer tenant-public-footer">{$branding}</footer>
 </body>
 </html>
 HTML;

@@ -25,13 +25,50 @@ final class TenantSettingsRepository
     ) {
     }
 
+    public const ARTSFOLIO_BRANDING = 'show_artsfolio_branding';
+
+    /** Complementary tenants and assigned paid tiers may remove public attribution. */
+    public function canDisableArtsfolioBranding(TenantContext $tenant): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare('SELECT complementary FROM tenants WHERE id = :tenant_id');
+            $stmt->execute(['tenant_id' => $tenant->tenantId]);
+            if ((int) $stmt->fetchColumn() === 1) {
+                return true;
+            }
+        } catch (\PDOException) {
+            // Older schemas have no complementary flag; still check the assigned plan.
+        }
+        try {
+            $stmt = $this->pdo->prepare("SELECT p.slug, p.monthly_price_cents, tpa.status
+                FROM tenant_plan_assignments tpa JOIN plans p ON p.id = tpa.plan_id
+                WHERE tpa.tenant_id = :tenant_id ORDER BY tpa.id DESC LIMIT 1");
+            $stmt->execute(['tenant_id' => $tenant->tenantId]);
+            $plan = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $plan !== false
+                && in_array($plan['status'], ['trial', 'active', 'manual'], true)
+                && (int) $plan['monthly_price_cents'] > 0
+                && !in_array(strtolower(trim((string) $plan['slug'])), ['fee', 'free', 'starter'], true);
+        } catch (\PDOException) {
+            // Missing billing data must never grant branding removal.
+            return false;
+        }
+    }
+
     public function get(TenantContext $tenant, string $key, ?string $default = null): ?string
     {
+        if ($key === self::ARTSFOLIO_BRANDING) {
+            return $this->snapshot($tenant)->get($key) === '0'
+                && $this->canDisableArtsfolioBranding($tenant) ? '0' : '1';
+        }
         return $this->snapshot($tenant)->get($key, $default);
     }
 
     public function set(TenantContext $tenant, string $key, ?string $value): void
     {
+        if ($key === self::ARTSFOLIO_BRANDING) {
+            $value = $value === '0' && $this->canDisableArtsfolioBranding($tenant) ? '0' : '1';
+        }
         $stmt = $this->pdo->prepare(
             "INSERT INTO tenant_settings (
                 tenant_id,
