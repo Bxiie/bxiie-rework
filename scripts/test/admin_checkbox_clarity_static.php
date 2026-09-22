@@ -34,7 +34,9 @@ foreach ([
     }
 }
 
-if (!str_contains($layout, 'tenant-admin.css?v=20260914-artwork-section-lines')) {
+// Newer asset versions retain the cache invalidation required by this fix.
+if (preg_match('/tenant-admin\.css\?v=(\d{8})-[a-z0-9-]+/', $layout, $version) !== 1
+    || $version[1] < '20260914') {
     $failures[] = 'TenantAdminLayout must refresh the tenant-admin stylesheet cache key.';
 }
 
