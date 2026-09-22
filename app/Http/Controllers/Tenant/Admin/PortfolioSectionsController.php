@@ -75,6 +75,24 @@ HTML;
             default => '',
         };
 
+        $flash = $_SESSION['portfolio_sections_alphabetize'][$tenant->tenantId] ?? null;
+        unset($_SESSION['portfolio_sections_alphabetize'][$tenant->tenantId]);
+        if (is_string($flash)) {
+            $notice .= '<p class="notice" role="status">' . $this->escape($flash) . '</p>';
+        }
+        $alphabetizeAction = '';
+        if ($this->isTenantAdmin($currentUser, $tenant)) {
+            $token = $this->escape($this->csrf->getOrCreate());
+            $alphabetizeAction = <<<HTML
+        <form method="post" action="/admin/portfolio-sections/alphabetize" onsubmit="if (!confirm('Alphabetize all listed sections? This replaces their current section order.')) return false; this.elements.confirmed.value = '1';">
+            <input type="hidden" name="csrf_token" value="{$token}">
+            <input type="hidden" name="confirmed" value="0">
+            <button type="submit" class="admin-button">Alphabetize Sections</button>
+            <p>Sort active and hidden sections by name.</p>
+        </form>
+HTML;
+        }
+
         $body = <<<HTML
 <main class="admin-main" style="max-width:1100px;margin:2rem auto;padding:0 1rem;">
     <p><a href="/admin">&larr; Admin</a></p>
@@ -86,6 +104,7 @@ HTML;
 </section>
     {$notice}
     <p>Use sections to group artwork and optionally show selected sections as public portfolio tabs.</p>
+    {$alphabetizeAction}
     <section aria-label="Portfolio section actions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1.25rem 0 1.5rem;">
         <a class="admin-button" href="/admin/portfolio-sections/edit" style="display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;padding:1rem 1.1rem;border-radius:14px;text-decoration:none;">
             <strong>Add portfolio section</strong>
@@ -119,6 +138,51 @@ HTML;
 HTML;
 
         return Response::html(AdminLayout::render('Portfolio Sections', $body));
+    }
+
+    public function alphabetize(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->isTenantAdmin($currentUser, $tenant)) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+        if ($request->method() !== 'POST') {
+            return new Response('', 405, ['Allow' => 'POST']);
+        }
+
+        $message = 'Portfolio sections alphabetized.';
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            $message = 'Sections were not reordered. The security check expired; please try again.';
+        } elseif (($_POST['confirmed'] ?? '') !== '1') {
+            $message = 'Sections were not reordered. Please confirm alphabetizing first.';
+        } else {
+            try {
+                $this->pdo->beginTransaction();
+                // Match the listing scope; IDs break case-insensitive name ties consistently.
+                $stmt = $this->pdo->prepare(
+                    "SELECT id FROM portfolio_sections
+                     WHERE tenant_id = :tenant_id AND status <> 'archived'
+                     ORDER BY LOWER(name) ASC, id ASC"
+                );
+                $stmt->execute(['tenant_id' => $tenant->tenantId]);
+                $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                $update = $this->pdo->prepare(
+                    "UPDATE portfolio_sections SET sort_order = :sort_order
+                     WHERE tenant_id = :tenant_id AND id = :id AND status <> 'archived'"
+                );
+                foreach ($ids as $position => $id) {
+                    $update->execute(['sort_order' => $position + 1, 'tenant_id' => $tenant->tenantId, 'id' => $id]);
+                }
+                $this->pdo->commit();
+            } catch (\Throwable $error) {
+                if ($this->pdo->inTransaction()) {
+                    $this->pdo->rollBack();
+                }
+                error_log('Portfolio section alphabetizing failed: ' . $error->getMessage());
+                $message = 'Unable to alphabetize sections. No ordering changes were saved. Please try again.';
+            }
+        }
+        $_SESSION['portfolio_sections_alphabetize'][$tenant->tenantId] = $message;
+        return new Response('', 303, ['Location' => '/admin/portfolio-sections']);
     }
 
     public function edit(Request $request, TenantContext $tenant, ?array $currentUser): Response

@@ -1117,6 +1117,11 @@
     {
         "scope": "tenant",
         "method": "POST",
+        "path": "/admin/portfolio-sections/alphabetize"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/admin/portfolio-sections/edit"
     },
     {
