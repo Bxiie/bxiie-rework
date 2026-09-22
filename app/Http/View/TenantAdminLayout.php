@@ -67,6 +67,8 @@ final class TenantAdminLayout
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css">
     <script defer src="/assets/admin-typography-fields.js?v=20260620-typography-live"></script>
     <script defer src="/assets/admin-table-tools.js?v=20260623-logo-list-tools"></script>
+    <link rel="stylesheet" href="/assets/admin-sidebar.css?v=20260922">
+    <script defer src="/assets/admin-sidebar.js?v=20260922"></script>
 </head>
 <body class="tenant-admin-page" style="--primary: {$primaryColor}; --accent: {$accentColor}; --bg: {$backgroundColor}; --tenant-topbar-bg: {$topbarBackground}; --tenant-topbar-text: {$topbarText}; --menu-text-color: {$menuText}; --text-color: {$textColor}; {$backgroundStyle}{$surfaceStyle}">
 <header class="site-header tenant-admin-public-header">
@@ -81,8 +83,12 @@ final class TenantAdminLayout
     </nav>
 </header>
 
-<div class="tenant-admin-shell">
-    <button class="tenant-admin-menu-toggle" type="button" aria-controls="tenant-admin-sidebar" aria-expanded="false"><span aria-hidden="true">☰</span><span>Admin menu</span></button>
+<div class="tenant-admin-shell" data-admin-sidebar-shell="tenant-{$tenant->tenantId}">
+    <div class="admin-sidebar-toolbar" hidden>
+        <button class="admin-sidebar-toggle" type="button" aria-controls="tenant-admin-sidebar" aria-expanded="true">
+            <span aria-hidden="true">☰</span><span data-sidebar-toggle-label>Hide sidebar</span>
+        </button>
+    </div>
     <aside class="tenant-admin-sidebar" id="tenant-admin-sidebar" aria-label="Tenant admin navigation">
         <a class="tenant-admin-sidebar-upload" href="/admin/artwork/upload">
             <span aria-hidden="true">＋</span>
@@ -114,17 +120,7 @@ final class TenantAdminLayout
         <a href="https://artsfol.io/contact">Contact artsfol.io</a>
     </nav>
 </footer>
-<script>
-(() => {
- const button=document.querySelector('.tenant-admin-menu-toggle');
- const sidebar=document.getElementById('tenant-admin-sidebar');
- if(!button||!sidebar)return;
- const close=()=>{document.body.classList.remove('tenant-admin-menu-open');button.setAttribute('aria-expanded','false');};
- button.addEventListener('click',()=>{const open=document.body.classList.toggle('tenant-admin-menu-open');button.setAttribute('aria-expanded',open?'true':'false');});
- sidebar.addEventListener('click',event=>{if(event.target.closest('a')&&window.matchMedia('(max-width: 900px)').matches)close();});
- document.addEventListener('keydown',event=>{if(event.key==='Escape')close();});
-})();
-</script>
+
 </body>
 </html>
 HTML;

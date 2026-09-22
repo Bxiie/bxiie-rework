@@ -71,6 +71,8 @@ final class AdminLayout
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css?v=20260623-email-outbox-containment">
     <script defer src="/assets/admin-typography-fields.js?v=20260620-typography-live"></script>
     <script defer src="/assets/admin-table-tools.js?v=20260623-logo-list-tools"></script>
+    <link rel="stylesheet" href="/assets/admin-sidebar.css?v=20260922">
+    <script defer src="/assets/admin-sidebar.js?v=20260922"></script>
 </head>
 <body class="platform-admin-page">
 <header class="platform-admin-topbar" aria-label="Platform admin header">
@@ -79,8 +81,13 @@ final class AdminLayout
     {$canonicalNav}
     <form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{$csrf}"><button type="submit">Log out</button></form>
 </header>
-<div class="platform-admin-shell">
-    <aside class="platform-admin-sidebar" aria-label="Platform admin navigation">
+<div class="platform-admin-shell" data-admin-sidebar-shell="platform">
+    <div class="admin-sidebar-toolbar" hidden>
+        <button class="admin-sidebar-toggle" type="button" aria-controls="platform-admin-sidebar" aria-expanded="true">
+            <span aria-hidden="true">☰</span><span data-sidebar-toggle-label>Hide sidebar</span>
+        </button>
+    </div>
+    <aside class="platform-admin-sidebar" id="platform-admin-sidebar" aria-label="Platform admin navigation">
         <div class="platform-admin-sidebar-title"><strong>ArtsFolio</strong><span>Platform Operations</span></div>
         {$adminNav}
     </aside>

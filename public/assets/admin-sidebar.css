@@ -1,0 +1,46 @@
+/* Shared tenant/platform navigation controls; loaded after both admin themes. */
+[data-admin-sidebar-shell] {
+  grid-template-rows: auto 1fr;
+}
+[data-admin-sidebar-shell] > .admin-sidebar-toolbar {
+  grid-column: 1 / -1;
+  padding: .65rem 1rem;
+}
+[data-admin-sidebar-shell] .admin-sidebar-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  min-height: 44px;
+  padding: .6rem 1rem;
+  border: 1px solid #6f675c;
+  border-radius: .6rem;
+  background: #fff;
+  color: #171717;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+[data-admin-sidebar-shell] .admin-sidebar-toggle:hover { background: #f4efe7; }
+[data-admin-sidebar-shell] .admin-sidebar-toggle:focus-visible {
+  outline: 3px solid #a36b10;
+  outline-offset: 3px;
+}
+[data-admin-sidebar-shell] > [hidden] { display: none !important; }
+@media (min-width: 901px) {
+  [data-admin-sidebar-shell].admin-sidebar-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  [data-admin-sidebar-shell].admin-sidebar-collapsed > main {
+    width: auto;
+    max-width: none;
+    margin-inline: 0;
+  }
+  [data-admin-sidebar-shell].admin-sidebar-collapsed > main > :is(.tenant-admin-panel, .platform-admin-panel) {
+    max-width: none;
+  }
+}
+@media (max-width: 900px) {
+  [data-admin-sidebar-shell] { display: block; }
+  /* Navigation remains available without JavaScript. */
+  [data-admin-sidebar-shell] > aside:not([hidden]) { display: block; }
+}
