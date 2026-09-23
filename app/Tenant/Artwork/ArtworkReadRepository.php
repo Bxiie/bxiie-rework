@@ -161,6 +161,19 @@ a.medium, a.dimensions, a.year_created, a.status,
         ];
     }
 
+    public function activeSectionName(TenantContext $tenant, string $slug): ?string
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT name FROM portfolio_sections
+             WHERE tenant_id = :tenant_id AND slug = :slug AND status = 'active'
+             LIMIT 1"
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'slug' => $slug]);
+        $name = $stmt->fetchColumn();
+
+        return $name === false ? null : (string) $name;
+    }
+
     public function activeSections(TenantContext $tenant, bool $includeUnpublished = false): array
     {
         $stmt = $this->pdo->prepare(

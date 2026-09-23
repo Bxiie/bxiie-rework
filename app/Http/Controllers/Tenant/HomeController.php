@@ -149,6 +149,11 @@ HTML;
             . '<label>Artworks per page<br><select name="per_page">' . $pageSizeOptions . '</select></label>'
             . '<button type="submit">Apply</button></form>';
 
+        $sectionName = $sectionSlug !== '' ? $this->artworks->activeSectionName($tenant, $sectionSlug) : null;
+        if ($sectionName !== null) {
+            $body .= '<h2 data-portfolio-section-heading style="margin:0 0 1rem;">' . $this->escape($sectionName) . '</h2>';
+        }
+
         if (!$items) {
             $body .= "<p>No published artwork yet.</p>\n";
         } else {
