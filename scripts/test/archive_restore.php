@@ -104,4 +104,32 @@ try { $repository->restore($tenant,'artwork',1,1); throw new RuntimeException('E
 check($pdo->query('SELECT status FROM artworks WHERE id=1')->fetchColumn()==='archived','Failure rolls status back');
 check($pdo->query('SELECT scheduled_publish_at FROM artworks WHERE id=1')->fetchColumn()==='2030-01-01','Failure rolls schedule back');
 check($pdo->query('SELECT COUNT(*) FROM artwork_release_group_items WHERE tenant_id=1')->fetchColumn()===1,'Failure rolls release membership back');
-echo "Archive viewing and restore: $count checks passed.\n";
+// Unassigned section filtering includes any real section assignment, even archived.
+$pdo->exec("INSERT INTO artworks (id,tenant_id,title,slug,status,created_at) VALUES
+ (4,1,'Assigned active','assigned-active','draft','created'),
+ (5,1,'Assigned archived section','assigned-archived','published','created'),
+ (6,1,'Unassigned draft','unassigned-draft','draft','created'),
+ (7,1,'Unassigned archived artwork','unassigned-archived','archived','created');
+ INSERT INTO artwork_section_assignments VALUES(4,2,0),(5,1,0);");
+$_GET=['section_id'=>'unassigned'];
+$html=field($artworks->index($get,$tenant,$admin),'body');
+check(str_contains($html,'Published artwork</strong>') && str_contains($html,'Unassigned draft</strong>'),'Unassigned published and draft artworks included');
+check(!str_contains($html,'Assigned active</strong>') && !str_contains($html,'Assigned archived section</strong>'),'Active and archived section assignments excluded');
+check(!str_contains($html,'Foreign artwork') && !str_contains($html,'Unassigned archived artwork</strong>'),'Tenant isolation and archive default preserved');
+check(str_contains($html,'value="unassigned" selected'),'Unassigned option selected');
+check(str_contains($html,'section_id%3Dunassigned'),'Edit return links preserve unassigned filter');
+$_GET=['section_id'=>'unassigned','status'=>'draft'];
+$html=field($artworks->index($get,$tenant,$admin),'body');
+check(str_contains($html,'Unassigned draft</strong>') && !str_contains($html,'Published artwork</strong>'),'Combines with status filter');
+$_GET=['section_id'=>'unassigned','status'=>'archived'];
+$html=field($artworks->index($get,$tenant,$admin),'body');
+check(str_contains($html,'Unassigned archived artwork</strong>') && !str_contains($html,'Archived artwork</strong>'),'Combines with archived-only view');
+$_GET=['section_id'=>'2'];
+$html=field($artworks->index($get,$tenant,$admin),'body');
+check(str_contains($html,'Assigned active</strong>') && !str_contains($html,'Unassigned draft</strong>'),'Existing section filter still works');
+for ($i=100;$i<126;$i++) $pdo->exec("INSERT INTO artworks(id,tenant_id,title,slug,status,created_at) VALUES($i,1,'Pagination $i','pagination-$i','draft','created')");
+$_GET=['section_id'=>'unassigned','q'=>'Pagination','per_page'=>'20','page'=>'2'];
+$html=field($artworks->index($get,$tenant,$admin),'body');
+check(str_contains($html,'Showing 21–26 of 26'),'Count and second-page results agree');
+check(str_contains($html,'section_id=unassigned') && str_contains($html,'q=Pagination'),'Pagination preserves filter and search');
+echo "Archive viewing, restore and section filters: $count checks passed.\n";

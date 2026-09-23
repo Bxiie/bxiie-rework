@@ -54,6 +54,7 @@ final class ArtworksController
         $saleFilter = (string) ($_GET['sale_status'] ?? '');
         $imageFilter = (string) ($_GET['image'] ?? '');
         $typeFilter = (string) ($_GET['artwork_type'] ?? '');
+        $unassignedSection = ($_GET['section_id'] ?? '') === 'unassigned';
         $sectionFilter = max(0, (int) ($_GET['section_id'] ?? 0));
         $page = max(1, (int) ($_GET['page'] ?? 1));
         $pageSize = Pagination::allowedLimitFromQuery(
@@ -119,7 +120,13 @@ final class ArtworksController
                 )";
             }
         }
-        if ($sectionFilter > 0) {
+        if ($unassignedSection) {
+            $where .= ' AND NOT EXISTS (
+                SELECT 1 FROM artwork_section_assignments af
+                JOIN portfolio_sections ps ON ps.id = af.section_id AND ps.tenant_id = a.tenant_id
+                WHERE af.artwork_id = a.id
+            )';
+        } elseif ($sectionFilter > 0) {
             $where .= ' AND EXISTS (SELECT 1 FROM artwork_section_assignments af WHERE af.artwork_id = a.id AND af.section_id = :section_filter)';
             $params['section_filter'] = $sectionFilter;
         }
@@ -179,7 +186,7 @@ final class ArtworksController
             'sale_status' => $saleFilter,
             'image' => $imageFilter,
             'artwork_type' => $typeFilter,
-            'section_id' => $sectionFilter > 0 ? $sectionFilter : '',
+            'section_id' => $unassignedSection ? 'unassigned' : ($sectionFilter > 0 ? $sectionFilter : ''),
             'per_page' => $pageSize,
         ], static fn ($value): bool => $value !== '');
         $returnTo = '/admin/artworks?' . http_build_query(array_merge($baseQuery, ['page' => $page]));
@@ -251,7 +258,9 @@ HTML;
             $pageSizeOptions .= '<option value="' . $sizeOption . '"' . $selected . '>' . $label . '</option>';
         }
 
-        $sectionOptions = '<option value="">All sections</option>';
+        $unassignedSelected = $unassignedSection ? ' selected' : '';
+        $sectionOptions = '<option value="">All sections</option>'
+            . '<option value="unassigned"' . $unassignedSelected . '>No assigned section</option>';
         foreach ($sections as $section) {
             $sid = (int) $section['id'];
             $selected = $sectionFilter === $sid ? ' selected' : '';
