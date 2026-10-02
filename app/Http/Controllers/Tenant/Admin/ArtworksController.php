@@ -405,6 +405,7 @@ HTML;
         $returnTo = $this->safeArtworkReturnTo((string) ($_GET['return_to'] ?? $this->artworkGridReturnUrl()));
         $returnToValue = htmlspecialchars($returnTo, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $artworkPreview = '';
+        $exportControls = '';
         $primaryMediaUuid = trim((string) ($artwork['primary_media_uuid'] ?? ''));
         if ($primaryMediaUuid !== '') {
             $previewSrc = htmlspecialchars(
@@ -413,15 +414,6 @@ HTML;
                 'UTF-8',
             );
             $rotationCsrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
-            $exportCsrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
-            $exportFormatOptions = '';
-            foreach (['original' => 'Keep original format', 'jpeg' => 'JPEG', 'png' => 'PNG', 'webp' => 'WebP'] as $formatValue => $formatLabel) {
-                $exportFormatOptions .= '<option value="' . $formatValue . '">' . $formatLabel . '</option>';
-            }
-            $exportSizeOptions = '';
-            foreach (ArtworkExportService::resizeOptions() as $dimension => $sizeLabel) {
-                $exportSizeOptions .= '<option value="' . $dimension . '">' . htmlspecialchars($sizeLabel, ENT_QUOTES, 'UTF-8') . '</option>';
-            }
             $artworkPreview = <<<HTML
     <figure class="artwork-edit-preview">
         <img src="{$previewSrc}" alt="{$title}">
@@ -434,6 +426,20 @@ HTML;
         <button type="submit" name="direction" value="left">Rotate left 90°</button>
         <button type="submit" name="direction" value="right">Rotate right 90°</button>
     </form>
+HTML;
+
+            $exportCsrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
+            $exportFormatOptions = '';
+            foreach (['original' => 'Keep original format', 'jpeg' => 'JPEG', 'png' => 'PNG', 'webp' => 'WebP'] as $formatValue => $formatLabel) {
+                $exportFormatOptions .= '<option value="' . $formatValue . '">' . $formatLabel . '</option>';
+            }
+            $exportSizeOptions = '';
+            foreach (ArtworkExportService::resizeOptions() as $dimension => $sizeLabel) {
+                $exportSizeOptions .= '<option value="' . $dimension . '">' . htmlspecialchars($sizeLabel, ENT_QUOTES, 'UTF-8') . '</option>';
+            }
+            $exportControls = <<<HTML
+<fieldset class="admin-card artwork-export-controls-panel">
+    <legend>Export image</legend>
     <form method="post" action="/admin/artworks/export" class="admin-inline-form artwork-export-controls">
         <input type="hidden" name="csrf_token" value="{$exportCsrf}">
         <input type="hidden" name="artwork_id" value="{$id}">
@@ -442,6 +448,7 @@ HTML;
         <label><input type="checkbox" name="export_watermark" value="1"> Apply watermark</label>
         <button type="submit">Export image</button>
     </form>
+</fieldset>
 HTML;
         } else {
             $artworkPreview = '<p class="admin-muted">This artwork does not currently have a primary image.</p>';
@@ -551,6 +558,8 @@ HTML;
 
 <button type="submit">Save artwork</button>
     </form>
+
+{$exportControls}
 </main>
 
 <script src="/assets/admin/artworks.js"></script>

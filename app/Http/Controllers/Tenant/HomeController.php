@@ -366,7 +366,6 @@ HTML;
         $body = "<h1>{$title}</h1>\n";
         $body .= $this->artworkSectionLinks($tenant, (int) $artwork['id']);
         $body .= $this->artworkEditLink($tenant, (int) $artwork['id']);
-        $body .= $this->artworkExportForm($tenant, (int) $artwork['id']);
 
         if (!empty($artwork['media_uuid'])) {
             $src = '/media?uuid=' . rawurlencode((string) $artwork['media_uuid'])
@@ -384,6 +383,7 @@ HTML;
         $curationControls = $this->curation?->form($tenant->tenantId, (int) $artwork['id'], '/artwork/' . (string) $artwork['slug'], $this->currentUser) ?? '';
         $body .= $this->collapsibleCurationControls($curationControls);
         $body .= '<p><a class="button artwork-inquiry-link" href="' . $contactLink . '">Contact the artist about this artwork</a></p>' . "\n";
+        $body .= $this->artworkExportForm($tenant, (int) $artwork['id']);
 
         return $this->tenantPageResponse($this->layout(
             tenant: $tenant,
@@ -447,14 +447,17 @@ HTML;
         }
 
         return <<<HTML
-<form method="post" action="/artwork/export" class="artwork-export-controls">
-    <input type="hidden" name="csrf_token" value="{$csrf}">
-    <input type="hidden" name="artwork_id" value="{$artworkId}">
-    <label>Format<br><select name="export_format">{$formatOptions}</select></label>
-    <label>Size<br><select name="export_max_dimension">{$sizeOptions}</select></label>
-    <label><input type="checkbox" name="export_watermark" value="1"> Apply watermark</label>
-    <button type="submit">Export image</button>
-</form>
+<section class="artwork-export-panel">
+    <h2>Export image</h2>
+    <form method="post" action="/artwork/export" class="artwork-export-controls">
+        <input type="hidden" name="csrf_token" value="{$csrf}">
+        <input type="hidden" name="artwork_id" value="{$artworkId}">
+        <label>Format<br><select name="export_format">{$formatOptions}</select></label>
+        <label>Size<br><select name="export_max_dimension">{$sizeOptions}</select></label>
+        <label><input type="checkbox" name="export_watermark" value="1"> Apply watermark</label>
+        <button type="submit">Export image</button>
+    </form>
+</section>
 HTML;
     }
 
@@ -1082,7 +1085,7 @@ private function tenantAdminLink(TenantContext $tenant): string
     <title>{$browserTitle}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Artist portfolio">
-    <link rel="stylesheet" href="/assets/site.css?v=20261002-home-hero-image">
+    <link rel="stylesheet" href="/assets/site.css?v=20261002-artwork-export-panel">
     <link rel="stylesheet" href="/tenant.css">
     <script src="/assets/tenant-forms.js?v=20260602a" defer></script>
     {$turnstileScript}

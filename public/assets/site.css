@@ -1419,6 +1419,21 @@ body:not(.platform-page) {
   background: var(--content-bg-overlay, rgba(255, 250, 240, 0.72));
 }
 
+.artwork-export-panel {
+  margin: 2rem 0;
+  padding: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--primary), transparent 78%);
+  border-radius: 22px;
+  background: var(--content-bg-overlay, rgba(255, 250, 240, 0.72));
+}
+
+.artwork-export-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
 .artwork-inventory-mode,
 .sales-note-small {
   color: color-mix(in srgb, var(--text-color, #1f1a14), transparent 22%);

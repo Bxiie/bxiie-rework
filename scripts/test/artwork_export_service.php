@@ -182,6 +182,31 @@ foreach ([
     }
 }
 
+// Export controls must be boxed and placed at the bottom of each page, below
+// the main content/edit form, not inline near the top next to the image.
+$contactLinkOffset = strpos($homeControllerSource, "\$body .= '<p><a class=\"button artwork-inquiry-link\"");
+$exportFormCallOffset = strpos($homeControllerSource, '$body .= $this->artworkExportForm($tenant, (int) $artwork[\'id\']);');
+if ($contactLinkOffset === false || $exportFormCallOffset === false || $exportFormCallOffset < $contactLinkOffset) {
+    throw new RuntimeException('Public artwork page must render the export form after the contact link, at the bottom of the page.');
+}
+if (!str_contains($homeControllerSource, 'class="artwork-export-panel"')) {
+    throw new RuntimeException('Public export controls are missing their boxed panel wrapper.');
+}
+
+$saveButtonOffset = strpos($artworksControllerSource, '<button type="submit">Save artwork</button>');
+$exportControlsOffset = strpos($artworksControllerSource, '{$exportControls}');
+if ($saveButtonOffset === false || $exportControlsOffset === false || $exportControlsOffset < $saveButtonOffset) {
+    throw new RuntimeException('Admin export controls must render after the Save artwork button, at the bottom of the page.');
+}
+if (!str_contains($artworksControllerSource, '<fieldset class="admin-card artwork-export-controls-panel">')) {
+    throw new RuntimeException('Admin export controls are missing their boxed fieldset wrapper.');
+}
+
+$cssSourceForExportPanel = (string) file_get_contents(dirname(__DIR__, 2) . '/public/assets/site.css');
+if (!str_contains($cssSourceForExportPanel, '.artwork-export-panel')) {
+    throw new RuntimeException('site.css is missing the .artwork-export-panel box styling.');
+}
+
 $routesSource = (string) file_get_contents(dirname(__DIR__, 2) . '/app/Http/Routes/tenant.php');
 foreach ([
     "\$router->post('/admin/artworks/export', fn (Request \$request): Response => \$artworksController->exportImage(\$request, \$tenant, \$currentUser));",
