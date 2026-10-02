@@ -1012,6 +1012,11 @@
     {
         "scope": "tenant",
         "method": "POST",
+        "path": "/admin/artworks/export"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/admin/artworks/placement"
     },
     {
@@ -1198,6 +1203,11 @@
         "scope": "tenant",
         "method": "POST",
         "path": "/admin/users/resend-invite"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
+        "path": "/artwork/export"
     },
     {
         "scope": "tenant",
