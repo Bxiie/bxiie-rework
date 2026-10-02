@@ -50,6 +50,12 @@ final class HomeController
         $includeUnpublished = $this->unpublishedPreviewEnabled($tenant);
         $items = $this->artworks->latestPublished($tenant, null, $includeUnpublished);
 
+        // An optional tenant-selected hero is pulled out of the grid items so
+        // it isn't shown twice; a hero that is no longer a valid home-page
+        // pick (removed, unpublished and not previewing, etc.) just means no
+        // hero renders rather than an error — the grid alone is always valid.
+        $heroArtworkId = max(0, (int) $this->settings->get($tenant, 'home_hero_artwork_id', ''));
+        $heroItem = $this->extractHeroItem($items, $heroArtworkId);
 
         $body = <<<HTML
 <section class="hero">
@@ -57,6 +63,10 @@ final class HomeController
     <div class="prose">{$homeIntro}</div>
 </section>
 HTML;
+
+        if ($heroItem !== null) {
+            $body .= $this->homeHeroImageHtml($heroItem, $includeUnpublished);
+        }
 
         if ($items) {
             $body .= "<section class=\"grid home-grid\">
@@ -96,6 +106,61 @@ HTML;
             title: $siteTitle,
             body: $body,
         ));
+    }
+
+    /**
+     * Splits the tenant-selected hero out of the home-page item list, if
+     * present, so it is not rendered twice. Returns null and leaves $items
+     * untouched when there is no hero or it is not among the current items.
+     *
+     * @param list<array<string,mixed>> $items
+     * @return array<string,mixed>|null
+     */
+    private function extractHeroItem(array &$items, int $heroArtworkId): ?array
+    {
+        if ($heroArtworkId <= 0) {
+            return null;
+        }
+
+        foreach ($items as $index => $item) {
+            if ((int) $item['id'] === $heroArtworkId) {
+                unset($items[$index]);
+                return $item;
+            }
+        }
+
+        return null;
+    }
+
+    /** @param array<string,mixed> $item */
+    private function homeHeroImageHtml(array $item, bool $includeUnpublished): string
+    {
+        $title = $this->escape((string) $item['title']);
+        $slug = rawurlencode((string) $item['slug']);
+        $meta = $this->escape(trim((string) (($item['medium'] ?? '') . ' ' . ($item['year_created'] ?? ''))));
+        $image = '';
+
+        if (!empty($item['media_uuid'])) {
+            // The hero is the one home-page image shown large, so it uses the
+            // large derivative rather than the thumb grid cards use.
+            $src = '/media?uuid=' . rawurlencode((string) $item['media_uuid'])
+                . '&variant=large'
+                . ($includeUnpublished ? '&preview_unpublished=1' : '');
+            $alt = $this->escape((string) ($item['media_alt_text'] ?? $item['title']));
+            $image = "<img src=\"{$src}\" alt=\"{$alt}\" loading=\"lazy\">";
+        }
+
+        $unpublished = (string) ($item['status'] ?? '') !== 'published' ? '<strong class="artwork-unpublished">Unpublished</strong>' : '';
+
+        return <<<HTML
+<section class="home-hero-image">
+    <a href="/artwork/{$slug}">
+        {$image}
+        <span class="home-hero-caption">{$title}<small>{$meta}</small></span>
+    </a>
+    {$unpublished}
+</section>
+HTML;
     }
 
     public function portfolio(Request $request, TenantContext $tenant): Response
@@ -1017,7 +1082,7 @@ private function tenantAdminLink(TenantContext $tenant): string
     <title>{$browserTitle}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Artist portfolio">
-    <link rel="stylesheet" href="/assets/site.css?v=20260620-typography-apply">
+    <link rel="stylesheet" href="/assets/site.css?v=20261002-home-hero-image">
     <link rel="stylesheet" href="/tenant.css">
     <script src="/assets/tenant-forms.js?v=20260602a" defer></script>
     {$turnstileScript}

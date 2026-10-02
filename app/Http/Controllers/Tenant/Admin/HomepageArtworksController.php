@@ -11,6 +11,7 @@ use App\Http\View\AdminLayout;
 use App\Http\View\ErrorPage;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Security\CsrfTokenService;
+use App\Tenant\Settings\TenantSettingsRepository;
 use PDO;
 
 /** Manages the virtual Home Page portfolio section. */
@@ -21,6 +22,7 @@ final class HomepageArtworksController
         private readonly RequireTenantRoleBrowser $roles,
         private readonly PDO $pdo,
         private readonly CsrfTokenService $csrf,
+        private readonly TenantSettingsRepository $settings,
     ) {
     }
 
@@ -31,7 +33,7 @@ final class HomepageArtworksController
         }
 
         $statement = $this->pdo->prepare(
-            'SELECT a.id, a.title, a.slug, a.status,
+            'SELECT a.id, a.title, a.slug, a.status, a.primary_media_id,
                     CASE WHEN h.id IS NULL THEN 0 ELSE 1 END AS selected,
                     COALESCE(h.sort_order, a.sort_order, 0) AS home_sort_order
              FROM artworks a
@@ -52,6 +54,7 @@ final class HomepageArtworksController
         );
         $statement->execute(['tenant_id' => $tenant->tenantId]);
 
+        $heroArtworkId = max(0, (int) $this->settings->get($tenant, 'home_hero_artwork_id', ''));
         $rows = '';
         foreach ($statement->fetchAll(PDO::FETCH_ASSOC) as $artwork) {
             $id = (int) $artwork['id'];
@@ -60,22 +63,28 @@ final class HomepageArtworksController
             $status = $this->e((string) $artwork['status']);
             $order = max(0, (int) $artwork['home_sort_order']);
             $disabled = $artwork['status'] === 'published' ? '' : ' disabled';
+            $hasImage = !empty($artwork['primary_media_id']);
+            $heroChecked = $heroArtworkId === $id ? ' checked' : '';
+            $heroDisabled = $hasImage ? $disabled : ' disabled';
+            $heroHelp = $hasImage ? '' : '<br><small class="admin-muted">No image</small>';
 
             $rows .= '<tr>'
                 . '<td colspan="2"><label><input type="checkbox" name="artwork_ids[]" value="' . $id . '"' . $checked . $disabled . '>'
                 . '<span><strong>' . $title . '</strong><br><span class="admin-muted">' . $status . '</span></span></label></td>'
                 . '<td><input type="number" min="0" step="10" name="sort_order[' . $id . ']" value="' . $order . '" style="width:7rem"' . $disabled . '></td>'
+                . '<td><label><input type="radio" name="hero_artwork_id" value="' . $id . '"' . $heroChecked . $heroDisabled . '> Hero</label>' . $heroHelp . '</td>'
                 . '</tr>';
         }
 
         if ($rows === '') {
-            $rows = '<tr><td colspan="3">No portfolio artworks are available.</td></tr>';
+            $rows = '<tr><td colspan="4">No portfolio artworks are available.</td></tr>';
         }
 
         $notice = (string) ($_GET['notice'] ?? '') === 'saved'
             ? '<p class="admin-notice admin-notice-success">Home Page artwork selection saved.</p>'
             : '';
         $csrf = $this->e($this->csrf->getOrCreate());
+        $noHeroChecked = $heroArtworkId === 0 ? ' checked' : '';
 
         $body = <<<HTML
 {$notice}
@@ -85,8 +94,10 @@ final class HomepageArtworksController
     <p class="admin-muted">Home Page is a special section. Select published portfolio artworks and set their order. Site and branding assets are excluded.</p>
     <form method="post" action="/admin/portfolio-sections/home-page">
         <input type="hidden" name="csrf_token" value="{$csrf}">
+        <p class="admin-help">Optionally feature one shown artwork as a single large hero image at the top of the home page, above the grid of the rest.</p>
+        <p><label><input type="radio" name="hero_artwork_id" value="0"{$noHeroChecked}> No hero image — show the plain grid</label></p>
         <table class="admin-table">
-            <thead><tr><th>Show</th><th>Artwork</th><th>Order</th></tr></thead>
+            <thead><tr><th>Show</th><th>Artwork</th><th>Order</th><th>Hero image</th></tr></thead>
             <tbody>{$rows}</tbody>
         </table>
         <p><button type="submit">Save Home Page artworks</button></p>
@@ -190,9 +201,37 @@ HTML;
             throw $exception;
         }
 
+        // A hero image must be one of the artworks just saved into the Home
+        // Page selection, with a primary image to actually display. Any other
+        // submitted value (removed from selection, imageless, tampered) clears
+        // the hero rather than erroring, since it can only leave the home page
+        // showing its plain grid.
+        $requestedHeroId = max(0, (int) ($_POST['hero_artwork_id'] ?? 0));
+        $heroArtworkId = $requestedHeroId > 0
+            && in_array($requestedHeroId, $ids, true)
+            && $this->artworkHasPrimaryImage($tenant, $requestedHeroId)
+            ? $requestedHeroId
+            : 0;
+        $this->settings->set($tenant, 'home_hero_artwork_id', $heroArtworkId > 0 ? (string) $heroArtworkId : '');
+
         return new Response('', 303, [
             'Location' => '/admin/portfolio-sections/home-page?notice=saved',
         ]);
+    }
+
+    private function artworkHasPrimaryImage(TenantContext $tenant, int $artworkId): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT 1
+             FROM artworks
+             WHERE id = :artwork_id
+               AND tenant_id = :tenant_id
+               AND primary_media_id IS NOT NULL
+             LIMIT 1'
+        );
+        $stmt->execute(['artwork_id' => $artworkId, 'tenant_id' => $tenant->tenantId]);
+
+        return (bool) $stmt->fetchColumn();
     }
 
     private function canManage(?array $currentUser, TenantContext $tenant): bool
