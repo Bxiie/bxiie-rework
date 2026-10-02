@@ -39,6 +39,7 @@ final class HomepageArtworksController
                ON h.tenant_id = a.tenant_id
               AND h.artwork_id = a.id
              WHERE a.tenant_id = :tenant_id
+               AND a.status <> "archived"
                AND NOT EXISTS (
                     SELECT 1
                     FROM artwork_type_assignments ata
@@ -61,8 +62,8 @@ final class HomepageArtworksController
             $disabled = $artwork['status'] === 'published' ? '' : ' disabled';
 
             $rows .= '<tr>'
-                . '<td><input type="checkbox" name="artwork_ids[]" value="' . $id . '"' . $checked . $disabled . '></td>'
-                . '<td><strong>' . $title . '</strong><br><span class="admin-muted">' . $status . '</span></td>'
+                . '<td colspan="2"><label><input type="checkbox" name="artwork_ids[]" value="' . $id . '"' . $checked . $disabled . '>'
+                . '<span><strong>' . $title . '</strong><br><span class="admin-muted">' . $status . '</span></span></label></td>'
                 . '<td><input type="number" min="0" step="10" name="sort_order[' . $id . ']" value="' . $order . '" style="width:7rem"' . $disabled . '></td>'
                 . '</tr>';
         }
@@ -145,6 +146,7 @@ HTML;
                     'SELECT a.id
                      FROM artworks a
                      WHERE a.tenant_id = :tenant_id
+               AND a.status <> "archived"
                        AND a.id IN (' . implode(', ', $tokens) . ')
                        AND NOT EXISTS (
                             SELECT 1

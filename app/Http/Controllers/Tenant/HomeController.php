@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant;
 
+use App\Http\Middleware\RequireTenantRoleBrowser;
+use App\Platform\Membership\MembershipRepository;
 use App\Http\Request;
 use App\Http\Response;
 use App\Platform\Tenancy\TenantContext;
@@ -43,7 +45,7 @@ final class HomeController
         );
 
         $includeUnpublished = $this->unpublishedPreviewEnabled($tenant);
-        $items = $this->artworks->latestPublished($tenant, 12, $includeUnpublished);
+        $items = $this->artworks->latestPublished($tenant, null, $includeUnpublished);
 
 
         $body = <<<HTML
@@ -233,7 +235,7 @@ HTML;
 
     public function artwork(Request $request, TenantContext $tenant, string $slug): Response
     {
-$artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublishedPreviewEnabled($tenant));
+        $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublishedPreviewEnabled($tenant));
 
         if (!$artwork) {
             return $this->tenantPageResponse($this->layout($tenant, 'Artwork not found', '<h1>Artwork not found</h1>'), 404);
@@ -251,6 +253,8 @@ $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublish
         $contactLink = '/contact?artwork=' . rawurlencode((string) $artwork['slug']);
 
         $body = "<h1>{$title}</h1>\n";
+        $body .= $this->artworkSectionLinks($tenant, (int) $artwork['id']);
+        $body .= $this->artworkEditLink($tenant, (int) $artwork['id']);
 
         if (!empty($artwork['media_uuid'])) {
             $src = '/media?uuid=' . rawurlencode((string) $artwork['media_uuid'])
@@ -274,6 +278,37 @@ $artwork = $this->artworks->findPublishedBySlug($tenant, $slug, $this->unpublish
             title: "{$title} | {$this->escape($tenant->name)}",
             body: $body,
         ));
+    }
+
+    private function artworkSectionLinks(TenantContext $tenant, int $artworkId): string
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT ps.id, ps.name, ps.slug
+             FROM portfolio_sections ps
+             JOIN artwork_section_assignments asa ON asa.section_id = ps.id
+             JOIN artworks a ON a.id = asa.artwork_id AND a.tenant_id = ps.tenant_id
+             WHERE ps.tenant_id = :tenant_id AND a.id = :artwork_id
+               AND ps.status = 'active' AND a.status <> 'archived'
+             ORDER BY LOWER(ps.name), ps.id"
+        );
+        $stmt->execute(['tenant_id' => $tenant->tenantId, 'artwork_id' => $artworkId]);
+        $links = [];
+        foreach ($stmt->fetchAll() as $section) {
+            $href = '/portfolio?section=' . rawurlencode((string) $section['slug']);
+            $links[] = '<a href="' . $this->escape($href) . '">' . $this->escape((string) $section['name']) . '</a>';
+        }
+
+        return $links === [] ? '' : '<p class="artwork-section-links" aria-label="Portfolio sections">' . implode(' · ', $links) . '</p>';
+    }
+
+    private function artworkEditLink(TenantContext $tenant, int $artworkId): string
+    {
+        $roles = new RequireTenantRoleBrowser(new MembershipRepository($this->pdo));
+        if (!$roles->allows($this->currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return '';
+        }
+
+        return '<p><a class="button artwork-edit-link" href="/admin/artworks/edit?id=' . $artworkId . '">Edit artwork</a></p>';
     }
 
     public function about(Request $request, TenantContext $tenant): Response

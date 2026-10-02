@@ -11,6 +11,7 @@ use App\Http\View\AdminLayout;
 use App\Platform\Jobs\BackgroundJobRepository;
 use App\Platform\Tenancy\TenantContext;
 use App\Support\Security\CsrfTokenService;
+use App\Support\Uuid;
 use App\Tenant\Artwork\ArtworkUploadService;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -26,7 +27,7 @@ final class ArtworkBulkUploadController
     {
         if (!$this->allowed($user, $tenant)) return Response::error(403, 'Tenant admin access required.');
         $token = AdminLayout::escape($this->csrf->getOrCreate());
-        $body = '<p><a class="admin-button" href="/admin/artwork/bulk/sample.csv">Download sample spreadsheet</a></p><p>Select one directory containing <code>artworks.csv</code> and every image named in its <code>filename</code> column. CSV is used so the spreadsheet can be edited in Excel, Numbers, Google Sheets, or LibreOffice.</p><p class="admin-muted">One import may contain up to 499 images plus the spreadsheet, with each file up to 64 MB and the complete directory up to 512 MB.</p><form method="post" action="/admin/artwork/bulk" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="' . $token . '"><label>Import directory<br><input type="file" name="directory[]" webkitdirectory directory multiple required></label><button type="submit">Validate and import artworks</button></form>';
+        $body = '<p><a class="admin-button" href="/admin/artwork/bulk/sample.csv">Download sample spreadsheet</a></p><p>Select one directory containing <code>artworks.csv</code> and every image named in its <code>filename</code> column. CSV is used so the spreadsheet can be edited in Excel, Numbers, Google Sheets, or LibreOffice.</p><p>In the <code>sections</code> column, separate section names with <code>|</code>, for example <code>Paintings|New Work</code>. Missing sections are created automatically.</p><p class="admin-muted">One import may contain up to 499 images plus the spreadsheet, with each file up to 64 MB and the complete directory up to 512 MB.</p><form method="post" action="/admin/artwork/bulk" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="' . $token . '"><label>Import directory<br><input type="file" name="directory[]" webkitdirectory directory multiple required></label><button type="submit">Validate and import artworks</button></form>';
         return Response::html(AdminLayout::render('Bulk Artwork Upload', $body, 'artworks'));
     }
 
@@ -61,7 +62,8 @@ final class ArtworkBulkUploadController
         if (!$sheet) return Response::error(422, 'The selected directory must contain artworks.csv.');
         [$headers, $rows] = $this->csv((string) $sheet['tmp_name']);
         if (!in_array('filename', $headers, true) || !in_array('title', $headers, true)) return Response::error(422, 'artworks.csv requires filename and title columns.');
-        $imported = 0;
+        $uploaded = 0;
+        $createdSections = [];
         $errors = [];
         $usedImages = [];
         foreach ($rows as $index => $row) {
@@ -88,19 +90,32 @@ final class ArtworkBulkUploadController
                     'status' => strtolower((string) ($row['status'] ?? 'draft')) === 'published' ? 'published' : 'draft',
                 ]);
                 $artworkId = (int) $record['artwork_id'];
+                ++$uploaded;
                 $this->schedule($tenant->tenantId, $artworkId, $publishAt);
                 $this->assignGroup($tenant->tenantId, $artworkId, $releaseGroup, (int) ($user['user_id'] ?? 0));
-                $this->assignSections($tenant->tenantId, $artworkId, (string) ($row['sections'] ?? ''));
+                $createdSections += $this->assignSections($tenant->tenantId, $artworkId, (string) ($row['sections'] ?? ''));
                 $this->assignTypes($artworkId, (string) ($row['artwork_types'] ?? 'portfolio_images'));
-                ++$imported;
             } catch (\Throwable $e) {
                 $errors[] = 'Row ' . ($index + 2) . ': ' . $e->getMessage();
             }
         }
         (new BackgroundJobRepository($this->pdo))->enqueueSingleton('artwork.publish_due', ['interval_seconds' => 60], null, 0);
         $items = implode('', array_map(static fn (string $error): string => '<li>' . AdminLayout::escape($error) . '</li>', $errors));
-        $body = '<p class="admin-notice"><strong>' . $imported . ' artwork(s) imported.</strong></p>' . ($items !== '' ? '<h2>Rows not imported</h2><ul>' . $items . '</ul>' : '') . '<p><a class="admin-button" href="/admin/artworks">View artworks</a></p>';
+        $body = $this->importSummary($uploaded, $createdSections) . ($items !== '' ? '<h2>Rows needing attention</h2><ul>' . $items . '</ul>' : '') . '<p><a class="admin-button" href="/admin/artworks">View artworks</a></p>';
         return Response::html(AdminLayout::render('Bulk Upload Results', $body, 'artworks'), $errors === [] ? 200 : 422);
+    }
+
+    /** @param array<int, string> $createdSections */
+    private function importSummary(int $uploaded, array $createdSections): string
+    {
+        natcasesort($createdSections);
+        $sections = implode('', array_map(
+            static fn (string $name): string => '<li>' . AdminLayout::escape($name) . '</li>',
+            $createdSections,
+        ));
+        return '<p class="admin-notice"><strong>' . $uploaded . ' image(s) uploaded.</strong></p>'
+            . '<h2>Sections created (' . count($createdSections) . ')</h2>'
+            . ($sections !== '' ? '<ul>' . $sections . '</ul>' : '<p>No new sections were created.</p>');
     }
 
     private function files(array $input): array
@@ -183,14 +198,56 @@ final class ArtworkBulkUploadController
         $item->execute(['group_id' => $groupId, 'tenant_id' => $tenantId, 'artwork_id' => $artworkId]);
     }
 
-    private function assignSections(int $tenantId, int $artworkId, string $names): void
+    private function assignSections(int $tenantId, int $artworkId, string $names): array
     {
-        foreach (array_filter(array_map('trim', explode('|', $names))) as $name) {
-            $section = $this->pdo->prepare('SELECT id FROM portfolio_sections WHERE tenant_id = :tenant_id AND LOWER(name) = LOWER(:name) LIMIT 1');
-            $section->execute(['tenant_id' => $tenantId, 'name' => $name]);
-            $id = (int) $section->fetchColumn();
-            if ($id > 0) $this->pdo->prepare('INSERT IGNORE INTO artwork_section_assignments (artwork_id, section_id, created_at) VALUES (:artwork_id, :section_id, CURRENT_TIMESTAMP)')->execute(['artwork_id' => $artworkId, 'section_id' => $id]);
+        $created = [];
+        $names = array_filter(array_map('trim', explode('|', $names)), static fn (string $name): bool => $name !== '');
+        $this->pdo->beginTransaction();
+        try {
+            $owner = $this->pdo->prepare('SELECT id FROM artworks WHERE id = :id AND tenant_id = :tenant_id');
+            $owner->execute(['id' => $artworkId, 'tenant_id' => $tenantId]);
+            if (!$owner->fetchColumn()) throw new \InvalidArgumentException('Artwork does not belong to this tenant.');
+            foreach ($names as $name) {
+                $id = $this->resolveSection($tenantId, $name, $created);
+                $assign = $this->pdo->prepare(
+                    'INSERT INTO artwork_section_assignments (artwork_id, section_id, created_at)
+                     SELECT :artwork_id, :section_id, CURRENT_TIMESTAMP
+                     WHERE NOT EXISTS (SELECT 1 FROM artwork_section_assignments WHERE artwork_id = :existing_artwork AND section_id = :existing_section)'
+                );
+                $assign->execute(['artwork_id' => $artworkId, 'section_id' => $id, 'existing_artwork' => $artworkId, 'existing_section' => $id]);
+            }
+            $this->pdo->commit();
+            return $created;
+        } catch (\Throwable $error) {
+            if ($this->pdo->inTransaction()) $this->pdo->rollBack();
+            throw $error;
         }
+    }
+
+    private function resolveSection(int $tenantId, string $name, array &$created): int
+    {
+        $find = $this->pdo->prepare('SELECT id FROM portfolio_sections WHERE tenant_id = :tenant_id AND LOWER(name) = LOWER(:name) ORDER BY id LIMIT 1');
+        $find->execute(['tenant_id' => $tenantId, 'name' => $name]);
+        $id = (int) $find->fetchColumn();
+        if ($id > 0) return $id;
+
+        $base = trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($name)) ?? '', '-');
+        if ($base === '') $base = 'section';
+        $base = substr($base, 0, 230);
+        $slugCheck = $this->pdo->prepare('SELECT id FROM portfolio_sections WHERE tenant_id = :tenant_id AND slug = :slug');
+        for ($suffix = 1; ; ++$suffix) {
+            $slug = $base . ($suffix === 1 ? '' : '-' . $suffix);
+            $slugCheck->execute(['tenant_id' => $tenantId, 'slug' => $slug]);
+            if (!$slugCheck->fetchColumn()) break;
+        }
+        $insert = $this->pdo->prepare(
+            "INSERT INTO portfolio_sections (uuid, tenant_id, name, slug, show_as_tab, sort_order, status, created_at, updated_at)
+             VALUES (:uuid, :tenant_id, :name, :slug, 0, 100, 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+        );
+        $insert->execute(['uuid' => Uuid::v4(), 'tenant_id' => $tenantId, 'name' => $name, 'slug' => $slug]);
+        $id = (int) $this->pdo->lastInsertId();
+        $created[$id] = $name;
+        return $id;
     }
 
     private function assignTypes(int $artworkId, string $codes): void

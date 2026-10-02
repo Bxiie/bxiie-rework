@@ -28,7 +28,7 @@ a.medium, a.dimensions, a.year_created, a.status,
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
              WHERE a.tenant_id = :tenant_id
                AND a.slug = :slug
-               AND (a.status = 'published' OR :include_unpublished = 1)
+               AND (a.status = 'published' OR (:include_unpublished = 1 AND a.status <> 'archived'))
                AND " . $this->portfolioTypeExistsSql('a') . "
              LIMIT 1"
         );
@@ -38,7 +38,7 @@ a.medium, a.dimensions, a.year_created, a.status,
         return $row ?: null;
     }
 
-    public function latestPublished(TenantContext $tenant, int $limit = 12, bool $includeUnpublished = false): array
+    public function latestPublished(TenantContext $tenant, ?int $limit = 12, bool $includeUnpublished = false): array
     {
         if ($this->tableExists('homepage_artwork_assignments')) {
             $stmt = $this->pdo->prepare(
@@ -52,21 +52,23 @@ a.medium, a.dimensions, a.year_created, a.status,
                  LEFT JOIN media_assets m ON m.id = a.primary_media_id
                  WHERE h.tenant_id = :tenant_id
                    AND a.tenant_id = :tenant_id
-                   AND (a.status = 'published' OR :include_unpublished = 1)
+                   AND (a.status = 'published' OR (:include_unpublished = 1 AND a.status <> 'archived'))
                    AND " . $this->portfolioTypeExistsSql('a') . "
                  ORDER BY h.sort_order ASC, a.sort_order ASC, a.id DESC
-                 LIMIT :limit_count"
+                 " . ($limit !== null ? " LIMIT :limit_count" : "")
             );
             $stmt->bindValue('tenant_id', $tenant->tenantId, PDO::PARAM_INT);
             $stmt->bindValue('include_unpublished', $includeUnpublished ? 1 : 0, PDO::PARAM_INT);
-            $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
+            if ($limit !== null) {
+                $stmt->bindValue('limit_count', $limit, PDO::PARAM_INT);
+            }
             $stmt->execute();
             return $stmt->fetchAll();
         }
 
         // Older databases may not have the home assignment table yet. In that
         // compatibility case only, preserve the legacy latest-published fallback.
-        return $this->publishedOrdered($tenant, $limit, 'manual', $includeUnpublished);
+        return $this->publishedOrdered($tenant, $limit ?? 12, 'manual', $includeUnpublished);
     }
 
     /**
@@ -83,7 +85,7 @@ a.medium, a.dimensions, a.year_created, a.status,
              FROM artworks a
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
              WHERE a.tenant_id = :tenant_id
-               AND (a.status = 'published' OR :include_unpublished = 1)
+               AND (a.status = 'published' OR (:include_unpublished = 1 AND a.status <> 'archived'))
                AND " . $this->portfolioTypeExistsSql('a') . "
              ORDER BY " . $this->orderSql($order) . "
              LIMIT :limit_count"
@@ -114,7 +116,7 @@ a.medium, a.dimensions, a.year_created, a.status,
         $sectionSlug = $sectionSlug !== null ? trim($sectionSlug) : null;
 
         $joins = '';
-        $where = "a.tenant_id = :tenant_id AND (a.status = 'published' OR :include_unpublished = 1) AND " . $this->portfolioTypeExistsSql('a');
+        $where = "a.tenant_id = :tenant_id AND (a.status = 'published' OR (:include_unpublished = 1 AND a.status <> 'archived')) AND " . $this->portfolioTypeExistsSql('a');
         $params = ['tenant_id' => $tenant->tenantId, 'include_unpublished' => $includeUnpublished ? 1 : 0];
         $manualDefault = 'a.sort_order ASC, a.id DESC';
 
@@ -130,7 +132,10 @@ a.medium, a.dimensions, a.year_created, a.status,
         $count = $this->pdo->prepare(
             "SELECT COUNT(*) FROM artworks a{$joins} WHERE {$where}"
         );
-        $count->execute($params);
+        foreach ($params as $key => $value) {
+            $count->bindValue($key, $value, in_array($key, ['tenant_id', 'include_unpublished'], true) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $count->execute();
         $total = (int) $count->fetchColumn();
 
         $stmt = $this->pdo->prepare(

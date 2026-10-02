@@ -43,7 +43,7 @@ final class CurationRepository
         $check=$this->pdo->prepare("SELECT 1 FROM curation_lists WHERE id=:list_id AND tenant_id=:tenant_id");
         $check->execute(['list_id'=>$listId,'tenant_id'=>$tenantId]);
         if (!$check->fetchColumn()) throw new \InvalidArgumentException('Invalid curation list.');
-        $stmt=$this->pdo->prepare("INSERT INTO curation_items (tenant_id,list_id,artwork_id,submitted_by_user_id,note,status) SELECT :tenant_id,:list_id,a.id,:user_id,:note,'queued' FROM artworks a WHERE a.id=:artwork_id AND a.tenant_id=:tenant_id");
+        $stmt=$this->pdo->prepare("INSERT INTO curation_items (tenant_id,list_id,artwork_id,submitted_by_user_id,note,status) SELECT :tenant_id,:list_id,a.id,:user_id,:note,'queued' FROM artworks a WHERE a.id=:artwork_id AND a.tenant_id=:tenant_id AND a.status <> 'archived'");
         $stmt->execute(['tenant_id'=>$tenantId,'list_id'=>$listId,'artwork_id'=>$artworkId,'user_id'=>$userId,'note'=>$note]);
         if ($stmt->rowCount()!==1) throw new \InvalidArgumentException('Artwork is not available to this tenant.');
     }
@@ -51,7 +51,7 @@ final class CurationRepository
     public function queue(int $tenantId,int $editorUserId,bool $allCentral): array
     {
         $extra=$allCentral ? "cl.is_central=1" : "(cl.is_central=1 OR cl.editor_user_id=:editor_id)";
-        $stmt=$this->pdo->prepare("SELECT ci.id,ci.note,ci.status,ci.created_at,a.id artwork_id,a.title,a.slug,a.status artwork_status,m.uuid primary_media_uuid,u.display_name submitter_name,u.email submitter_email,cl.name list_name FROM curation_items ci JOIN curation_lists cl ON cl.id=ci.list_id JOIN artworks a ON a.id=ci.artwork_id LEFT JOIN media_assets m ON m.id=a.primary_media_id JOIN users u ON u.id=ci.submitted_by_user_id WHERE ci.tenant_id=:tenant_id AND ci.status IN ('queued','reviewing') AND {$extra} ORDER BY ci.created_at");
+        $stmt=$this->pdo->prepare("SELECT ci.id,ci.note,ci.status,ci.created_at,a.id artwork_id,a.title,a.slug,a.status artwork_status,m.uuid primary_media_uuid,u.display_name submitter_name,u.email submitter_email,cl.name list_name FROM curation_items ci JOIN curation_lists cl ON cl.id=ci.list_id JOIN artworks a ON a.id=ci.artwork_id LEFT JOIN media_assets m ON m.id=a.primary_media_id JOIN users u ON u.id=ci.submitted_by_user_id WHERE ci.tenant_id=:tenant_id AND a.tenant_id=ci.tenant_id AND a.status <> 'archived' AND ci.status IN ('queued','reviewing') AND {$extra} ORDER BY ci.created_at");
         $params=['tenant_id'=>$tenantId]; if(!$allCentral)$params['editor_id']=$editorUserId;
         $stmt->execute($params); return $stmt->fetchAll();
     }
@@ -61,7 +61,7 @@ final class CurationRepository
         if(!in_array($decision,['published','declined','reviewing'],true)) throw new \InvalidArgumentException('Invalid decision.');
         $this->pdo->beginTransaction();
         try {
-            $stmt=$this->pdo->prepare("SELECT ci.submitted_by_user_id,ci.artwork_id,a.title FROM curation_items ci JOIN artworks a ON a.id=ci.artwork_id WHERE ci.id=:id AND ci.tenant_id=:tenant_id FOR UPDATE");
+            $stmt=$this->pdo->prepare("SELECT ci.submitted_by_user_id,ci.artwork_id,a.title FROM curation_items ci JOIN artworks a ON a.id=ci.artwork_id WHERE ci.id=:id AND ci.tenant_id=:tenant_id AND a.tenant_id=ci.tenant_id AND a.status <> 'archived' FOR UPDATE");
             $stmt->execute(['id'=>$itemId,'tenant_id'=>$tenantId]); $item=$stmt->fetch();
             if(!$item) throw new \InvalidArgumentException('Curation item not found.');
             if($decision==='published') { $p=$this->pdo->prepare("UPDATE artworks SET status='published',published_at=COALESCE(published_at,CURRENT_TIMESTAMP),updated_at=CURRENT_TIMESTAMP WHERE id=:artwork_id AND tenant_id=:tenant_id"); $p->execute(['artwork_id'=>$item['artwork_id'],'tenant_id'=>$tenantId]); }

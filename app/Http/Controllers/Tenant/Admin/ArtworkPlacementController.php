@@ -398,7 +398,7 @@ HTML;
              FROM homepage_artwork_assignments h
              JOIN artworks a ON a.id = h.artwork_id
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
-             WHERE h.tenant_id = :tenant_id AND a.tenant_id = :tenant_id
+             WHERE h.tenant_id = :tenant_id AND a.tenant_id = :tenant_id AND a.status <> "archived"
              ORDER BY h.sort_order ASC, a.title ASC'
         );
         $stmt->execute(['tenant_id' => $tenant->tenantId]);
@@ -415,6 +415,7 @@ HTML;
              JOIN portfolio_sections ps ON ps.id = asa.section_id
              LEFT JOIN media_assets m ON m.id = a.primary_media_id
              WHERE a.tenant_id = :tenant_id
+               AND a.status <> "archived"
                AND ps.tenant_id = :tenant_id
                AND asa.section_id = :section_id
              ORDER BY asa.sort_order ASC, a.title ASC'

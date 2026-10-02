@@ -704,10 +704,10 @@ body.tenant-admin-page{margin:0;min-height:100vh;background:#f4efe7;color:#17171
 
 .tenant-admin-sidebar {
     background-color: var(--menu-bg, #111) !important;
-    background-image: var(--menu-bg-image) !important;
+    background-image: none !important;
     background-position: center !important;
     background-size: cover !important;
-    box-shadow: inset 0 0 0 999px rgba(0, 0, 0, calc(1 - var(--menu-bg-opacity, 0.92))) !important;
+    box-shadow: none !important;
 }
 
 .tenant-admin-main {
@@ -4423,4 +4423,70 @@ body.tenant-admin-page.platform-help-page .tenant-admin-sidebar nav a[aria-curre
 
 .platform-admin-topbar > .platform-admin-logo img {
     display: block;
+}
+
+/* Keep the expanded tablet menu inside the viewport without painted overlays. */
+@media (max-width: 900px) {
+  body.tenant-admin-page .tenant-admin-sidebar {
+    box-sizing: border-box;
+    width: auto;
+    max-width: calc(100% - 32px);
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  body.tenant-admin-page .tenant-admin-sidebar nav {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* Shared outlined checkbox treatment across tenant and platform admin forms. */
+:is(.tenant-admin-page, .platform-admin-page) label:has(input[type="checkbox"]) {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: flex-start;
+  gap: .7rem !important;
+  box-sizing: border-box;
+  min-width: 0;
+  margin-block: .35rem !important;
+  padding: .8rem .9rem !important;
+  border: 2px solid #6f675c !important;
+  border-radius: .5rem !important;
+  background: #fff !important;
+  color: #171717 !important;
+  line-height: 1.4;
+  cursor: pointer;
+}
+:is(.tenant-admin-page, .platform-admin-page) label:has(input[type="checkbox"]):hover {
+  border-color: #171717 !important;
+  background: #f4efe7 !important;
+}
+:is(.tenant-admin-page, .platform-admin-page) label:has(input[type="checkbox"]):focus-within {
+  outline: 3px solid #171717;
+  outline-offset: 2px;
+}
+:is(.tenant-admin-page, .platform-admin-page) label:has(input[type="checkbox"]:checked) {
+  border-color: #171717 !important;
+  background: #e9e1d5 !important;
+}
+:is(.tenant-admin-page, .platform-admin-page) label:has(input[type="checkbox"]:disabled) {
+  opacity: .65;
+  cursor: not-allowed;
+}
+:is(.tenant-admin-page, .platform-admin-page) label input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 1.2rem !important;
+  height: 1.2rem !important;
+  margin: .1rem 0 0 !important;
+  padding: 0 !important;
+  accent-color: #171717;
+}
+:is(.tenant-admin-page, .platform-admin-page) label:has(> span > input[type="checkbox"]) {
+  flex-direction: column;
+}
+:is(.tenant-admin-page, .platform-admin-page) label > span:has(> input[type="checkbox"]) {
+  display: flex;
+  align-items: flex-start;
+  gap: .7rem;
+  min-width: 0;
 }

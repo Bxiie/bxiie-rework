@@ -43,6 +43,7 @@ final class MediaController
             requirePublishedArtwork: !$allowUnpublishedPreview,
             allowSelectedBackground: true,
             applyPublicWatermark: true,
+            excludeArchived: true,
         );
     }
 
@@ -60,6 +61,7 @@ final class MediaController
         bool $requirePublishedArtwork,
         bool $allowSelectedBackground = false,
         bool $applyPublicWatermark = false,
+        bool $excludeArchived = false,
     ): Response
     {
         $mediaUuid = strtolower(trim((string) ($_GET['uuid'] ?? '')));
@@ -72,14 +74,14 @@ final class MediaController
             return Response::html('<h1>404</h1><p>Media not found.</p>', 404);
         }
 
-        $media = $this->findMedia($tenant, $mediaUuid, $requirePublishedArtwork);
+        $media = $this->findMedia($tenant, $mediaUuid, $requirePublishedArtwork, $excludeArchived);
 
         if (
             !$media
             && $allowSelectedBackground
             && $this->isSelectedBackground($tenant, $mediaUuid)
         ) {
-            $media = $this->findMedia($tenant, $mediaUuid, false);
+            $media = $this->findMedia($tenant, $mediaUuid, false, $excludeArchived);
             $isBackgroundRequest = true;
         }
 
@@ -206,7 +208,7 @@ final class MediaController
         };
     }
 
-    private function findMedia(TenantContext $tenant, string $mediaUuid, bool $requirePublishedArtwork): ?array
+    private function findMedia(TenantContext $tenant, string $mediaUuid, bool $requirePublishedArtwork, bool $excludeArchived = false): ?array
     {
         $sql = "SELECT m.*
                 FROM media_assets m";
@@ -220,8 +222,19 @@ final class MediaController
 
         $sql .= " WHERE m.tenant_id = :tenant_id
                     AND m.uuid = :media_uuid
-                    AND m.is_private = 0
-                  LIMIT 1";
+                    AND m.is_private = 0";
+        if ($excludeArchived) {
+            $sql .= " AND (NOT EXISTS (
+                        SELECT 1 FROM artworks archived
+                        WHERE archived.primary_media_id = m.id AND archived.tenant_id = m.tenant_id
+                          AND archived.status = 'archived'
+                      ) OR EXISTS (
+                        SELECT 1 FROM artworks visible
+                        WHERE visible.primary_media_id = m.id AND visible.tenant_id = m.tenant_id
+                          AND visible.status <> 'archived'
+                      ))";
+        }
+        $sql .= " LIMIT 1";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
