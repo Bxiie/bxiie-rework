@@ -107,12 +107,15 @@ HTML;
         );
         $includeUnpublished = $this->unpublishedPreviewEnabled($tenant);
         $sections = $this->artworks->activeSections($tenant, $includeUnpublished);
-        $displayOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
+        // Tenant-selected default from Settings > Artwork display. A visitor's own
+        // ?sort= choice on the public portfolio page overrides this per request.
+        $tenantDefaultOrder = (string) $this->settings->get($tenant, 'artwork_display_order', 'date_desc');
+        $sortOrder = $this->resolveSortOrder((string) ($_GET['sort'] ?? ''), $tenantDefaultOrder);
         $result = $this->artworks->publishedPage(
             $tenant,
             $page,
             $pageSize,
-            $displayOrder,
+            $sortOrder,
             $sectionSlug !== '' ? $sectionSlug : null,
             $includeUnpublished,
         );
@@ -125,7 +128,13 @@ HTML;
             $pageSizeOptions .= '<option value="' . $sizeOption . '"' . $selected . '>' . $label . '</option>';
         }
 
-        $allHref = '/portfolio?' . http_build_query(['per_page' => $pageSize]);
+        $sortOptions = '';
+        foreach ($this->sortOptionLabels() as $sortValue => $sortLabel) {
+            $selected = $sortValue === $sortOrder ? ' selected' : '';
+            $sortOptions .= '<option value="' . $this->escape($sortValue) . '"' . $selected . '>' . $this->escape($sortLabel) . '</option>';
+        }
+
+        $allHref = '/portfolio?' . http_build_query(['per_page' => $pageSize, 'sort' => $sortOrder]);
         $body = "<h1>Portfolio</h1>\n";
         $body .= '<section data-artwork-pager-root tabindex="-1">';
         $body .= "<nav style=\"display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 1rem;\">\n";
@@ -137,6 +146,7 @@ HTML;
             $sectionQuery = http_build_query([
                 'section' => (string) $section['slug'],
                 'per_page' => $pageSize,
+                'sort' => $sortOrder,
             ]);
             $name = $this->escape((string) $section['name']);
             $body .= '    <a data-artwork-page-link href="/portfolio?' . $this->escape($sectionQuery) . '" style="padding:.5rem .75rem;border:1px solid #222;text-decoration:none;">' . $name . '</a>' . "\n";
@@ -148,6 +158,7 @@ HTML;
             : '';
         $body .= '<form data-artwork-page-form method="get" action="/portfolio" style="display:flex;gap:.5rem;align-items:end;flex-wrap:wrap;margin:0 0 1.5rem;">'
             . $sectionControl
+            . '<label>Sort by<br><select name="sort">' . $sortOptions . '</select></label>'
             . '<label>Artworks per page<br><select name="per_page">' . $pageSizeOptions . '</select></label>'
             . '<button type="submit">Apply</button></form>';
 
@@ -196,9 +207,9 @@ HTML;
         if ($pageCount > 1) {
             $currentPage = (int) $result['page'];
             $body .= '<nav aria-label="Portfolio pages" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:2rem 0;">';
-            $body .= $this->pageStepLink('/portfolio', $sectionSlug, $pageSize, $currentPage - 1, '‹ Previous', $currentPage <= 1);
+            $body .= $this->pageStepLink('/portfolio', $sectionSlug, $pageSize, $currentPage - 1, '‹ Previous', $currentPage <= 1, $sortOrder);
             for ($pageNumber = 1; $pageNumber <= $pageCount; $pageNumber++) {
-                $query = ['page' => $pageNumber, 'per_page' => $pageSize];
+                $query = ['page' => $pageNumber, 'per_page' => $pageSize, 'sort' => $sortOrder];
                 if ($sectionSlug !== '') {
                     $query['section'] = $sectionSlug;
                 }
@@ -206,11 +217,11 @@ HTML;
                 $current = $pageNumber === $currentPage ? ' aria-current="page" style="font-weight:bold;text-decoration:underline;"' : '';
                 $body .= '<a data-artwork-page-link href="' . $this->escape($href) . '"' . $current . '>' . $pageNumber . '</a>';
             }
-            $body .= $this->pageStepLink('/portfolio', $sectionSlug, $pageSize, $currentPage + 1, 'Next ›', $currentPage >= $pageCount);
+            $body .= $this->pageStepLink('/portfolio', $sectionSlug, $pageSize, $currentPage + 1, 'Next ›', $currentPage >= $pageCount, $sortOrder);
             $body .= '</nav>';
         }
 
-        $body .= '</section><script src="/assets/artwork-pagination.js?v=20260622" defer></script>';
+        $body .= '</section><script src="/assets/artwork-pagination.js?v=20261001" defer></script>';
 
         return $this->tenantPageResponse($this->layout(
             tenant: $tenant,
@@ -219,18 +230,50 @@ HTML;
         ));
     }
 
-    private function pageStepLink(string $path, string $sectionSlug, int $pageSize, int $page, string $label, bool $disabled): string
+    private function pageStepLink(string $path, string $sectionSlug, int $pageSize, int $page, string $label, bool $disabled, string $sortOrder = 'date_desc'): string
     {
         if ($disabled) {
             return '<span aria-disabled="true" style="opacity:.45;padding:.25rem .45rem;border:1px solid #bbb;">' . $this->escape($label) . '</span>';
         }
 
-        $query = ['page' => max(1, $page), 'per_page' => $pageSize];
+        $query = ['page' => max(1, $page), 'per_page' => $pageSize, 'sort' => $sortOrder];
         if ($sectionSlug !== '') {
             $query['section'] = $sectionSlug;
         }
 
         return '<a data-artwork-page-link class="page-step" href="' . $this->escape($path . '?' . http_build_query($query)) . '" style="padding:.25rem .45rem;border:1px solid currentColor;text-decoration:none;">' . $this->escape($label) . '</a>';
+    }
+
+    /**
+     * Public portfolio sort options. Values match ArtworkReadRepository::orderSql()
+     * so a visitor's choice maps directly onto a supported ORDER BY branch.
+     *
+     * @return array<string,string>
+     */
+    private function sortOptionLabels(): array
+    {
+        return [
+            'date_desc' => 'Date (newest first)',
+            'date' => 'Date (oldest first)',
+            'name' => 'Name',
+            'medium' => 'Materials',
+            'manual' => 'Curated order',
+        ];
+    }
+
+    /**
+     * Validates a visitor-supplied ?sort= value against the supported options,
+     * falling back to the tenant's configured default display order.
+     */
+    private function resolveSortOrder(string $requested, string $tenantDefault): string
+    {
+        $requested = trim($requested);
+        $options = $this->sortOptionLabels();
+        if ($requested !== '' && array_key_exists($requested, $options)) {
+            return $requested;
+        }
+
+        return array_key_exists($tenantDefault, $options) ? $tenantDefault : 'date_desc';
     }
 
     public function artwork(Request $request, TenantContext $tenant, string $slug): Response

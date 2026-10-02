@@ -147,7 +147,7 @@
     });
 
     document.addEventListener('change', (event) => {
-        const select = event.target.closest(`${rootSelector} select[name="per_page"]`);
+        const select = event.target.closest(`${rootSelector} select[name="per_page"], ${rootSelector} select[name="sort"]`);
         if (!select) {
             return;
         }
