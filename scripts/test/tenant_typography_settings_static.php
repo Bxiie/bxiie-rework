@@ -94,7 +94,6 @@ $mustContain = [
     [$tenantAdminCss, 'appearance: auto !important;', 'Tenant admin CSS leaves native range sliders slideable'],
     [$typographyJs, 'preview.style.fontFamily', 'Tenant typography JS updates preview font family'],
     [$typographyJs, 'preview.style.fontSize', 'Tenant typography JS updates preview font size'],
-    [$homeController, 'site.css?v=20260620-typography-apply', 'Public layout cache-busts applied typography CSS'],
     [$tenantAdminCss, 'Tenant typography size controls use sliders', 'Tenant admin CSS styles friendly typography size sliders'],
     [$homeController, 'private function tenantTypographyStyleBlock', 'Public layout emits late typography rules after tenant CSS'],
     [$homeController, '<style id="tenant-typography-style">', 'Public layout renders inline typography stylesheet after tenant CSS'],
@@ -128,6 +127,15 @@ if (substr_count($settingsController, '<select class="tenant-font-picker"') < 1)
 
 if (str_contains($settingsController, 'tenant-font-size-preview')) {
     $failures[] = 'Typography size controls still render a separate size preview instead of updating the matching text preview.';
+}
+
+// Public layout must cache-bust site.css with a version query string, so a
+// typography (or any other CSS) change actually reaches visitors' browsers
+// instead of being served from a stale cache. Checked generically rather
+// than against one historical version literal, since that value legitimately
+// changes with every unrelated CSS edit that also needs a cache bust.
+if (!preg_match('/site\.css\?v=[\w-]+/', $homeController)) {
+    $failures[] = 'Public layout does not cache-bust site.css with a version query string.';
 }
 
 if ($failures !== []) {

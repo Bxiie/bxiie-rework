@@ -593,7 +593,7 @@ final class SalesController
     <title>{$browserTitle}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Artist portfolio cart">
-    <link rel="stylesheet" href="/assets/site.css?v=20260620-typography-apply">
+    <link rel="stylesheet" href="/assets/site.css?v=20261002-home-hero-image">
     <link rel="stylesheet" href="/tenant.css">
 </head>
 <body class="tenant-cart-page" style="--primary:{$primaryColor};--accent:{$accentColor};--bg:{$backgroundColor};--text-color:{$textColor};">
