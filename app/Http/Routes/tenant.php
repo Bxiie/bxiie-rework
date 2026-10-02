@@ -176,6 +176,7 @@ return static function (Router $router, array $context): void {
         $router->post('/curation/add', fn (Request $request): Response => $curationController->add($request, $tenant, $currentUser));
         $router->get('/messages', fn (Request $request): Response => $curationController->messages($request, $tenant, $currentUser));
         $router->get('/artwork/{slug}', fn (Request $request, array $params): Response => $tenantController->artwork($request, $tenant, (string) $params['slug']));
+        $router->post('/artwork/export', fn (Request $request): Response => $tenantController->exportArtwork($request, $tenant));
         // Mount the saved About slug in addition to the backward-compatible
         // default route used by older links and external bookmarks.
         $aboutHandler = fn (Request $request): Response => $tenantController->about($request, $tenant);
@@ -240,6 +241,7 @@ return static function (Router $router, array $context): void {
         $router->get('/admin/artworks/edit', fn (Request $request): Response => $artworksController->edit($request, $tenant, $currentUser));
         $router->post('/admin/artworks/edit', fn (Request $request): Response => $artworksController->update($request, $tenant, $currentUser));
         $router->post('/admin/artworks/rotate', fn (Request $request): Response => $artworksController->rotateImage($request, $tenant, $currentUser));
+        $router->post('/admin/artworks/export', fn (Request $request): Response => $artworksController->exportImage($request, $tenant, $currentUser));
         $router->post('/admin/artworks/status', fn (Request $request): Response => $artworksController->updateStatus($request, $tenant, $currentUser));
         $router->post('/admin/artworks/directory-thumbnail', fn (Request $request): Response => $artworksController->updateDirectoryThumbnail($request, $tenant, $currentUser));
         $router->post('/admin/artworks/delete', fn (Request $request): Response => $artworksController->delete($request, $tenant, $currentUser));

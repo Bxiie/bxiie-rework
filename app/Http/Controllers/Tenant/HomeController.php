@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Middleware\RequireTenantRoleBrowser;
+use App\Http\View\ErrorPage;
 use App\Platform\Membership\MembershipRepository;
 use App\Http\Request;
 use App\Http\Response;
@@ -13,6 +14,8 @@ use App\Services\FirstPartyCaptcha;
 use App\Support\Pagination\Pagination;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Artwork\ArtworkReadRepository;
+use App\Tenant\Media\ArtworkExportService;
+use App\Tenant\Media\WatermarkService;
 use App\Tenant\Sales\CartIdentityService;
 use App\Tenant\Settings\TenantSettingsRepository;
 use PDO;
@@ -298,6 +301,7 @@ HTML;
         $body = "<h1>{$title}</h1>\n";
         $body .= $this->artworkSectionLinks($tenant, (int) $artwork['id']);
         $body .= $this->artworkEditLink($tenant, (int) $artwork['id']);
+        $body .= $this->artworkExportForm($tenant, (int) $artwork['id']);
 
         if (!empty($artwork['media_uuid'])) {
             $src = '/media?uuid=' . rawurlencode((string) $artwork['media_uuid'])
@@ -352,6 +356,80 @@ HTML;
         }
 
         return '<p><a class="button artwork-edit-link" href="/admin/artworks/edit?id=' . $artworkId . '">Edit artwork</a></p>';
+    }
+
+    /**
+     * Export controls on the public artwork detail page, visible only to the
+     * same tenant owner/admin audience as the Edit artwork link above —
+     * exporting an unwatermarked original is a privileged action, not a
+     * general visitor feature.
+     */
+    private function artworkExportForm(TenantContext $tenant, int $artworkId): string
+    {
+        $roles = new RequireTenantRoleBrowser(new MembershipRepository($this->pdo));
+        if (!$roles->allows($this->currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return '';
+        }
+
+        $csrf = $this->csrf ? $this->escape($this->csrf->getOrCreate()) : '';
+        $formatOptions = '';
+        foreach (['original' => 'Keep original format', 'jpeg' => 'JPEG', 'png' => 'PNG', 'webp' => 'WebP'] as $formatValue => $formatLabel) {
+            $formatOptions .= '<option value="' . $formatValue . '">' . $formatLabel . '</option>';
+        }
+        $sizeOptions = '';
+        foreach (ArtworkExportService::resizeOptions() as $dimension => $sizeLabel) {
+            $sizeOptions .= '<option value="' . $dimension . '">' . $this->escape($sizeLabel) . '</option>';
+        }
+
+        return <<<HTML
+<form method="post" action="/artwork/export" class="artwork-export-controls">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <input type="hidden" name="artwork_id" value="{$artworkId}">
+    <label>Format<br><select name="export_format">{$formatOptions}</select></label>
+    <label>Size<br><select name="export_max_dimension">{$sizeOptions}</select></label>
+    <label><input type="checkbox" name="export_watermark" value="1"> Apply watermark</label>
+    <button type="submit">Export image</button>
+</form>
+HTML;
+    }
+
+    /**
+     * Streams an exported copy of an artwork's primary image. Gated to the
+     * same tenant owner/admin audience as artworkExportForm() — this is not
+     * a public download endpoint.
+     */
+    public function exportArtwork(Request $request, TenantContext $tenant): Response
+    {
+        $roles = new RequireTenantRoleBrowser(new MembershipRepository($this->pdo));
+        if (!$roles->allows($this->currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+        if (!$this->csrf || !$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::invalidCsrf();
+        }
+
+        $artworkId = max(0, (int) ($_POST['artwork_id'] ?? 0));
+        $format = (string) ($_POST['export_format'] ?? 'original');
+        if (!in_array($format, ArtworkExportService::supportedFormats(), true)) {
+            $format = 'original';
+        }
+        $maxDimension = max(0, (int) ($_POST['export_max_dimension'] ?? 0)) ?: null;
+        $applyWatermark = isset($_POST['export_watermark']);
+
+        try {
+            $export = (new ArtworkExportService(
+                $this->pdo,
+                new WatermarkService(new TenantSettingsRepository($this->pdo), $this->pdo),
+                dirname(__DIR__, 4),
+            ))->export($tenant, $artworkId, $format, $maxDimension, $applyWatermark);
+        } catch (Throwable $exception) {
+            return Response::html('<h1>Export failed</h1><p>' . $this->escape($exception->getMessage()) . '</p>', 422);
+        }
+
+        return new Response($export['bytes'], 200, [
+            'Content-Type' => $export['mime'],
+            'Content-Disposition' => 'attachment; filename="' . $export['filename'] . '"',
+        ]);
     }
 
     public function about(Request $request, TenantContext $tenant): Response

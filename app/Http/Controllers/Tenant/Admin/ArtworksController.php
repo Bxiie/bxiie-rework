@@ -16,8 +16,11 @@ use App\Platform\Audit\AuditLogRepository;
 use App\Support\Pagination\Pagination;
 use App\Support\Flash\FlashMessages;
 use App\Support\Security\CsrfTokenService;
+use App\Tenant\Media\ArtworkExportService;
 use App\Tenant\Media\MediaRotationService;
+use App\Tenant\Media\WatermarkService;
 use App\Tenant\Sales\ArtworkSaleAdminForm;
+use App\Tenant\Settings\TenantSettingsRepository;
 use PDO;
 use App\Http\View\AdminLayout;
 use Throwable;
@@ -410,6 +413,15 @@ HTML;
                 'UTF-8',
             );
             $rotationCsrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
+            $exportCsrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
+            $exportFormatOptions = '';
+            foreach (['original' => 'Keep original format', 'jpeg' => 'JPEG', 'png' => 'PNG', 'webp' => 'WebP'] as $formatValue => $formatLabel) {
+                $exportFormatOptions .= '<option value="' . $formatValue . '">' . $formatLabel . '</option>';
+            }
+            $exportSizeOptions = '';
+            foreach (ArtworkExportService::resizeOptions() as $dimension => $sizeLabel) {
+                $exportSizeOptions .= '<option value="' . $dimension . '">' . htmlspecialchars($sizeLabel, ENT_QUOTES, 'UTF-8') . '</option>';
+            }
             $artworkPreview = <<<HTML
     <figure class="artwork-edit-preview">
         <img src="{$previewSrc}" alt="{$title}">
@@ -421,6 +433,14 @@ HTML;
         <input type="hidden" name="return_to" value="{$returnToValue}">
         <button type="submit" name="direction" value="left">Rotate left 90°</button>
         <button type="submit" name="direction" value="right">Rotate right 90°</button>
+    </form>
+    <form method="post" action="/admin/artworks/export" class="admin-inline-form artwork-export-controls">
+        <input type="hidden" name="csrf_token" value="{$exportCsrf}">
+        <input type="hidden" name="artwork_id" value="{$id}">
+        <label>Format<br><select name="export_format">{$exportFormatOptions}</select></label>
+        <label>Size<br><select name="export_max_dimension">{$exportSizeOptions}</select></label>
+        <label><input type="checkbox" name="export_watermark" value="1"> Apply watermark</label>
+        <button type="submit">Export image</button>
     </form>
 HTML;
         } else {
@@ -684,6 +704,43 @@ HTML;
         }
         $returnTo = $this->safeArtworkReturnTo((string) ($_POST['return_to'] ?? $this->artworkGridReturnUrl()));
         return new Response('', 303, ['Location' => '/admin/artworks/edit?id=' . $artworkId . '&return_to=' . rawurlencode($returnTo)]);
+    }
+
+    public function exportImage(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::invalidCsrf();
+        }
+
+        $artworkId = max(0, (int) ($_POST['artwork_id'] ?? 0));
+        if (!$this->findArtwork($tenant, $artworkId)) {
+            return Response::html('<h1>Invalid artwork</h1>', 422);
+        }
+
+        $format = (string) ($_POST['export_format'] ?? 'original');
+        if (!in_array($format, ArtworkExportService::supportedFormats(), true)) {
+            $format = 'original';
+        }
+        $maxDimension = max(0, (int) ($_POST['export_max_dimension'] ?? 0)) ?: null;
+        $applyWatermark = isset($_POST['export_watermark']);
+
+        try {
+            $export = (new ArtworkExportService(
+                $this->pdo,
+                new WatermarkService(new TenantSettingsRepository($this->pdo), $this->pdo),
+                dirname(__DIR__, 5),
+            ))->export($tenant, $artworkId, $format, $maxDimension, $applyWatermark);
+        } catch (Throwable $exception) {
+            return Response::html('<h1>Export failed</h1><p>' . htmlspecialchars($exception->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>', 422);
+        }
+
+        return new Response($export['bytes'], 200, [
+            'Content-Type' => $export['mime'],
+            'Content-Disposition' => 'attachment; filename="' . $export['filename'] . '"',
+        ]);
     }
 
 
