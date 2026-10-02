@@ -59,6 +59,7 @@ final class ArtworksController
         $imageFilter = (string) ($_GET['image'] ?? '');
         $typeFilter = (string) ($_GET['artwork_type'] ?? '');
         $unassignedSection = ($_GET['section_id'] ?? '') === 'unassigned';
+        $homeFilter = ($_GET['section_id'] ?? '') === 'home';
         $sectionFilter = max(0, (int) ($_GET['section_id'] ?? 0));
         $page = max(1, (int) ($_GET['page'] ?? 1));
         $pageSize = Pagination::allowedLimitFromQuery(
@@ -130,6 +131,10 @@ final class ArtworksController
                 JOIN portfolio_sections ps ON ps.id = af.section_id AND ps.tenant_id = a.tenant_id
                 WHERE af.artwork_id = a.id
             )';
+        } elseif ($homeFilter) {
+            // Home Page is a virtual section backed by homepage_artwork_assignments,
+            // not a row in portfolio_sections, so it needs its own branch here.
+            $where .= ' AND EXISTS (SELECT 1 FROM homepage_artwork_assignments h WHERE h.tenant_id = a.tenant_id AND h.artwork_id = a.id)';
         } elseif ($sectionFilter > 0) {
             $where .= ' AND EXISTS (SELECT 1 FROM artwork_section_assignments af WHERE af.artwork_id = a.id AND af.section_id = :section_filter)';
             $params['section_filter'] = $sectionFilter;
@@ -190,7 +195,7 @@ final class ArtworksController
             'sale_status' => $saleFilter,
             'image' => $imageFilter,
             'artwork_type' => $typeFilter,
-            'section_id' => $unassignedSection ? 'unassigned' : ($sectionFilter > 0 ? $sectionFilter : ''),
+            'section_id' => $unassignedSection ? 'unassigned' : ($homeFilter ? 'home' : ($sectionFilter > 0 ? $sectionFilter : '')),
             'per_page' => $pageSize,
         ], static fn ($value): bool => $value !== '');
         $returnTo = '/admin/artworks?' . http_build_query(array_merge($baseQuery, ['page' => $page]));
@@ -263,7 +268,9 @@ HTML;
         }
 
         $unassignedSelected = $unassignedSection ? ' selected' : '';
+        $homeSelected = $homeFilter ? ' selected' : '';
         $sectionOptions = '<option value="">All sections</option>'
+            . '<option value="home"' . $homeSelected . '>Home Page</option>'
             . '<option value="unassigned"' . $unassignedSelected . '>No assigned section</option>';
         foreach ($sections as $section) {
             $sid = (int) $section['id'];
