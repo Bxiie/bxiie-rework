@@ -17,6 +17,7 @@ use App\Support\Pagination\Pagination;
 use App\Support\Flash\FlashMessages;
 use App\Support\Security\CsrfTokenService;
 use App\Tenant\Media\ArtworkExportService;
+use App\Tenant\Media\ArtworkImageReplaceService;
 use App\Tenant\Media\MediaRotationService;
 use App\Tenant\Media\WatermarkService;
 use App\Tenant\Sales\ArtworkSaleAdminForm;
@@ -414,6 +415,7 @@ HTML;
                 'UTF-8',
             );
             $rotationCsrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
+            $replaceCsrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
             $artworkPreview = <<<HTML
     <figure class="artwork-edit-preview">
         <img src="{$previewSrc}" alt="{$title}">
@@ -425,6 +427,13 @@ HTML;
         <input type="hidden" name="return_to" value="{$returnToValue}">
         <button type="submit" name="direction" value="left">Rotate left 90°</button>
         <button type="submit" name="direction" value="right">Rotate right 90°</button>
+    </form>
+    <form method="post" action="/admin/artworks/replace-image" enctype="multipart/form-data" class="admin-inline-form artwork-replace-image-controls">
+        <input type="hidden" name="csrf_token" value="{$replaceCsrf}">
+        <input type="hidden" name="artwork_id" value="{$id}">
+        <input type="hidden" name="return_to" value="{$returnToValue}">
+        <label>Replace image<br><input type="file" name="artwork_image" accept="image/jpeg,image/png,image/webp,image/gif" required></label>
+        <button type="submit">Replace image</button>
     </form>
 HTML;
 
@@ -451,7 +460,17 @@ HTML;
 </fieldset>
 HTML;
         } else {
-            $artworkPreview = '<p class="admin-muted">This artwork does not currently have a primary image.</p>';
+            $addImageCsrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
+            $artworkPreview = <<<HTML
+    <p class="admin-muted">This artwork does not currently have a primary image.</p>
+    <form method="post" action="/admin/artworks/replace-image" enctype="multipart/form-data" class="admin-inline-form artwork-replace-image-controls">
+        <input type="hidden" name="csrf_token" value="{$addImageCsrf}">
+        <input type="hidden" name="artwork_id" value="{$id}">
+        <input type="hidden" name="return_to" value="{$returnToValue}">
+        <label>Add image<br><input type="file" name="artwork_image" accept="image/jpeg,image/png,image/webp,image/gif" required></label>
+        <button type="submit">Upload image</button>
+    </form>
+HTML;
         }
         $portfolioChecked = in_array('portfolio_images', $selectedTypeCodes, true) ? ' checked' : '';
         $siteChecked = in_array('site_images', $selectedTypeCodes, true) ? ' checked' : '';
@@ -710,6 +729,34 @@ HTML;
             FlashMessages::success('Artwork image rotated ' . $direction . '.');
         } catch (Throwable $exception) {
             return Response::html('<h1>Could not rotate image</h1><p>' . htmlspecialchars($exception->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>', 422);
+        }
+        $returnTo = $this->safeArtworkReturnTo((string) ($_POST['return_to'] ?? $this->artworkGridReturnUrl()));
+        return new Response('', 303, ['Location' => '/admin/artworks/edit?id=' . $artworkId . '&return_to=' . rawurlencode($returnTo)]);
+    }
+
+    public function replaceImage(Request $request, TenantContext $tenant, ?array $currentUser): Response
+    {
+        if (!$this->roles->allows($currentUser, $tenant, ['tenant_owner', 'tenant_admin', 'owner', 'admin'])) {
+            return Response::html(ErrorPage::unauthorized('/login', 'Tenant admin access required.'), 403);
+        }
+        if (!$this->csrf->validate((string) ($_POST['csrf_token'] ?? ''))) {
+            return Response::invalidCsrf();
+        }
+        $artworkId = max(0, (int) ($_POST['artwork_id'] ?? 0));
+        if (!$this->findArtwork($tenant, $artworkId)) {
+            return Response::html('<h1>Invalid artwork</h1>', 422);
+        }
+        $file = $_FILES['artwork_image'] ?? null;
+        if (!is_array($file)) {
+            return Response::html('<h1>Choose an image</h1><p>Select an image file to upload.</p>', 422);
+        }
+        try {
+            (new ArtworkImageReplaceService($this->pdo, dirname(__DIR__, 5)))->replaceArtworkPrimary($tenant, $artworkId, $file);
+            (new TenantDirectoryProfileRepository($this->pdo))->syncTenant($tenant->tenantId);
+            $this->auditLog->record('tenant.artwork.image_replaced', $tenant->tenantId, (int) ($currentUser['user_id'] ?? 0), 'artwork', (string) $artworkId, [], $request->server('REMOTE_ADDR'));
+            FlashMessages::success('Artwork image replaced.');
+        } catch (Throwable $exception) {
+            return Response::html('<h1>Could not replace image</h1><p>' . htmlspecialchars($exception->getMessage(), ENT_QUOTES, 'UTF-8') . '</p>', 422);
         }
         $returnTo = $this->safeArtworkReturnTo((string) ($_POST['return_to'] ?? $this->artworkGridReturnUrl()));
         return new Response('', 303, ['Location' => '/admin/artworks/edit?id=' . $artworkId . '&return_to=' . rawurlencode($returnTo)]);

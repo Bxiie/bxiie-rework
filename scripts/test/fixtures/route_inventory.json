@@ -1022,6 +1022,11 @@
     {
         "scope": "tenant",
         "method": "POST",
+        "path": "/admin/artworks/replace-image"
+    },
+    {
+        "scope": "tenant",
+        "method": "POST",
         "path": "/admin/artworks/restore"
     },
     {

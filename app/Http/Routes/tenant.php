@@ -241,6 +241,7 @@ return static function (Router $router, array $context): void {
         $router->get('/admin/artworks/edit', fn (Request $request): Response => $artworksController->edit($request, $tenant, $currentUser));
         $router->post('/admin/artworks/edit', fn (Request $request): Response => $artworksController->update($request, $tenant, $currentUser));
         $router->post('/admin/artworks/rotate', fn (Request $request): Response => $artworksController->rotateImage($request, $tenant, $currentUser));
+        $router->post('/admin/artworks/replace-image', fn (Request $request): Response => $artworksController->replaceImage($request, $tenant, $currentUser));
         $router->post('/admin/artworks/export', fn (Request $request): Response => $artworksController->exportImage($request, $tenant, $currentUser));
         $router->post('/admin/artworks/status', fn (Request $request): Response => $artworksController->updateStatus($request, $tenant, $currentUser));
         $router->post('/admin/artworks/directory-thumbnail', fn (Request $request): Response => $artworksController->updateDirectoryThumbnail($request, $tenant, $currentUser));
