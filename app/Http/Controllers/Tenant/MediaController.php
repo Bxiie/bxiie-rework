@@ -325,7 +325,47 @@ final class MediaController
                 'media_uuid' => $mediaUuid,
             ]);
 
-            return (int) $stmt->fetchColumn() > 0;
+            if ((int) $stmt->fetchColumn() > 0) {
+                return true;
+            }
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return $this->isHomeHeroMedia($tenant, $mediaUuid);
+    }
+
+    /**
+     * The home-page hero is a regular artwork image, not a stored
+     * presentation-media UUID setting, so it needs its own lookup: resolve
+     * the tenant's home_hero_artwork_id to its current primary media UUID
+     * and compare. This tracks hero reassignment and image replacement
+     * automatically, unlike a fixed stored UUID.
+     */
+    private function isHomeHeroMedia(TenantContext $tenant, string $mediaUuid): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare(
+                "SELECT 1
+                   FROM tenant_settings hero
+                   JOIN artworks a
+                     ON a.tenant_id = hero.tenant_id
+                    AND a.id = CAST(hero.setting_value AS UNSIGNED)
+                   JOIN media_assets m
+                     ON m.id = a.primary_media_id
+                    AND m.tenant_id = a.tenant_id
+                  WHERE hero.tenant_id = :tenant_id
+                    AND hero.setting_key = 'home_hero_artwork_id'
+                    AND hero.setting_value <> ''
+                    AND m.uuid = :media_uuid
+                  LIMIT 1"
+            );
+            $stmt->execute([
+                'tenant_id' => $tenant->tenantId,
+                'media_uuid' => $mediaUuid,
+            ]);
+
+            return (bool) $stmt->fetchColumn();
         } catch (\Throwable) {
             return false;
         }
