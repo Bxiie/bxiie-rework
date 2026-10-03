@@ -4,12 +4,18 @@
     const rootSelector = '[data-artwork-pager-root]';
     let requestController = null;
     let placementColumnQuery = '';
-    let placementAssignmentFilter = '';
 
     const currentRoot = () => document.querySelector(rootSelector);
 
     const normalize = (value) => String(value || '').trim().toLocaleLowerCase();
 
+    // Shows/hides whole columns by name — a client-side declutter aid only.
+    // Which artworks are assigned to Home/a section is a real server-side
+    // filter (the ?filter= query param, rendered as a link in the column
+    // header) rather than client-side row hiding: a tenant's handful of
+    // assigned artworks can easily be scattered across many pages, so
+    // hiding rows within only the current page's load would show an
+    // arbitrary, often near-empty, subset instead of the real result.
     const applyPlacementFilters = () => {
         const root = currentRoot();
         const matrix = root?.querySelector('[data-placement-matrix]');
@@ -24,43 +30,13 @@
             cell.hidden = query !== '' && !columnName.includes(query);
         });
 
-        let visibleRows = 0;
-        matrix.querySelectorAll('tbody tr').forEach((row) => {
-            if (!placementAssignmentFilter) {
-                row.hidden = false;
-                visibleRows += 1;
-                return;
-            }
-            const cell = row.querySelector(`[data-placement-assignment="${CSS.escape(placementAssignmentFilter)}"]`);
-            const checkbox = cell?.querySelector('input[type="checkbox"]');
-            row.hidden = !checkbox?.checked;
-            if (!row.hidden) {
-                visibleRows += 1;
-            }
-        });
-
-        root.querySelectorAll('[data-placement-assignment-filter]').forEach((button) => {
-            button.setAttribute('aria-pressed', button.dataset.placementAssignmentFilter === placementAssignmentFilter ? 'true' : 'false');
-        });
-        const reset = root.querySelector('[data-placement-assignment-reset]');
-        if (reset) {
-            reset.hidden = placementAssignmentFilter === '';
-        }
         const search = root.querySelector('[data-placement-column-search]');
         if (search && search.value !== placementColumnQuery) {
             search.value = placementColumnQuery;
         }
         const status = root.querySelector('[data-placement-filter-status]');
         if (status) {
-            const parts = [];
-            if (query) {
-                parts.push(`Columns matching “${placementColumnQuery}”`);
-            }
-            if (placementAssignmentFilter) {
-                const active = root.querySelector(`[data-placement-assignment-filter="${CSS.escape(placementAssignmentFilter)}"]`);
-                parts.push(`${visibleRows} artworks assigned to ${active?.textContent?.trim() || 'selected column'}`);
-            }
-            status.textContent = parts.join(' · ');
+            status.textContent = query ? `Columns matching “${placementColumnQuery}”` : '';
         }
     };
 
@@ -168,27 +144,10 @@
     });
 
     document.addEventListener('click', (event) => {
-        const columnFilter = event.target.closest(`${rootSelector} [data-placement-assignment-filter]`);
-        if (columnFilter) {
-            event.preventDefault();
-            const next = columnFilter.dataset.placementAssignmentFilter || '';
-            placementAssignmentFilter = placementAssignmentFilter === next ? '' : next;
-            applyPlacementFilters();
-            return;
-        }
-
         const columnReset = event.target.closest(`${rootSelector} [data-placement-column-reset]`);
         if (columnReset) {
             event.preventDefault();
             placementColumnQuery = '';
-            applyPlacementFilters();
-            return;
-        }
-
-        const assignmentReset = event.target.closest(`${rootSelector} [data-placement-assignment-reset]`);
-        if (assignmentReset) {
-            event.preventDefault();
-            placementAssignmentFilter = '';
             applyPlacementFilters();
         }
     });

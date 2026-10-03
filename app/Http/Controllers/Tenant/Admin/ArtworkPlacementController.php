@@ -39,19 +39,54 @@ final class ArtworkPlacementController
             50,
             Pagination::standardPageSizes(),
         );
-        $result = $this->artworksPage($tenant, $q, $page, $pageSize);
         $sections = $this->sections($tenant);
+        // Validated against real sections so a stale/tampered value (e.g. a
+        // deleted section) falls back to no filter instead of matching
+        // nothing or erroring.
+        $filter = $this->normalizedAssignmentFilter((string) ($_GET['filter'] ?? ''), $sections);
+        $result = $this->artworksPage($tenant, $q, $page, $pageSize, $filter);
         $artworks = $result['items'];
         $visibleIds = array_map('intval', array_column($artworks, 'id'));
         $assignments = $this->sectionAssignmentsForArtworks($tenant, $visibleIds);
         $homeAssignments = $this->homeAssignmentsForArtworks($tenant, $visibleIds);
 
+        // The filter must query the whole catalog server-side, not just hide
+        // rows already on the current page: a tenant can easily have far more
+        // artworks than fit on one page, with its few Home/section-assigned
+        // ones scattered across many pages, which made the previous
+        // client-side-only row filter show an arbitrary handful of matches
+        // (or none) instead of the real result.
+        $filterBase = array_filter([
+            'q' => $q,
+            'per_page' => $pageSize,
+        ], static fn ($v): bool => $v !== '');
+        $activeFilterLabel = null;
+
         $sectionHeaders = '';
         foreach ($sections as $section) {
             $sectionId = (int) $section['id'];
             $sectionName = $this->e((string) $section['name']);
-            $sectionHeaders .= '<th scope="col" data-placement-column data-placement-column-name="' . $sectionName . '"><button type="button" class="placement-column-filter" data-placement-assignment-filter="section-' . $sectionId . '" aria-pressed="false" title="Show only artworks assigned to ' . $sectionName . '">' . $sectionName . '</button></th>';
+            $sectionFilterValue = 'section-' . $sectionId;
+            $active = $filter === $sectionFilterValue;
+            if ($active) {
+                $activeFilterLabel = $sectionName;
+            }
+            $href = $this->e($this->filterToggleHref('/admin/artworks/placement', $filterBase, $sectionFilterValue, $active));
+            $pressed = $active ? 'true' : 'false';
+            $title = $this->e($active ? 'Showing only artworks assigned to ' . $sectionName . ' — click to clear' : 'Show only artworks assigned to ' . $sectionName);
+            $label = $sectionName . ($active ? ' ✕' : '');
+            $sectionHeaders .= '<th scope="col" data-placement-column data-placement-column-name="' . $sectionName . '"><a data-artwork-page-link class="placement-column-filter" href="' . $href . '" aria-pressed="' . $pressed . '" title="' . $title . '">' . $label . '</a></th>';
         }
+
+        $homeActive = $filter === 'home';
+        if ($homeActive) {
+            $activeFilterLabel = 'Home page';
+        }
+        $homeHref = $this->e($this->filterToggleHref('/admin/artworks/placement', $filterBase, 'home', $homeActive));
+        $homePressed = $homeActive ? 'true' : 'false';
+        $homeTitle = $this->e($homeActive ? 'Showing only artworks assigned to Home page — click to clear' : 'Show only artworks assigned to Home page');
+        $homeLabel = 'Home page' . ($homeActive ? ' ✕' : '');
+        $homeHeaderCell = '<th data-placement-column data-placement-column-name="Home page"><a data-artwork-page-link class="placement-column-filter" href="' . $homeHref . '" aria-pressed="' . $homePressed . '" title="' . $homeTitle . '">' . $homeLabel . '</a></th>';
 
         $rows = '';
         foreach ($artworks as $artwork) {
@@ -60,12 +95,12 @@ final class ArtworkPlacementController
             $status = $this->e((string) $artwork['status']);
             $thumb = $this->thumbnailHtml($artwork, $title, 112, 84);
             $homeChecked = isset($homeAssignments[$id]) ? ' checked' : '';
-            $cells = '<td class="placement-check" data-placement-column data-placement-column-name="Home page" data-placement-assignment="home"><label><input type="checkbox" name="home_artwork_ids[]" value="' . $id . '"' . $homeChecked . '> Home</label></td>';
+            $cells = '<td class="placement-check" data-placement-column data-placement-column-name="Home page"><label><input type="checkbox" name="home_artwork_ids[]" value="' . $id . '"' . $homeChecked . '> Home</label></td>';
             foreach ($sections as $section) {
                 $sectionId = (int) $section['id'];
                 $sectionName = $this->e((string) $section['name']);
                 $checked = isset($assignments[$id][$sectionId]) ? ' checked' : '';
-                $cells .= '<td class="placement-check" data-placement-column data-placement-column-name="' . $sectionName . '" data-placement-assignment="section-' . $sectionId . '"><label><input type="checkbox" name="sections[' . $id . '][]" value="' . $sectionId . '"' . $checked . '> ' . $sectionName . '</label></td>';
+                $cells .= '<td class="placement-check" data-placement-column data-placement-column-name="' . $sectionName . '"><label><input type="checkbox" name="sections[' . $id . '][]" value="' . $sectionId . '"' . $checked . '> ' . $sectionName . '</label></td>';
             }
             $rows .= '<tr><td>' . $thumb . '</td><td><strong>' . $title . '</strong><br><small>ID ' . $id . ' · ' . $status . '</small><input type="hidden" name="visible_artwork_ids[]" value="' . $id . '"></td>' . $cells . '</tr>';
         }
@@ -76,6 +111,7 @@ final class ArtworkPlacementController
         $base = array_filter([
             'q' => $q,
             'per_page' => $pageSize,
+            'filter' => $filter,
         ], static fn ($v): bool => $v !== '');
         $pageSizeOptions = '';
         foreach (Pagination::standardPageSizes() as $sizeOption) {
@@ -87,6 +123,9 @@ final class ArtworkPlacementController
         $notice = ($_GET['notice'] ?? '') === 'saved' ? '<p class="notice">Artwork placements saved for this page.</p>' : '';
         $csrf = $this->e($this->csrf->getOrCreate());
         $summary = (int) $result['total'] === 0 ? 'No artworks' : 'Showing ' . (((int) $result['page'] - 1) * $pageSize + 1) . '–' . min((int) $result['page'] * $pageSize, (int) $result['total']) . ' of ' . (int) $result['total'];
+        if ($activeFilterLabel !== null) {
+            $summary .= ' · Filtered by ' . $activeFilterLabel;
+        }
         $returnTo = '/admin/artworks/placement?' . http_build_query(array_merge($base, ['page' => (int) $result['page']]));
         $body = <<<HTML
 <main class="admin-main" style="max-width:1280px;margin:2rem auto;padding:0 1rem;">
@@ -96,14 +135,14 @@ final class ArtworkPlacementController
 {$notice}
 <section data-artwork-pager-root tabindex="-1">
 <form data-artwork-page-form method="get" action="/admin/artworks/placement" style="display:flex;gap:.75rem;align-items:end;flex-wrap:wrap;"><label>Search artworks<br><input type="search" name="q" value="{$this->e($q)}"></label><label>Artworks per page<br><select name="per_page">{$pageSizeOptions}</select></label><button type="submit">Apply</button><a href="/admin/artworks/placement">Clear</a></form>
-<div class="placement-column-tools" style="display:flex;gap:.75rem;align-items:end;flex-wrap:wrap;margin:1rem 0;"><label>Visible columns<br><input type="search" data-placement-column-search placeholder="Type a column name" autocomplete="off"></label><button type="button" data-placement-column-reset>All columns</button><button type="button" data-placement-assignment-reset hidden>All artworks</button><span data-placement-filter-status role="status" aria-live="polite"></span></div>
+<div class="placement-column-tools" style="display:flex;gap:.75rem;align-items:end;flex-wrap:wrap;margin:1rem 0;"><label>Visible columns<br><input type="search" data-placement-column-search placeholder="Type a column name" autocomplete="off"></label><button type="button" data-placement-column-reset>All columns</button><span data-placement-filter-status role="status" aria-live="polite"></span></div>
 <p><strong>{$summary}</strong></p>{$pager}
 <form method="post" action="/admin/artworks/placement"><input type="hidden" name="csrf_token" value="{$csrf}"><input type="hidden" name="return_to" value="{$this->e($returnTo)}">
-<div style="overflow-x:auto;"><table class="placement-matrix" data-placement-matrix border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;"><thead><tr><th>Thumbnail</th><th>Artwork</th><th data-placement-column data-placement-column-name="Home page"><button type="button" class="placement-column-filter" data-placement-assignment-filter="home" aria-pressed="false" title="Show only artworks assigned to Home page">Home page</button></th>{$sectionHeaders}</tr></thead><tbody>{$rows}</tbody></table></div>
+<div style="overflow-x:auto;"><table class="placement-matrix" data-placement-matrix border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;"><thead><tr><th>Thumbnail</th><th>Artwork</th>{$homeHeaderCell}{$sectionHeaders}</tr></thead><tbody>{$rows}</tbody></table></div>
 <p><button type="submit">Save placements for this page</button></p></form>{$pager}
 </section>
 </main>
-<script src="/assets/artwork-pagination.js?v=20260622" defer></script>
+<script src="/assets/artwork-pagination.js?v=20261002-placement-server-filter" defer></script>
 HTML;
         return Response::html(AdminLayout::render('Artwork Placement', $body));
     }
@@ -304,13 +343,23 @@ HTML;
         return $stmt->fetchAll();
     }
 
-    private function artworksPage(TenantContext $tenant, string $q, int $page, int $pageSize): array
+    private function artworksPage(TenantContext $tenant, string $q, int $page, int $pageSize, string $filter = ''): array
     {
         $where = "a.tenant_id = :tenant_id AND a.status <> 'archived'";
         $params = ['tenant_id' => $tenant->tenantId];
         if ($q !== '') {
             $where .= ' AND (a.title LIKE :q OR a.medium LIKE :q)';
             $params['q'] = '%' . $q . '%';
+        }
+        if ($filter === 'home') {
+            $where .= ' AND EXISTS (SELECT 1 FROM homepage_artwork_assignments h WHERE h.tenant_id = a.tenant_id AND h.artwork_id = a.id)';
+        } elseif (preg_match('/^section-(\d+)$/', $filter, $filterMatch) === 1) {
+            $where .= ' AND EXISTS (
+                SELECT 1 FROM artwork_section_assignments af
+                JOIN portfolio_sections ps ON ps.id = af.section_id AND ps.tenant_id = a.tenant_id
+                WHERE af.artwork_id = a.id AND af.section_id = :filter_section_id
+            )';
+            $params['filter_section_id'] = (int) $filterMatch[1];
         }
         $count = $this->pdo->prepare("SELECT COUNT(*) FROM artworks a WHERE {$where}");
         $count->execute($params);
@@ -325,6 +374,45 @@ HTML;
         $stmt->bindValue('offset_count', ($page - 1) * $pageSize, PDO::PARAM_INT);
         $stmt->execute();
         return ['items' => $stmt->fetchAll(), 'total' => $total, 'page' => $page, 'page_count' => $pageCount];
+    }
+
+    /**
+     * Validates a ?filter= value against real sections so a stale or
+     * tampered value (e.g. a deleted section) safely falls back to no
+     * filter instead of matching nothing or throwing.
+     *
+     * @param list<array<string,mixed>> $sections
+     */
+    private function normalizedAssignmentFilter(string $raw, array $sections): string
+    {
+        if ($raw === 'home') {
+            return 'home';
+        }
+        if (preg_match('/^section-(\d+)$/', $raw, $matches) === 1) {
+            $sectionId = (int) $matches[1];
+            foreach ($sections as $section) {
+                if ((int) $section['id'] === $sectionId) {
+                    return $raw;
+                }
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Builds a link that toggles one assignment filter on or off, always
+     * landing back on page 1 since the filter changes the result set.
+     */
+    private function filterToggleHref(string $path, array $base, string $filterValue, bool $active): string
+    {
+        $query = $base;
+        unset($query['filter']);
+        if (!$active) {
+            $query['filter'] = $filterValue;
+        }
+
+        return $path . '?' . http_build_query($query);
     }
 
     private function validArtworkIds(TenantContext $tenant, array $ids): array
