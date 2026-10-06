@@ -9,6 +9,7 @@ WorkingDirectory=/var/www/artsfolio
 Environment=ARTSFOLIO_ENV_FILE=/etc/artsfolio/artsfolio.env
 Environment=ARTSFOLIO_WORKER_NAME=background-%i
 Environment=ARTSFOLIO_BACKGROUND_STALE_MINUTES=30
+Environment=ARTSFOLIO_BACKGROUND_MAX_ATTEMPTS=5
 ExecStart=/usr/bin/php /var/www/artsfolio/scripts/workers/run_forever.php
 Restart=always
 RestartSec=5

@@ -15,6 +15,7 @@ use App\Platform\Domains\DomainArtifactRepository;
 use App\Platform\Domains\DnsVerifier;
 use App\Platform\Email\EmailOutboxRepository;
 use App\Platform\Jobs\BackgroundJobRepository;
+use App\Platform\Jobs\JobAttemptRepository;
 use App\Platform\Jobs\Handlers\AnalyticsRollupJobHandler;
 use App\Platform\Jobs\Handlers\RenderVhostJobHandler;
 use App\Platform\Jobs\Handlers\ReleaseExpiredSalesReservationsJobHandler;
@@ -44,6 +45,7 @@ artsfolio_worker_heartbeat($workerName, 'alive', ['entrypoint' => 'scripts/worke
 
 $pdo = Database::connect($root);
 $jobs = new BackgroundJobRepository($pdo);
+$jobAttempts = new JobAttemptRepository($pdo);
 $staleMinutes = max(1, (int) (getenv('ARTSFOLIO_BACKGROUND_STALE_MINUTES') ?: 30));
 $recovered = $jobs->requeueRunningOlderThanMinutes($staleMinutes);
 if ($recovered > 0) {
@@ -57,6 +59,8 @@ if (!$job) {
     echo "No queued jobs available.\n";
     exit(0);
 }
+
+$attemptStartedAt = date('Y-m-d H:i:s');
 
 try {
     artsfolio_worker_heartbeat($workerName, 'running', ['job_id' => (int) $job['id'], 'job_type' => (string) $job['job_type']]);
@@ -195,13 +199,21 @@ try {
 
     artsfolio_worker_heartbeat($workerName, 'alive', ['last_job_id' => (int) $job['id'], 'last_job_type' => (string) $job['job_type']]);
     echo "Completed job {$job['id']} of type {$job['job_type']}.\n";
+    $jobAttempts->record((int) $job['id'], 'complete', null, $attemptStartedAt, date('Y-m-d H:i:s'));
     $jobs->releaseExecutionLock((int) $job['id']);
 } catch (\Throwable $e) {
-    $jobs->markFailed((int) $job['id'], $e->getMessage());
-    artsfolio_worker_heartbeat($workerName, 'failed', ['job_id' => (int) $job['id'], 'error' => $e->getMessage()]);
-    fwrite(STDERR, "Failed job {$job['id']}: {$e->getMessage()}\n");
+    // markFailed() itself decides retry vs terminal failure based on the
+    // job's max_attempts budget: while attempts remain, it requeues with
+    // backoff and returns false; only once exhausted does it set the
+    // terminal 'failed' status that the queue.jobs.failed health alert
+    // counts. A non-exhausted retry is not reported as a worker failure —
+    // that's the point of a configurable retry budget.
+    $exhausted = $jobs->markFailed((int) $job['id'], $e->getMessage());
+    $jobAttempts->record((int) $job['id'], $exhausted ? 'failed' : 'retry_scheduled', $e->getMessage(), $attemptStartedAt, date('Y-m-d H:i:s'));
+    artsfolio_worker_heartbeat($workerName, $exhausted ? 'failed' : 'retrying', ['job_id' => (int) $job['id'], 'error' => $e->getMessage()]);
+    fwrite(STDERR, ($exhausted ? 'Failed' : 'Retry scheduled for') . " job {$job['id']}: {$e->getMessage()}\n");
     $jobs->releaseExecutionLock((int) $job['id']);
-    exit(1);
+    exit($exhausted ? 1 : 0);
 }
 
 // End of file.

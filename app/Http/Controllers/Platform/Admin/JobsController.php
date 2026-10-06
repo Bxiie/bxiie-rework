@@ -94,7 +94,7 @@ HTML;
             . '<dt>Tenant</dt><dd>' . AdminLayout::escape((string) ($job['tenant_slug'] ?? $job['tenant_id'] ?? '')) . '</dd>'
             . '<dt>Type</dt><dd>' . AdminLayout::escape((string) $job['job_type']) . '</dd>'
             . '<dt>Status</dt><dd>' . AdminLayout::escape((string) $job['status']) . '</dd>'
-            . '<dt>Attempts</dt><dd>' . AdminLayout::escape((string) ($job['attempts'] ?? '')) . '</dd>'
+            . '<dt>Attempts</dt><dd>' . AdminLayout::escape((string) ($job['attempts'] ?? '')) . ' / ' . AdminLayout::escape((string) ($job['max_attempts'] ?? '')) . '</dd>'
             . '<dt>Execution</dt><dd>' . $this->formatJobExecutionTime($job) . '</dd>'
             . '<dt>Created</dt><dd>' . AdminLayout::escape((string) $job['created_at']) . '</dd>'
             . '<dt>Updated</dt><dd>' . AdminLayout::escape((string) ($job['updated_at'] ?? '')) . '</dd>'

@@ -13,11 +13,24 @@ $checks = [
         'hash(\'sha1\', $jobType)',
         "status IN ('queued', 'running')",
         'releaseExecutionLock(',
+        // Configurable auto-retry budget: a job only becomes terminally
+        // 'failed' (and counted by queue.jobs.failed) once attempts reach
+        // max_attempts; until then markFailed() requeues it with backoff.
+        'private const DEFAULT_MAX_ATTEMPTS = 5',
+        'ARTSFOLIO_BACKGROUND_MAX_ATTEMPTS',
+        'private static function resolveMaxAttempts(?int $maxAttempts): int',
+        'public function markFailed(int $jobId, string $errorMessage): bool',
+        'private function retryDelaySeconds(int $attemptsSoFar): int',
+        'if ($attempts < $maxAttempts) {',
     ],
     'scripts/workers/run_once.php' => [
         "enqueueSingleton('analytics.rollup'",
         "enqueueSingleton('sales.inventory.release_expired'",
         '$jobs->releaseExecutionLock((int) $job[\'id\']);',
+        // A retry-scheduled (non-exhausted) failure must not be reported the
+        // same way as a true, exhausted failure.
+        '$exhausted = $jobs->markFailed((int) $job[\'id\'], $e->getMessage());',
+        'exit($exhausted ? 1 : 0);',
     ],
     'app/Platform/Monitoring/OperationsMonitor.php' => [
         "payment_status IN ('paid','complete','completed','succeeded','payment_succeeded')",
