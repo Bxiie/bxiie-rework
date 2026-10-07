@@ -464,6 +464,7 @@ HTML;
         <label><input type="checkbox" name="export_watermark" value="1"> Apply watermark</label>
         <button type="submit">Export image</button>
     </form>
+    <script src="/assets/artwork-export.js?v=20261006" defer></script>
 </fieldset>
 HTML;
         } else {
