@@ -67,6 +67,7 @@ final class AdminLayout
     <link rel="stylesheet" href="/assets/platform.css?v=20260708-logo-aspect">
     <link rel="stylesheet" href="/assets/platform-custom.css">
     <link rel="stylesheet" href="/assets/tenant-admin.css?v=20260917-checkbox-outlines">
+    <link rel="stylesheet" href="/assets/artwork-display.css?v=20261007">
     <script defer src="/assets/admin-color-fields.js?v=20260620-palette-contrast"></script>
     <link rel="stylesheet" href="/assets/admin-shell-refactor.css?v=20260623-email-outbox-containment">
     <script defer src="/assets/admin-typography-fields.js?v=20260620-typography-live"></script>

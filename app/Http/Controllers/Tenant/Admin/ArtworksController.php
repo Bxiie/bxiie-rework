@@ -83,8 +83,10 @@ final class ArtworksController
         }
         $params = ['tenant_id' => $tenant->tenantId];
         if ($q !== '') {
-            $where .= ' AND (a.title LIKE :q OR a.medium LIKE :q OR a.description LIKE :q)';
-            $params['q'] = '%' . $q . '%';
+            // Native PDO prepares require a distinct placeholder for each field.
+            $where .= " AND (a.title LIKE :q_title ESCAPE '!' OR a.medium LIKE :q_medium ESCAPE '!' OR a.description LIKE :q_description ESCAPE '!')";
+            $pattern = '%' . strtr($q, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
+            $params += ['q_title' => $pattern, 'q_medium' => $pattern, 'q_description' => $pattern];
         }
         if (in_array($statusFilter, ['draft', 'published', 'archived'], true)) {
             $where .= ' AND a.status = :status_filter';
@@ -300,6 +302,9 @@ HTML;
             default => '',
         };
 
+        $clearSearchQuery = $baseQuery;
+        unset($clearSearchQuery['q'], $clearSearchQuery['page']);
+        $clearSearchHref = $e('/admin/artworks?' . http_build_query($clearSearchQuery));
         $summary = $total === 0 ? 'No artworks' : 'Showing ' . ($offset + 1) . '–' . min($offset + $pageSize, $total) . ' of ' . $total;
         $body = <<<HTML
 <main>
@@ -330,7 +335,7 @@ HTML;
     </a>
 </section>
 <form data-artwork-page-form method="get" action="/admin/artworks" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:end;margin:1rem 0;">
-<label>Search<br><input type="search" name="q" value="{$e($q)}"></label>
+<label>Search by name or description<br><input type="search" name="q" value="{$e($q)}"></label>
 <label>Status<br><select name="status"><option value="">All</option><option value="draft"{$option($statusFilter,'draft')}>Draft</option><option value="published"{$option($statusFilter,'published')}>Published</option><option value="archived"{$option($statusFilter,'archived')}>Archived</option></select></label>
 <label>Sale<br><select name="sale_status"><option value="">All</option><option value="nfs"{$option($saleFilter,'nfs')}>Not for sale</option><option value="for_sale"{$option($saleFilter,'for_sale')}>For sale</option><option value="sold"{$option($saleFilter,'sold')}>Sold</option></select></label>
 <label>Artwork type<br><select name="artwork_type"><option value="">All artwork types</option><option value="portfolio"{$option($typeFilter,'portfolio')}>Portfolio</option><option value="site"{$option($typeFilter,'site')}>Site</option><option value="both"{$option($typeFilter,'both')}>Portfolio and site</option></select></label>
@@ -339,7 +344,7 @@ HTML;
 <label>Sort<br><select name="sort"><option value="created_desc"{$option($sort,'created_desc')}>Newest</option><option value="name"{$option($sort,'name')}>Name</option><option value="medium"{$option($sort,'medium')}>Medium</option><option value="date"{$option($sort,'date')}>Date/year</option><option value="status"{$option($sort,'status')}>Status</option></select></label>
 <label>Artworks per page<br><select name="per_page">{$pageSizeOptions}</select></label>
 <label><input type="checkbox" name="show_archived" value="1"{$showArchivedChecked}> Show archived items</label>
-<button type="submit">Apply</button><a href="/admin/artworks">Clear</a>
+<button type="submit">Apply</button><a data-artwork-page-link href="{$clearSearchHref}">Clear search</a> <a href="/admin/artworks">Reset all filters</a>
 </form>
 <p><strong>{$summary}</strong></p>{$pager}
 <div style="overflow-x:auto;"><table border="1" cellpadding="8" cellspacing="0"><thead><tr><th>Image</th><th>Title</th><th>Date/year</th><th>Medium</th><th>Portfolio sections</th><th>Status</th><th>Sale</th><th>Price</th><th>Notes</th><th>Directory thumbnail</th><th>Actions</th></tr></thead><tbody>{$items}</tbody></table></div>
@@ -425,7 +430,7 @@ HTML;
             $replaceCsrf = htmlspecialchars($this->csrf->getOrCreate(), ENT_QUOTES, 'UTF-8');
             $artworkPreview = <<<HTML
     <figure class="artwork-edit-preview">
-        <img src="{$previewSrc}" alt="{$title}">
+        <img src="{$previewSrc}" alt="{$title}" class="artwork-main-image">
         <figcaption>Current primary artwork image</figcaption>
     </figure>
     <form method="post" action="/admin/artworks/rotate" class="admin-inline-form artwork-rotation-controls">

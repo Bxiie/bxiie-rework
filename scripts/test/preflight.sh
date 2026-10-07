@@ -652,6 +652,15 @@ run_php scripts/test/platform_polish_four_pack_static.php
 run_php scripts/test/email_outbox_selected_timezone_static.php
 run_php scripts/test/reboot_required_reason_static.php
 run_php scripts/test/social_instagram_publishing_static.php
+run_php scripts/test/social_post_timing.php
+run_php scripts/test/artwork_full_bounds.php
+# Isolated SQLite fixtures are optional on production hosts with only pdo_mysql.
+if php -r 'exit(in_array("sqlite", PDO::getAvailableDrivers(), true) ? 0 : 1);'; then
+  run_php scripts/test/social_post_requests.php
+  run_php scripts/test/artwork_name_search.php
+else
+  echo '[SKIP] Social request and artwork search fixtures require pdo_sqlite.'
+fi
 run_php scripts/test/artwork_release_bulk_static.php
 run_php scripts/test/bulk_csv_header_static.php
 run_php scripts/test/artwork_image_rotation_static.php

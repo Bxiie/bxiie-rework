@@ -25,9 +25,9 @@ foreach ([
     'name option' => "'name' => 'Name'",
     'medium (materials) option' => "'medium' => 'Materials'",
     'manual option' => "'manual' => 'Curated order'",
-    'all-artwork link carries sort' => "\$allHref = '/portfolio?' . http_build_query(['per_page' => \$pageSize, 'sort' => \$sortOrder]);",
+    'all-artwork link carries sort' => "\$allHref = '/portfolio?' . http_build_query(['per_page' => \$pageSize, 'sort' => \$sortOrder, 'q' => \$q]);",
     'section tab links carry sort' => "'sort' => \$sortOrder,",
-    'pageStepLink accepts sort' => 'private function pageStepLink(string $path, string $sectionSlug, int $pageSize, int $page, string $label, bool $disabled, string $sortOrder = \'date_desc\'): string',
+    'pageStepLink accepts sort' => 'private function pageStepLink(string $path, string $sectionSlug, int $pageSize, int $page, string $label, bool $disabled, string $sortOrder = \'date_desc\', string $q = \'\'): string',
 ] as $label => $needle) {
     if (!str_contains($controller, $needle)) {
         $failures[] = "HomeController missing {$label}";

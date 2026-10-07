@@ -277,8 +277,8 @@ HTML;
                 'message' => 'Please go back, refresh the page, and try again.',
             ],
             422 => [
-                'title' => 'Could not create site',
-                'heading' => 'Could not create site.',
+                'title' => 'Could not submit form',
+                'heading' => 'Please check your submission.',
                 'message' => 'Please check the details and try again.',
             ],
             404 => [

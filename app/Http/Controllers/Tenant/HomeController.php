@@ -167,6 +167,7 @@ HTML;
     {
         $this->track($request, $tenant, 'portfolio_view');
         $sectionSlug = trim((string) ($_GET['section'] ?? ''));
+        $q = trim((string) ($_GET['q'] ?? ''));
         $page = max(1, (int) ($_GET['page'] ?? 1));
         $pageSize = Pagination::allowedLimitFromQuery(
             $_GET['per_page'] ?? null,
@@ -186,6 +187,7 @@ HTML;
             $sortOrder,
             $sectionSlug !== '' ? $sectionSlug : null,
             $includeUnpublished,
+            $q,
         );
         $items = $result['items'];
 
@@ -202,7 +204,7 @@ HTML;
             $sortOptions .= '<option value="' . $this->escape($sortValue) . '"' . $selected . '>' . $this->escape($sortLabel) . '</option>';
         }
 
-        $allHref = '/portfolio?' . http_build_query(['per_page' => $pageSize, 'sort' => $sortOrder]);
+        $allHref = '/portfolio?' . http_build_query(['per_page' => $pageSize, 'sort' => $sortOrder, 'q' => $q]);
         $body = "<h1>Portfolio</h1>\n";
         $body .= '<section data-artwork-pager-root tabindex="-1">';
         $body .= "<nav style=\"display:flex;gap:.5rem;flex-wrap:wrap;margin:1rem 0 1rem;\">\n";
@@ -213,6 +215,7 @@ HTML;
         foreach ($sections as $section) {
             $sectionQuery = http_build_query([
                 'section' => (string) $section['slug'],
+                'q' => $q,
                 'per_page' => $pageSize,
                 'sort' => $sortOrder,
             ]);
@@ -224,11 +227,13 @@ HTML;
         $sectionControl = $sectionSlug !== ''
             ? '<input type="hidden" name="section" value="' . $this->escape($sectionSlug) . '">'
             : '';
+        $clearSearchHref = '/portfolio?' . http_build_query(['section' => $sectionSlug, 'per_page' => $pageSize, 'sort' => $sortOrder]);
         $body .= '<form data-artwork-page-form method="get" action="/portfolio" style="display:flex;gap:.5rem;align-items:end;flex-wrap:wrap;margin:0 0 1.5rem;">'
             . $sectionControl
+            . '<label>Search by name<br><input type="search" name="q" value="' . $this->escape($q) . '"></label>'
             . '<label>Sort by<br><select name="sort">' . $sortOptions . '</select></label>'
             . '<label>Artworks per page<br><select name="per_page">' . $pageSizeOptions . '</select></label>'
-            . '<button type="submit">Apply</button></form>';
+            . '<button type="submit">Apply</button> <a data-artwork-page-link href="' . $this->escape($clearSearchHref) . '">Clear search</a></form>';
 
         $sectionName = $sectionSlug !== '' ? $this->artworks->activeSectionName($tenant, $sectionSlug) : null;
         if ($sectionName !== null) {
@@ -236,7 +241,7 @@ HTML;
         }
 
         if (!$items) {
-            $body .= "<p>No published artwork yet.</p>\n";
+            $body .= $q !== '' ? "<p>No artworks match your search.</p>\n" : "<p>No published artwork yet.</p>\n";
         } else {
             $body .= "<div style=\"display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.25rem;\">\n";
 
@@ -275,9 +280,10 @@ HTML;
         if ($pageCount > 1) {
             $currentPage = (int) $result['page'];
             $body .= '<nav aria-label="Portfolio pages" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:2rem 0;">';
-            $body .= $this->pageStepLink('/portfolio', $sectionSlug, $pageSize, $currentPage - 1, '‹ Previous', $currentPage <= 1, $sortOrder);
+            $body .= $this->pageStepLink('/portfolio', $sectionSlug, $pageSize, $currentPage - 1, '‹ Previous', $currentPage <= 1, $sortOrder, $q);
             for ($pageNumber = 1; $pageNumber <= $pageCount; $pageNumber++) {
                 $query = ['page' => $pageNumber, 'per_page' => $pageSize, 'sort' => $sortOrder];
+                $query['q'] = $q;
                 if ($sectionSlug !== '') {
                     $query['section'] = $sectionSlug;
                 }
@@ -285,7 +291,7 @@ HTML;
                 $current = $pageNumber === $currentPage ? ' aria-current="page" style="font-weight:bold;text-decoration:underline;"' : '';
                 $body .= '<a data-artwork-page-link href="' . $this->escape($href) . '"' . $current . '>' . $pageNumber . '</a>';
             }
-            $body .= $this->pageStepLink('/portfolio', $sectionSlug, $pageSize, $currentPage + 1, 'Next ›', $currentPage >= $pageCount, $sortOrder);
+            $body .= $this->pageStepLink('/portfolio', $sectionSlug, $pageSize, $currentPage + 1, 'Next ›', $currentPage >= $pageCount, $sortOrder, $q);
             $body .= '</nav>';
         }
 
@@ -298,13 +304,13 @@ HTML;
         ));
     }
 
-    private function pageStepLink(string $path, string $sectionSlug, int $pageSize, int $page, string $label, bool $disabled, string $sortOrder = 'date_desc'): string
+    private function pageStepLink(string $path, string $sectionSlug, int $pageSize, int $page, string $label, bool $disabled, string $sortOrder = 'date_desc', string $q = ''): string
     {
         if ($disabled) {
             return '<span aria-disabled="true" style="opacity:.45;padding:.25rem .45rem;border:1px solid #bbb;">' . $this->escape($label) . '</span>';
         }
 
-        $query = ['page' => max(1, $page), 'per_page' => $pageSize, 'sort' => $sortOrder];
+        $query = ['page' => max(1, $page), 'per_page' => $pageSize, 'sort' => $sortOrder, 'q' => $q];
         if ($sectionSlug !== '') {
             $query['section'] = $sectionSlug;
         }
@@ -371,7 +377,7 @@ HTML;
             $src = '/media?uuid=' . rawurlencode((string) $artwork['media_uuid'])
                 . ($this->unpublishedPreviewEnabled($tenant) ? '&preview_unpublished=1' : '');
             $alt = $this->escape((string) ($artwork['media_alt_text'] ?? $artwork['title']));
-            $body .= "<p><img src=\"{$src}\" alt=\"{$alt}\" style=\"max-width:720px;width:100%;height:auto;object-fit:contain;\"></p>\n";
+            $body .= "<figure class=\"artwork-main-display\"><img src=\"{$src}\" alt=\"{$alt}\" class=\"artwork-main-image\"></figure>\n";
         }
 
         $body .= "<p><strong>Medium:</strong> {$medium}</p>\n";
@@ -1088,6 +1094,7 @@ private function tenantAdminLink(TenantContext $tenant): string
     <meta name="description" content="Artist portfolio">
     <link rel="stylesheet" href="/assets/site.css?v=20261002-artwork-export-panel">
     <link rel="stylesheet" href="/tenant.css">
+    <link rel="stylesheet" href="/assets/artwork-display.css?v=20261007">
     <script src="/assets/tenant-forms.js?v=20260602a" defer></script>
     {$turnstileScript}
 </head>

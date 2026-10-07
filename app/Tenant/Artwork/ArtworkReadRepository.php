@@ -109,9 +109,10 @@ a.medium, a.dimensions, a.year_created, a.status,
         string $order = 'date_desc',
         ?string $sectionSlug = null,
         bool $includeUnpublished = false,
+        string $query = '',
     ): array {
         $page = max(1, $page);
-        $pageSize = max(1, min(96, $pageSize));
+        $pageSize = max(1, min(100, $pageSize));
         $offset = ($page - 1) * $pageSize;
         $sectionSlug = $sectionSlug !== null ? trim($sectionSlug) : null;
 
@@ -119,6 +120,11 @@ a.medium, a.dimensions, a.year_created, a.status,
         $where = "a.tenant_id = :tenant_id AND (a.status = 'published' OR (:include_unpublished = 1 AND a.status <> 'archived')) AND " . $this->portfolioTypeExistsSql('a');
         $params = ['tenant_id' => $tenant->tenantId, 'include_unpublished' => $includeUnpublished ? 1 : 0];
         $manualDefault = 'a.sort_order ASC, a.id DESC';
+        $query = trim($query);
+        if ($query !== '') {
+            $where .= " AND a.title LIKE :name_query ESCAPE '!'";
+            $params['name_query'] = '%' . strtr($query, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
+        }
 
         if ($sectionSlug !== null && $sectionSlug !== '') {
             $joins = ' JOIN artwork_section_assignments asa ON asa.artwork_id = a.id
@@ -137,6 +143,8 @@ a.medium, a.dimensions, a.year_created, a.status,
         }
         $count->execute();
         $total = (int) $count->fetchColumn();
+        $page = min($page, max(1, (int) ceil($total / $pageSize)));
+        $offset = ($page - 1) * $pageSize;
 
         $stmt = $this->pdo->prepare(
             "SELECT a.id, a.uuid, a.title, a.slug, a.medium, a.dimensions, a.year_created, a.status,

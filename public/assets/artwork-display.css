@@ -1,0 +1,18 @@
+/* Main artwork displays preserve every edge; thumbnails and social crops have separate styles. */
+.artwork-main-display {
+    margin: 1rem 0;
+    padding: 0;
+    max-width: 100%;
+    overflow: visible;
+}
+.artwork-main-display > .artwork-main-image,
+.artwork-edit-preview > .artwork-main-image {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    aspect-ratio: auto;
+    border-radius: 0;
+}

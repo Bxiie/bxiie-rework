@@ -224,6 +224,24 @@
     async function enhanceCompose() {
         const form = document.querySelector('[data-social-compose]');
         if (!form) return;
+        const publishAction = form.querySelector('[data-social-publish-action]');
+        const schedule = form.querySelector('input[name="scheduled_local"]');
+        const submit = form.querySelector('[data-social-submit]');
+        const updatePublishingTime = () => {
+            const later = publishAction?.value === 'schedule';
+            if (schedule) {
+                schedule.disabled = !later;
+                schedule.required = later;
+            }
+            if (submit) submit.textContent = later ? 'Schedule Post' : 'Post Now';
+        };
+        publishAction?.addEventListener('change', updatePublishingTime);
+        updatePublishingTime();
+        form.addEventListener('submit', (event) => {
+            if (publishAction?.value === 'post_now' && !window.confirm('Publish this post to Instagram now?')) {
+                event.preventDefault();
+            }
+        });
         const caption = form.querySelector('[data-social-caption]');
         const count = form.querySelector('[data-social-character-count]');
         const updateCount = () => { if (count && caption) count.textContent = String(caption.value.length); };

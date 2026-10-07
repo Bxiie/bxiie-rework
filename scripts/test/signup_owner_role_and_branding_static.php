@@ -33,7 +33,7 @@ $checks = [
     'Signup role assignment no longer fails on missing seed role' => [$files[$servicePath], 'Tenant owner role could not be created'],
     'Signup failure logs server detail' => [$files[$signupPath], "error_log('Tenant signup failed:"],
     'Signup failure uses branded error response' => [$files[$signupPath], 'return Response::error('],
-    'Branded error page has signup status copy' => [$files[$errorPagePath], 'Could not create site'],
+    'Branded error page has general validation copy' => [$files[$errorPagePath], 'Please check your submission.'],
     'Role repair migration seeds tenant owner' => [$files[$migrationPath], "('tenant', 'owner', 'Tenant Owner'"],
 ];
 

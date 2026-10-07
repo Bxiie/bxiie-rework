@@ -330,7 +330,8 @@ final class SocialFrontController
             }
         }
 
-        $body = '<p><a href="/admin/social">&larr; Instagram settings &amp; history</a></p><h1>Instagram Compose</h1><p><strong>' . $this->e((string) $artwork['title']) . '</strong></p>' . $sharedNotice . $accountNotice . '<form method="post" action="/admin/social/post" data-social-compose><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="artwork_id" value="' . $artworkId . '"><input type="hidden" name="post_id" value="' . $postId . '"><label>Template<br><select name="template_id" data-social-template>' . $templateOptions . '</select></label><label>Caption<br><textarea name="caption" rows="14" data-social-caption required>' . $this->e($caption) . '</textarea></label><p><span data-social-character-count>0</span> characters</p><label>Hashtags<br><textarea name="hashtags" rows="3">' . $this->e($hashtags) . '</textarea></label><details><summary><strong>Carousel media and crop settings</strong></summary><p>Select up to 10 images. Images from the same portfolio section are listed first. Crop settings create a non-destructive JPEG publication derivative.</p><div class="social-media-grid" data-social-media-grid>' . $mediaCards . '</div></details><label>Schedule date/time (' . $this->e((string) ($GLOBALS['artsfolio_user_timezone'] ?? 'UTC')) . ')<br><input type="datetime-local" name="scheduled_local" value="' . $this->e($scheduledLocal) . '"></label><p><button type="submit" name="action" value="post_now" onclick="return confirm(\'Publish this post to Instagram now?\');">Post Now</button> <button type="submit" name="action" value="schedule">Schedule Post</button></p></form>';
+        $scheduleSelected = $existing ? ' selected' : '';
+        $body = '<p><a href="/admin/social">&larr; Instagram settings &amp; history</a></p><h1>Instagram Compose</h1><p><strong>' . $this->e((string) $artwork['title']) . '</strong></p>' . $sharedNotice . $accountNotice . '<form method="post" action="/admin/social/post" data-social-compose><input type="hidden" name="csrf_token" value="' . $csrf . '"><input type="hidden" name="artwork_id" value="' . $artworkId . '"><input type="hidden" name="post_id" value="' . $postId . '"><label>Template<br><select name="template_id" data-social-template>' . $templateOptions . '</select></label><label>Caption<br><textarea name="caption" rows="14" data-social-caption required>' . $this->e($caption) . '</textarea></label><p><span data-social-character-count>0</span> characters</p><label>Hashtags<br><textarea name="hashtags" rows="3">' . $this->e($hashtags) . '</textarea></label><details><summary><strong>Carousel media and crop settings</strong></summary><p>Select up to 10 images. Images from the same portfolio section are listed first. Crop settings create a non-destructive JPEG publication derivative.</p><div class="social-media-grid" data-social-media-grid>' . $mediaCards . '</div></details><label>Publishing time<br><select name="publish_action" data-social-publish-action><option value="post_now">Post now</option><option value="schedule"' . $scheduleSelected . '>Schedule for later</option></select></label><label>Schedule date/time (' . $this->e((string) ($GLOBALS['artsfolio_user_timezone'] ?? 'UTC')) . ')<br><input type="datetime-local" name="scheduled_local" value="' . $this->e($scheduledLocal) . '"></label><p><button type="submit" data-social-submit>Submit post</button></p><p>Post now does not require a schedule. Schedule for later requires a future time in the timezone shown above.</p></form>';
         return Response::html($this->adminPage($tenant, 'Instagram Compose', $body), 200, ['Cache-Control' => 'private, no-store']);
     }
 
@@ -360,9 +361,11 @@ final class SocialFrontController
         $ordered = [];
         foreach ($mediaIds as $id) $ordered[] = ['id' => $id, 'order' => (int) ($_POST['media_order'][$id] ?? 9999)];
         usort($ordered, static fn (array $a, array $b): int => $a['order'] <=> $b['order']);
-        $action = (string) ($_POST['action'] ?? 'schedule');
-        $scheduledAt = $action === 'post_now' ? gmdate('Y-m-d H:i:s') : $this->scheduledUtc((string) ($_POST['scheduled_local'] ?? ''));
-        if ($scheduledAt === null) return Response::error(422, 'Choose a valid, unambiguous future schedule date and time.');
+        try {
+            [$action, $scheduledAt] = $this->submissionTiming($_POST);
+        } catch (\InvalidArgumentException $error) {
+            return Response::error(422, $error->getMessage());
+        }
         $status = 'scheduled';
         $userId = (int) ($currentUser['user_id'] ?? 0);
         if ($postId > 0) {
@@ -470,6 +473,25 @@ final class SocialFrontController
         }
     }
 
+    /** The publishing mode is a successful form control, independent of the submit button. */
+    private function submissionTiming(array $input): array
+    {
+        // Accept explicit actions from older compose pages, but never guess a missing action.
+        $action = $input['publish_action'] ?? $input['action'] ?? null;
+        if (!is_string($action) || !in_array($action, ['post_now', 'schedule'], true)) {
+            throw new \InvalidArgumentException('Choose Post now or Schedule for later.');
+        }
+        if ($action === 'post_now') {
+            return [$action, gmdate('Y-m-d H:i:s')];
+        }
+        $local = $input['scheduled_local'] ?? '';
+        $scheduledAt = is_string($local) ? $this->scheduledUtc($local) : null;
+        if ($scheduledAt === null) {
+            throw new \InvalidArgumentException('Choose a valid, unambiguous future schedule date and time.');
+        }
+        return [$action, $scheduledAt];
+    }
+
     /**
      * Converts a local datetime only when exactly one UTC instant maps to it.
      * This rejects both nonexistent spring-forward times and ambiguous fall-back times.
@@ -486,7 +508,7 @@ final class SocialFrontController
             $naiveTimestamp = $naive->getTimestamp();
             $transitions = $timezone->getTransitions($naiveTimestamp - 172800, $naiveTimestamp + 172800);
             $offsets = [];
-            foreach ($transitions as $transition) {
+            foreach ($transitions ?: [] as $transition) {
                 $offsets[(int) $transition['offset']] = true;
             }
             if ($offsets === []) {
@@ -503,7 +525,7 @@ final class SocialFrontController
             }
             if (count($candidates) !== 1) return null;
             $utcTimestamp = (int) array_key_first($candidates);
-            if ($utcTimestamp < time() - 30) return null;
+            if ($utcTimestamp <= time()) return null;
             return gmdate('Y-m-d H:i:s', $utcTimestamp);
         } catch (Throwable) {
             return null;
@@ -554,7 +576,7 @@ final class SocialFrontController
     {
         $safeTitle = $this->e($title);
         $site = $this->e((string) $this->settings->get($tenant, 'site_title', $tenant->name));
-        return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . $safeTitle . ' | ' . $site . ' Admin</title><link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/tenant-admin.css"><script src="/assets/social-publishing.js" defer></script></head><body class="tenant-admin-page"><header class="site-header"><a class="brand" href="/admin">' . $site . ' Tenant Admin</a><nav><a href="/admin/artworks">Artworks</a><a href="/admin/social">Instagram</a><a href="/">View site</a></nav></header><main class="tenant-admin-main"><section class="tenant-admin-panel">' . $body . '</section></main></body></html>';
+        return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . $safeTitle . ' | ' . $site . ' Admin</title><link rel="stylesheet" href="/assets/site.css"><link rel="stylesheet" href="/assets/tenant-admin.css"><script src="/assets/social-publishing.js?v=20261007" defer></script></head><body class="tenant-admin-page"><header class="site-header"><a class="brand" href="/admin">' . $site . ' Tenant Admin</a><nav><a href="/admin/artworks">Artworks</a><a href="/admin/social">Instagram</a><a href="/">View site</a></nav></header><main class="tenant-admin-main"><section class="tenant-admin-panel">' . $body . '</section></main></body></html>';
     }
 
     private function e(string $value): string
