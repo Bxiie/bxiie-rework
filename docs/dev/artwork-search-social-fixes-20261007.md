@@ -91,3 +91,11 @@ Release-checkout validation passed: all four new PHP regressions, portfolio publ
 Additional changed file: `scripts/test/portfolio_public_sort_static.php`.
 
 Production access attempt using the documented `bxiie@bxiie.com` login failed with `Permission denied (publickey,password)`. The deployment script has not been run. A working production SSH connection is required.
+
+## Follow-up: large-catalog form truncation
+
+The repeated validation error revealed the confirmed cause of the missing publishing mode: Compose emitted four crop/order fields for every carousel candidate, including unselected artwork. Production has 345 candidates, so those 1,380 fields exceed PHP's default `max_input_vars=1000`. PHP discards the mode/date controls at the end. The earlier small-catalog tests did not cover this case.
+
+Each image's crop/order controls now live inside a fieldset disabled on the server for unselected artwork. JavaScript enables/disables that fieldset when selection or restored snapshot state changes. Only the selected images contribute these fields, keeping even a ten-image carousel well under the limit without changing server limits. Explicit crop choices survive deselection/reselection. New script cache version: `20261008-catalog-inputs`.
+
+`scripts/test/social_large_catalog.cjs` renders the real Compose controller with 500 candidate artworks and sends browser FormData through PHP `parse_str` with `max_input_vars=1000`. It reproduced truncation before the fix and passes afterward, including the server-rendered form before JavaScript, ten selections near the end of the catalog, immediate and scheduled modes, the schedule date, and crop persistence. Existing social controller/timing/static and browser regressions also passed. No real Instagram post is sent by these tests.

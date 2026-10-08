@@ -121,6 +121,8 @@ $checks = [
     ],
     'app/Http/Controllers/Tenant/SocialFrontController.php' => [
         '/admin/social/compose',
+        'data-social-media-settings',
+        "(\$selected ? '' : ' disabled')",
         '/admin/social/post',
         '/admin/social/cancel',
         '/admin/social/artwork-metadata',
@@ -163,6 +165,8 @@ $checks = [
     ],
     'public/assets/social-publishing.js' => [
         'Post to Instagram',
+        'syncMediaSettings(card)',
+        "settings.disabled = !card.querySelector('input[type=\"checkbox\"]')?.checked",
         "link.className = 'button admin-button social-instagram-button'",
         "const context = await json('/social/context');",
         "row.querySelector('.artwork-grid-thumbnail-link img')",

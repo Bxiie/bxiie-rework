@@ -56,6 +56,11 @@ foreach ([[],['publish_action'=>'schedule'],['publish_action'=>'unexpected'],['p
     requestCheck((new ReflectionProperty($response,'status'))->getValue($response)===422,'Invalid submission not rejected');
     requestCheck($pdo->query('SELECT COUNT(*) FROM social_posts')->fetchColumn()===3,'Invalid submission wrote a post');
 }
+if (in_array('--large-catalog', $argv, true)) {
+    for ($id=2; $id<=500; $id++) {
+        $pdo->exec("INSERT INTO artworks VALUES ($id,1,'Artwork $id','artwork-$id','published',1)");
+    }
+}
 $_GET=['artwork_id'=>1];
 $response=(new ReflectionMethod($controller,'compose'))->invoke($controller,$tenant,['user_id'=>1]);
 $html=(new ReflectionProperty($response,'body'))->getValue($response);

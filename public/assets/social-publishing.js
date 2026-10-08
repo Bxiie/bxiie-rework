@@ -251,6 +251,12 @@
         const grid = form.querySelector('[data-social-media-grid]');
         const cards = () => Array.from(grid?.querySelectorAll('[data-social-media-card]') || []);
         const selectedCards = () => cards().filter((card) => card.querySelector('input[type="checkbox"]')?.checked);
+        // Unselected artwork must not contribute crop/order inputs: a large
+        // catalog otherwise exceeds PHP max_input_vars and truncates the mode/date.
+        const syncMediaSettings = (card) => {
+            const settings = card.querySelector('[data-social-media-settings]');
+            if (settings) settings.disabled = !card.querySelector('input[type="checkbox"]')?.checked;
+        };
         const normalizeOrder = () => {
             selectedCards().forEach((card, index) => {
                 card.dataset.order = String(index);
@@ -268,6 +274,7 @@
                 const card = checkbox?.closest('[data-social-media-card]');
                 if (!card) continue;
                 checkbox.checked = true;
+                syncMediaSettings(card);
                 card.dataset.order = String(saved.sort_order);
                 const order = card.querySelector('[data-social-order]');
                 const crop = card.querySelector('[data-social-crop]');
@@ -290,12 +297,14 @@
         }
 
         cards().forEach((card) => {
+            syncMediaSettings(card);
             const checkbox = card.querySelector('input[type="checkbox"]');
             checkbox?.addEventListener('change', () => {
                 if (selectedCards().length > 10) {
                     checkbox.checked = false;
                     window.alert('Instagram carousels may contain at most 10 images.');
                 }
+                syncMediaSettings(card);
                 normalizeOrder();
             });
             card.querySelector('[data-social-up]')?.addEventListener('click', () => {
@@ -350,6 +359,7 @@
             .social-media-card { border:1px solid #bbb;padding:.75rem;background:rgba(255,255,255,.75);display:grid;gap:.5rem;align-content:start; }
             .social-media-card img { width:100%;height:180px;object-fit:contain;background:#eee;transition:aspect-ratio .15s ease; }
             .social-media-card label { display:block; }
+            .social-media-card [data-social-media-settings] { display:grid;gap:.5rem;min-width:0;margin:0;padding:0;border:0; }
             .social-artwork-metadata-card textarea,.social-artwork-metadata-card input { width:100%;max-width:60rem; }
             .social-public-artwork-action { margin:.75rem 0 1.5rem; }
             .social-editor-permission-control { display:flex;gap:.4rem;align-items:center;padding:.45rem .65rem;border:1px solid #ccc;border-radius:.35rem; }
